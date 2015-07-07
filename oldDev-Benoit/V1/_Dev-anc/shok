@@ -1,0 +1,26 @@
+VAGRANTFILE_API_VERSION = "2" 
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config| 
+	 config.vm.box = "centos7.0" 
+	 config.vm.define :velassco01 do |velassco01|
+		 velassco01.vm.box = "chef/ubuntu-14.04" 
+		 velassco01.vm.provider :virtualbox do |vb| 
+		 	 vb.customize ["modifyvm", :id, "--memory", 2048]
+		 	 vb.cpus = 1 
+		 end 
+		 velassco01.vm.hostname = "velassco01"
+		 velassco01.vm.network "private_network", ip: "192.168.64.101"
+		 velassco01.vm.provision :shell, :path => "tools/bootstrap.sh"
+	 end
+
+	 config.vm.define :velassco02 do |velassco02|
+		 velassco02.vm.box = "chef/ubuntu-14.04" 
+		 velassco02.vm.provider :virtualbox do |vb| 
+		 	 vb.customize ["modifyvm", :id, "--memory", 2048]
+		 	 vb.cpus = 1 
+		 end 
+		 velassco02.vm.hostname = "velassco02"
+		 velassco02.vm.network "private_network", ip: "192.168.64.102"
+		 velassco02.vm.provision :shell, :path => "tools/bootstrap.sh"
+	 end
+
+end

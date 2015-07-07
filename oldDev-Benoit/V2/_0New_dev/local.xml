@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VELaSSCo>
+    <!-- Loc ressrouces Hadoop, Hive, ... -->
+    <path>
+        <install>/home/lange/tmp/distrib</install>
+        <tools>/home/lange/tmp/tools/</tools>
+    </path>
+    <real>
+        <node>
+            <host>ubuntu</host>
+            <hadoop>
+                <master></master>
+                <FS>
+                    <kind>HDFS</kind>
+                    <path>/home/lange/tmp/hdfs</path>
+                </FS>
+            </hadoop>
+            
+        </node>
+    </real>
+</VELaSSCo>

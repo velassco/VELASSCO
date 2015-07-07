@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <operation>
+    <name>FS</name>
+    <path></path>
+    <confDir></confDir>
+    <config/>
+    <nodes>
+      <node>
+        <name>shok</name>
+        <type>0</type>
+        <services/>
+      </node>
+    </nodes>
+  </operation>
+  <operation>
+    <name>Hadoop</name>
+    <path>/scratch/tools/hadoop/</path>
+    <confDir>/scratch/tools/hadoop/hadoop/etc/hadoop/</confDir>
+    <config>
+      <file>
+        <name>hdfs-site.xml</name>
+        <configuration>
+          <property>
+            <name>dfs.namenode.name.dir</name>
+            <value>/tmp/hadoop/namenode_data/</value>
+          </property>
+          <property>
+            <name>dfs.datanode.data.dir</name>
+            <value>/tmp/hadoop/datanode_data/</value>
+          </property>
+        </configuration>
+      </file>
+      <file>
+        <name>core-site.xml</name>
+        <configuration>
+          <property>
+            <name>hadoop.tmp.dir</name>
+            <value>/tmp/hadoop/localfs/</value>
+          </property>
+          <property>
+            <name>fs.defaultFS</name>
+            <value>hdfs://shok:55555</value>
+          </property>
+        </configuration>
+      </file>
+      <file>
+        <name>yarn-site.xml</name>
+        <configuration>
+          <property>
+            <name>yarn.resourcemanager.hostname</name>
+            <value>shok</value>
+          </property>
+        </configuration>
+      </file>
+    </config>
+    <nodes>
+      <node>
+        <name>shok</name>
+        <type>0</type>
+        <services>
+          <service>
+            <name>foramtNodemanager</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hdfs namenode -format</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>NodeManager</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>yarn-daemon.sh start nodemanager</cmd.start>
+            <cmd.stop>yarn-daemon.sh stop nodemanager</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>ResourceManager</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>yarn-daemon.sh start resourcemanager</cmd.start>
+            <cmd.stop>yarn-daemon.sh stop resourcemanager</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>NameNode</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>hadoop-daemon.sh start namenode</cmd.start>
+            <cmd.stop>hadoop-daemon.sh stop namenode</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>DataNode</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>hadoop-daemon.sh start datanode</cmd.start>
+            <cmd.stop>hadoop-daemon.sh stop datanode</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-home</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /home/lange</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-home-hive</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /home/hive</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-home-hive2</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /hive</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-home-hbase</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /home/hbase</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-hbase2</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /hbase</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-home2</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /user/lange</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-home3</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /user/hive</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>mkdir-home4</name>
+            <cmd.execOnce>0</cmd.execOnce>
+            <cmd.start>hadoop fs -mkdir -p /user/hbase</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+        </services>
+      </node>
+    </nodes>
+  </operation>
+  <operation>
+    <name>Hbase</name>
+    <path>/scratch/tools/hbase/</path>
+    <confDir>/scratch/tools/hbase/hbase/conf/</confDir>
+    <config>
+      <file>
+        <name>hbase-site.xml</name>
+        <configuration>
+          <property>
+            <name>hbase.rootdir</name>
+            <value>hdfs://shok:55555/hbase</value>
+          </property>
+          <property>
+            <name>hbase.cluster.distributed</name>
+            <value>true</value>
+          </property>
+          <property>
+            <name>hbase.zookeeper.quorum</name>
+            <value>shok</value>
+          </property>
+          <property>
+            <name>hbase.master.info.bindAddress</name>
+            <value>shok</value>
+          </property>
+        </configuration>
+      </file>
+    </config>
+    <nodes>
+      <node>
+        <name>shok</name>
+        <type>0</type>
+        <services>
+          <service>
+            <name>HQuorumPeer</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>hbase-daemon.sh start zookeeper</cmd.start>
+            <cmd.stop>hbase-daemon.sh stop zookeeper</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>HRegionServer</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>hbase-daemon.sh start regionserver</cmd.start>
+            <cmd.stop>hbase-daemon.sh stop regionserver</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>HMaster</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>hbase-daemon.sh start master</cmd.start>
+            <cmd.stop>hbase-daemon.sh stop master</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+          <service>
+            <name>ThriftServer</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>hbase-daemon.sh start thrift</cmd.start>
+            <cmd.stop>hbase-daemon.sh stop thrift</cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+        </services>
+      </node>
+    </nodes>
+  </operation>
+  <operation>
+    <name>Hive</name>
+    <path>/scratch/tools/hive/</path>
+    <confDir>/scratch/tools/hive/hive/conf/</confDir>
+    <config/>
+    <nodes>
+      <node>
+        <name>shok</name>
+        <type>0</type>
+        <services>
+          <service>
+            <name>RunJar</name>
+            <cmd.execOnce>-1</cmd.execOnce>
+            <cmd.start>hive --service hiveserver &amp;</cmd.start>
+            <cmd.stop></cmd.stop>
+            <cmd.update></cmd.update>
+          </service>
+        </services>
+      </node>
+    </nodes>
+  </operation>
+</configuration>

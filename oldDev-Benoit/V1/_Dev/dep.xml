@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<real>
+	<node>
+		<host>shark</host>
+		<ip>194.199.22.82</ip>
+		<login>lange</login>
+		<pass>vide</pass>
+        <path>/local_home/lange/tmp</path>
+		<virtual>
+			<node>
+                <host>172.17.0.5</host>
+                <ip>172.17.0.5</ip>
+				<os>chef/ubuntu-14.04</os>
+				<core>1</core>
+				<memory>2048</memory>
+                <login>root</login>
+                <pass>root</pass>
+                <path>/tool/_Dev</path>
+				<hadoop>
+                    <master></master>
+                    <hdfs></hdfs>
+                    <hbase></hbase>
+                    <hive></hive>
+                    <pig></pig>
+                </hadoop>
+			</node>
+            
+            <node>
+                <host>172.17.0.6</host>
+                <ip>172.17.0.6</ip>
+				<os>chef/ubuntu-14.04</os>
+				<core>1</core>
+				<memory>2048</memory>
+                <login>root</login>
+                <pass>root</pass>
+                
+				<hadoop>
+                    <hdfs></hdfs>
+                </hadoop>
+			</node>
+            
+            <node>
+                <host>172.17.0.7</host>
+                <ip>172.17.0.7</ip>
+				<os>chef/ubuntu-14.04</os>
+				<core>1</core>
+				<memory>2048</memory>
+                <login>root</login>
+                <pass>root</pass>
+                
+				<hadoop>
+                    <hdfs></hdfs>
+                </hadoop>
+			</node>
+		</virtual>
+        
+	</node>
+</real>

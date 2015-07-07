@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VELaSSCo>
+    <!-- Loc ressrouces Hadoop, Hive, ... -->
+    <path>
+        <install>/local_home/lange/distrib</install>
+        <tools>/local_home/lange/tmp/tools</tools>
+    </path>
+    <real>
+        <node>
+            <host>shark</host>
+            <virtual>
+                <dockers>
+                    <host>velassco01</host>
+                    <user></user>
+                    <pass></pass>
+                    
+                    <hadoop>
+                        <master></master>
+                        <hbase></hbase>
+                        <hive></hive>
+                        <pig></pig>
+                        <NFS></NFS>
+                        <FS>
+                            <!-- <share>/tmp</share> -->
+                            <kind>HDFS</kind>
+                            <path>/tmp</path>
+                        </FS>
+                    </hadoop>
+                </dockers>
+                
+                <dockers>
+                    <host>velassco02</host>
+                    <hadoop>
+                        <FS>
+                        </FS>
+                    </hadoop>
+                </dockers>
+            </virtual>
+        </node>
+    </real>
+</VELaSSCo>

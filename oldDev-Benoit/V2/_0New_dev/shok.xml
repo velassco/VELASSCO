@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VELaSSCo>
+    <!-- Loc ressrouces Hadoop, Hive, ... -->
+    <path>
+        <install>/local_home/lange/distrib</install>
+        <tools>/local_home/lange/tmp/tools</tools>
+    </path>
+    <real>
+        <node>
+            <host>shark</host>
+            <hadoop>
+                <master></master>
+                <hbase></hbase>
+                <hive></hive>
+                <pig></pig>
+                <NFS></NFS>
+                <FS>
+                    <kind>HDFS</kind>
+                    <path>/tmp</path>
+                </FS>
+            </hadoop>
+            
+        </node>
+    </real>
+</VELaSSCo>

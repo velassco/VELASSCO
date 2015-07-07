@@ -1,0 +1,1 @@
+hive --auxpath /local_home/lange/tmp/tools/hbase/lib/ --service hiveserver &

@@ -1,0 +1,27 @@
+## Hadoop
+export HADOOP_LOC=MASTER_HADOOP_LOC
+export PATH=$HADOOP_LOC/hadoop/sbin:$HADOOP_LOC/hadoop/bin:$PATH
+export HADOOP_HOME=$HADOOP_LOC/hadoop
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
+export HADOOP_CONF_DIR=MASTER_HADOOP_CONF/conf
+
+## Hbase
+export PATH=$HADOOP_LOC/hbase/sbin:$HADOOP_LOC/hbase/bin:$PATH
+export HBASE_CONF_DIR=$HADOOP_CONF_DIR
+
+## Hive
+export PATH=$HADOOP_LOC/hive/sbin:$HADOOP_LOC/hive/bin:$PATH
+export HIVE_CONF_DIR=$HADOOP_CONF_DIR
+export HIVE_HOME=$HADOOP_LOC/hive
+
+## Pig
+export PATH=$HADOOP_LOC/pig/sbin:$HADOOP_LOC/pig/bin:$PATH
+
+## phoenix
+export PATH=$HADOOP_LOC/phoenix/common:$HADOOP_LOC/phoenix/hadoop-2:$HADOOP_LOC/phoenix/hadoop-1:$HADOOP_LOC/phoenix/bin:$PATH
+
+## JAVA
+export JAVA_HOME=MASTER_HADOOP_LOC/java/
+export PATH=$JAVA_HOME/bin:$PATH
+export JAVA_LIBRARY_PATH=$HADOOP_HOME/lib/native:$JAVA_LIBRARY_PATH

@@ -1,0 +1,158 @@
+thrift -r --gen cpp com.thrift 
+g++ -o DemoServer -I/usr/local/include -I./gen-cpp -L/usr/local/lib  -lthrift Server.cpp ./gen-cpp/com_constants.cpp ./gen-cpp/com_types.cpp ./gen-cpp/ServerService.cpp
+In file included from /usr/local/include/thrift/TProcessor.h:24:0,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from Server.cpp:4:
+/usr/local/include/thrift/protocol/TProtocol.h:132:0: warning: "ntohll" redefined [enabled by default]
+ #  define ntohll(n) ( (((uint64_t)ntohl((uint32_t)n)) << 32) + ntohl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from /usr/local/include/thrift/transport/TTransport.h:23,
+                 from /usr/local/include/thrift/protocol/TProtocol.h:23,
+                 from /usr/local/include/thrift/TProcessor.h:24,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from Server.cpp:4:
+/usr/include/sys/_endian.h:140:0: note: this is the location of the previous definition
+ #define ntohll(x)       __DARWIN_OSSwapInt64(x)
+ ^
+In file included from /usr/local/include/thrift/TProcessor.h:24:0,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from Server.cpp:4:
+/usr/local/include/thrift/protocol/TProtocol.h:133:0: warning: "htonll" redefined [enabled by default]
+ #  define htonll(n) ( (((uint64_t)htonl((uint32_t)n)) << 32) + htonl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from /usr/local/include/thrift/transport/TTransport.h:23,
+                 from /usr/local/include/thrift/protocol/TProtocol.h:23,
+                 from /usr/local/include/thrift/TProcessor.h:24,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from Server.cpp:4:
+/usr/include/sys/_endian.h:141:0: note: this is the location of the previous definition
+ #define htonll(x)       __DARWIN_OSSwapInt64(x)
+ ^
+In file included from ./gen-cpp/com_types.h:12:0,
+                 from ./gen-cpp/com_constants.h:10,
+                 from ./gen-cpp/com_constants.cpp:7:
+/usr/local/include/thrift/protocol/TProtocol.h:132:0: warning: "ntohll" redefined [enabled by default]
+ #  define ntohll(n) ( (((uint64_t)ntohl((uint32_t)n)) << 32) + ntohl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from ./gen-cpp/com_types.h:10,
+                 from ./gen-cpp/com_constants.h:10,
+                 from ./gen-cpp/com_constants.cpp:7:
+/usr/include/sys/_endian.h:140:0: note: this is the location of the previous definition
+ #define ntohll(x)       __DARWIN_OSSwapInt64(x)
+ ^
+In file included from ./gen-cpp/com_types.h:12:0,
+                 from ./gen-cpp/com_constants.h:10,
+                 from ./gen-cpp/com_constants.cpp:7:
+/usr/local/include/thrift/protocol/TProtocol.h:133:0: warning: "htonll" redefined [enabled by default]
+ #  define htonll(n) ( (((uint64_t)htonl((uint32_t)n)) << 32) + htonl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from ./gen-cpp/com_types.h:10,
+                 from ./gen-cpp/com_constants.h:10,
+                 from ./gen-cpp/com_constants.cpp:7:
+/usr/include/sys/_endian.h:141:0: note: this is the location of the previous definition
+ #define htonll(x)       __DARWIN_OSSwapInt64(x)
+ ^
+In file included from ./gen-cpp/com_types.h:12:0,
+                 from ./gen-cpp/com_types.cpp:7:
+/usr/local/include/thrift/protocol/TProtocol.h:132:0: warning: "ntohll" redefined [enabled by default]
+ #  define ntohll(n) ( (((uint64_t)ntohl((uint32_t)n)) << 32) + ntohl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from ./gen-cpp/com_types.h:10,
+                 from ./gen-cpp/com_types.cpp:7:
+/usr/include/sys/_endian.h:140:0: note: this is the location of the previous definition
+ #define ntohll(x)       __DARWIN_OSSwapInt64(x)
+ ^
+In file included from ./gen-cpp/com_types.h:12:0,
+                 from ./gen-cpp/com_types.cpp:7:
+/usr/local/include/thrift/protocol/TProtocol.h:133:0: warning: "htonll" redefined [enabled by default]
+ #  define htonll(n) ( (((uint64_t)htonl((uint32_t)n)) << 32) + htonl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from ./gen-cpp/com_types.h:10,
+                 from ./gen-cpp/com_types.cpp:7:
+/usr/include/sys/_endian.h:141:0: note: this is the location of the previous definition
+ #define htonll(x)       __DARWIN_OSSwapInt64(x)
+ ^
+In file included from /usr/local/include/thrift/TProcessor.h:24:0,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from ./gen-cpp/ServerService.cpp:7:
+/usr/local/include/thrift/protocol/TProtocol.h:132:0: warning: "ntohll" redefined [enabled by default]
+ #  define ntohll(n) ( (((uint64_t)ntohl((uint32_t)n)) << 32) + ntohl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from /usr/local/include/thrift/transport/TTransport.h:23,
+                 from /usr/local/include/thrift/protocol/TProtocol.h:23,
+                 from /usr/local/include/thrift/TProcessor.h:24,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from ./gen-cpp/ServerService.cpp:7:
+/usr/include/sys/_endian.h:140:0: note: this is the location of the previous definition
+ #define ntohll(x)       __DARWIN_OSSwapInt64(x)
+ ^
+In file included from /usr/local/include/thrift/TProcessor.h:24:0,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from ./gen-cpp/ServerService.cpp:7:
+/usr/local/include/thrift/protocol/TProtocol.h:133:0: warning: "htonll" redefined [enabled by default]
+ #  define htonll(n) ( (((uint64_t)htonl((uint32_t)n)) << 32) + htonl((uint32_t)(n >> 32)) )
+ ^
+In file included from /usr/include/i386/endian.h:99:0,
+                 from /usr/include/machine/endian.h:35,
+                 from /usr/include/sys/wait.h:186,
+                 from /usr/include/stdlib.h:65,
+                 from /usr/include/assert.h:44,
+                 from /usr/local/include/thrift/Thrift.h:28,
+                 from /usr/local/include/thrift/transport/TTransport.h:23,
+                 from /usr/local/include/thrift/protocol/TProtocol.h:23,
+                 from /usr/local/include/thrift/TProcessor.h:24,
+                 from /usr/local/include/thrift/TDispatchProcessor.h:22,
+                 from ./gen-cpp/ServerService.h:10,
+                 from ./gen-cpp/ServerService.cpp:7:
+/usr/include/sys/_endian.h:141:0: note: this is the location of the previous definition
+ #define htonll(x)       __DARWIN_OSSwapInt64(x)
+ ^

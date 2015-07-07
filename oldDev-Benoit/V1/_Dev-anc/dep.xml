@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<real>
+	<node>
+		<host>shark</host>
+		<ip>194.199.22.82</ip>
+		<login>lange</login>
+		<pass>vide</pass>
+        <path>/local_home/lange/tmp</path>
+		<virtual>
+			<node>
+                <host>velassco01</host>
+                <ip>192.168.64.101</ip>
+				<os>chef/ubuntu-14.04</os>
+				<core>1</core>
+				<memory>2048</memory>
+                <login>vagrant</login>
+                <pass>vagrant</pass>
+                <path>/home/vagrant</path>
+				<hadoop>
+                    <master></master>
+                    <hdfs></hdfs>
+                    <hbase></hbase>
+                    <hive></hive>
+                    <pig></pig>
+                </hadoop>
+			</node>
+            
+            <node>
+                <host>velassco02</host>
+                <ip>192.168.64.102</ip>
+				<os>chef/ubuntu-14.04</os>
+				<core>1</core>
+				<memory>2048</memory>
+                <login>vagrant</login>
+                <pass>vagrant</pass>
+                
+				<hadoop>
+                    <hdfs></hdfs>
+                </hadoop>
+			</node>
+            
+            <node>
+                <host>velassco03</host>
+                <ip>192.168.64.103</ip>
+				<os>chef/ubuntu-14.04</os>
+				<core>1</core>
+				<memory>2048</memory>
+                <login>vagrant</login>
+                <pass>vagrant</pass>
+                
+				<hadoop>
+                    <hdfs></hdfs>
+                </hadoop>
+			</node>
+		</virtual>
+        
+	</node>
+</real>

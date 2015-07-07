@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <property>
+    <name>hadoop.tmp.dir</name>
+    <value>/tmp/hadoop/localfs/</value>
+  </property>
+  <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://shok:55555</value>
+  </property>
+</configuration>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<real>
+	<node>
+		<host>localhost</host>
+		<ip>127.0.0.1</ip>
+		<login>lange</login>
+		<pass>vide</pass>
+        <path>/tmp</path>
+		<virtual>
+			<node>
+                <host>velassco01</host>
+                <ip>192.168.64.101</ip>
+				<os>chef/ubuntu-14.04</os>
+				<core>1</core>
+				<memory>4096</memory>
+                <login>vagrant</login>
+                <pass>vagrant</pass>
+	
+				<hadoop>
+                    <master></master>
+                    <hdfs></hdfs>
+                    <hbase></hbase>
+                    <hive></hive>
+                    <pig></pig>
+                </hadoop>
+			</node>
+		</virtual>
+	</node>
+</real>
