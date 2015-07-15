@@ -109,8 +109,8 @@ struct GlobalMeshHeaderType
 
 struct GlobalMeshInfoType
 {
-  // TODO: collect also GP & RT
   typedef std::map<std::string, GlobalMeshHeaderType> MapHeaderType;
+
   MapHeaderType headers;
 
   int Update( const GID::MeshResultType &meshPart )
@@ -137,25 +137,37 @@ struct GlobalMeshInfoType
 
 struct GlobalResultInfoType
 {
-  typedef std::map<std::string, GID::ResultHeaderType> MapHeaderType;
+  // TODO: collect also GP & RT
 
-  MapHeaderType headers;
+  typedef std::map<std::string, GID::ResultHeaderType> MapHeaderType;
+  typedef std::map<double, MapHeaderType> MapTimeStepType;
+  typedef std::map<std::string, MapTimeStepType> MapAnalysisType;
+
+  MapAnalysisType analysis;
 
   int Update( GID::ResultHeaderType & h )
   {
-    GID::ResultHeaderType &header = this->headers[ h.name ];
+    MapTimeStepType &mapT = this->analysis[ h.analysis ];
+    MapHeaderType &headers = mapT[ h.step ];
+    GID::ResultHeaderType &header = headers[ h.name ];
     if( header.indexMData == 0 )
       {
-      h.indexMData = this->headers.size( );
+      header = h;
+      header.indexMData = headers.size( );
       }
     else
       {
       // TODO: check if resultPart matches first partition header
       }
-    header = h;
+    h.indexMData = header.indexMData;
+    std::cout << headers[ h.name ].name << ": " 
+              << headers[ h.name ].analysis << ", " 
+              << headers[ h.name ].step << ", " 
+              << headers[ h.name ].indexMData << std::endl;
     return SUCCESS;
   }
 
+  // TODO: update GP & RT
   int Update( GID::ResultContainerType &resultPart )
   {
     int status = SUCCESS;
@@ -170,12 +182,23 @@ struct GlobalResultInfoType
     return status;
   }
 
-  GID::UInt64 GetIndexMetaData( const std::string &name )
+  GID::UInt64 GetIndexMetaData( const std::string analysis, double step,
+                                const std::string &name )
   {
-    MapHeaderType::const_iterator it = this->headers.find( name );
-    if ( it != this->headers.end( ) )
+    MapAnalysisType::const_iterator itA = this->analysis.find( analysis );
+    if ( itA == this->analysis.end( ) )
       {
-      return it->second.indexMData;
+      return 0;
+      }
+    MapTimeStepType::const_iterator itT = itA->second.find( step );
+    if ( itT == itA->second.end( ) )
+      {
+      return 0;
+      }
+    MapHeaderType::const_iterator itH = itT->second.find( name );
+    if ( itH != itT->second.end( ) )
+      {
+      return itH->second.indexMData;
       }
     else
       {
@@ -437,35 +460,63 @@ int CreateVelasscoTables( const std::string &host, size_t port )
   return SUCCESS;
 }
 
-int InsertMesh_MetaData( const std::string &host, int port,
-                         const std::string &keyModel, 
-                         GlobalMeshInfoType &meshInfo )
+int EncodeRowKey_MetaData( const std::string &keyModel,
+                           const std::string &analysisName,
+                           double step, std::string &rowKey )
 {
-  boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
-  boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
-  boost::shared_ptr<TProtocol> protocol( new TBinaryProtocol( transport ) );
-  HbaseClient client( protocol );
-  GID::MeshResultType mesh;
-  int status;
-  boost::uuids::uuid id;
-  StringToUUID( keyModel, id );
-  try 
-    {    
-    transport->open( );
-    LOG(info) << "inserting mesh metada for " << id;
-    transport->close( );
-    }
-  catch (const TException &tx)
+  if ( keyModel.length( ) != 16 )
     {
-    LOG(error) << tx.what( );
-    return ERROR_EXCEPTION;
+    return ERROR_BAD_UUID_LENGTH;
     }
-  return status;
+
+  boost::uint32_t lengthStr = analysisName.length( );
+  rowKey.reserve( keyModel.length( ) +
+                   sizeof( lengthStr )  + lengthStr +
+                   sizeof( step ) );
+  rowKey = keyModel;
+  GID::BinarySerializer binWriter;
+  binWriter.Write( rowKey, analysisName );
+  binWriter.Write( rowKey, step );
+  return SUCCESS;
+}
+
+int DecodeRowKey_MetaData( const std::string &rowKey,
+                           std::string &keyModel,
+                           std::string &analysisName,
+                           double &step )
+{
+  const int minimumLength = 
+    16 + sizeof(boost::uint32_t) + sizeof(step);
+  if ( rowKey.length( ) < minimumLength )
+    {
+    return ERROR_KEY_MINIMUM_LENGTH;
+    }
+  char uid[16];
+  GID::BinaryDeserializer binReader;
+  boost::uint32_t pos0 = binReader.Read( rowKey, reinterpret_cast<boost::int8_t*>(&uid[0]), 16 );
+  if ( pos0 != 16 )
+    {
+    return ERROR_KEY_BAD_READ;
+    }
+  keyModel.assign( uid, 16 );
+  boost::uint32_t pos1 = binReader.Read( rowKey, analysisName, pos0 );
+  if ( pos1 - pos0 < sizeof(boost::uint32_t) )
+    {
+    return ERROR_KEY_BAD_READ;
+    }
+  pos0 = pos1;
+  pos1 = binReader.Read( rowKey, &step, 1, pos0 );
+  if ( pos1 - pos0 != sizeof( step ) )
+    {
+    return ERROR_KEY_BAD_READ;
+    }
+  return SUCCESS;
 }
 
 int InsertResult_MetaData( const std::string &host, int port,
                            const std::string &keyModel, 
-                           GlobalResultInfoType &resultInfo )
+                           const GlobalMeshInfoType &meshInfo,
+                           const GlobalResultInfoType &resultInfo)
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
@@ -478,7 +529,117 @@ int InsertResult_MetaData( const std::string &host, int port,
   try 
     {    
     transport->open( );
-    LOG(info) << "inserting result metada for " << id;
+    LOG(info) << "inserting result metada for model " << id;
+    // REVIEW: up to this point the mesh is static
+    std::string analysisName( "" );
+    double step = 0.0;
+    std::string keyM;
+    status = EncodeRowKey_MetaData( keyModel, analysisName, step, keyM );
+    // REVIEW: first prototype use only one coordinate set
+    if ( status == SUCCESS )
+      {
+      std::vector<Mutation> mutations;
+      GID::UInt32 indexCSet = 1;
+      const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
+                                                   // HBASE-4658
+      // look for the first mesh with nodes defined
+      bool csetFound = false;
+      GID::BinarySerializer binWriter;
+      for( GlobalMeshInfoType::MapHeaderType::const_iterator it = meshInfo.headers.begin( );
+           it  != meshInfo.headers.end( ); ++it  )
+        {
+        if ( !csetFound )
+          {
+          if ( it->second.numberOfNodes > 0 )
+            {
+            mutations.push_back( Mutation() );
+            mutations.back( ).column = "M:c1nm";
+            mutations.back( ).value = it->first;
+            mutations.back( ).column = "M:c1nc";
+            binWriter.Write( mutations.back( ).value, it->second.numberOfNodes );
+            csetFound = true;
+            }
+          }
+        std::string pm( "M:m" );
+        pm += boost::lexical_cast<std::string>( it->second.indexElementSet );
+        mutations.push_back( Mutation() );
+        mutations.back( ).column = pm;
+        mutations.back( ).column += "nm";
+        mutations.back( ).value = it->first;
+        mutations.push_back( Mutation() );
+        mutations.back( ).column = pm;
+        mutations.back( ).column += "cn";
+        // REVIEW: why not store only the index in binary form?
+        mutations.back( ).value = "c1";
+        mutations.push_back( Mutation() );
+        mutations.back( ).column = pm;
+        mutations.back( ).column += "et";
+        mutations.back( ).value = GID::GetElementTypeAsString( it->second.elementType );
+        mutations.push_back( Mutation() );
+        mutations.back( ).column = pm;
+        mutations.back( ).column += "ne";
+        binWriter.Write( mutations.back( ).value, it->second.numberOfElements );
+        mutations.push_back( Mutation() );
+        mutations.back( ).column = pm;
+        mutations.back( ).column += "nn";
+        binWriter.Write( mutations.back( ).value, it->second.sizeElement );
+        mutations.push_back( Mutation() );
+        mutations.back( ).column = pm;
+        mutations.back( ).column += "cl";
+        mutations.back( ).value = "";
+        // push mesh columns
+        client.mutateRow( strTableMetaData, keyM, mutations, dummyAttributes);
+        for( GlobalResultInfoType::MapAnalysisType::const_iterator itA = resultInfo.analysis.begin( );
+             itA != resultInfo.analysis.end( ); ++itA )
+          {
+          for( GlobalResultInfoType::MapTimeStepType::const_iterator itS = itA->second.begin( );
+               itS != itA->second.end( ); ++itS )
+            {
+            std::string keyR;
+            mutations.clear( );
+            status = EncodeRowKey_MetaData( keyModel, itA->first, itS->first, keyR );
+            if ( status == SUCCESS )
+              {
+              for( GlobalResultInfoType::MapHeaderType::const_iterator itR = itS->second.begin( );
+                   itR != itS->second.end( ); ++itR )
+                {
+                std::string pr( "R:r" );
+                pr += boost::lexical_cast<std::string>( itR->second.indexMData );
+                mutations.push_back( Mutation() );
+                mutations.back( ).column = pr;
+                mutations.back( ).column += "nm";
+                mutations.back( ).value = itR->second.name;
+                mutations.push_back( Mutation() );
+                mutations.back( ).column = pr;
+                mutations.back( ).column += "rt";
+                mutations.back( ).value = GID::GetValueTypeAsString( itR->second.rType );
+                mutations.push_back( Mutation() );
+                mutations.back( ).column = pr;
+                mutations.back( ).column += "nc";
+                binWriter.Write( mutations.back( ).value, GID::GetValueTypeSize( itR->second.rType ) );
+                // TODO: write component names
+                // TODO: write coordinate name column
+                mutations.push_back( Mutation() );
+                mutations.back( ).column = pr;
+                mutations.back( ).column += "un";
+                mutations.back( ).value = "";
+                }
+              std::cout << "strTableMetaData << '" << keyR << "' " << mutations.size() << std::endl; 
+              client.mutateRow( strTableMetaData, keyR, mutations, dummyAttributes);
+              }
+            else
+              {
+              // failed EncodeRowKey_MetaData
+              break;
+              }
+            }
+          }
+        }
+      }
+    else
+      {
+      // failed EncodeRowKey_MetaData
+      }
     transport->close( );
     }
   catch (const TException &tx)
@@ -608,9 +769,9 @@ int DecodeColumn_Data( const std::string &column, char family, char prefix,
 
 int InsertPartResult_Data( const std::string &host, int port,
                            const std::string &keyModel, 
-                           GID::MeshResultType &meshPart,
-                           GID::IdPartition part,
+                           GID::IdPartition indexPart,
                            GID::UInt32 indexESet,
+                           GID::MeshResultType &meshPart,
                            GID::ResultContainerType &resultPart)
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
@@ -622,20 +783,20 @@ int InsertPartResult_Data( const std::string &host, int port,
   try 
     {    
     transport->open( );
-    LOG(info) << "inserting mesh data '" << meshPart.header.name << "' for partition " << part;
-    // REVIEW: analysis & step must be provided as arguments
+    LOG(info) << "inserting data for partition " << indexPart;
+    // REVIEW: up to this point the mesh is static
     std::string analysisName( "" );
     double step = 0.0;
-    std::string key;
-    status = EncodeRowKey_Data( keyModel, analysisName, step, part, key );
+    std::string keyM;
+    status = EncodeRowKey_Data( keyModel, analysisName, step, indexPart, keyM );
     if ( status == SUCCESS )
       {
-      LOG(info) << "key = " << key;
+      LOG(info) << "keyM = " << keyM;
       GID::BinarySerializer binWriter;
       std::string checkKeyModel, checkAnalysisName;
       double checkStep;
       GID::IdPartition checkPart;
-      status = DecodeRowKey_Data( key, checkKeyModel, checkAnalysisName, checkStep, checkPart );
+      status = DecodeRowKey_Data( keyM, checkKeyModel, checkAnalysisName, checkStep, checkPart );
       if ( status == SUCCESS )
         {
         LOG(info) << "checkKeyModel = " << checkKeyModel << ", " 
@@ -645,7 +806,7 @@ int InsertPartResult_Data( const std::string &host, int port,
         assert( checkKeyModel == keyModel );
         assert( checkAnalysisName == analysisName );
         assert( checkStep == step );
-        assert( checkPart == part );
+        assert( checkPart == indexPart );
         std::vector<Mutation> mutations;
         // TODO: first prototype use only one coordinate set
         GID::UInt32 indexCSet = 1;
@@ -693,12 +854,23 @@ int InsertPartResult_Data( const std::string &host, int port,
         // mutations for results
         if( status == SUCCESS )
           {
+          client.mutateRow( strTableData, keyM, mutations, dummyAttributes);
+          LOG(info) << "inserted " << meshPart.nodes.size() << " coordinates";
+          LOG(info) << "inserted " << meshPart.elements.size() << " elements";
+
           for( std::vector<GID::ResultBlockType>::const_iterator itR = resultPart.results.begin( );
                itR != resultPart.results.end( ); itR++ )
             {
+            std::string keyR;
+            status = EncodeRowKey_Data( keyModel, itR->header.analysis, itR->header.step, indexPart, keyR );
+            if ( status != SUCCESS )
+              {
+              break;
+              }
+            mutations.clear( );
             GID::UInt64 indexMData = itR->header.indexMData;
             for( std::vector<GID::ResultRowType>::const_iterator itV = itR->values.begin( );
-                 itV != itR->values.begin( ); itV++ ) 
+                 itV != itR->values.end( ); itV++ ) 
               {
               mutations.push_back( Mutation( ) );
               status = EncodeColumn_Data( 'R', 'r', indexMData, itV->id, mutations.back().column );
@@ -712,13 +884,11 @@ int InsertPartResult_Data( const std::string &host, int port,
                 binWriter.Write( mutations.back().value, *itD );
                 }
               }
+            client.mutateRow( strTableData, keyR, mutations, dummyAttributes);
             }
           }
         if ( status == SUCCESS )
           {
-          client.mutateRow( strTableData, key, mutations, dummyAttributes);
-          LOG(info) << "inserted " << meshPart.nodes.size() << " coordinates";
-          LOG(info) << "inserted " << meshPart.elements.size() << " elements";
           LOG(info) << "inserted " << resultPart.results.size() << " results";
           }
         }
@@ -937,26 +1107,20 @@ int ProcessInput( const po::variables_map &vm )
         return status;
         }
       resultInfo.Update( resultPart );
-      status = InsertPartResult_Data( host, port, keyModel, meshPart, it->first,
+      status = InsertPartResult_Data( host, port, keyModel, it->first,
                                       meshInfo.GetIndexElementSet( meshPart.header.name ),
-                                      resultPart );
+                                      meshPart, resultPart );
       if ( status != SUCCESS )
         {
         return status;
         }
       }
     }
-  status = InsertMesh_MetaData( host, port, keyModel, meshInfo );
+  status = InsertResult_MetaData( host, port, keyModel, meshInfo, resultInfo );
   if ( status != SUCCESS )
     {
     return status;
-    }
-  status = InsertResult_MetaData( host, port, keyModel, resultInfo );
-  if ( status != SUCCESS )
-    {
-    return status;
-    }
-  
+    }  
   return SUCCESS;
 }
 

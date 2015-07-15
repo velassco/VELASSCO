@@ -24,6 +24,11 @@ typedef boost::uint64_t IdElement;
 typedef boost::uint32_t UInt32;
 typedef boost::uint32_t IdPartition;
 
+const std::string &GetLocationAsString( LocationType et );
+const std::string &GetElementTypeAsString( ElementType et );
+const std::string &GetValueTypeAsString( ValueType rt );
+UInt32 GetValueTypeSize( ValueType rt );
+
 END_GID_DECLS
 
 #endif
