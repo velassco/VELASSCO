@@ -160,10 +160,6 @@ struct GlobalResultInfoType
       // TODO: check if resultPart matches first partition header
       }
     h.indexMData = header.indexMData;
-    std::cout << headers[ h.name ].name << ": " 
-              << headers[ h.name ].analysis << ", " 
-              << headers[ h.name ].step << ", " 
-              << headers[ h.name ].indexMData << std::endl;
     return SUCCESS;
   }
 
@@ -624,7 +620,6 @@ int InsertResult_MetaData( const std::string &host, int port,
                 mutations.back( ).column += "un";
                 mutations.back( ).value = "";
                 }
-              std::cout << "strTableMetaData << '" << keyR << "' " << mutations.size() << std::endl; 
               client.mutateRow( strTableMetaData, keyR, mutations, dummyAttributes);
               }
             else
