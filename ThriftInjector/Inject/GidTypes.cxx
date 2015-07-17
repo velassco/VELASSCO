@@ -66,7 +66,7 @@ boost::spirit::qi::symbols<char, ValueType> &GetValueSymbols( )
       ( "vector", VECTOR )
       ;
     _mapRType[ SCALAR ] = {"Scalar", 1};
-    _mapRType[ VECTOR ] = {"Vector", 3};
+    _mapRType[ VECTOR ] = {"Vector", 4};
     }
   return _symVType;
 }

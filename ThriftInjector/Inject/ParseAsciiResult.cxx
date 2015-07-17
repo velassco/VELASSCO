@@ -7,14 +7,27 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/bind.hpp>
 #include <boost/variant.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 #include <string>
+
+using boost::lexical_cast;
+using boost::bad_lexical_cast;
 
 BEGIN_GID_DECLS
 
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
+
+std::string ResultHeaderType::GetAsString( )
+{
+  return std::string( "Result \"" ) + this->name + "\" \"" + 
+    lexical_cast<std::string>( this->analysis ) + "\" " + 
+    lexical_cast<std::string>( this->step ) + " " +
+    GetValueTypeAsString( this->rType ) + " " + GetLocationAsString( this->location );
+}
+
 
 enum SectionHeaderType
 { SECTION_GAUSS_POINT, SECTION_RANGE_TABLE, SECTION_RESULT, 
@@ -509,6 +522,23 @@ int ParseResultFile( const std::string& pathFile, ResultContainerType &result )
           if ( flagValues )
             {
             // TODO: validate if all properties are OK
+            ResultHeaderType &header = result.results.back().header;
+            if ( header.rType == VECTOR )
+              {
+              if ( !header.compName.size() )
+                {
+                header.compName.push_back( "Y_" + header.name );
+                header.compName.push_back( "Y_" + header.name );
+                header.compName.push_back( "Z_" + header.name );
+                header.compName.push_back( "|" + header.name + "|" );
+                }
+              if( header.compName.size( ) < 2 || header.compName.size( ) > 4 )
+                {
+                LOG(error) << "wrong number of components at result: '" 
+                           <<  header.GetAsString( ) << "'";
+                return -1;
+                }
+              }
             state = VALUES;
             }
           }

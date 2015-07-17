@@ -19,10 +19,25 @@ struct ResultHeaderType
   std::string gpName;
   std::vector<std::string> compName;
   UInt64 indexMData;
+
   ResultHeaderType()
   {
     step = 0.0;
     indexMData = 0;
+  }
+
+  std::string GetAsString( );
+
+  UInt32 GetNumberOfComponents( ) const
+  {
+    if ( this->rType == VECTOR )
+      {
+	return this->compName.size( );
+      }
+    else
+      {
+	return GetValueTypeSize( this->rType );
+      }
   }
 };
 

@@ -601,20 +601,55 @@ int InsertResult_MetaData( const std::string &host, int port,
                 {
                 std::string pr( "R:r" );
                 pr += boost::lexical_cast<std::string>( itR->second.indexMData );
+
+                // nm
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
                 mutations.back( ).column += "nm";
                 mutations.back( ).value = itR->second.name;
+                
+                // rt
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
                 mutations.back( ).column += "rt";
                 mutations.back( ).value = GID::GetValueTypeAsString( itR->second.rType );
+
+                // nc
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
                 mutations.back( ).column += "nc";
-                binWriter.Write( mutations.back( ).value, GID::GetValueTypeSize( itR->second.rType ) );
-                // TODO: write component names
-                // TODO: write coordinate name column
+                binWriter.Write( mutations.back( ).value, itR->second.GetNumberOfComponents( ) );
+
+                // cnm
+                mutations.push_back( Mutation() );
+                mutations.back( ).column = pr;
+                mutations.back( ).column += "cnm";
+                for( std::vector<std::string>::const_iterator itC = itR->second.compName.begin( );
+                     itC != itR->second.compName.end( ); ++itC )
+                  {
+                  binWriter.Write( mutations.back( ).value, *itC );
+                  }
+                
+                if( itR->second.location == GID::LOC_GPOINT )
+                  {
+                  // REVIEW: only one coordinate set is considered in
+                  // first prototype
+
+                  // lc
+                  mutations.push_back( Mutation() );
+                  mutations.back( ).column = pr;
+                  mutations.back( ).column += "lc";
+                  mutations.back( ).value = "c1";
+
+                  // gp
+                  
+                  mutations.push_back( Mutation() );
+                  mutations.back( ).column = pr;
+                  mutations.back( ).column += "gp";
+                  mutations.back( ).value = itR->second.gpName;
+                  }
+
+                // un
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
                 mutations.back( ).column += "un";
