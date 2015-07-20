@@ -608,6 +608,12 @@ int InsertResult_MetaData( const std::string &host, int port,
                 mutations.back( ).column += "nm";
                 mutations.back( ).value = itR->second.name;
                 
+                // lc
+                mutations.push_back( Mutation() );
+                mutations.back( ).column = pr;
+                mutations.back( ).column += "lc";
+                mutations.back( ).value = GID::GetLocationAsString( itR->second.location );;
+
                 // rt
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
@@ -620,17 +626,28 @@ int InsertResult_MetaData( const std::string &host, int port,
                 mutations.back( ).column += "nc";
                 binWriter.Write( mutations.back( ).value, itR->second.GetNumberOfComponents( ) );
 
-                // cnm
-                mutations.push_back( Mutation() );
-                mutations.back( ).column = pr;
-                mutations.back( ).column += "cnm";
-                for( std::vector<std::string>::const_iterator itC = itR->second.compName.begin( );
-                     itC != itR->second.compName.end( ); ++itC )
+                if ( itR->second.compName.size() )
                   {
-                  binWriter.Write( mutations.back( ).value, *itC );
+                  // cnm
+                  mutations.push_back( Mutation() );
+                  mutations.back( ).column = pr;
+                  mutations.back( ).column += "cnm";
+                  for( std::vector<std::string>::const_iterator itC = itR->second.compName.begin( );
+                       itC != itR->second.compName.end( ); ++itC )
+                    {
+                    binWriter.Write( mutations.back( ).value, *itC );
+                    }
                   }
                 
                 if( itR->second.location == GID::LOC_GPOINT )
+                  {
+                  // gp
+                  mutations.push_back( Mutation() );
+                  mutations.back( ).column = pr;
+                  mutations.back( ).column += "gp";
+                  mutations.back( ).value = itR->second.gpName;
+                  }
+                else
                   {
                   // REVIEW: only one coordinate set is considered in
                   // first prototype
@@ -638,16 +655,9 @@ int InsertResult_MetaData( const std::string &host, int port,
                   // lc
                   mutations.push_back( Mutation() );
                   mutations.back( ).column = pr;
-                  mutations.back( ).column += "lc";
+                  mutations.back( ).column += "co";
                   mutations.back( ).value = "c1";
-
-                  // gp
-                  
-                  mutations.push_back( Mutation() );
-                  mutations.back( ).column = pr;
-                  mutations.back( ).column += "gp";
-                  mutations.back( ).value = itR->second.gpName;
-                  }
+                 }
 
                 // un
                 mutations.push_back( Mutation() );
