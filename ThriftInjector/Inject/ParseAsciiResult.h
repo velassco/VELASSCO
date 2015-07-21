@@ -41,9 +41,13 @@ struct ResultHeaderType
   }
 };
 
-struct GaussPointType
+struct GaussPointDefinition
 {
   std::string name;
+  ElementType etype;
+  UInt32 size;
+  std::vector<double> coordinates;
+  bool includeNodes;
 };
 
 struct RangeTableType
@@ -77,9 +81,11 @@ struct ResultBlockType
 
 struct ResultContainerType
 {
+  ResultContainerType();
+
   unsigned int majorVersion;
   unsigned int minorVersion;
-  std::vector<GaussPointType> gaussPoints;
+  std::map<std::string, GaussPointDefinition> gaussPoints;
   std::vector<RangeTableType> rangeTables;
   std::vector<ResultBlockType> results;
   void setMajorVersion( unsigned int const &v) { this->majorVersion = v; }

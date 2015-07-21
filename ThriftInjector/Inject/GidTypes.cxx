@@ -1,16 +1,17 @@
 #include "GidTypes.h"
 #include <map>
+#include <vector>
 
 BEGIN_GID_DECLS
 
-static
-boost::spirit::qi::symbols<char, ElementType> _symEType;
-static
-boost::spirit::qi::symbols<char, LocationType> _symLType;
-static
-boost::spirit::qi::symbols<char, ValueType> _symVType;
+struct ElementTypeInfo
+{
+  std::string name;
+  std::vector<size_t> sizes;
+  UInt32 dimension;
+};
 
-static std::map<ElementType, std::string> _mapEType;
+static std::map<ElementType, ElementTypeInfo> _mapEType;
 
 static std::map<LocationType, std::string> _mapLType;
 
@@ -20,70 +21,75 @@ struct ResultComponent
   UInt32 size;
 };
 
-static std::map<ValueType, ResultComponent> _mapRType;
+static std::map<ValueType, ResultComponent> _mapVType;
 
-boost::spirit::qi::symbols<char, ElementType> &GetElementSymbols( )
+static void _InitElementTypeMap( )
 {
-  if ( !_symEType.find( "triangle" ) )
+  if ( _mapEType.size( ) == 0 )
     {
-    _symEType.add
-      ( "tetrahedra", TETRAHEDRA )
-      ( "triangle", TRIANGLE )
-      ( "circle", CIRCLE )
-      ;
-    _mapEType[TETRAHEDRA] = "Tetrahedra";
-    _mapEType[TRIANGLE] = "Triangle";
-    _mapEType[CIRCLE] = "Circle";
-   }
-  return _symEType;
+    _mapEType[LINE] = { "Line", { 2, 3 }, 1 };
+    _mapEType[TETRAHEDRA] = { "Tetrahedra", { 4, 10 }, 3 };
+    _mapEType[TRIANGLE] = { "Triangle", { 3, 6 }, 2 };
+    _mapEType[SPHERE] = { "Sphere", { 1 }, 3 };
+    }
 }
 
 const std::string &GetElementTypeAsString( ElementType et )
 {
-  return _mapEType[ et ];
+  _InitElementTypeMap( );
+  return _mapEType[ et ].name;
 }
 
-boost::spirit::qi::symbols<char, LocationType> &GetLocationSymbols( )
+UInt32 GetElementTypeDimension( ElementType et )
 {
-  if ( !_symLType.find( "onnodes" ) )
+  _InitElementTypeMap( );
+  const ElementTypeInfo &e = _mapEType[ et ];
+  return e.dimension;
+}
+
+bool CheckElementSize( ElementType et, UInt32 size )
+{
+  _InitElementTypeMap( );
+  const ElementTypeInfo &e = _mapEType[ et ];
+  for( int i = 0; i < e.sizes.size( ); i++ )
     {
-    _symLType.add
-      ( "onnodes", LOC_NODE )
-      ( "ongausspoints", LOC_GPOINT )
-      ;
+    if ( e.sizes[ i ] == size )
+      {
+      return true;
+      }
+    }
+  return false;
+}
+
+const std::string & GetLocationAsString( LocationType rt )
+{
+  if ( _mapLType.size() == 0 )
+    {
     _mapLType[ LOC_NODE ] = "OnNodes";
     _mapLType[ LOC_GPOINT ] = "OnGaussPoints";
     }
-  return _symLType;
-}
-
-boost::spirit::qi::symbols<char, ValueType> &GetValueSymbols( )
-{
-  if ( !_symVType.find( "scalar" ) )
-    {
-    _symVType.add
-      ( "scalar", SCALAR )
-      ( "vector", VECTOR )
-      ;
-    _mapRType[ SCALAR ] = {"Scalar", 1};
-    _mapRType[ VECTOR ] = {"Vector", 4};
-    }
-  return _symVType;
-}
-
-const std::string &GetLocationAsString( LocationType rt )
-{
   return _mapLType[ rt ];
 }
 
-const std::string &GetValueTypeAsString( ValueType rt )
+static void _InitValueTypeMap( )
 {
-  return _mapRType[ rt ].name;
+  if ( _mapVType.size( ) == 0 )
+    {
+    _mapVType[ SCALAR ] = {"Scalar", 1};
+    _mapVType[ VECTOR ] = {"Vector", 4};
+    }
+}
+
+const std::string & GetValueTypeAsString( ValueType rt )
+{
+  _InitValueTypeMap( );
+  return _mapVType[ rt ].name;
 }
 
 UInt32 GetValueTypeSize( ValueType rt )
 {
-  return _mapRType[ rt ].size;
+  _InitValueTypeMap( );
+  return _mapVType[ rt ].size;
 }
 
 END_GID_DECLS

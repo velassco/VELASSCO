@@ -13,8 +13,25 @@
 
 BEGIN_GID_DECLS
 
+static
+boost::spirit::qi::symbols<char, ElementType> _symEType;
+
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
+
+boost::spirit::qi::symbols<char, ElementType> &GetElementSymbols( )
+{
+  if ( !_symEType.find( "triangle" ) )
+    {
+    _symEType.add
+      ( "line", LINE )
+      ( "tetrahedra", TETRAHEDRA )
+      ( "triangle", TRIANGLE )
+      ( "sphere", SPHERE )
+      ;
+   }
+  return _symEType;
+}
 
 template <typename Iterator>
 bool parse_mesh_header(Iterator first, Iterator last, MeshHeaderType &header)

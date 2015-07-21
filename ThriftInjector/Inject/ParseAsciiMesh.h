@@ -4,8 +4,11 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <boost/spirit/include/qi_symbols.hpp>
 
 BEGIN_GID_DECLS
+
+boost::spirit::qi::symbols<char, ElementType> &GetElementSymbols( );
 
 struct MeshHeaderType
 {

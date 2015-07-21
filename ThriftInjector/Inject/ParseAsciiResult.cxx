@@ -1,3 +1,4 @@
+#include "ParseAsciiMesh.h"
 #include "ParseAsciiResult.h"
 #include "Logger.h"
 #include <fstream>
@@ -17,6 +18,11 @@ using boost::bad_lexical_cast;
 
 BEGIN_GID_DECLS
 
+static
+boost::spirit::qi::symbols<char, LocationType> _symLType;
+static
+boost::spirit::qi::symbols<char, ValueType> _symVType;
+
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 
@@ -28,6 +34,43 @@ std::string ResultHeaderType::GetAsString( )
     GetValueTypeAsString( this->rType ) + " " + GetLocationAsString( this->location );
 }
 
+ResultContainerType::ResultContainerType( )
+{
+  gaussPoints[ "GP_LINE_1" ] = { "GP_LINE_1", LINE, 1, {}, false };
+  gaussPoints[ "GP_TRIANGLE_1" ] = { "GP_TRIANGLE_1", TRIANGLE, 1, {}, false };
+  gaussPoints[ "GP_TRIANGLE_3" ] = { "GP_TRIANGLE_3", TRIANGLE, 3, {}, false };
+  gaussPoints[ "GP_TRIANGLE_6" ] = { "GP_TRIANGLE_6", TRIANGLE, 6, {}, false };
+  gaussPoints[ "GP_TETRAHEDRA_1" ] = { "GP_TETRAHEDRA_1", TETRAHEDRA, 1, {}, false };
+  gaussPoints[ "GP_TETRAHEDRA_4" ] = { "GP_TETRAHEDRA_4", TETRAHEDRA, 4, {}, false };
+  gaussPoints[ "GP_TETRAHEDRA_10" ] = { "GP_TETRAHEDRA_10", TETRAHEDRA, 10, {}, false };
+  gaussPoints[ "GP_SPHERE_1" ] = { "GP_SPHERE_1", SPHERE, 1, {}, false };
+}
+
+static
+boost::spirit::qi::symbols<char, LocationType> & GetLocationSymbols( )
+{
+  if ( !_symLType.find( "onnodes" ) )
+    {
+    _symLType.add
+      ( "onnodes", LOC_NODE )
+      ( "ongausspoints", LOC_GPOINT )
+      ;
+    }
+  return _symLType;
+}
+
+static
+boost::spirit::qi::symbols<char, ValueType> & GetValueSymbols( )
+{
+  if ( !_symVType.find( "scalar" ) )
+    {
+    _symVType.add
+      ( "scalar", SCALAR )
+      ( "vector", VECTOR )
+      ;
+    }
+  return _symVType;
+}
 
 enum SectionHeaderType
 { SECTION_GAUSS_POINT, SECTION_RANGE_TABLE, SECTION_RESULT, 
@@ -156,6 +199,7 @@ int ParseResultFileHeader( const std::string &line, ResultContainerType &result 
 int ParseResultSectionHeader( const std::string &line, ResultContainerType &result, SectionHeaderType &section )
 {
   VecSectionArg vec;
+  std::string gpname;
   //vec._trace = true;
   if ( parse_result_header( line.begin(), line.end(), vec ) )
     {
@@ -163,15 +207,17 @@ int ParseResultSectionHeader( const std::string &line, ResultContainerType &resu
     switch ( section )
       {
       case SECTION_GAUSS_POINT:
-      LOG(warning) << "found GaussPoints section, still not processed";
-      result.gaussPoints.push_back( GaussPointType( ) );
-      result.gaussPoints.back( ).name = boost::get<std::string>( vec[ 1 ] );
-      break;
+        // TODO: process gauss point
+        LOG(warning) << "found GaussPoints section, still not processed";
+        gpname = boost::get<std::string>( vec[ 1 ] );
+        result.gaussPoints[ gpname ] = GaussPointDefinition( );
+        result.gaussPoints[ gpname ].name = gpname;
+        break;
       case SECTION_RANGE_TABLE:
-      LOG(warning) << "found RangesTable section, still not processed";
-      result.rangeTables.push_back( RangeTableType( ) );
-      result.rangeTables.back( ).name = boost::get<std::string>( vec[ 1 ] );
-      break;
+        LOG(warning) << "found RangesTable section, still not processed";
+        result.rangeTables.push_back( RangeTableType( ) );
+        result.rangeTables.back( ).name = boost::get<std::string>( vec[ 1 ] );
+        break;
       case SECTION_RESULT:
       result.results.push_back( ResultBlockType() );
       result.results.back().setName( boost::get<std::string>( vec[ 1 ] ) );
