@@ -145,6 +145,8 @@ struct GlobalResultInfoType
 
   MapAnalysisType analysis;
 
+  std::map<std::string, GID::GaussPointDefinition> gaussPoints;
+
   int Update( GID::ResultHeaderType & h )
   {
     MapTimeStepType &mapT = this->analysis[ h.analysis ];
@@ -173,6 +175,14 @@ struct GlobalResultInfoType
       if( status != SUCCESS )
         {
         break;
+        }
+      }
+    for( std::map<std::string, GID::GaussPointDefinition>::const_iterator it = resultPart.gaussPoints.begin( );
+         it != resultPart.gaussPoints.end( ); ++it )
+      {
+      if ( this->gaussPoints.find( it->first ) == this->gaussPoints.end( ) )
+        {
+        this->gaussPoints[ it->first ] = it->second;
         }
       }
     return status;
@@ -585,96 +595,99 @@ int InsertResult_MetaData( const std::string &host, int port,
         mutations.back( ).value = "";
         // push mesh columns
         client.mutateRow( strTableMetaData, keyM, mutations, dummyAttributes);
-        for( GlobalResultInfoType::MapAnalysisType::const_iterator itA = resultInfo.analysis.begin( );
-             itA != resultInfo.analysis.end( ); ++itA )
+        }
+      // process all analysis/timestep/result
+      for( GlobalResultInfoType::MapAnalysisType::const_iterator itA = resultInfo.analysis.begin( );
+           itA != resultInfo.analysis.end( ); ++itA )
+        {
+        for( GlobalResultInfoType::MapTimeStepType::const_iterator itS = itA->second.begin( );
+             itS != itA->second.end( ); ++itS )
           {
-          for( GlobalResultInfoType::MapTimeStepType::const_iterator itS = itA->second.begin( );
-               itS != itA->second.end( ); ++itS )
+          std::string keyR;
+          mutations.clear( );
+          status = EncodeRowKey_MetaData( keyModel, itA->first, itS->first, keyR );
+          if ( status == SUCCESS )
             {
-            std::string keyR;
-            mutations.clear( );
-            status = EncodeRowKey_MetaData( keyModel, itA->first, itS->first, keyR );
-            if ( status == SUCCESS )
+            for( GlobalResultInfoType::MapHeaderType::const_iterator itR = itS->second.begin( );
+                 itR != itS->second.end( ); ++itR )
               {
-              for( GlobalResultInfoType::MapHeaderType::const_iterator itR = itS->second.begin( );
-                   itR != itS->second.end( ); ++itR )
-                {
-                std::string pr( "R:r" );
-                pr += boost::lexical_cast<std::string>( itR->second.indexMData );
+              std::string pr( "R:r" );
+              pr += boost::lexical_cast<std::string>( itR->second.indexMData );
 
-                // nm
+              // nm
+              mutations.push_back( Mutation() );
+              mutations.back( ).column = pr;
+              mutations.back( ).column += "nm";
+              mutations.back( ).value = itR->second.name;
+                
+              // lc
+              mutations.push_back( Mutation() );
+              mutations.back( ).column = pr;
+              mutations.back( ).column += "lc";
+              mutations.back( ).value = GID::GetLocationAsString( itR->second.location );;
+
+              // rt
+              mutations.push_back( Mutation() );
+              mutations.back( ).column = pr;
+              mutations.back( ).column += "rt";
+              mutations.back( ).value = GID::GetValueTypeAsString( itR->second.rType );
+
+              // nc
+              mutations.push_back( Mutation() );
+              mutations.back( ).column = pr;
+              mutations.back( ).column += "nc";
+              binWriter.Write( mutations.back( ).value, itR->second.GetNumberOfComponents( ) );
+
+              if ( itR->second.compName.size() )
+                {
+                // cnm
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
-                mutations.back( ).column += "nm";
-                mutations.back( ).value = itR->second.name;
+                mutations.back( ).column += "cnm";
+                for( std::vector<std::string>::const_iterator itC = itR->second.compName.begin( );
+                     itC != itR->second.compName.end( ); ++itC )
+                  {
+                  binWriter.Write( mutations.back( ).value, *itC );
+                  }
+                }
                 
+              if( itR->second.location == GID::LOC_GPOINT )
+                {
+                // gp
+                mutations.push_back( Mutation() );
+                mutations.back( ).column = pr;
+                mutations.back( ).column += "gp";
+                mutations.back( ).value = itR->second.gpName;
+                }
+              else
+                {
+                // REVIEW: only one coordinate set is considered in
+                // first prototype
+
                 // lc
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
-                mutations.back( ).column += "lc";
-                mutations.back( ).value = GID::GetLocationAsString( itR->second.location );;
-
-                // rt
-                mutations.push_back( Mutation() );
-                mutations.back( ).column = pr;
-                mutations.back( ).column += "rt";
-                mutations.back( ).value = GID::GetValueTypeAsString( itR->second.rType );
-
-                // nc
-                mutations.push_back( Mutation() );
-                mutations.back( ).column = pr;
-                mutations.back( ).column += "nc";
-                binWriter.Write( mutations.back( ).value, itR->second.GetNumberOfComponents( ) );
-
-                if ( itR->second.compName.size() )
-                  {
-                  // cnm
-                  mutations.push_back( Mutation() );
-                  mutations.back( ).column = pr;
-                  mutations.back( ).column += "cnm";
-                  for( std::vector<std::string>::const_iterator itC = itR->second.compName.begin( );
-                       itC != itR->second.compName.end( ); ++itC )
-                    {
-                    binWriter.Write( mutations.back( ).value, *itC );
-                    }
-                  }
-                
-                if( itR->second.location == GID::LOC_GPOINT )
-                  {
-                  // gp
-                  mutations.push_back( Mutation() );
-                  mutations.back( ).column = pr;
-                  mutations.back( ).column += "gp";
-                  mutations.back( ).value = itR->second.gpName;
-                  }
-                else
-                  {
-                  // REVIEW: only one coordinate set is considered in
-                  // first prototype
-
-                  // lc
-                  mutations.push_back( Mutation() );
-                  mutations.back( ).column = pr;
-                  mutations.back( ).column += "co";
-                  mutations.back( ).value = "c1";
-                 }
-
-                // un
-                mutations.push_back( Mutation() );
-                mutations.back( ).column = pr;
-                mutations.back( ).column += "un";
-                mutations.back( ).value = "";
+                mutations.back( ).column += "co";
+                mutations.back( ).value = "c1";
                 }
-              client.mutateRow( strTableMetaData, keyR, mutations, dummyAttributes);
+
+              // un
+              mutations.push_back( Mutation() );
+              mutations.back( ).column = pr;
+              mutations.back( ).column += "un";
+              mutations.back( ).value = "";
               }
-            else
-              {
-              // failed EncodeRowKey_MetaData
-              break;
-              }
+            client.mutateRow( strTableMetaData, keyR, mutations, dummyAttributes);
+            }
+          else
+            {
+            // failed EncodeRowKey_MetaData
+            break;
             }
           }
         }
+      // process all gauss points definitions
+      
       }
     else
       {
