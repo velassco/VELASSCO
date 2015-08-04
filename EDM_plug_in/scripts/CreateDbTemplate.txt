@@ -1,0 +1,51 @@
+
+/**************************************************************************
+ Thu Jul 30 15:14:06 2015
+ EDMsix auto generated command script.
+***************************************************************************
+
+     Jotne EPM Technology AS
+
+     EDMsix Supervisor
+
+     EDMstandAlone & EDMremoteClient version.
+     Version 1.0100.12 : 6 Jul 2015
+
+     Jotne EPM Technology a.s
+     Grenseveien 107
+     NO-0663 Oslo
+     Norway
+
+     Voice:   +47 23 17 17 00
+     Fax:     +47 23 17 17 01
+     e-mail:  support@jotne.com
+     Website: http://www.jotne.com/it
+
+     License information:
+        ProductName:                    EDMsdk Advanced
+        Version:                        6.00.0100
+        License ID:                     10006
+        License type:                   Test license
+        Expiry date:                    1 Jan 2016
+        Operating system:               WINDOWS
+        License options:                EDMexpressXcompiler, EDMmodelConverter, EDMmodelChecker,
+                                        EDMqueryEngine, EDMdebugger, EDM3Dviewer
+
+        ProductName:                    EDMvisualExpress
+        Version:                        6.00.0100
+        License ID:                     10030
+        License type:                   Test license
+        Expiry date:                    1 Jan 2016
+        Operating system:               WINDOWS
+        License options:                
+
+**************************************************************************/
+
+
+Database>Delete(O:\projects\VELaSSCo\SVN_src\trunk\EDM_plug_in\db_template, VELaSSCo, VELaSSCo, $)
+Database>Create(O:\projects\VELaSSCo\SVN_src\trunk\EDM_plug_in\db_template, VELaSSCo, VELaSSCo, VELaSSCo, "OPEN_SESSION,OPEN_DATABASE")
+Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\trunk\EDM_plug_in\schemata\dem_schema_velassco.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,TC2")
+Schemata>GenerateInterface>Cpp2010(dem_schema_velassco, O:\projects\VELaSSCo\SVN_src\trunk\EDM_plug_in\EDM_Interface, dem, $, $, $)
+Data>Create>Repository(DEM_models, OPEN_REPOSITORY)
+Database>Close($, $)
+
