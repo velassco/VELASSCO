@@ -25,8 +25,9 @@ enum Particle_type {
 struct Particle {
    1: i64                                 id
    2: i64                                 group
-   3: Particle_type                       type
-   4: optional double                     radius
+   3: list<double>                        coordinates
+   4: Particle_type                       type
+   5: optional double                     radius
 }
 
 struct Vertex {
@@ -45,8 +46,8 @@ enum Contact_type {
 struct Contact {
    1: list<double>                        contact_location
    2: Contact_type                        type
-   3: Particle                            P1
-   4: optional Particle                   P2
+   3: i64                                 P1_id
+   4: optional i64                        P2_id
    5: optional FEM_mesh                   geometry
 }
 
@@ -81,18 +82,47 @@ struct Simulation {
 service DEM_Injector {
 
 /**
-   Stores a DEM_simulation with all teimesteps, meshes, particles, results etc. in one operation in EDM 
+   returns a session if if the user exists with the specified password and the specified role or an empty role.
  */
-   string store_DEM_Simulation (
-      1: string                           model_name
-      2: Simulation                       theSimulation)
+   string UserLogin (
+      1: string                           user_name,
+      2: string                           role,
+      3: string                           password)
+
+
+
+/**
+   Stop access to the system by a given session id and release all resources held by that session
+ */
+   string UserLogout (
+      1: string                           sessionID)
+
+
+/**
+   Stores a DEM_simulation with all timesteps, meshes, particles, results etc. in one operation in EDM
+   If the model exists, the Simulation is added to the model. If the model does not exist, it is created. 
+ */
+   string StoreDEM_Simulation (
+      1: string                           sessionID,
+      2: string                           model_name,
+      3: Simulation                       theSimulation)
+
+
+
+/**
+   Stores a DEM_simulation with all timesteps, meshes, particles, results etc. in one operation in EDM
+   If the model exists, the Simulation is added to the model. If the model does not exist, it is created. 
+ */
+   string DeleteModelContent (
+      1: string                           sessionID,
+      2: string                           model_name)
 
 }
 
 
 service FEM_Injector {
 
-   string store_FEM_Simulation (
+   string StoreFEM_Simulation (
       1: string                           model_name
       2: Simulation                       theSimulation)
 
