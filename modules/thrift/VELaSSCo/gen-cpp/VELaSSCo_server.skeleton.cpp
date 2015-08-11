@@ -14,6 +14,8 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
+using namespace  ::dli;
+
 class VELaSSCoHandler : virtual public VELaSSCoIf {
  public:
   VELaSSCoHandler() {
@@ -37,6 +39,42 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
   void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
     // Your implementation goes here
     printf("GetResultFormVerticesID\n");
+  }
+
+  /**
+   * returns a session if if the user exists with the specified password and the specified role or an empty role.
+   * 
+   * @param user_name
+   * @param role
+   * @param password
+   */
+  void UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password) {
+    // Your implementation goes here
+    printf("UserLogin\n");
+  }
+
+  /**
+   * Stop access to the system by a given session id and release all resources held by that session
+   * 
+   * @param sessionID
+   */
+  void UserLogout(std::string& _return, const std::string& sessionID) {
+    // Your implementation goes here
+    printf("UserLogout\n");
+  }
+
+  /**
+   * For each point in the input parameter points, the method returns data about the element that contains the point.
+   * The number of elements in the returned list of elements shall be the same as the number of points in the input parameter.
+   * If the method does not find an element for a point it shall return a dummy element with id equal to -1.
+   * 
+   * @param sessionID
+   * @param modelName
+   * @param points
+   */
+  void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points) {
+    // Your implementation goes here
+    printf("GetElementOfPointsInSpace\n");
   }
 
 };
