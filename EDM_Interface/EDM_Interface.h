@@ -1,11 +1,12 @@
 #pragma once
-//
+
 //#include "targetver.h"
 //#include <stdlib.h>
 //#include <errno.h>
 //#include <stdio.h>
 //#include <tchar.h>
 //#include <string>
+//#include <map>
 //
 //#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 //
@@ -18,8 +19,9 @@
 //#include "container.h"
 //#include "dem_schema_velassco.hpp"
 //using namespace dem;
-//using namespace std;
 //
+//using namespace std;
+
 
 class EDM_interface
 {
@@ -31,7 +33,7 @@ protected:
    dbSchema                         *currentSchema;
    char                             *currentSchemaName;
 public:
-   map<string, Model*>           models;
+   std::map<string, Model*>           models;
    EDM_interface()
    {
       currentRepository = NULL; model_ma.init(0x100000);
