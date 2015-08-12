@@ -156,7 +156,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\EDM_Interface\dem_schema_velassco.cpp" />
     <ClCompile Include="..\..\..\EDM_Interface\EDM_interface.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\gen-cpp\DEM_Injector.cpp" />
     <ClCompile Include="..\gen-cpp\dem_schema_velassco_constants.cpp" />

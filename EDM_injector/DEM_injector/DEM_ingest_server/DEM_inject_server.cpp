@@ -33,32 +33,49 @@ int main(int argc, char **argv)
 {
    int rstat;
    char errTxt[1024];
-
-   int port = 9090;
-   DEM_InjectorHandler demInjector(&dem_schema_velassco_SchemaObject);
-   boost::shared_ptr<DEM_InjectorHandler> handler(&demInjector);
-   boost::shared_ptr<TProcessor> processor(new DEM_InjectorProcessor(handler));
-   boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-   boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-   boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+   
+   if (argc < 5 || (strNEQ(argv[1], "Server") && strNEQ(argv[1], "Files"))) {
+      printf("The VELaSSCo Data Injector for EDM has the command line parameters:\n   1. Command - can be either \"Server\", \"Files\", \"Help\", \n   2. Database folder\n   3. Database name\n   4. Database password\n");
+      printf("\n   If Command is \"Server\", parameter no 5 is communication port number.\n");
+      printf("   If Command is \"Files\", parameter no 5 is model name and the following\n   parameters are file names of the files that shall be injected into EDM.\n");
+      exit(0);
+   }
 
    try {
-      WSADATA wsaData = {};
-      WORD wVersionRequested = MAKEWORD(2, 2);
-      int err = WSAStartup(wVersionRequested, &wsaData);
+      int port = 9090;
 
-      Database VELaSSCo_db("O:\\projects\\VELaSSCo\\SVN_src\\EDM_plug_in\\db_template", "VELaSSCo", "VELaSSCo");
+      DEM_InjectorHandler demInjector(&dem_schema_velassco_SchemaObject);
+
+      Database VELaSSCo_db(argv[2], argv[3], argv[4]);
       Repository demRepository(&VELaSSCo_db, "DEM_models");
       demInjector.setCurrentSchemaName("dem_schema_velassco");
 
       demInjector.setDatabase(&VELaSSCo_db);
       VELaSSCo_db.open();
       demRepository.open(sdaiRW);
- 
       demInjector.setCurrentRepository(&demRepository);
+      
+      if (strEQL(argv[1], "Server")) {
+         boost::shared_ptr<DEM_InjectorHandler> handler(&demInjector);
+         boost::shared_ptr<TProcessor> processor(new DEM_InjectorProcessor(handler));
+         boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+         boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+         boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-      TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-      server.serve();
+         WSADATA wsaData = {};
+         WORD wVersionRequested = MAKEWORD(2, 2);
+         int err = WSAStartup(wVersionRequested, &wsaData);
+ 
+         TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+         server.serve();
+      } else if (strEQL(argv[1], "Files")) {
+         demInjector.setCurrentModel(argv[5]);
+         demInjector.DeleteCurrentModelContent();
+         for (int i = 6; i < argc; i++) {
+            demInjector.InjectFile(argv[i]);
+         }
+         demInjector.flushObjectsAndClose();
+      }
    } catch (CedmError *e) {
       rstat = e->rstat;
       if (e->message) {

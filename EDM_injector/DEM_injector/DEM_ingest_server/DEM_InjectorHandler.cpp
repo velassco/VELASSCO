@@ -48,6 +48,7 @@ void DEM_InjectorHandler::UserLogout(std::string& _return, const std::string& se
 * @param model_name
 * @param theSimulation
 */
+
 void DEM_InjectorHandler::StoreDEM_Simulation(std::string& _return, const std::string& sessionID, const std::string& model_name, const DEM_Inject::Simulation& theSimulation)
 {
    try {
@@ -141,5 +142,105 @@ void DEM_InjectorHandler::DeleteModelContent(std::string& _return, const std::st
    }
 }
 
+void DEM_InjectorHandler::DeleteCurrentModelContent()
+{
+   CHECK(edmiDeleteModelContents(m->modelId));
+}
+
+void DEM_InjectorHandler::InjectFile(char *file_name)
+{
+   fp = fopen(file_name, "r");
+   if (fp) {
+      theSimulation = newObject(dem::Simulation);
+      theSimulation->put_name("theSimulation");
+      while (readNextLine() > 0) {
+         if (strEQL(line, "TIMESTEP PARTICLES\n")) {
+            store_TIMESTEP_PARTICLES();
+         }
+      }
+      fclose(fp);
+   } else {
+      THROW("Unaple to open DEM data file.");
+   }
+}
 
 
+void DEM_InjectorHandler::store_TIMESTEP_PARTICLES()
+{
+   int nOfParticles;
+   bool newTimestep = false;
+   double timeStep;
+   int ID, GROUP;
+   double VOLUME, MASS, PX, PY, PZ, VX, VY, VZ, Orientation_XX, Orientation_XY, Orientation_XZ;
+   double Orientation_YX, Orientation_YY, Orientation_YZ, Orientation_ZX, Orientation_ZY, Orientation_ZZ;
+   double Angular_Velocity_X, Angular_Velocity_Y, Angular_Velocity_Z, Kinetic_Energy;
+   readNextLine();
+   sscanf(line, "%lf %d", &timeStep, &nOfParticles);
+   dem::Timestep *ts = timesteps[timeStep];
+   if (!ts) {
+      ts = newObject(dem::Timestep); ts->put_time_value(timeStep); timesteps[timeStep] = ts;
+      theSimulation->put_consists_of_element(ts); newTimestep = true;
+   }
+
+   readNextLine();
+   if (strEQL(line, " ID GROUP VOLUME MASS PX PY PZ VX VY VZ Orientation_XX Orientation_XY Orientation_XZ Orientation_YX Orientation_YY Orientation_YZ Orientation_ZX Orientation_ZY Orientation_ZZ Angular_Velocity_X Angular_Velocity_Y Angular_Velocity_Z Kinetic_Energy\n")) {
+      for (int i = 0; i < nOfParticles; i++) {
+         readNextLine();
+         int nValues = sscanf(line, "%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+            &ID, &GROUP, &VOLUME, &MASS, &PX, &PY, &PZ, &VX, &VY, &VZ, &Orientation_XX, &Orientation_XY, &Orientation_XZ, &Orientation_YX, &Orientation_YY, &Orientation_YZ, &Orientation_ZX, &Orientation_ZY, &Orientation_ZZ, &Angular_Velocity_X, &Angular_Velocity_Y, &Angular_Velocity_Z, &Kinetic_Energy);
+         dem::Particle *p = particles[ID];
+         dem::Template_nn *tnn;
+         if (p) {
+            tnn = static_cast<Template_nn *>(p);
+         } else {
+            tnn = newObject(dem::Template_nn); p = tnn;  particles[ID] = p; p->put_id(ID);
+         }
+         if (newTimestep) ts->put_consists_of_element(p);
+         p->put_group(GROUP);
+         if (! p->exists_coordinates()) {
+            p->put_coordinates_element(1, PX); p->put_coordinates_element(2, PY); p->put_coordinates_element(3, PZ);
+         }
+         dem::Particle_result *pr = newObject(dem::Particle_result);
+         pr->put_valid_for(p); pr->put_calculated_for(ts);
+         dem::Velocity *v = newObject(dem::Velocity);
+         v->put_Vx_Vy_Vz_element(1, VX); v->put_Vx_Vy_Vz_element(2, VY); v->put_Vx_Vy_Vz_element(3, VZ);
+         pr->put_result_properties_element(v);
+         dem::Mass *mass = newObject(dem::Mass); mass->put_mass(MASS);
+         pr->put_result_properties_element(mass);
+         dem::Volume *vol = newObject(dem::Volume); vol->put_volume(VOLUME);
+         pr->put_result_properties_element(vol);
+         pr->put_result_properties_element(newCustomPropertyVector("Orientation_X", Orientation_XX, Orientation_XY, Orientation_XZ));
+         pr->put_result_properties_element(newCustomPropertyVector("Orientation_Y", Orientation_XX, Orientation_XY, Orientation_XZ));
+         pr->put_result_properties_element(newCustomPropertyVector("Orientation_Z", Orientation_XX, Orientation_XY, Orientation_XZ));
+         pr->put_result_properties_element(newCustomPropertyVector("Angular_Velocity", Angular_Velocity_X, Angular_Velocity_Y, Angular_Velocity_Z));
+         pr->put_result_properties_element(newCustomPropertyScalar("Kinetic_Energy", Kinetic_Energy));
+      }
+   }
+}
+
+
+char *DEM_InjectorHandler::readNextLine()
+{
+   return fgets(line, sizeof(line), fp);
+}
+
+void DEM_InjectorHandler::flushObjectsAndClose()
+{
+   m->writeAllObjectsToDatabase();
+   m->close();
+}
+
+dem::Custom_property_vector *DEM_InjectorHandler::newCustomPropertyVector(char *name, double x, double y, double z)
+{
+   dem::Custom_property_vector *cpv = newObject(dem::Custom_property_vector);
+   cpv->put_name(name);
+   cpv->put_CPx_CPy_CPz_element(1, x); cpv->put_CPx_CPy_CPz_element(2, y); cpv->put_CPx_CPy_CPz_element(3, z);
+   return cpv;
+}
+
+dem::Custom_property_scalar *DEM_InjectorHandler::newCustomPropertyScalar(char *name, double x)
+{
+   dem::Custom_property_scalar *cps = newObject(dem::Custom_property_scalar);
+   cps->put_name(name); cps->put_custom_prop(x);
+   return cps;
+}
