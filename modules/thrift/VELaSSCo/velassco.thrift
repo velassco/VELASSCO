@@ -46,6 +46,10 @@ struct Mesh {
    6: list<Element>                       elements
 }
 
+struct Triangle {
+   1: list<Node>                          nodes
+}
+
 
 /**
    The following structs are used as return values for the service methods. The name of the structs shall have the
@@ -58,6 +62,19 @@ struct rvGetElementOfPointsInSpace {
    1: string                              status
    2: string                              report
    3: list<Element>                       elements
+}
+
+/**
+   The following structs are used as return values for the service methods. The name of the structs shall have the
+   prefix rv (for Return Value) plus the method name. The name of the return value struct of the GetElementOfPointsInSpace
+   method will then be rvGetElementOfPointsInSpace.
+*/
+
+
+struct rvGetBoundaryOfLocalMesh {
+   1: string                              status
+   2: string                              report
+   3: list<Triangle>                      elements
 }
 
 
@@ -104,6 +121,18 @@ service VELaSSCo
       1: string                           sessionID
       2: string                           modelName
       3: list<Point>                      points)
+
+
+/**
+   GetBoundaryOfLocalMesh will get the partial tetrahedral elements, calculate and output the unique triangles,
+   i.e. triangles that are not shared between two or more elements.
+ */
+   rvGetBoundaryOfLocalMesh GetBoundaryOfLocalMesh(
+      1: string                           sessionID
+      2: string                           modelName
+      3: string                           meshID
+      4: string                           analysisID
+      5: double                           time_step )
 
 
 }

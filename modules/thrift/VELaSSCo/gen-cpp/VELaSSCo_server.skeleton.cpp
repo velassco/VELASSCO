@@ -77,6 +77,21 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
     printf("GetElementOfPointsInSpace\n");
   }
 
+  /**
+   * GetBoundaryOfLocalMesh will get the partial tetrahedral elements, calculate and output the unique triangles,
+   * i.e. triangles that are not shared between two or more elements.
+   * 
+   * @param sessionID
+   * @param modelName
+   * @param meshID
+   * @param analysisID
+   * @param time_step
+   */
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step) {
+    // Your implementation goes here
+    printf("GetBoundaryOfLocalMesh\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

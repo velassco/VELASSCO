@@ -58,6 +58,18 @@ class VELaSSCoIf {
    * @param points
    */
   virtual void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points) = 0;
+
+  /**
+   * GetBoundaryOfLocalMesh will get the partial tetrahedral elements, calculate and output the unique triangles,
+   * i.e. triangles that are not shared between two or more elements.
+   * 
+   * @param sessionID
+   * @param modelName
+   * @param meshID
+   * @param analysisID
+   * @param time_step
+   */
+  virtual void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step) = 0;
 };
 
 class VELaSSCoIfFactory {
@@ -97,6 +109,9 @@ class VELaSSCoNull : virtual public VELaSSCoIf {
     return;
   }
   void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& /* _return */, const std::string& /* sessionID */, const std::string& /* modelName */, const std::vector<Point> & /* points */) {
+    return;
+  }
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& /* _return */, const std::string& /* sessionID */, const std::string& /* modelName */, const std::string& /* meshID */, const std::string& /* analysisID */, const double /* time_step */) {
     return;
   }
 };
@@ -644,6 +659,154 @@ class VELaSSCo_GetElementOfPointsInSpace_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetElementOfPointsInSpace_presult& obj);
 };
 
+typedef struct _VELaSSCo_GetBoundaryOfLocalMesh_args__isset {
+  _VELaSSCo_GetBoundaryOfLocalMesh_args__isset() : sessionID(false), modelName(false), meshID(false), analysisID(false), time_step(false) {}
+  bool sessionID :1;
+  bool modelName :1;
+  bool meshID :1;
+  bool analysisID :1;
+  bool time_step :1;
+} _VELaSSCo_GetBoundaryOfLocalMesh_args__isset;
+
+class VELaSSCo_GetBoundaryOfLocalMesh_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "57C2D87CBB509D7D24DDCE43C18AD56C";
+  static const uint8_t binary_fingerprint[16]; // = {0x57,0xC2,0xD8,0x7C,0xBB,0x50,0x9D,0x7D,0x24,0xDD,0xCE,0x43,0xC1,0x8A,0xD5,0x6C};
+
+  VELaSSCo_GetBoundaryOfLocalMesh_args(const VELaSSCo_GetBoundaryOfLocalMesh_args&);
+  VELaSSCo_GetBoundaryOfLocalMesh_args& operator=(const VELaSSCo_GetBoundaryOfLocalMesh_args&);
+  VELaSSCo_GetBoundaryOfLocalMesh_args() : sessionID(), modelName(), meshID(), analysisID(), time_step(0) {
+  }
+
+  virtual ~VELaSSCo_GetBoundaryOfLocalMesh_args() throw();
+  std::string sessionID;
+  std::string modelName;
+  std::string meshID;
+  std::string analysisID;
+  double time_step;
+
+  _VELaSSCo_GetBoundaryOfLocalMesh_args__isset __isset;
+
+  void __set_sessionID(const std::string& val);
+
+  void __set_modelName(const std::string& val);
+
+  void __set_meshID(const std::string& val);
+
+  void __set_analysisID(const std::string& val);
+
+  void __set_time_step(const double val);
+
+  bool operator == (const VELaSSCo_GetBoundaryOfLocalMesh_args & rhs) const
+  {
+    if (!(sessionID == rhs.sessionID))
+      return false;
+    if (!(modelName == rhs.modelName))
+      return false;
+    if (!(meshID == rhs.meshID))
+      return false;
+    if (!(analysisID == rhs.analysisID))
+      return false;
+    if (!(time_step == rhs.time_step))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetBoundaryOfLocalMesh_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetBoundaryOfLocalMesh_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetBoundaryOfLocalMesh_args& obj);
+};
+
+
+class VELaSSCo_GetBoundaryOfLocalMesh_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "57C2D87CBB509D7D24DDCE43C18AD56C";
+  static const uint8_t binary_fingerprint[16]; // = {0x57,0xC2,0xD8,0x7C,0xBB,0x50,0x9D,0x7D,0x24,0xDD,0xCE,0x43,0xC1,0x8A,0xD5,0x6C};
+
+
+  virtual ~VELaSSCo_GetBoundaryOfLocalMesh_pargs() throw();
+  const std::string* sessionID;
+  const std::string* modelName;
+  const std::string* meshID;
+  const std::string* analysisID;
+  const double* time_step;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetBoundaryOfLocalMesh_pargs& obj);
+};
+
+typedef struct _VELaSSCo_GetBoundaryOfLocalMesh_result__isset {
+  _VELaSSCo_GetBoundaryOfLocalMesh_result__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetBoundaryOfLocalMesh_result__isset;
+
+class VELaSSCo_GetBoundaryOfLocalMesh_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "0F184494D8DD0267CC4C419EA19128BE";
+  static const uint8_t binary_fingerprint[16]; // = {0x0F,0x18,0x44,0x94,0xD8,0xDD,0x02,0x67,0xCC,0x4C,0x41,0x9E,0xA1,0x91,0x28,0xBE};
+
+  VELaSSCo_GetBoundaryOfLocalMesh_result(const VELaSSCo_GetBoundaryOfLocalMesh_result&);
+  VELaSSCo_GetBoundaryOfLocalMesh_result& operator=(const VELaSSCo_GetBoundaryOfLocalMesh_result&);
+  VELaSSCo_GetBoundaryOfLocalMesh_result() {
+  }
+
+  virtual ~VELaSSCo_GetBoundaryOfLocalMesh_result() throw();
+  rvGetBoundaryOfLocalMesh success;
+
+  _VELaSSCo_GetBoundaryOfLocalMesh_result__isset __isset;
+
+  void __set_success(const rvGetBoundaryOfLocalMesh& val);
+
+  bool operator == (const VELaSSCo_GetBoundaryOfLocalMesh_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetBoundaryOfLocalMesh_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetBoundaryOfLocalMesh_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetBoundaryOfLocalMesh_result& obj);
+};
+
+typedef struct _VELaSSCo_GetBoundaryOfLocalMesh_presult__isset {
+  _VELaSSCo_GetBoundaryOfLocalMesh_presult__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetBoundaryOfLocalMesh_presult__isset;
+
+class VELaSSCo_GetBoundaryOfLocalMesh_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "0F184494D8DD0267CC4C419EA19128BE";
+  static const uint8_t binary_fingerprint[16]; // = {0x0F,0x18,0x44,0x94,0xD8,0xDD,0x02,0x67,0xCC,0x4C,0x41,0x9E,0xA1,0x91,0x28,0xBE};
+
+
+  virtual ~VELaSSCo_GetBoundaryOfLocalMesh_presult() throw();
+  rvGetBoundaryOfLocalMesh* success;
+
+  _VELaSSCo_GetBoundaryOfLocalMesh_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetBoundaryOfLocalMesh_presult& obj);
+};
+
 class VELaSSCoClient : virtual public VELaSSCoIf {
  public:
   VELaSSCoClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -681,6 +844,9 @@ class VELaSSCoClient : virtual public VELaSSCoIf {
   void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points);
   void send_GetElementOfPointsInSpace(const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points);
   void recv_GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return);
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step);
+  void send_GetBoundaryOfLocalMesh(const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step);
+  void recv_GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -700,6 +866,7 @@ class VELaSSCoProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_UserLogin(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_UserLogout(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetElementOfPointsInSpace(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetBoundaryOfLocalMesh(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VELaSSCoProcessor(boost::shared_ptr<VELaSSCoIf> iface) :
     iface_(iface) {
@@ -707,6 +874,7 @@ class VELaSSCoProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["UserLogin"] = &VELaSSCoProcessor::process_UserLogin;
     processMap_["UserLogout"] = &VELaSSCoProcessor::process_UserLogout;
     processMap_["GetElementOfPointsInSpace"] = &VELaSSCoProcessor::process_GetElementOfPointsInSpace;
+    processMap_["GetBoundaryOfLocalMesh"] = &VELaSSCoProcessor::process_GetBoundaryOfLocalMesh;
   }
 
   virtual ~VELaSSCoProcessor() {}
@@ -772,6 +940,16 @@ class VELaSSCoMultiface : virtual public VELaSSCoIf {
       ifaces_[i]->GetElementOfPointsInSpace(_return, sessionID, modelName, points);
     }
     ifaces_[i]->GetElementOfPointsInSpace(_return, sessionID, modelName, points);
+    return;
+  }
+
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetBoundaryOfLocalMesh(_return, sessionID, modelName, meshID, analysisID, time_step);
+    }
+    ifaces_[i]->GetBoundaryOfLocalMesh(_return, sessionID, modelName, meshID, analysisID, time_step);
     return;
   }
 

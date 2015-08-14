@@ -723,14 +723,14 @@ uint32_t VELaSSCo_GetElementOfPointsInSpace_args::read(::apache::thrift::protoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->points.clear();
-            uint32_t _size35;
-            ::apache::thrift::protocol::TType _etype38;
-            xfer += iprot->readListBegin(_etype38, _size35);
-            this->points.resize(_size35);
-            uint32_t _i39;
-            for (_i39 = 0; _i39 < _size35; ++_i39)
+            uint32_t _size51;
+            ::apache::thrift::protocol::TType _etype54;
+            xfer += iprot->readListBegin(_etype54, _size51);
+            this->points.resize(_size51);
+            uint32_t _i55;
+            for (_i55 = 0; _i55 < _size51; ++_i55)
             {
-              xfer += this->points[_i39].read(iprot);
+              xfer += this->points[_i55].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -767,10 +767,10 @@ uint32_t VELaSSCo_GetElementOfPointsInSpace_args::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("points", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->points.size()));
-    std::vector<Point> ::const_iterator _iter40;
-    for (_iter40 = this->points.begin(); _iter40 != this->points.end(); ++_iter40)
+    std::vector<Point> ::const_iterator _iter56;
+    for (_iter56 = this->points.begin(); _iter56 != this->points.end(); ++_iter56)
     {
-      xfer += (*_iter40).write(oprot);
+      xfer += (*_iter56).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -803,10 +803,10 @@ uint32_t VELaSSCo_GetElementOfPointsInSpace_pargs::write(::apache::thrift::proto
   xfer += oprot->writeFieldBegin("points", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->points)).size()));
-    std::vector<Point> ::const_iterator _iter41;
-    for (_iter41 = (*(this->points)).begin(); _iter41 != (*(this->points)).end(); ++_iter41)
+    std::vector<Point> ::const_iterator _iter57;
+    for (_iter57 = (*(this->points)).begin(); _iter57 != (*(this->points)).end(); ++_iter57)
     {
-      xfer += (*_iter41).write(oprot);
+      xfer += (*_iter57).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -885,6 +885,256 @@ VELaSSCo_GetElementOfPointsInSpace_presult::~VELaSSCo_GetElementOfPointsInSpace_
 
 
 uint32_t VELaSSCo_GetElementOfPointsInSpace_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
+VELaSSCo_GetBoundaryOfLocalMesh_args::~VELaSSCo_GetBoundaryOfLocalMesh_args() throw() {
+}
+
+
+uint32_t VELaSSCo_GetBoundaryOfLocalMesh_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sessionID);
+          this->__isset.sessionID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->modelName);
+          this->__isset.modelName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->meshID);
+          this->__isset.meshID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->analysisID);
+          this->__isset.analysisID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->time_step);
+          this->__isset.time_step = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCo_GetBoundaryOfLocalMesh_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCo_GetBoundaryOfLocalMesh_args");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->sessionID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->modelName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("meshID", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->meshID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->analysisID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("time_step", ::apache::thrift::protocol::T_DOUBLE, 5);
+  xfer += oprot->writeDouble(this->time_step);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCo_GetBoundaryOfLocalMesh_pargs::~VELaSSCo_GetBoundaryOfLocalMesh_pargs() throw() {
+}
+
+
+uint32_t VELaSSCo_GetBoundaryOfLocalMesh_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCo_GetBoundaryOfLocalMesh_pargs");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->sessionID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->modelName)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("meshID", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString((*(this->meshID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString((*(this->analysisID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("time_step", ::apache::thrift::protocol::T_DOUBLE, 5);
+  xfer += oprot->writeDouble((*(this->time_step)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCo_GetBoundaryOfLocalMesh_result::~VELaSSCo_GetBoundaryOfLocalMesh_result() throw() {
+}
+
+
+uint32_t VELaSSCo_GetBoundaryOfLocalMesh_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCo_GetBoundaryOfLocalMesh_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("VELaSSCo_GetBoundaryOfLocalMesh_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+VELaSSCo_GetBoundaryOfLocalMesh_presult::~VELaSSCo_GetBoundaryOfLocalMesh_presult() throw() {
+}
+
+
+uint32_t VELaSSCo_GetBoundaryOfLocalMesh_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -1165,6 +1415,68 @@ void VELaSSCoClient::recv_GetElementOfPointsInSpace(rvGetElementOfPointsInSpace&
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetElementOfPointsInSpace failed: unknown result");
 }
 
+void VELaSSCoClient::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step)
+{
+  send_GetBoundaryOfLocalMesh(sessionID, modelName, meshID, analysisID, time_step);
+  recv_GetBoundaryOfLocalMesh(_return);
+}
+
+void VELaSSCoClient::send_GetBoundaryOfLocalMesh(const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("GetBoundaryOfLocalMesh", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  VELaSSCo_GetBoundaryOfLocalMesh_pargs args;
+  args.sessionID = &sessionID;
+  args.modelName = &modelName;
+  args.meshID = &meshID;
+  args.analysisID = &analysisID;
+  args.time_step = &time_step;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void VELaSSCoClient::recv_GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("GetBoundaryOfLocalMesh") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  VELaSSCo_GetBoundaryOfLocalMesh_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetBoundaryOfLocalMesh failed: unknown result");
+}
+
 bool VELaSSCoProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
   ProcessMap::iterator pfn;
   pfn = processMap_.find(fname);
@@ -1397,6 +1709,60 @@ void VELaSSCoProcessor::process_GetElementOfPointsInSpace(int32_t seqid, ::apach
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "VELaSSCo.GetElementOfPointsInSpace", bytes);
+  }
+}
+
+void VELaSSCoProcessor::process_GetBoundaryOfLocalMesh(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("VELaSSCo.GetBoundaryOfLocalMesh", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCo.GetBoundaryOfLocalMesh");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "VELaSSCo.GetBoundaryOfLocalMesh");
+  }
+
+  VELaSSCo_GetBoundaryOfLocalMesh_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "VELaSSCo.GetBoundaryOfLocalMesh", bytes);
+  }
+
+  VELaSSCo_GetBoundaryOfLocalMesh_result result;
+  try {
+    iface_->GetBoundaryOfLocalMesh(result.success, args.sessionID, args.modelName, args.meshID, args.analysisID, args.time_step);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "VELaSSCo.GetBoundaryOfLocalMesh");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("GetBoundaryOfLocalMesh", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "VELaSSCo.GetBoundaryOfLocalMesh");
+  }
+
+  oprot->writeMessageBegin("GetBoundaryOfLocalMesh", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "VELaSSCo.GetBoundaryOfLocalMesh", bytes);
   }
 }
 

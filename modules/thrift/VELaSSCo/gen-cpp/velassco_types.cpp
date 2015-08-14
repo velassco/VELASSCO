@@ -670,6 +670,116 @@ std::ostream& operator<<(std::ostream& out, const Mesh& obj) {
 }
 
 
+Triangle::~Triangle() throw() {
+}
+
+
+void Triangle::__set_nodes(const std::vector<Node> & val) {
+  this->nodes = val;
+}
+
+const char* Triangle::ascii_fingerprint = "71FCB2C6CFFC6D5B287AE7E56012B54C";
+const uint8_t Triangle::binary_fingerprint[16] = {0x71,0xFC,0xB2,0xC6,0xCF,0xFC,0x6D,0x5B,0x28,0x7A,0xE7,0xE5,0x60,0x12,0xB5,0x4C};
+
+uint32_t Triangle::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->nodes.clear();
+            uint32_t _size27;
+            ::apache::thrift::protocol::TType _etype30;
+            xfer += iprot->readListBegin(_etype30, _size27);
+            this->nodes.resize(_size27);
+            uint32_t _i31;
+            for (_i31 = 0; _i31 < _size27; ++_i31)
+            {
+              xfer += this->nodes[_i31].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.nodes = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Triangle::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("Triangle");
+
+  xfer += oprot->writeFieldBegin("nodes", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->nodes.size()));
+    std::vector<Node> ::const_iterator _iter32;
+    for (_iter32 = this->nodes.begin(); _iter32 != this->nodes.end(); ++_iter32)
+    {
+      xfer += (*_iter32).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(Triangle &a, Triangle &b) {
+  using ::std::swap;
+  swap(a.nodes, b.nodes);
+  swap(a.__isset, b.__isset);
+}
+
+Triangle::Triangle(const Triangle& other33) {
+  nodes = other33.nodes;
+  __isset = other33.__isset;
+}
+Triangle& Triangle::operator=(const Triangle& other34) {
+  nodes = other34.nodes;
+  __isset = other34.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const Triangle& obj) {
+  using apache::thrift::to_string;
+  out << "Triangle(";
+  out << "nodes=" << to_string(obj.nodes);
+  out << ")";
+  return out;
+}
+
+
 rvGetElementOfPointsInSpace::~rvGetElementOfPointsInSpace() throw() {
 }
 
@@ -729,14 +839,14 @@ uint32_t rvGetElementOfPointsInSpace::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->elements.clear();
-            uint32_t _size27;
-            ::apache::thrift::protocol::TType _etype30;
-            xfer += iprot->readListBegin(_etype30, _size27);
-            this->elements.resize(_size27);
-            uint32_t _i31;
-            for (_i31 = 0; _i31 < _size27; ++_i31)
+            uint32_t _size35;
+            ::apache::thrift::protocol::TType _etype38;
+            xfer += iprot->readListBegin(_etype38, _size35);
+            this->elements.resize(_size35);
+            uint32_t _i39;
+            for (_i39 = 0; _i39 < _size35; ++_i39)
             {
-              xfer += this->elements[_i31].read(iprot);
+              xfer += this->elements[_i39].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -773,10 +883,10 @@ uint32_t rvGetElementOfPointsInSpace::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("elements", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->elements.size()));
-    std::vector<Element> ::const_iterator _iter32;
-    for (_iter32 = this->elements.begin(); _iter32 != this->elements.end(); ++_iter32)
+    std::vector<Element> ::const_iterator _iter40;
+    for (_iter40 = this->elements.begin(); _iter40 != this->elements.end(); ++_iter40)
     {
-      xfer += (*_iter32).write(oprot);
+      xfer += (*_iter40).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -796,22 +906,172 @@ void swap(rvGetElementOfPointsInSpace &a, rvGetElementOfPointsInSpace &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetElementOfPointsInSpace::rvGetElementOfPointsInSpace(const rvGetElementOfPointsInSpace& other33) {
-  status = other33.status;
-  report = other33.report;
-  elements = other33.elements;
-  __isset = other33.__isset;
+rvGetElementOfPointsInSpace::rvGetElementOfPointsInSpace(const rvGetElementOfPointsInSpace& other41) {
+  status = other41.status;
+  report = other41.report;
+  elements = other41.elements;
+  __isset = other41.__isset;
 }
-rvGetElementOfPointsInSpace& rvGetElementOfPointsInSpace::operator=(const rvGetElementOfPointsInSpace& other34) {
-  status = other34.status;
-  report = other34.report;
-  elements = other34.elements;
-  __isset = other34.__isset;
+rvGetElementOfPointsInSpace& rvGetElementOfPointsInSpace::operator=(const rvGetElementOfPointsInSpace& other42) {
+  status = other42.status;
+  report = other42.report;
+  elements = other42.elements;
+  __isset = other42.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetElementOfPointsInSpace& obj) {
   using apache::thrift::to_string;
   out << "rvGetElementOfPointsInSpace(";
+  out << "status=" << to_string(obj.status);
+  out << ", " << "report=" << to_string(obj.report);
+  out << ", " << "elements=" << to_string(obj.elements);
+  out << ")";
+  return out;
+}
+
+
+rvGetBoundaryOfLocalMesh::~rvGetBoundaryOfLocalMesh() throw() {
+}
+
+
+void rvGetBoundaryOfLocalMesh::__set_status(const std::string& val) {
+  this->status = val;
+}
+
+void rvGetBoundaryOfLocalMesh::__set_report(const std::string& val) {
+  this->report = val;
+}
+
+void rvGetBoundaryOfLocalMesh::__set_elements(const std::vector<Triangle> & val) {
+  this->elements = val;
+}
+
+const char* rvGetBoundaryOfLocalMesh::ascii_fingerprint = "ACFB939DD19B7D5CCA1CCE5142A90284";
+const uint8_t rvGetBoundaryOfLocalMesh::binary_fingerprint[16] = {0xAC,0xFB,0x93,0x9D,0xD1,0x9B,0x7D,0x5C,0xCA,0x1C,0xCE,0x51,0x42,0xA9,0x02,0x84};
+
+uint32_t rvGetBoundaryOfLocalMesh::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->report);
+          this->__isset.report = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->elements.clear();
+            uint32_t _size43;
+            ::apache::thrift::protocol::TType _etype46;
+            xfer += iprot->readListBegin(_etype46, _size43);
+            this->elements.resize(_size43);
+            uint32_t _i47;
+            for (_i47 = 0; _i47 < _size43; ++_i47)
+            {
+              xfer += this->elements[_i47].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.elements = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t rvGetBoundaryOfLocalMesh::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("rvGetBoundaryOfLocalMesh");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("report", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->report);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("elements", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->elements.size()));
+    std::vector<Triangle> ::const_iterator _iter48;
+    for (_iter48 = this->elements.begin(); _iter48 != this->elements.end(); ++_iter48)
+    {
+      xfer += (*_iter48).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(rvGetBoundaryOfLocalMesh &a, rvGetBoundaryOfLocalMesh &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.report, b.report);
+  swap(a.elements, b.elements);
+  swap(a.__isset, b.__isset);
+}
+
+rvGetBoundaryOfLocalMesh::rvGetBoundaryOfLocalMesh(const rvGetBoundaryOfLocalMesh& other49) {
+  status = other49.status;
+  report = other49.report;
+  elements = other49.elements;
+  __isset = other49.__isset;
+}
+rvGetBoundaryOfLocalMesh& rvGetBoundaryOfLocalMesh::operator=(const rvGetBoundaryOfLocalMesh& other50) {
+  status = other50.status;
+  report = other50.report;
+  elements = other50.elements;
+  __isset = other50.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const rvGetBoundaryOfLocalMesh& obj) {
+  using apache::thrift::to_string;
+  out << "rvGetBoundaryOfLocalMesh(";
   out << "status=" << to_string(obj.status);
   out << ", " << "report=" << to_string(obj.report);
   out << ", " << "elements=" << to_string(obj.elements);

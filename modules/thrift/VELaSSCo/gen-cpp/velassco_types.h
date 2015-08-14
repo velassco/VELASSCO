@@ -36,7 +36,11 @@ class Element;
 
 class Mesh;
 
+class Triangle;
+
 class rvGetElementOfPointsInSpace;
+
+class rvGetBoundaryOfLocalMesh;
 
 typedef struct _Point__isset {
   _Point__isset() : x(false), y(false), z(false) {}
@@ -276,6 +280,49 @@ class Mesh {
 
 void swap(Mesh &a, Mesh &b);
 
+typedef struct _Triangle__isset {
+  _Triangle__isset() : nodes(false) {}
+  bool nodes :1;
+} _Triangle__isset;
+
+class Triangle {
+ public:
+
+  static const char* ascii_fingerprint; // = "71FCB2C6CFFC6D5B287AE7E56012B54C";
+  static const uint8_t binary_fingerprint[16]; // = {0x71,0xFC,0xB2,0xC6,0xCF,0xFC,0x6D,0x5B,0x28,0x7A,0xE7,0xE5,0x60,0x12,0xB5,0x4C};
+
+  Triangle(const Triangle&);
+  Triangle& operator=(const Triangle&);
+  Triangle() {
+  }
+
+  virtual ~Triangle() throw();
+  std::vector<Node>  nodes;
+
+  _Triangle__isset __isset;
+
+  void __set_nodes(const std::vector<Node> & val);
+
+  bool operator == (const Triangle & rhs) const
+  {
+    if (!(nodes == rhs.nodes))
+      return false;
+    return true;
+  }
+  bool operator != (const Triangle &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Triangle & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const Triangle& obj);
+};
+
+void swap(Triangle &a, Triangle &b);
+
 typedef struct _rvGetElementOfPointsInSpace__isset {
   _rvGetElementOfPointsInSpace__isset() : status(false), report(false), elements(false) {}
   bool status :1;
@@ -330,6 +377,61 @@ class rvGetElementOfPointsInSpace {
 };
 
 void swap(rvGetElementOfPointsInSpace &a, rvGetElementOfPointsInSpace &b);
+
+typedef struct _rvGetBoundaryOfLocalMesh__isset {
+  _rvGetBoundaryOfLocalMesh__isset() : status(false), report(false), elements(false) {}
+  bool status :1;
+  bool report :1;
+  bool elements :1;
+} _rvGetBoundaryOfLocalMesh__isset;
+
+class rvGetBoundaryOfLocalMesh {
+ public:
+
+  static const char* ascii_fingerprint; // = "ACFB939DD19B7D5CCA1CCE5142A90284";
+  static const uint8_t binary_fingerprint[16]; // = {0xAC,0xFB,0x93,0x9D,0xD1,0x9B,0x7D,0x5C,0xCA,0x1C,0xCE,0x51,0x42,0xA9,0x02,0x84};
+
+  rvGetBoundaryOfLocalMesh(const rvGetBoundaryOfLocalMesh&);
+  rvGetBoundaryOfLocalMesh& operator=(const rvGetBoundaryOfLocalMesh&);
+  rvGetBoundaryOfLocalMesh() : status(), report() {
+  }
+
+  virtual ~rvGetBoundaryOfLocalMesh() throw();
+  std::string status;
+  std::string report;
+  std::vector<Triangle>  elements;
+
+  _rvGetBoundaryOfLocalMesh__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_elements(const std::vector<Triangle> & val);
+
+  bool operator == (const rvGetBoundaryOfLocalMesh & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(elements == rhs.elements))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetBoundaryOfLocalMesh &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetBoundaryOfLocalMesh & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetBoundaryOfLocalMesh& obj);
+};
+
+void swap(rvGetBoundaryOfLocalMesh &a, rvGetBoundaryOfLocalMesh &b);
 
 } // namespace
 
