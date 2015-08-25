@@ -8,6 +8,7 @@ using namespace  ::dli;
 #include "EDMmodelCache.h"
 #include "VELaSSCoHandler.h"
 #include "Matrix.h"
+#include < time.h >
 
 
 #define newObject(className) new(m)className(m)
@@ -198,16 +199,19 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
    bool boxSearch = true;
    int n_IsPointInsideTetrahedron_1 = 0;
    int n_IsPointInsideTetrahedron_2 = 0;
+   int n_Points = 0;
    std::vector<dli::Element>  returnedElements_1;
    std::vector<dli::Element>  returnedElements_2;
 
 
+   int startTime = GetTickCount();
    if (boxSearch) {
       Matrix<Set<fem::Element*>*> *elemBoxMatrix = (Matrix<Set<fem::Element*>*> *)fmc->voidElemBoxMatrix;
       int nInside = 0, nPointsInsideSeveralElements = 0;
       std::vector<dli::Point> myPoints = points;
       for (std::vector<dli::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
 
+         n_Points++;
          double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
          int bx = p_in_x / fmc->dx, by = p_in_y / fmc->dy, bz = p_in_z / fmc->dz;
          Set<fem::Element*> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
@@ -247,6 +251,7 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
          }
       }
    }
+   int endTime = GetTickCount();
 
    if (sequentialSearch) {
       int nInside = 0, nPointsInsideSeveralElements = 0;
@@ -300,6 +305,12 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
          }
          e1++;
       }
+   }
+   if (boxSearch) {
+      char msg[10000];
+      sprintf(msg, "Containing element found for %d points.\nIsPointInsideTetrahedron is executed %d times.\nElapsed time for the search is %d millisecponds\n",
+         n_Points, n_IsPointInsideTetrahedron_1, endTime - startTime);
+      _return.__set_report(msg);
    }
    _return.__set_status("OK");
    _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
@@ -435,12 +446,16 @@ void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, 
    try {
       setCurrentSession(sessionID.data());
       EDMmodelCache *emc = setCurrentModelCache(modelName.data());
-      FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-      std::vector<Triangle>  elements;
+      if (emc) {
+         FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+         std::vector<Triangle>  elements;
 
-      CalculateBoundaryOfMesh(fmc, elements);
-      _return.__set_status("OK");
-      _return.__set_elements(elements);
+         CalculateBoundaryOfMesh(fmc, elements);
+         _return.__set_status("OK");
+         _return.__set_elements(elements);
+      } else {
+      _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+      }
    } catch (CedmError *e) {
       _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
    } catch (int thrownRstat) {
