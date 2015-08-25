@@ -1,0 +1,86 @@
+SCHEMA FEM_SCHEMA_VELASSCO;
+
+  TYPE ElementType = ENUMERATION OF
+    (LINE,
+     TETRAHEDRA,
+     TRIANGLE,
+     SPHERE);
+  END_TYPE;
+
+  TYPE ValueType = ENUMERATION OF
+    (SCALAR,
+     VECTOR);
+  END_TYPE;
+
+  TYPE LocationType = ENUMERATION OF
+    (LOC_NODE,
+     LOC_GPOINT);
+  END_TYPE;
+
+  ENTITY Mesh;
+      name          : STRING;
+      dimension     : INTEGER;
+      numberOfNodes : INTEGER;
+      elementType   : ElementType;
+      nodes         : LIST [1:?] OF Node;
+      elements      : LIST [1:?] OF Element;
+  END_ENTITY;
+
+  ENTITY Node;
+      id : INTEGER;
+      x  : REAL;
+      y  : REAL;
+      z  : REAL;
+  END_ENTITY;
+
+  ENTITY Element;
+      name  : STRING;
+      nodes : LIST [1:?] OF Node;
+      id    : INTEGER;
+  END_ENTITY;
+
+  ENTITY ResultHeader;
+      name       : STRING;
+      analysis   : STRING;
+      step       : REAL;
+      gpName     : STRING;
+      compName   : LIST [1:?] OF STRING;
+      indexMData : INTEGER;
+      rType      : ValueType;
+      location   : LocationType;
+  END_ENTITY;
+
+  ENTITY ResultBlock;
+      header : ResultHeader;
+      values : LIST [1:?] OF Result;
+  END_ENTITY;
+
+  ENTITY Result
+    ABSTRACT;
+      result_for : Node;
+  END_ENTITY;
+
+  ENTITY ScalarResult
+    SUBTYPE OF(Result);
+      val : REAL;
+  END_ENTITY;
+
+  ENTITY VectorResult
+    SUBTYPE OF(Result);
+      values : LIST [1:?] OF REAL;
+  END_ENTITY;
+
+  ENTITY ModelInfo;
+      min_x                 : REAL;
+      min_y                 : REAL;
+      min_z                 : REAL;
+      max_x                 : REAL;
+      max_y                 : REAL;
+      max_z                 : REAL;
+      index_file            : STRING;
+      index_file_version    : INTEGER;
+      build_index_time      : INTEGER;
+      last_change_mesh_time : INTEGER;
+  END_ENTITY;
+
+END_SCHEMA;
