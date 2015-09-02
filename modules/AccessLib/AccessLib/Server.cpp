@@ -121,6 +121,11 @@ class QueryManager : virtual public QueryManagerIf
 		if (!ValidSessionID(sessionID))
 		{
 			_return.__set_result( (Result::type)VAL_INVALID_SESSION_ID );
+
+			LOGGER                                    << std::endl;
+			LOGGER << "Output:"                       << std::endl;
+			LOGGER << "  result : " << _return.result << std::endl;
+
 			return;
 		}
 
@@ -130,6 +135,10 @@ class QueryManager : virtual public QueryManagerIf
 		}
 
 		_return.__set_result( (Result::type)VAL_SUCCESS );
+
+		LOGGER                                    << std::endl;
+		LOGGER << "Output:"                       << std::endl;
+		LOGGER << "  result : " << _return.result << std::endl;
 	}
 
 	void Query(Query_Result& _return, const SessionID sessionID, const std::string& query)
@@ -146,6 +155,11 @@ class QueryManager : virtual public QueryManagerIf
 		if (!ValidSessionID(sessionID))
 		{
 			_return.__set_result( (Result::type)VAL_INVALID_SESSION_ID );
+
+			LOGGER                                    << std::endl;
+			LOGGER << "Output:"                       << std::endl;
+			LOGGER << "  result : " << _return.result << std::endl;
+
 			return;
 		}
 
@@ -162,6 +176,11 @@ class QueryManager : virtual public QueryManagerIf
 		if (name != "GetResultFromVerticesID")
 		{
 			_return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS );
+
+			LOGGER                                    << std::endl;
+			LOGGER << "Output:"                       << std::endl;
+			LOGGER << "  result : " << _return.result << std::endl;
+
 			return;
 		}
 
@@ -190,6 +209,11 @@ class QueryManager : virtual public QueryManagerIf
 		}
 
 		_return.__set_result( (Result::type)VAL_SUCCESS );
+
+		LOGGER                                             << std::endl;
+		LOGGER << "Output:"                                << std::endl;
+		LOGGER << "  result : "   << _return.result        << std::endl;
+		LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 	}
 };
 

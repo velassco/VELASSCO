@@ -42,3 +42,7 @@ target_include_directories(AccessLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Access library link libraries
 target_link_libraries(AccessLib LINK_PRIVATE libthrift libthriftnb)
+
+# Install Access library
+install(TARGETS AccessLib DESTINATION ${CMAKE_BINARY_DIR}/Install/${CMAKE_PROJECT_NAME}/lib)
+install(FILES AccessLib.h DESTINATION ${CMAKE_BINARY_DIR}/Install/${CMAKE_PROJECT_NAME}/include)

@@ -75,7 +75,7 @@ inline std::string Hexdump(const std::string input)
 				else
 					out << '.';
 
-		out << std::endl;;
+		out << std::endl;
 	}
 
 	return out.str();
