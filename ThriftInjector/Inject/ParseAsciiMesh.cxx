@@ -139,9 +139,9 @@ bool parse_mesh_element(unsigned int nnode, Iterator first, Iterator last, MeshE
     return false;
   if ( r )
     {
-    if ( nnode+1 != elem.size() )
+    if ( elem.size() < nnode + 1 )
       {
-      LOG(error) << "expected " << nnode+1 << " integers";
+      LOG(error) << "expected at least " << nnode+1 << " integers";
       return false;
       }
     }

@@ -1019,6 +1019,19 @@ int InsertModelInfo( const std::string &host, int port,
     mutations.back().column = "Properties:np";
     //mutations.back().value = Int2Array( modelInfo.GetNumberOfParts() );
     binBuffer.Write( mutations.back( ).value, modelInfo.GetNumberOfParts( ) );
+    mutations.push_back( Mutation( ) );
+    mutations.back().column = "Properties:bb";
+    mutations.push_back( Mutation( ) );
+    mutations.back().column = "Properties:uAll";
+    mutations.back().value = "read-only";
+    mutations.push_back( Mutation( ) );
+    mutations.back().column = "Properties:uAccess";
+    mutations.back().value = "rwd";
+    mutations.push_back( Mutation( ) );
+    mutations.back().column = "Properties:uName";
+    mutations.push_back( Mutation( ) );
+    mutations.back().column = "Properties:vs";
+    mutations.back().value = "Not validated";
     const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
                                                  // HBASE-4658
     // the row key is generated as an UUID
