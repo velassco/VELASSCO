@@ -69,10 +69,34 @@ int main(int argc, char **argv)
          TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
          server.serve();
       } else if (strEQL(argv[1], "Files")) {
+         char commandline[2048], command[1024], param1[1024], param2[1024], param3[1024];
+
          demInjector.setCurrentModel(argv[5]);
          demInjector.DeleteCurrentModelContent();
-         for (int i = 6; i < argc; i++) {
-            demInjector.InjectFile(argv[i]);
+         demInjector.InitiateFileInjection();
+         FILE *paraMfile = fopen(argv[6], "r");
+         if (paraMfile) {
+            while (fgets(commandline, sizeof(commandline), paraMfile)){
+               int nCoulmn = sscanf(commandline, "%s %s %s %s", command, param1, param2, param3);
+               if (strEQL(command, "File")) {
+                  if (nCoulmn == 2){
+                     demInjector.InjectFile(param1);
+                  } else {
+                     printf("Illegal number of parameters in File command\n");
+                  }
+               } else if (strEQL(command, "Mesh")) {
+                  if (nCoulmn == 4){
+                     demInjector.InjectMesh(param1, param2, param3);
+                  } else {
+                     printf("Illegal number of parameters in Mesh command\n");
+                  }
+               }
+            }
+            fclose(paraMfile);
+         } else {
+            for (int i = 6; i < argc; i++) {
+               demInjector.InjectFile(argv[i]);
+            }
          }
          demInjector.flushObjectsAndClose();
       }
@@ -89,6 +113,8 @@ int main(int argc, char **argv)
       strncpy(errTxt, edmiGetErrorText(thrownRstat), sizeof(errTxt));
       printf(errTxt);
    }
+   printf("\n\nEnter a character to stop the program.\n");
+   getchar();
    exit(0);
 }
 

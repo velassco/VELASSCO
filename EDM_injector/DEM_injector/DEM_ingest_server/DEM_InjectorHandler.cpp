@@ -147,15 +147,22 @@ void DEM_InjectorHandler::DeleteCurrentModelContent()
    CHECK(edmiDeleteModelContents(m->modelId));
 }
 
+void DEM_InjectorHandler::InitiateFileInjection()
+{
+   theSimulation = newObject(dem::Simulation);
+   theSimulation->put_name("theSimulation");
+}
+
 void DEM_InjectorHandler::InjectFile(char *file_name)
 {
+   injectorFileName = file_name;
    fp = fopen(file_name, "r");
    if (fp) {
-      theSimulation = newObject(dem::Simulation);
-      theSimulation->put_name("theSimulation");
       while (readNextLine() > 0) {
          if (strEQL(line, "TIMESTEP PARTICLES\n")) {
             store_TIMESTEP_PARTICLES();
+         } else if (strEQL(line, "TIMESTEP CONTACTS\n")) {
+            store_TIMESTEP_CONTACTS();
          }
       }
       fclose(fp);
@@ -164,19 +171,184 @@ void DEM_InjectorHandler::InjectFile(char *file_name)
    }
 }
 
+void DEM_InjectorHandler::InjectMesh(char *MeshFileFolder, char *MeshName, char *MeshVersion)
+{
+   char fileName[1024], stlline[2048], command[512], x[512], y[512], z[512], p4[512], p5[512], MeshNameWithVersion[512];
+   CMemoryAllocator* ma = m->getMemoryAllocator();
+
+   for (std::map<double, dem::Timestep*>::iterator tsit = timesteps.begin(); tsit != timesteps.end(); ++tsit) {
+      dem::Timestep* ts = tsit->second;
+      dem::FEM_mesh *mesh = NULL;
+      Set<dem::Vertex*> *facet;
+
+      sprintf(fileName, "%s/%s_%s_%.0lf.stl", MeshFileFolder, MeshName, MeshVersion, tsit->first);
+      FILE *stlFile = fopen(fileName, "r");
+      if (stlFile) {
+         int vertexNo = 0;
+         while (fgets(stlline, sizeof(stlline), stlFile)) {
+            int nColumns = sscanf(stlline, "%s %s %s %s %s %s", command, x, y, z, p4, p5);
+            if (strEQL(command, "endsolid")) {
+               break;
+            } else if (strEQL(command, "vertex")) {
+               if (vertexNo++ == 0) {
+                  // new facet
+                  if (mesh == NULL) {
+                     mesh = newObject(dem::FEM_mesh); ts->put_boundary_element(mesh);
+                     meshes[atol(MeshVersion)] = mesh;
+                     sprintf(MeshNameWithVersion, "%s_%s", MeshName, MeshVersion); mesh->put_name(ma->allocString(MeshNameWithVersion));
+                  }
+                  facet = new(ma)Set<dem::Vertex*>(ma, sdaiINSTANCE, 32);
+                  mesh->put_facets_element(facet);
+               }
+               dem::Vertex *v = newObject(dem::Vertex);
+               v->put_vertex_position_element(atof(x)); v->put_vertex_position_element(atof(y)); v->put_vertex_position_element(atof(z));
+               facet->add(v, ma);
+               if (vertexNo >= 3) vertexNo = 0; // build another facet next time
+            }
+         }
+         fclose(stlFile);
+      } else {
+         printf("Illegal Mesh file name: %s\n", fileName);
+      }
+   }
+}
+
+
+
+void DEM_InjectorHandler::store_TIMESTEP_CONTACTS()
+{
+   int               nOfContacts, nValues;
+   bool              newTimestep = false;
+   double            timeStep;
+   int               P1, P2, WALL;
+   double            CX, CY, CZ, FX, FY, FZ;
+
+   readNextLine();
+   sscanf(line, "%lf %d", &timeStep, &nOfContacts);
+   dem::Timestep *ts = timesteps[timeStep];
+   if (!ts) {
+      ts = newObject(dem::Timestep); ts->put_time_value(timeStep); timesteps[timeStep] = ts;
+      theSimulation->put_consists_of_element(ts); newTimestep = true;
+   }
+
+   readNextLine();
+   bool particle_particle_contact = strEQL(line, " P1 P2 CX CY CZ FX FY FZ\n") || strEQL(line, "P1 P2 CX CY CZ FX FY FZ\n");
+
+   if (particle_particle_contact || strEQL(line, " P1 CX CY CZ FX FY FZ\n")) {
+      for (int i = 0; i < nOfContacts; i++) {
+         dem::Particle *p1, *p2;
+         dem::Contact *c = NULL;
+         readNextLine();
+         if (particle_particle_contact) {
+            nValues = sscanf(line, "%d %d %lf %lf %lf %lf %lf %lf", &P1, &P2, &CX, &CY, &CZ, &FX, &FY, &FZ);
+         } else {
+            nValues = sscanf(line, "%d %lf %lf %lf %lf %lf %lf", &P1, &CX, &CY, &CZ, &FX, &FY, &FZ);
+         }
+         if (nValues != (particle_particle_contact ? 8 : 7)) {
+            printf("Error - Number of values in particle to particle contact line is illegal.\n");
+         } else {
+            p1 = findParticle(P1);
+            if (p1) {
+               if (particle_particle_contact) {
+                  p2 = findParticle(P2);
+                  if (p2) {
+                     dem::Particle_Particle_contact *ppc = newObject(dem::Particle_Particle_contact); c = ppc;
+                     ppc->put_P1(p1); ppc->put_P2(p2);
+                  }
+               } else {
+                  dem::Particle_Geometry_contact *pgc = newObject(dem::Particle_Geometry_contact); c = pgc;
+                  pgc->put_P1(p1);
+               }
+               if (c) {
+                  c->put_contact_location_element(1, CX); c->put_contact_location_element(2, CY); c->put_contact_location_element(3, CZ);
+                  dem::Contact_result *cr = newObject(dem::Contact_result);
+                  dem::Contact_Force  *cf = newObject(dem::Contact_Force);
+                  cf->put_Fx_Fy_Fz_element(FX); cf->put_Fx_Fy_Fz_element(FY); cf->put_Fx_Fy_Fz_element(FZ);
+                  cr->put_contact_results_properties_element(cf);
+                  cr->put_calculated_for(ts);
+                  cr->put_valid_for(c);
+                  ts->put_has_contact_element(c);
+               }
+            }
+         }
+      }
+   } else if (strEQL(line, "P1 WALL CX CY CZ FX FY FZ\n")) {
+      for (int i = 0; i < nOfContacts; i++) {
+         readNextLine();
+         nValues = sscanf(line, "%d %d %lf %lf %lf %lf %lf %lf", &P1, &WALL, &CX, &CY, &CZ, &FX, &FY, &FZ);
+         if (nValues == 8) {
+            dem::Particle *p1 = findParticle(P1);
+            dem::Particle_Geometry_contact *pgc = newObject(dem::Particle_Geometry_contact);
+            pgc->put_P1(p1);
+            dem::FEM_mesh *mesh = meshes[WALL];
+            if (mesh) {
+               pgc->put_geometry(mesh); ts->put_has_contact_element(pgc);
+            } else {
+               printf("Illegal mesh ID \"%ld\" in file \"%s\"\n", WALL, injectorFileName);
+            }
+         } else {
+            printf("Illegal number of columns in particle contact file \"%s\"\n", injectorFileName);
+         }
+      }
+   } else {
+      printf("Illegal column names \"%s\" in file \"%s\"\n", line, injectorFileName);
+   }
+}
+
+dem::Particle *DEM_InjectorHandler::findParticle(int particleID)
+{
+   dem::Particle *p = particles[particleID];
+   if (p) {
+      return p;
+   } else {
+      printf("Error - Particle not defined.\n");
+      return NULL;
+   }
+}
+
+void DEM_InjectorHandler::defineParticle()
+{
+   p = particles[ID];
+   if (p) {
+      tnn = static_cast<Template_nn *>(p);
+   } else {
+      tnn = newObject(dem::Template_nn); p = tnn;  particles[ID] = p; p->put_id(ID);
+   }
+   if (newTimestep) ts->put_consists_of_element(p);
+   p->put_group(GROUP);
+}
+
+void DEM_InjectorHandler::addCoordinates()
+{
+   if (!p->exists_coordinates()) {
+      p->put_coordinates_element(1, PX); p->put_coordinates_element(2, PY); p->put_coordinates_element(3, PZ);
+   }
+}
+
+void DEM_InjectorHandler::addParticleResult()
+{
+   pr = newObject(dem::Particle_result);
+   pr->put_valid_for(p); pr->put_calculated_for(ts);
+}
+
+void DEM_InjectorHandler::addVelocityMassVolume()
+{
+   dem::Velocity *v = newObject(dem::Velocity);
+   v->put_Vx_Vy_Vz_element(1, VX); v->put_Vx_Vy_Vz_element(2, VY); v->put_Vx_Vy_Vz_element(3, VZ);
+   pr->put_result_properties_element(v);
+   dem::Mass *mass = newObject(dem::Mass); mass->put_mass(MASS);
+   pr->put_result_properties_element(mass);
+   dem::Volume *vol = newObject(dem::Volume); vol->put_volume(VOLUME);
+   pr->put_result_properties_element(vol);
+}
 
 void DEM_InjectorHandler::store_TIMESTEP_PARTICLES()
 {
    int nOfParticles;
-   bool newTimestep = false;
-   double timeStep;
-   int ID, GROUP;
-   double VOLUME, MASS, PX, PY, PZ, VX, VY, VZ, Orientation_XX, Orientation_XY, Orientation_XZ;
-   double Orientation_YX, Orientation_YY, Orientation_YZ, Orientation_ZX, Orientation_ZY, Orientation_ZZ;
-   double Angular_Velocity_X, Angular_Velocity_Y, Angular_Velocity_Z, Kinetic_Energy;
+
    readNextLine();
    sscanf(line, "%lf %d", &timeStep, &nOfParticles);
-   dem::Timestep *ts = timesteps[timeStep];
+   ts = timesteps[timeStep];
    if (!ts) {
       ts = newObject(dem::Timestep); ts->put_time_value(timeStep); timesteps[timeStep] = ts;
       theSimulation->put_consists_of_element(ts); newTimestep = true;
@@ -188,32 +360,28 @@ void DEM_InjectorHandler::store_TIMESTEP_PARTICLES()
          readNextLine();
          int nValues = sscanf(line, "%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
             &ID, &GROUP, &VOLUME, &MASS, &PX, &PY, &PZ, &VX, &VY, &VZ, &Orientation_XX, &Orientation_XY, &Orientation_XZ, &Orientation_YX, &Orientation_YY, &Orientation_YZ, &Orientation_ZX, &Orientation_ZY, &Orientation_ZZ, &Angular_Velocity_X, &Angular_Velocity_Y, &Angular_Velocity_Z, &Kinetic_Energy);
-         dem::Particle *p = particles[ID];
-         dem::Template_nn *tnn;
-         if (p) {
-            tnn = static_cast<Template_nn *>(p);
-         } else {
-            tnn = newObject(dem::Template_nn); p = tnn;  particles[ID] = p; p->put_id(ID);
-         }
-         if (newTimestep) ts->put_consists_of_element(p);
-         p->put_group(GROUP);
-         if (! p->exists_coordinates()) {
-            p->put_coordinates_element(1, PX); p->put_coordinates_element(2, PY); p->put_coordinates_element(3, PZ);
-         }
-         dem::Particle_result *pr = newObject(dem::Particle_result);
-         pr->put_valid_for(p); pr->put_calculated_for(ts);
-         dem::Velocity *v = newObject(dem::Velocity);
-         v->put_Vx_Vy_Vz_element(1, VX); v->put_Vx_Vy_Vz_element(2, VY); v->put_Vx_Vy_Vz_element(3, VZ);
-         pr->put_result_properties_element(v);
-         dem::Mass *mass = newObject(dem::Mass); mass->put_mass(MASS);
-         pr->put_result_properties_element(mass);
-         dem::Volume *vol = newObject(dem::Volume); vol->put_volume(VOLUME);
-         pr->put_result_properties_element(vol);
+
+         defineParticle();
+         addCoordinates();
+         addParticleResult();
+         addVelocityMassVolume();
+
          pr->put_result_properties_element(newCustomPropertyVector("Orientation_X", Orientation_XX, Orientation_XY, Orientation_XZ));
          pr->put_result_properties_element(newCustomPropertyVector("Orientation_Y", Orientation_XX, Orientation_XY, Orientation_XZ));
          pr->put_result_properties_element(newCustomPropertyVector("Orientation_Z", Orientation_XX, Orientation_XY, Orientation_XZ));
          pr->put_result_properties_element(newCustomPropertyVector("Angular_Velocity", Angular_Velocity_X, Angular_Velocity_Y, Angular_Velocity_Z));
          pr->put_result_properties_element(newCustomPropertyScalar("Kinetic_Energy", Kinetic_Energy));
+      }
+   } else if (strEQL(line, "ID GROUP TYPE VOLUME MASS PX PY PZ VX VY VZ\n")) {
+      for (int i = 0; i < nOfParticles; i++) {
+         readNextLine();
+         int nValues = sscanf(line, "%d %d %d %lf %lf %lf %lf %lf %lf %lf %lf",
+            &ID, &GROUP, &TYPE, &VOLUME, &MASS, &PX, &PY, &PZ, &VX, &VY, &VZ);
+
+         defineParticle();
+         addCoordinates();
+         addParticleResult();
+         addVelocityMassVolume();
       }
    }
 }
