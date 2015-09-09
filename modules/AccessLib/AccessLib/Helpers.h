@@ -37,6 +37,7 @@
 #else
 #	define LOGGER (std::ostream(0))
 #endif
+#define DEBUG( a)   LOGGER << ( a) << std::endl;
 
 #define PING                                  \
 	do                                        \
