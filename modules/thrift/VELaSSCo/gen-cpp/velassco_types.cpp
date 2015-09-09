@@ -1079,4 +1079,954 @@ std::ostream& operator<<(std::ostream& out, const rvGetBoundaryOfLocalMesh& obj)
   return out;
 }
 
+
+rvGetResultFromVerticesID_A::~rvGetResultFromVerticesID_A() throw() {
+}
+
+
+void rvGetResultFromVerticesID_A::__set_status(const std::string& val) {
+  this->status = val;
+}
+
+void rvGetResultFromVerticesID_A::__set_report(const std::string& val) {
+  this->report = val;
+}
+
+void rvGetResultFromVerticesID_A::__set_nVertices(const int64_t val) {
+  this->nVertices = val;
+}
+
+void rvGetResultFromVerticesID_A::__set_nValuesPrVertex(const int64_t val) {
+  this->nValuesPrVertex = val;
+}
+
+void rvGetResultFromVerticesID_A::__set_vertexIDs(const std::vector<int64_t> & val) {
+  this->vertexIDs = val;
+}
+
+void rvGetResultFromVerticesID_A::__set_resultValues(const std::vector<double> & val) {
+  this->resultValues = val;
+}
+
+const char* rvGetResultFromVerticesID_A::ascii_fingerprint = "B51FB0E8BE2E9146E9BCED13565E0E5F";
+const uint8_t rvGetResultFromVerticesID_A::binary_fingerprint[16] = {0xB5,0x1F,0xB0,0xE8,0xBE,0x2E,0x91,0x46,0xE9,0xBC,0xED,0x13,0x56,0x5E,0x0E,0x5F};
+
+uint32_t rvGetResultFromVerticesID_A::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->report);
+          this->__isset.report = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->nVertices);
+          this->__isset.nVertices = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->nValuesPrVertex);
+          this->__isset.nValuesPrVertex = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->vertexIDs.clear();
+            uint32_t _size51;
+            ::apache::thrift::protocol::TType _etype54;
+            xfer += iprot->readListBegin(_etype54, _size51);
+            this->vertexIDs.resize(_size51);
+            uint32_t _i55;
+            for (_i55 = 0; _i55 < _size51; ++_i55)
+            {
+              xfer += iprot->readI64(this->vertexIDs[_i55]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.vertexIDs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->resultValues.clear();
+            uint32_t _size56;
+            ::apache::thrift::protocol::TType _etype59;
+            xfer += iprot->readListBegin(_etype59, _size56);
+            this->resultValues.resize(_size56);
+            uint32_t _i60;
+            for (_i60 = 0; _i60 < _size56; ++_i60)
+            {
+              xfer += iprot->readDouble(this->resultValues[_i60]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.resultValues = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t rvGetResultFromVerticesID_A::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("rvGetResultFromVerticesID_A");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("report", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->report);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("nVertices", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->nVertices);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("nValuesPrVertex", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->nValuesPrVertex);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("vertexIDs", ::apache::thrift::protocol::T_LIST, 5);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->vertexIDs.size()));
+    std::vector<int64_t> ::const_iterator _iter61;
+    for (_iter61 = this->vertexIDs.begin(); _iter61 != this->vertexIDs.end(); ++_iter61)
+    {
+      xfer += oprot->writeI64((*_iter61));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("resultValues", ::apache::thrift::protocol::T_LIST, 6);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->resultValues.size()));
+    std::vector<double> ::const_iterator _iter62;
+    for (_iter62 = this->resultValues.begin(); _iter62 != this->resultValues.end(); ++_iter62)
+    {
+      xfer += oprot->writeDouble((*_iter62));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(rvGetResultFromVerticesID_A &a, rvGetResultFromVerticesID_A &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.report, b.report);
+  swap(a.nVertices, b.nVertices);
+  swap(a.nValuesPrVertex, b.nValuesPrVertex);
+  swap(a.vertexIDs, b.vertexIDs);
+  swap(a.resultValues, b.resultValues);
+  swap(a.__isset, b.__isset);
+}
+
+rvGetResultFromVerticesID_A::rvGetResultFromVerticesID_A(const rvGetResultFromVerticesID_A& other63) {
+  status = other63.status;
+  report = other63.report;
+  nVertices = other63.nVertices;
+  nValuesPrVertex = other63.nValuesPrVertex;
+  vertexIDs = other63.vertexIDs;
+  resultValues = other63.resultValues;
+  __isset = other63.__isset;
+}
+rvGetResultFromVerticesID_A& rvGetResultFromVerticesID_A::operator=(const rvGetResultFromVerticesID_A& other64) {
+  status = other64.status;
+  report = other64.report;
+  nVertices = other64.nVertices;
+  nValuesPrVertex = other64.nValuesPrVertex;
+  vertexIDs = other64.vertexIDs;
+  resultValues = other64.resultValues;
+  __isset = other64.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID_A& obj) {
+  using apache::thrift::to_string;
+  out << "rvGetResultFromVerticesID_A(";
+  out << "status=" << to_string(obj.status);
+  out << ", " << "report=" << to_string(obj.report);
+  out << ", " << "nVertices=" << to_string(obj.nVertices);
+  out << ", " << "nValuesPrVertex=" << to_string(obj.nValuesPrVertex);
+  out << ", " << "vertexIDs=" << to_string(obj.vertexIDs);
+  out << ", " << "resultValues=" << to_string(obj.resultValues);
+  out << ")";
+  return out;
+}
+
+
+VertexResult::~VertexResult() throw() {
+}
+
+
+void VertexResult::__set_vertexID(const int64_t val) {
+  this->vertexID = val;
+}
+
+void VertexResult::__set_resuls(const std::vector<double> & val) {
+  this->resuls = val;
+}
+
+const char* VertexResult::ascii_fingerprint = "1CB61EEDEC70E44B3B75F0C0C76D5496";
+const uint8_t VertexResult::binary_fingerprint[16] = {0x1C,0xB6,0x1E,0xED,0xEC,0x70,0xE4,0x4B,0x3B,0x75,0xF0,0xC0,0xC7,0x6D,0x54,0x96};
+
+uint32_t VertexResult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->vertexID);
+          this->__isset.vertexID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->resuls.clear();
+            uint32_t _size65;
+            ::apache::thrift::protocol::TType _etype68;
+            xfer += iprot->readListBegin(_etype68, _size65);
+            this->resuls.resize(_size65);
+            uint32_t _i69;
+            for (_i69 = 0; _i69 < _size65; ++_i69)
+            {
+              xfer += iprot->readDouble(this->resuls[_i69]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.resuls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VertexResult::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VertexResult");
+
+  xfer += oprot->writeFieldBegin("vertexID", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->vertexID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("resuls", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->resuls.size()));
+    std::vector<double> ::const_iterator _iter70;
+    for (_iter70 = this->resuls.begin(); _iter70 != this->resuls.end(); ++_iter70)
+    {
+      xfer += oprot->writeDouble((*_iter70));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(VertexResult &a, VertexResult &b) {
+  using ::std::swap;
+  swap(a.vertexID, b.vertexID);
+  swap(a.resuls, b.resuls);
+  swap(a.__isset, b.__isset);
+}
+
+VertexResult::VertexResult(const VertexResult& other71) {
+  vertexID = other71.vertexID;
+  resuls = other71.resuls;
+  __isset = other71.__isset;
+}
+VertexResult& VertexResult::operator=(const VertexResult& other72) {
+  vertexID = other72.vertexID;
+  resuls = other72.resuls;
+  __isset = other72.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const VertexResult& obj) {
+  using apache::thrift::to_string;
+  out << "VertexResult(";
+  out << "vertexID=" << to_string(obj.vertexID);
+  out << ", " << "resuls=" << to_string(obj.resuls);
+  out << ")";
+  return out;
+}
+
+
+rvGetResultFromVerticesID_B::~rvGetResultFromVerticesID_B() throw() {
+}
+
+
+void rvGetResultFromVerticesID_B::__set_status(const std::string& val) {
+  this->status = val;
+}
+
+void rvGetResultFromVerticesID_B::__set_report(const std::string& val) {
+  this->report = val;
+}
+
+void rvGetResultFromVerticesID_B::__set_vertexResults(const std::vector<VertexResult> & val) {
+  this->vertexResults = val;
+}
+
+const char* rvGetResultFromVerticesID_B::ascii_fingerprint = "7D7F6E03D85558681F4AC69C1B4F3FC4";
+const uint8_t rvGetResultFromVerticesID_B::binary_fingerprint[16] = {0x7D,0x7F,0x6E,0x03,0xD8,0x55,0x58,0x68,0x1F,0x4A,0xC6,0x9C,0x1B,0x4F,0x3F,0xC4};
+
+uint32_t rvGetResultFromVerticesID_B::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->report);
+          this->__isset.report = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->vertexResults.clear();
+            uint32_t _size73;
+            ::apache::thrift::protocol::TType _etype76;
+            xfer += iprot->readListBegin(_etype76, _size73);
+            this->vertexResults.resize(_size73);
+            uint32_t _i77;
+            for (_i77 = 0; _i77 < _size73; ++_i77)
+            {
+              xfer += this->vertexResults[_i77].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.vertexResults = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t rvGetResultFromVerticesID_B::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("rvGetResultFromVerticesID_B");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("report", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->report);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("vertexResults", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->vertexResults.size()));
+    std::vector<VertexResult> ::const_iterator _iter78;
+    for (_iter78 = this->vertexResults.begin(); _iter78 != this->vertexResults.end(); ++_iter78)
+    {
+      xfer += (*_iter78).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(rvGetResultFromVerticesID_B &a, rvGetResultFromVerticesID_B &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.report, b.report);
+  swap(a.vertexResults, b.vertexResults);
+  swap(a.__isset, b.__isset);
+}
+
+rvGetResultFromVerticesID_B::rvGetResultFromVerticesID_B(const rvGetResultFromVerticesID_B& other79) {
+  status = other79.status;
+  report = other79.report;
+  vertexResults = other79.vertexResults;
+  __isset = other79.__isset;
+}
+rvGetResultFromVerticesID_B& rvGetResultFromVerticesID_B::operator=(const rvGetResultFromVerticesID_B& other80) {
+  status = other80.status;
+  report = other80.report;
+  vertexResults = other80.vertexResults;
+  __isset = other80.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID_B& obj) {
+  using apache::thrift::to_string;
+  out << "rvGetResultFromVerticesID_B(";
+  out << "status=" << to_string(obj.status);
+  out << ", " << "report=" << to_string(obj.report);
+  out << ", " << "vertexResults=" << to_string(obj.vertexResults);
+  out << ")";
+  return out;
+}
+
+
+ModelInfo::~ModelInfo() throw() {
+}
+
+
+void ModelInfo::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void ModelInfo::__set_repository(const std::string& val) {
+  this->repository = val;
+}
+
+void ModelInfo::__set_owner(const std::string& val) {
+  this->owner = val;
+}
+
+void ModelInfo::__set_created(const std::string& val) {
+  this->created = val;
+}
+
+void ModelInfo::__set_accessRights(const std::string& val) {
+  this->accessRights = val;
+}
+
+void ModelInfo::__set_administrators(const std::string& val) {
+  this->administrators = val;
+}
+
+void ModelInfo::__set_underlyingSchema(const std::string& val) {
+  this->underlyingSchema = val;
+}
+
+void ModelInfo::__set_nObjectsInModel(const int64_t val) {
+  this->nObjectsInModel = val;
+}
+
+void ModelInfo::__set_dataSize(const int64_t val) {
+  this->dataSize = val;
+}
+
+void ModelInfo::__set_stringEncoding(const std::string& val) {
+  this->stringEncoding = val;
+}
+
+void ModelInfo::__set_options(const std::string& val) {
+  this->options = val;
+}
+
+const char* ModelInfo::ascii_fingerprint = "2F09E0B6489C52E1F2AB8A6194159964";
+const uint8_t ModelInfo::binary_fingerprint[16] = {0x2F,0x09,0xE0,0xB6,0x48,0x9C,0x52,0xE1,0xF2,0xAB,0x8A,0x61,0x94,0x15,0x99,0x64};
+
+uint32_t ModelInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->repository);
+          this->__isset.repository = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->owner);
+          this->__isset.owner = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->created);
+          this->__isset.created = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->accessRights);
+          this->__isset.accessRights = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->administrators);
+          this->__isset.administrators = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->underlyingSchema);
+          this->__isset.underlyingSchema = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->nObjectsInModel);
+          this->__isset.nObjectsInModel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->dataSize);
+          this->__isset.dataSize = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->stringEncoding);
+          this->__isset.stringEncoding = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->options);
+          this->__isset.options = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ModelInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("ModelInfo");
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("repository", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->repository);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("owner", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->owner);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("created", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->created);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("accessRights", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->accessRights);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("administrators", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->administrators);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("underlyingSchema", ::apache::thrift::protocol::T_STRING, 7);
+  xfer += oprot->writeString(this->underlyingSchema);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("nObjectsInModel", ::apache::thrift::protocol::T_I64, 8);
+  xfer += oprot->writeI64(this->nObjectsInModel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dataSize", ::apache::thrift::protocol::T_I64, 9);
+  xfer += oprot->writeI64(this->dataSize);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("stringEncoding", ::apache::thrift::protocol::T_STRING, 10);
+  xfer += oprot->writeString(this->stringEncoding);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("options", ::apache::thrift::protocol::T_STRING, 11);
+  xfer += oprot->writeString(this->options);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(ModelInfo &a, ModelInfo &b) {
+  using ::std::swap;
+  swap(a.name, b.name);
+  swap(a.repository, b.repository);
+  swap(a.owner, b.owner);
+  swap(a.created, b.created);
+  swap(a.accessRights, b.accessRights);
+  swap(a.administrators, b.administrators);
+  swap(a.underlyingSchema, b.underlyingSchema);
+  swap(a.nObjectsInModel, b.nObjectsInModel);
+  swap(a.dataSize, b.dataSize);
+  swap(a.stringEncoding, b.stringEncoding);
+  swap(a.options, b.options);
+  swap(a.__isset, b.__isset);
+}
+
+ModelInfo::ModelInfo(const ModelInfo& other81) {
+  name = other81.name;
+  repository = other81.repository;
+  owner = other81.owner;
+  created = other81.created;
+  accessRights = other81.accessRights;
+  administrators = other81.administrators;
+  underlyingSchema = other81.underlyingSchema;
+  nObjectsInModel = other81.nObjectsInModel;
+  dataSize = other81.dataSize;
+  stringEncoding = other81.stringEncoding;
+  options = other81.options;
+  __isset = other81.__isset;
+}
+ModelInfo& ModelInfo::operator=(const ModelInfo& other82) {
+  name = other82.name;
+  repository = other82.repository;
+  owner = other82.owner;
+  created = other82.created;
+  accessRights = other82.accessRights;
+  administrators = other82.administrators;
+  underlyingSchema = other82.underlyingSchema;
+  nObjectsInModel = other82.nObjectsInModel;
+  dataSize = other82.dataSize;
+  stringEncoding = other82.stringEncoding;
+  options = other82.options;
+  __isset = other82.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const ModelInfo& obj) {
+  using apache::thrift::to_string;
+  out << "ModelInfo(";
+  out << "name=" << to_string(obj.name);
+  out << ", " << "repository=" << to_string(obj.repository);
+  out << ", " << "owner=" << to_string(obj.owner);
+  out << ", " << "created=" << to_string(obj.created);
+  out << ", " << "accessRights=" << to_string(obj.accessRights);
+  out << ", " << "administrators=" << to_string(obj.administrators);
+  out << ", " << "underlyingSchema=" << to_string(obj.underlyingSchema);
+  out << ", " << "nObjectsInModel=" << to_string(obj.nObjectsInModel);
+  out << ", " << "dataSize=" << to_string(obj.dataSize);
+  out << ", " << "stringEncoding=" << to_string(obj.stringEncoding);
+  out << ", " << "options=" << to_string(obj.options);
+  out << ")";
+  return out;
+}
+
+
+rvGetListOfModels::~rvGetListOfModels() throw() {
+}
+
+
+void rvGetListOfModels::__set_status(const std::string& val) {
+  this->status = val;
+}
+
+void rvGetListOfModels::__set_report(const std::string& val) {
+  this->report = val;
+}
+
+void rvGetListOfModels::__set_models(const std::vector<ModelInfo> & val) {
+  this->models = val;
+}
+
+const char* rvGetListOfModels::ascii_fingerprint = "4E7A4AE3E2EE2E39B94F0D24B82B03EE";
+const uint8_t rvGetListOfModels::binary_fingerprint[16] = {0x4E,0x7A,0x4A,0xE3,0xE2,0xEE,0x2E,0x39,0xB9,0x4F,0x0D,0x24,0xB8,0x2B,0x03,0xEE};
+
+uint32_t rvGetListOfModels::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->report);
+          this->__isset.report = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->models.clear();
+            uint32_t _size83;
+            ::apache::thrift::protocol::TType _etype86;
+            xfer += iprot->readListBegin(_etype86, _size83);
+            this->models.resize(_size83);
+            uint32_t _i87;
+            for (_i87 = 0; _i87 < _size83; ++_i87)
+            {
+              xfer += this->models[_i87].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.models = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t rvGetListOfModels::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("rvGetListOfModels");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("report", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->report);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("models", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->models.size()));
+    std::vector<ModelInfo> ::const_iterator _iter88;
+    for (_iter88 = this->models.begin(); _iter88 != this->models.end(); ++_iter88)
+    {
+      xfer += (*_iter88).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(rvGetListOfModels &a, rvGetListOfModels &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.report, b.report);
+  swap(a.models, b.models);
+  swap(a.__isset, b.__isset);
+}
+
+rvGetListOfModels::rvGetListOfModels(const rvGetListOfModels& other89) {
+  status = other89.status;
+  report = other89.report;
+  models = other89.models;
+  __isset = other89.__isset;
+}
+rvGetListOfModels& rvGetListOfModels::operator=(const rvGetListOfModels& other90) {
+  status = other90.status;
+  report = other90.report;
+  models = other90.models;
+  __isset = other90.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const rvGetListOfModels& obj) {
+  using apache::thrift::to_string;
+  out << "rvGetListOfModels(";
+  out << "status=" << to_string(obj.status);
+  out << ", " << "report=" << to_string(obj.report);
+  out << ", " << "models=" << to_string(obj.models);
+  out << ")";
+  return out;
+}
+
 } // namespace

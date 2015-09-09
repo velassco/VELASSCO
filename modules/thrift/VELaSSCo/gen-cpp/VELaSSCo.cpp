@@ -9,272 +9,6 @@
 namespace dli {
 
 
-VELaSSCo_GetResultFormVerticesID_args::~VELaSSCo_GetResultFormVerticesID_args() throw() {
-}
-
-
-uint32_t VELaSSCo_GetResultFormVerticesID_args::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->sessionID);
-          this->__isset.sessionID = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->modelID);
-          this->__isset.modelID = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->analysisID);
-          this->__isset.analysisID = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
-          xfer += iprot->readDouble(this->timeStep);
-          this->__isset.timeStep = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->resultID);
-          this->__isset.resultID = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 6:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->listOfVertices);
-          this->__isset.listOfVertices = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t VELaSSCo_GetResultFormVerticesID_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  oprot->incrementRecursionDepth();
-  xfer += oprot->writeStructBegin("VELaSSCo_GetResultFormVerticesID_args");
-
-  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->sessionID);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->modelID);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->analysisID);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("timeStep", ::apache::thrift::protocol::T_DOUBLE, 4);
-  xfer += oprot->writeDouble(this->timeStep);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("resultID", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString(this->resultID);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("listOfVertices", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString(this->listOfVertices);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  oprot->decrementRecursionDepth();
-  return xfer;
-}
-
-
-VELaSSCo_GetResultFormVerticesID_pargs::~VELaSSCo_GetResultFormVerticesID_pargs() throw() {
-}
-
-
-uint32_t VELaSSCo_GetResultFormVerticesID_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  oprot->incrementRecursionDepth();
-  xfer += oprot->writeStructBegin("VELaSSCo_GetResultFormVerticesID_pargs");
-
-  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString((*(this->sessionID)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString((*(this->modelID)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString((*(this->analysisID)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("timeStep", ::apache::thrift::protocol::T_DOUBLE, 4);
-  xfer += oprot->writeDouble((*(this->timeStep)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("resultID", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString((*(this->resultID)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("listOfVertices", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString((*(this->listOfVertices)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  oprot->decrementRecursionDepth();
-  return xfer;
-}
-
-
-VELaSSCo_GetResultFormVerticesID_result::~VELaSSCo_GetResultFormVerticesID_result() throw() {
-}
-
-
-uint32_t VELaSSCo_GetResultFormVerticesID_result::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->success);
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t VELaSSCo_GetResultFormVerticesID_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
-
-  uint32_t xfer = 0;
-
-  xfer += oprot->writeStructBegin("VELaSSCo_GetResultFormVerticesID_result");
-
-  if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRING, 0);
-    xfer += oprot->writeString(this->success);
-    xfer += oprot->writeFieldEnd();
-  }
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-
-VELaSSCo_GetResultFormVerticesID_presult::~VELaSSCo_GetResultFormVerticesID_presult() throw() {
-}
-
-
-uint32_t VELaSSCo_GetResultFormVerticesID_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString((*(this->success)));
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-
 VELaSSCo_UserLogin_args::~VELaSSCo_UserLogin_args() throw() {
 }
 
@@ -679,6 +413,240 @@ uint32_t VELaSSCo_UserLogout_presult::read(::apache::thrift::protocol::TProtocol
 }
 
 
+VELaSSCo_GetListOfModels_args::~VELaSSCo_GetListOfModels_args() throw() {
+}
+
+
+uint32_t VELaSSCo_GetListOfModels_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sessionID);
+          this->__isset.sessionID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->groupQualifier);
+          this->__isset.groupQualifier = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->modelNamePattern);
+          this->__isset.modelNamePattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->options);
+          this->__isset.options = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCo_GetListOfModels_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCo_GetListOfModels_args");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->sessionID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("groupQualifier", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->groupQualifier);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelNamePattern", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->modelNamePattern);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("options", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->options);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCo_GetListOfModels_pargs::~VELaSSCo_GetListOfModels_pargs() throw() {
+}
+
+
+uint32_t VELaSSCo_GetListOfModels_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCo_GetListOfModels_pargs");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->sessionID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("groupQualifier", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->groupQualifier)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelNamePattern", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString((*(this->modelNamePattern)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("options", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString((*(this->options)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCo_GetListOfModels_result::~VELaSSCo_GetListOfModels_result() throw() {
+}
+
+
+uint32_t VELaSSCo_GetListOfModels_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCo_GetListOfModels_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("VELaSSCo_GetListOfModels_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+VELaSSCo_GetListOfModels_presult::~VELaSSCo_GetListOfModels_presult() throw() {
+}
+
+
+uint32_t VELaSSCo_GetListOfModels_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 VELaSSCo_GetElementOfPointsInSpace_args::~VELaSSCo_GetElementOfPointsInSpace_args() throw() {
 }
 
@@ -723,14 +691,14 @@ uint32_t VELaSSCo_GetElementOfPointsInSpace_args::read(::apache::thrift::protoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->points.clear();
-            uint32_t _size51;
-            ::apache::thrift::protocol::TType _etype54;
-            xfer += iprot->readListBegin(_etype54, _size51);
-            this->points.resize(_size51);
-            uint32_t _i55;
-            for (_i55 = 0; _i55 < _size51; ++_i55)
+            uint32_t _size91;
+            ::apache::thrift::protocol::TType _etype94;
+            xfer += iprot->readListBegin(_etype94, _size91);
+            this->points.resize(_size91);
+            uint32_t _i95;
+            for (_i95 = 0; _i95 < _size91; ++_i95)
             {
-              xfer += this->points[_i55].read(iprot);
+              xfer += this->points[_i95].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -767,10 +735,10 @@ uint32_t VELaSSCo_GetElementOfPointsInSpace_args::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("points", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->points.size()));
-    std::vector<Point> ::const_iterator _iter56;
-    for (_iter56 = this->points.begin(); _iter56 != this->points.end(); ++_iter56)
+    std::vector<Point> ::const_iterator _iter96;
+    for (_iter96 = this->points.begin(); _iter96 != this->points.end(); ++_iter96)
     {
-      xfer += (*_iter56).write(oprot);
+      xfer += (*_iter96).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -803,10 +771,10 @@ uint32_t VELaSSCo_GetElementOfPointsInSpace_pargs::write(::apache::thrift::proto
   xfer += oprot->writeFieldBegin("points", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->points)).size()));
-    std::vector<Point> ::const_iterator _iter57;
-    for (_iter57 = (*(this->points)).begin(); _iter57 != (*(this->points)).end(); ++_iter57)
+    std::vector<Point> ::const_iterator _iter97;
+    for (_iter97 = (*(this->points)).begin(); _iter97 != (*(this->points)).end(); ++_iter97)
     {
-      xfer += (*_iter57).write(oprot);
+      xfer += (*_iter97).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -959,8 +927,8 @@ uint32_t VELaSSCo_GetBoundaryOfLocalMesh_args::read(::apache::thrift::protocol::
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->modelName);
-          this->__isset.modelName = true;
+          xfer += iprot->readString(this->modelID);
+          this->__isset.modelID = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -1010,8 +978,8 @@ uint32_t VELaSSCo_GetBoundaryOfLocalMesh_args::write(::apache::thrift::protocol:
   xfer += oprot->writeString(this->sessionID);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("modelName", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->modelName);
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->modelID);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("meshID", ::apache::thrift::protocol::T_STRING, 3);
@@ -1046,8 +1014,8 @@ uint32_t VELaSSCo_GetBoundaryOfLocalMesh_pargs::write(::apache::thrift::protocol
   xfer += oprot->writeString((*(this->sessionID)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("modelName", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString((*(this->modelName)));
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->modelID)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("meshID", ::apache::thrift::protocol::T_STRING, 3);
@@ -1174,67 +1142,298 @@ uint32_t VELaSSCo_GetBoundaryOfLocalMesh_presult::read(::apache::thrift::protoco
   return xfer;
 }
 
-void VELaSSCoClient::GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices)
-{
-  send_GetResultFormVerticesID(sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
-  recv_GetResultFormVerticesID(_return);
+
+VELaSSCo_GetResultFromVerticesID_args::~VELaSSCo_GetResultFromVerticesID_args() throw() {
 }
 
-void VELaSSCoClient::send_GetResultFormVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices)
-{
-  int32_t cseqid = 0;
-  oprot_->writeMessageBegin("GetResultFormVerticesID", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  VELaSSCo_GetResultFormVerticesID_pargs args;
-  args.sessionID = &sessionID;
-  args.modelID = &modelID;
-  args.analysisID = &analysisID;
-  args.timeStep = &timeStep;
-  args.resultID = &resultID;
-  args.listOfVertices = &listOfVertices;
-  args.write(oprot_);
+uint32_t VELaSSCo_GetResultFromVerticesID_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
-  oprot_->writeMessageEnd();
-  oprot_->getTransport()->writeEnd();
-  oprot_->getTransport()->flush();
-}
-
-void VELaSSCoClient::recv_GetResultFormVerticesID(std::string& _return)
-{
-
-  int32_t rseqid = 0;
+  uint32_t xfer = 0;
   std::string fname;
-  ::apache::thrift::protocol::TMessageType mtype;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
 
-  iprot_->readMessageBegin(fname, mtype, rseqid);
-  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
-    ::apache::thrift::TApplicationException x;
-    x.read(iprot_);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-    throw x;
-  }
-  if (mtype != ::apache::thrift::protocol::T_REPLY) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-  }
-  if (fname.compare("GetResultFormVerticesID") != 0) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-  }
-  VELaSSCo_GetResultFormVerticesID_presult result;
-  result.success = &_return;
-  result.read(iprot_);
-  iprot_->readMessageEnd();
-  iprot_->getTransport()->readEnd();
+  xfer += iprot->readStructBegin(fname);
 
-  if (result.__isset.success) {
-    // _return pointer has now been filled
-    return;
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sessionID);
+          this->__isset.sessionID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->modelID);
+          this->__isset.modelID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->vertexIDs.clear();
+            uint32_t _size98;
+            ::apache::thrift::protocol::TType _etype101;
+            xfer += iprot->readListBegin(_etype101, _size98);
+            this->vertexIDs.resize(_size98);
+            uint32_t _i102;
+            for (_i102 = 0; _i102 < _size98; ++_i102)
+            {
+              xfer += iprot->readI64(this->vertexIDs[_i102]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.vertexIDs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->resultID);
+          this->__isset.resultID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->time_step);
+          this->__isset.time_step = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->analysisID);
+          this->__isset.analysisID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetResultFormVerticesID failed: unknown result");
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCo_GetResultFromVerticesID_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCo_GetResultFromVerticesID_args");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->sessionID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->modelID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("vertexIDs", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->vertexIDs.size()));
+    std::vector<int64_t> ::const_iterator _iter103;
+    for (_iter103 = this->vertexIDs.begin(); _iter103 != this->vertexIDs.end(); ++_iter103)
+    {
+      xfer += oprot->writeI64((*_iter103));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("resultID", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->resultID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("time_step", ::apache::thrift::protocol::T_DOUBLE, 5);
+  xfer += oprot->writeDouble(this->time_step);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->analysisID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCo_GetResultFromVerticesID_pargs::~VELaSSCo_GetResultFromVerticesID_pargs() throw() {
+}
+
+
+uint32_t VELaSSCo_GetResultFromVerticesID_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCo_GetResultFromVerticesID_pargs");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->sessionID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->modelID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("vertexIDs", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->vertexIDs)).size()));
+    std::vector<int64_t> ::const_iterator _iter104;
+    for (_iter104 = (*(this->vertexIDs)).begin(); _iter104 != (*(this->vertexIDs)).end(); ++_iter104)
+    {
+      xfer += oprot->writeI64((*_iter104));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("resultID", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString((*(this->resultID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("time_step", ::apache::thrift::protocol::T_DOUBLE, 5);
+  xfer += oprot->writeDouble((*(this->time_step)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString((*(this->analysisID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCo_GetResultFromVerticesID_result::~VELaSSCo_GetResultFromVerticesID_result() throw() {
+}
+
+
+uint32_t VELaSSCo_GetResultFromVerticesID_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCo_GetResultFromVerticesID_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("VELaSSCo_GetResultFromVerticesID_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+VELaSSCo_GetResultFromVerticesID_presult::~VELaSSCo_GetResultFromVerticesID_presult() throw() {
+}
+
+
+uint32_t VELaSSCo_GetResultFromVerticesID_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
 }
 
 void VELaSSCoClient::UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password)
@@ -1355,6 +1554,67 @@ void VELaSSCoClient::recv_UserLogout(std::string& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "UserLogout failed: unknown result");
 }
 
+void VELaSSCoClient::GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options)
+{
+  send_GetListOfModels(sessionID, groupQualifier, modelNamePattern, options);
+  recv_GetListOfModels(_return);
+}
+
+void VELaSSCoClient::send_GetListOfModels(const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("GetListOfModels", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  VELaSSCo_GetListOfModels_pargs args;
+  args.sessionID = &sessionID;
+  args.groupQualifier = &groupQualifier;
+  args.modelNamePattern = &modelNamePattern;
+  args.options = &options;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void VELaSSCoClient::recv_GetListOfModels(rvGetListOfModels& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("GetListOfModels") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  VELaSSCo_GetListOfModels_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetListOfModels failed: unknown result");
+}
+
 void VELaSSCoClient::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points)
 {
   send_GetElementOfPointsInSpace(sessionID, modelName, points);
@@ -1415,20 +1675,20 @@ void VELaSSCoClient::recv_GetElementOfPointsInSpace(rvGetElementOfPointsInSpace&
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetElementOfPointsInSpace failed: unknown result");
 }
 
-void VELaSSCoClient::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step)
+void VELaSSCoClient::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
 {
-  send_GetBoundaryOfLocalMesh(sessionID, modelName, meshID, analysisID, time_step);
+  send_GetBoundaryOfLocalMesh(sessionID, modelID, meshID, analysisID, time_step);
   recv_GetBoundaryOfLocalMesh(_return);
 }
 
-void VELaSSCoClient::send_GetBoundaryOfLocalMesh(const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step)
+void VELaSSCoClient::send_GetBoundaryOfLocalMesh(const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("GetBoundaryOfLocalMesh", ::apache::thrift::protocol::T_CALL, cseqid);
 
   VELaSSCo_GetBoundaryOfLocalMesh_pargs args;
   args.sessionID = &sessionID;
-  args.modelName = &modelName;
+  args.modelID = &modelID;
   args.meshID = &meshID;
   args.analysisID = &analysisID;
   args.time_step = &time_step;
@@ -1477,6 +1737,69 @@ void VELaSSCoClient::recv_GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _retu
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetBoundaryOfLocalMesh failed: unknown result");
 }
 
+void VELaSSCoClient::GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID)
+{
+  send_GetResultFromVerticesID(sessionID, modelID, vertexIDs, resultID, time_step, analysisID);
+  recv_GetResultFromVerticesID(_return);
+}
+
+void VELaSSCoClient::send_GetResultFromVerticesID(const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("GetResultFromVerticesID", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  VELaSSCo_GetResultFromVerticesID_pargs args;
+  args.sessionID = &sessionID;
+  args.modelID = &modelID;
+  args.vertexIDs = &vertexIDs;
+  args.resultID = &resultID;
+  args.time_step = &time_step;
+  args.analysisID = &analysisID;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void VELaSSCoClient::recv_GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("GetResultFromVerticesID") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  VELaSSCo_GetResultFromVerticesID_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetResultFromVerticesID failed: unknown result");
+}
+
 bool VELaSSCoProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
   ProcessMap::iterator pfn;
   pfn = processMap_.find(fname);
@@ -1494,60 +1817,6 @@ bool VELaSSCoProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* ipro
   }
   (this->*(pfn->second))(seqid, iprot, oprot, callContext);
   return true;
-}
-
-void VELaSSCoProcessor::process_GetResultFormVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
-{
-  void* ctx = NULL;
-  if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("VELaSSCo.GetResultFormVerticesID", callContext);
-  }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCo.GetResultFormVerticesID");
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "VELaSSCo.GetResultFormVerticesID");
-  }
-
-  VELaSSCo_GetResultFormVerticesID_args args;
-  args.read(iprot);
-  iprot->readMessageEnd();
-  uint32_t bytes = iprot->getTransport()->readEnd();
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "VELaSSCo.GetResultFormVerticesID", bytes);
-  }
-
-  VELaSSCo_GetResultFormVerticesID_result result;
-  try {
-    iface_->GetResultFormVerticesID(result.success, args.sessionID, args.modelID, args.analysisID, args.timeStep, args.resultID, args.listOfVertices);
-    result.__isset.success = true;
-  } catch (const std::exception& e) {
-    if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "VELaSSCo.GetResultFormVerticesID");
-    }
-
-    ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("GetResultFormVerticesID", ::apache::thrift::protocol::T_EXCEPTION, seqid);
-    x.write(oprot);
-    oprot->writeMessageEnd();
-    oprot->getTransport()->writeEnd();
-    oprot->getTransport()->flush();
-    return;
-  }
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "VELaSSCo.GetResultFormVerticesID");
-  }
-
-  oprot->writeMessageBegin("GetResultFormVerticesID", ::apache::thrift::protocol::T_REPLY, seqid);
-  result.write(oprot);
-  oprot->writeMessageEnd();
-  bytes = oprot->getTransport()->writeEnd();
-  oprot->getTransport()->flush();
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "VELaSSCo.GetResultFormVerticesID", bytes);
-  }
 }
 
 void VELaSSCoProcessor::process_UserLogin(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
@@ -1658,6 +1927,60 @@ void VELaSSCoProcessor::process_UserLogout(int32_t seqid, ::apache::thrift::prot
   }
 }
 
+void VELaSSCoProcessor::process_GetListOfModels(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("VELaSSCo.GetListOfModels", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCo.GetListOfModels");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "VELaSSCo.GetListOfModels");
+  }
+
+  VELaSSCo_GetListOfModels_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "VELaSSCo.GetListOfModels", bytes);
+  }
+
+  VELaSSCo_GetListOfModels_result result;
+  try {
+    iface_->GetListOfModels(result.success, args.sessionID, args.groupQualifier, args.modelNamePattern, args.options);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "VELaSSCo.GetListOfModels");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("GetListOfModels", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "VELaSSCo.GetListOfModels");
+  }
+
+  oprot->writeMessageBegin("GetListOfModels", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "VELaSSCo.GetListOfModels", bytes);
+  }
+}
+
 void VELaSSCoProcessor::process_GetElementOfPointsInSpace(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
@@ -1735,7 +2058,7 @@ void VELaSSCoProcessor::process_GetBoundaryOfLocalMesh(int32_t seqid, ::apache::
 
   VELaSSCo_GetBoundaryOfLocalMesh_result result;
   try {
-    iface_->GetBoundaryOfLocalMesh(result.success, args.sessionID, args.modelName, args.meshID, args.analysisID, args.time_step);
+    iface_->GetBoundaryOfLocalMesh(result.success, args.sessionID, args.modelID, args.meshID, args.analysisID, args.time_step);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
@@ -1763,6 +2086,60 @@ void VELaSSCoProcessor::process_GetBoundaryOfLocalMesh(int32_t seqid, ::apache::
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "VELaSSCo.GetBoundaryOfLocalMesh", bytes);
+  }
+}
+
+void VELaSSCoProcessor::process_GetResultFromVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("VELaSSCo.GetResultFromVerticesID", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCo.GetResultFromVerticesID");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "VELaSSCo.GetResultFromVerticesID");
+  }
+
+  VELaSSCo_GetResultFromVerticesID_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "VELaSSCo.GetResultFromVerticesID", bytes);
+  }
+
+  VELaSSCo_GetResultFromVerticesID_result result;
+  try {
+    iface_->GetResultFromVerticesID(result.success, args.sessionID, args.modelID, args.vertexIDs, args.resultID, args.time_step, args.analysisID);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "VELaSSCo.GetResultFromVerticesID");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("GetResultFromVerticesID", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "VELaSSCo.GetResultFromVerticesID");
+  }
+
+  oprot->writeMessageBegin("GetResultFromVerticesID", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "VELaSSCo.GetResultFromVerticesID", bytes);
   }
 }
 

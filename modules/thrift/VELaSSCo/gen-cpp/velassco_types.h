@@ -42,6 +42,16 @@ class rvGetElementOfPointsInSpace;
 
 class rvGetBoundaryOfLocalMesh;
 
+class rvGetResultFromVerticesID_A;
+
+class VertexResult;
+
+class rvGetResultFromVerticesID_B;
+
+class ModelInfo;
+
+class rvGetListOfModels;
+
 typedef struct _Point__isset {
   _Point__isset() : x(false), y(false), z(false) {}
   bool x :1;
@@ -432,6 +442,341 @@ class rvGetBoundaryOfLocalMesh {
 };
 
 void swap(rvGetBoundaryOfLocalMesh &a, rvGetBoundaryOfLocalMesh &b);
+
+typedef struct _rvGetResultFromVerticesID_A__isset {
+  _rvGetResultFromVerticesID_A__isset() : status(false), report(false), nVertices(false), nValuesPrVertex(false), vertexIDs(false), resultValues(false) {}
+  bool status :1;
+  bool report :1;
+  bool nVertices :1;
+  bool nValuesPrVertex :1;
+  bool vertexIDs :1;
+  bool resultValues :1;
+} _rvGetResultFromVerticesID_A__isset;
+
+class rvGetResultFromVerticesID_A {
+ public:
+
+  static const char* ascii_fingerprint; // = "B51FB0E8BE2E9146E9BCED13565E0E5F";
+  static const uint8_t binary_fingerprint[16]; // = {0xB5,0x1F,0xB0,0xE8,0xBE,0x2E,0x91,0x46,0xE9,0xBC,0xED,0x13,0x56,0x5E,0x0E,0x5F};
+
+  rvGetResultFromVerticesID_A(const rvGetResultFromVerticesID_A&);
+  rvGetResultFromVerticesID_A& operator=(const rvGetResultFromVerticesID_A&);
+  rvGetResultFromVerticesID_A() : status(), report(), nVertices(0), nValuesPrVertex(0) {
+  }
+
+  virtual ~rvGetResultFromVerticesID_A() throw();
+  std::string status;
+  std::string report;
+  int64_t nVertices;
+  int64_t nValuesPrVertex;
+  std::vector<int64_t>  vertexIDs;
+  std::vector<double>  resultValues;
+
+  _rvGetResultFromVerticesID_A__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_nVertices(const int64_t val);
+
+  void __set_nValuesPrVertex(const int64_t val);
+
+  void __set_vertexIDs(const std::vector<int64_t> & val);
+
+  void __set_resultValues(const std::vector<double> & val);
+
+  bool operator == (const rvGetResultFromVerticesID_A & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(nVertices == rhs.nVertices))
+      return false;
+    if (!(nValuesPrVertex == rhs.nValuesPrVertex))
+      return false;
+    if (!(vertexIDs == rhs.vertexIDs))
+      return false;
+    if (!(resultValues == rhs.resultValues))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetResultFromVerticesID_A &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetResultFromVerticesID_A & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID_A& obj);
+};
+
+void swap(rvGetResultFromVerticesID_A &a, rvGetResultFromVerticesID_A &b);
+
+typedef struct _VertexResult__isset {
+  _VertexResult__isset() : vertexID(false), resuls(false) {}
+  bool vertexID :1;
+  bool resuls :1;
+} _VertexResult__isset;
+
+class VertexResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "1CB61EEDEC70E44B3B75F0C0C76D5496";
+  static const uint8_t binary_fingerprint[16]; // = {0x1C,0xB6,0x1E,0xED,0xEC,0x70,0xE4,0x4B,0x3B,0x75,0xF0,0xC0,0xC7,0x6D,0x54,0x96};
+
+  VertexResult(const VertexResult&);
+  VertexResult& operator=(const VertexResult&);
+  VertexResult() : vertexID(0) {
+  }
+
+  virtual ~VertexResult() throw();
+  int64_t vertexID;
+  std::vector<double>  resuls;
+
+  _VertexResult__isset __isset;
+
+  void __set_vertexID(const int64_t val);
+
+  void __set_resuls(const std::vector<double> & val);
+
+  bool operator == (const VertexResult & rhs) const
+  {
+    if (!(vertexID == rhs.vertexID))
+      return false;
+    if (!(resuls == rhs.resuls))
+      return false;
+    return true;
+  }
+  bool operator != (const VertexResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VertexResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VertexResult& obj);
+};
+
+void swap(VertexResult &a, VertexResult &b);
+
+typedef struct _rvGetResultFromVerticesID_B__isset {
+  _rvGetResultFromVerticesID_B__isset() : status(false), report(false), vertexResults(false) {}
+  bool status :1;
+  bool report :1;
+  bool vertexResults :1;
+} _rvGetResultFromVerticesID_B__isset;
+
+class rvGetResultFromVerticesID_B {
+ public:
+
+  static const char* ascii_fingerprint; // = "7D7F6E03D85558681F4AC69C1B4F3FC4";
+  static const uint8_t binary_fingerprint[16]; // = {0x7D,0x7F,0x6E,0x03,0xD8,0x55,0x58,0x68,0x1F,0x4A,0xC6,0x9C,0x1B,0x4F,0x3F,0xC4};
+
+  rvGetResultFromVerticesID_B(const rvGetResultFromVerticesID_B&);
+  rvGetResultFromVerticesID_B& operator=(const rvGetResultFromVerticesID_B&);
+  rvGetResultFromVerticesID_B() : status(), report() {
+  }
+
+  virtual ~rvGetResultFromVerticesID_B() throw();
+  std::string status;
+  std::string report;
+  std::vector<VertexResult>  vertexResults;
+
+  _rvGetResultFromVerticesID_B__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_vertexResults(const std::vector<VertexResult> & val);
+
+  bool operator == (const rvGetResultFromVerticesID_B & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(vertexResults == rhs.vertexResults))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetResultFromVerticesID_B &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetResultFromVerticesID_B & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID_B& obj);
+};
+
+void swap(rvGetResultFromVerticesID_B &a, rvGetResultFromVerticesID_B &b);
+
+typedef struct _ModelInfo__isset {
+  _ModelInfo__isset() : name(false), repository(false), owner(false), created(false), accessRights(false), administrators(false), underlyingSchema(false), nObjectsInModel(false), dataSize(false), stringEncoding(false), options(false) {}
+  bool name :1;
+  bool repository :1;
+  bool owner :1;
+  bool created :1;
+  bool accessRights :1;
+  bool administrators :1;
+  bool underlyingSchema :1;
+  bool nObjectsInModel :1;
+  bool dataSize :1;
+  bool stringEncoding :1;
+  bool options :1;
+} _ModelInfo__isset;
+
+class ModelInfo {
+ public:
+
+  static const char* ascii_fingerprint; // = "2F09E0B6489C52E1F2AB8A6194159964";
+  static const uint8_t binary_fingerprint[16]; // = {0x2F,0x09,0xE0,0xB6,0x48,0x9C,0x52,0xE1,0xF2,0xAB,0x8A,0x61,0x94,0x15,0x99,0x64};
+
+  ModelInfo(const ModelInfo&);
+  ModelInfo& operator=(const ModelInfo&);
+  ModelInfo() : name(), repository(), owner(), created(), accessRights(), administrators(), underlyingSchema(), nObjectsInModel(0), dataSize(0), stringEncoding(), options() {
+  }
+
+  virtual ~ModelInfo() throw();
+  std::string name;
+  std::string repository;
+  std::string owner;
+  std::string created;
+  std::string accessRights;
+  std::string administrators;
+  std::string underlyingSchema;
+  int64_t nObjectsInModel;
+  int64_t dataSize;
+  std::string stringEncoding;
+  std::string options;
+
+  _ModelInfo__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_repository(const std::string& val);
+
+  void __set_owner(const std::string& val);
+
+  void __set_created(const std::string& val);
+
+  void __set_accessRights(const std::string& val);
+
+  void __set_administrators(const std::string& val);
+
+  void __set_underlyingSchema(const std::string& val);
+
+  void __set_nObjectsInModel(const int64_t val);
+
+  void __set_dataSize(const int64_t val);
+
+  void __set_stringEncoding(const std::string& val);
+
+  void __set_options(const std::string& val);
+
+  bool operator == (const ModelInfo & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(repository == rhs.repository))
+      return false;
+    if (!(owner == rhs.owner))
+      return false;
+    if (!(created == rhs.created))
+      return false;
+    if (!(accessRights == rhs.accessRights))
+      return false;
+    if (!(administrators == rhs.administrators))
+      return false;
+    if (!(underlyingSchema == rhs.underlyingSchema))
+      return false;
+    if (!(nObjectsInModel == rhs.nObjectsInModel))
+      return false;
+    if (!(dataSize == rhs.dataSize))
+      return false;
+    if (!(stringEncoding == rhs.stringEncoding))
+      return false;
+    if (!(options == rhs.options))
+      return false;
+    return true;
+  }
+  bool operator != (const ModelInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ModelInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ModelInfo& obj);
+};
+
+void swap(ModelInfo &a, ModelInfo &b);
+
+typedef struct _rvGetListOfModels__isset {
+  _rvGetListOfModels__isset() : status(false), report(false), models(false) {}
+  bool status :1;
+  bool report :1;
+  bool models :1;
+} _rvGetListOfModels__isset;
+
+class rvGetListOfModels {
+ public:
+
+  static const char* ascii_fingerprint; // = "4E7A4AE3E2EE2E39B94F0D24B82B03EE";
+  static const uint8_t binary_fingerprint[16]; // = {0x4E,0x7A,0x4A,0xE3,0xE2,0xEE,0x2E,0x39,0xB9,0x4F,0x0D,0x24,0xB8,0x2B,0x03,0xEE};
+
+  rvGetListOfModels(const rvGetListOfModels&);
+  rvGetListOfModels& operator=(const rvGetListOfModels&);
+  rvGetListOfModels() : status(), report() {
+  }
+
+  virtual ~rvGetListOfModels() throw();
+  std::string status;
+  std::string report;
+  std::vector<ModelInfo>  models;
+
+  _rvGetListOfModels__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_models(const std::vector<ModelInfo> & val);
+
+  bool operator == (const rvGetListOfModels & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(models == rhs.models))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetListOfModels &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetListOfModels & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetListOfModels& obj);
+};
+
+void swap(rvGetListOfModels &a, rvGetListOfModels &b);
 
 } // namespace
 

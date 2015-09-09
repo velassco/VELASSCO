@@ -23,25 +23,6 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
   }
 
   /**
-   * Return the status of the different services
-   * which run on the Data Layer.
-   * @return string - returns a structured list of avialbe vertices,
-   * 	with the attached list of double
-   * 	if errors occur the contect is also returned here?
-   * 
-   * @param sessionID
-   * @param modelID
-   * @param analysisID
-   * @param timeStep
-   * @param resultID
-   * @param listOfVertices
-   */
-  void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
-    // Your implementation goes here
-    printf("GetResultFormVerticesID\n");
-  }
-
-  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name
@@ -64,6 +45,20 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
   }
 
   /**
+   * Returns a list of names of data sets that are available from the VELaSSCo platform
+   * and - optionally - their properties.
+   * 
+   * @param sessionID
+   * @param groupQualifier
+   * @param modelNamePattern
+   * @param options
+   */
+  void GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options) {
+    // Your implementation goes here
+    printf("GetListOfModels\n");
+  }
+
+  /**
    * For each point in the input parameter points, the method returns data about the element that contains the point.
    * The number of elements in the returned list of elements shall be the same as the number of points in the input parameter.
    * If the method does not find an element for a point it shall return a dummy element with id equal to -1.
@@ -82,14 +77,30 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
    * i.e. triangles that are not shared between two or more elements.
    * 
    * @param sessionID
-   * @param modelName
+   * @param modelID
    * @param meshID
    * @param analysisID
    * @param time_step
    */
-  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step) {
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step) {
     // Your implementation goes here
     printf("GetBoundaryOfLocalMesh\n");
+  }
+
+  /**
+   * Given a list of vertices id's from the model, vertexIDs, GetResultFromVerticesID will get
+   * the result value of a given type (resultID) for each vertex id of the list.
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param vertexIDs
+   * @param resultID
+   * @param time_step
+   * @param analysisID
+   */
+  void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID) {
+    // Your implementation goes here
+    printf("GetResultFromVerticesID\n");
   }
 
 };

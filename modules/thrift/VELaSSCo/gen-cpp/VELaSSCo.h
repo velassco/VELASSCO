@@ -17,22 +17,6 @@ class VELaSSCoIf {
   virtual ~VELaSSCoIf() {}
 
   /**
-   * Return the status of the different services
-   * which run on the Data Layer.
-   * @return string - returns a structured list of avialbe vertices,
-   * 	with the attached list of double
-   * 	if errors occur the contect is also returned here?
-   * 
-   * @param sessionID
-   * @param modelID
-   * @param analysisID
-   * @param timeStep
-   * @param resultID
-   * @param listOfVertices
-   */
-  virtual void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) = 0;
-
-  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name
@@ -47,6 +31,17 @@ class VELaSSCoIf {
    * @param sessionID
    */
   virtual void UserLogout(std::string& _return, const std::string& sessionID) = 0;
+
+  /**
+   * Returns a list of names of data sets that are available from the VELaSSCo platform
+   * and - optionally - their properties.
+   * 
+   * @param sessionID
+   * @param groupQualifier
+   * @param modelNamePattern
+   * @param options
+   */
+  virtual void GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options) = 0;
 
   /**
    * For each point in the input parameter points, the method returns data about the element that contains the point.
@@ -64,12 +59,25 @@ class VELaSSCoIf {
    * i.e. triangles that are not shared between two or more elements.
    * 
    * @param sessionID
-   * @param modelName
+   * @param modelID
    * @param meshID
    * @param analysisID
    * @param time_step
    */
-  virtual void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step) = 0;
+  virtual void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step) = 0;
+
+  /**
+   * Given a list of vertices id's from the model, vertexIDs, GetResultFromVerticesID will get
+   * the result value of a given type (resultID) for each vertex id of the list.
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param vertexIDs
+   * @param resultID
+   * @param time_step
+   * @param analysisID
+   */
+  virtual void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID) = 0;
 };
 
 class VELaSSCoIfFactory {
@@ -99,176 +107,24 @@ class VELaSSCoIfSingletonFactory : virtual public VELaSSCoIfFactory {
 class VELaSSCoNull : virtual public VELaSSCoIf {
  public:
   virtual ~VELaSSCoNull() {}
-  void GetResultFormVerticesID(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */, const std::string& /* listOfVertices */) {
-    return;
-  }
   void UserLogin(std::string& /* _return */, const std::string& /* user_name */, const std::string& /* role */, const std::string& /* password */) {
     return;
   }
   void UserLogout(std::string& /* _return */, const std::string& /* sessionID */) {
     return;
   }
+  void GetListOfModels(rvGetListOfModels& /* _return */, const std::string& /* sessionID */, const std::string& /* groupQualifier */, const std::string& /* modelNamePattern */, const std::string& /* options */) {
+    return;
+  }
   void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& /* _return */, const std::string& /* sessionID */, const std::string& /* modelName */, const std::vector<Point> & /* points */) {
     return;
   }
-  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& /* _return */, const std::string& /* sessionID */, const std::string& /* modelName */, const std::string& /* meshID */, const std::string& /* analysisID */, const double /* time_step */) {
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* meshID */, const std::string& /* analysisID */, const double /* time_step */) {
     return;
   }
-};
-
-typedef struct _VELaSSCo_GetResultFormVerticesID_args__isset {
-  _VELaSSCo_GetResultFormVerticesID_args__isset() : sessionID(false), modelID(false), analysisID(false), timeStep(false), resultID(false), listOfVertices(false) {}
-  bool sessionID :1;
-  bool modelID :1;
-  bool analysisID :1;
-  bool timeStep :1;
-  bool resultID :1;
-  bool listOfVertices :1;
-} _VELaSSCo_GetResultFormVerticesID_args__isset;
-
-class VELaSSCo_GetResultFormVerticesID_args {
- public:
-
-  static const char* ascii_fingerprint; // = "028F20434CE844656C7FFE290B942938";
-  static const uint8_t binary_fingerprint[16]; // = {0x02,0x8F,0x20,0x43,0x4C,0xE8,0x44,0x65,0x6C,0x7F,0xFE,0x29,0x0B,0x94,0x29,0x38};
-
-  VELaSSCo_GetResultFormVerticesID_args(const VELaSSCo_GetResultFormVerticesID_args&);
-  VELaSSCo_GetResultFormVerticesID_args& operator=(const VELaSSCo_GetResultFormVerticesID_args&);
-  VELaSSCo_GetResultFormVerticesID_args() : sessionID(), modelID(), analysisID(), timeStep(0), resultID(), listOfVertices() {
+  void GetResultFromVerticesID(rvGetResultFromVerticesID_B& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::vector<int64_t> & /* vertexIDs */, const std::string& /* resultID */, const double /* time_step */, const std::string& /* analysisID */) {
+    return;
   }
-
-  virtual ~VELaSSCo_GetResultFormVerticesID_args() throw();
-  std::string sessionID;
-  std::string modelID;
-  std::string analysisID;
-  double timeStep;
-  std::string resultID;
-  std::string listOfVertices;
-
-  _VELaSSCo_GetResultFormVerticesID_args__isset __isset;
-
-  void __set_sessionID(const std::string& val);
-
-  void __set_modelID(const std::string& val);
-
-  void __set_analysisID(const std::string& val);
-
-  void __set_timeStep(const double val);
-
-  void __set_resultID(const std::string& val);
-
-  void __set_listOfVertices(const std::string& val);
-
-  bool operator == (const VELaSSCo_GetResultFormVerticesID_args & rhs) const
-  {
-    if (!(sessionID == rhs.sessionID))
-      return false;
-    if (!(modelID == rhs.modelID))
-      return false;
-    if (!(analysisID == rhs.analysisID))
-      return false;
-    if (!(timeStep == rhs.timeStep))
-      return false;
-    if (!(resultID == rhs.resultID))
-      return false;
-    if (!(listOfVertices == rhs.listOfVertices))
-      return false;
-    return true;
-  }
-  bool operator != (const VELaSSCo_GetResultFormVerticesID_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const VELaSSCo_GetResultFormVerticesID_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_args& obj);
-};
-
-
-class VELaSSCo_GetResultFormVerticesID_pargs {
- public:
-
-  static const char* ascii_fingerprint; // = "028F20434CE844656C7FFE290B942938";
-  static const uint8_t binary_fingerprint[16]; // = {0x02,0x8F,0x20,0x43,0x4C,0xE8,0x44,0x65,0x6C,0x7F,0xFE,0x29,0x0B,0x94,0x29,0x38};
-
-
-  virtual ~VELaSSCo_GetResultFormVerticesID_pargs() throw();
-  const std::string* sessionID;
-  const std::string* modelID;
-  const std::string* analysisID;
-  const double* timeStep;
-  const std::string* resultID;
-  const std::string* listOfVertices;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_pargs& obj);
-};
-
-typedef struct _VELaSSCo_GetResultFormVerticesID_result__isset {
-  _VELaSSCo_GetResultFormVerticesID_result__isset() : success(false) {}
-  bool success :1;
-} _VELaSSCo_GetResultFormVerticesID_result__isset;
-
-class VELaSSCo_GetResultFormVerticesID_result {
- public:
-
-  static const char* ascii_fingerprint; // = "9A73381FEFD6B67F432E717102246330";
-  static const uint8_t binary_fingerprint[16]; // = {0x9A,0x73,0x38,0x1F,0xEF,0xD6,0xB6,0x7F,0x43,0x2E,0x71,0x71,0x02,0x24,0x63,0x30};
-
-  VELaSSCo_GetResultFormVerticesID_result(const VELaSSCo_GetResultFormVerticesID_result&);
-  VELaSSCo_GetResultFormVerticesID_result& operator=(const VELaSSCo_GetResultFormVerticesID_result&);
-  VELaSSCo_GetResultFormVerticesID_result() : success() {
-  }
-
-  virtual ~VELaSSCo_GetResultFormVerticesID_result() throw();
-  std::string success;
-
-  _VELaSSCo_GetResultFormVerticesID_result__isset __isset;
-
-  void __set_success(const std::string& val);
-
-  bool operator == (const VELaSSCo_GetResultFormVerticesID_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const VELaSSCo_GetResultFormVerticesID_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const VELaSSCo_GetResultFormVerticesID_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_result& obj);
-};
-
-typedef struct _VELaSSCo_GetResultFormVerticesID_presult__isset {
-  _VELaSSCo_GetResultFormVerticesID_presult__isset() : success(false) {}
-  bool success :1;
-} _VELaSSCo_GetResultFormVerticesID_presult__isset;
-
-class VELaSSCo_GetResultFormVerticesID_presult {
- public:
-
-  static const char* ascii_fingerprint; // = "9A73381FEFD6B67F432E717102246330";
-  static const uint8_t binary_fingerprint[16]; // = {0x9A,0x73,0x38,0x1F,0xEF,0xD6,0xB6,0x7F,0x43,0x2E,0x71,0x71,0x02,0x24,0x63,0x30};
-
-
-  virtual ~VELaSSCo_GetResultFormVerticesID_presult() throw();
-  std::string* success;
-
-  _VELaSSCo_GetResultFormVerticesID_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_presult& obj);
 };
 
 typedef struct _VELaSSCo_UserLogin_args__isset {
@@ -525,6 +381,147 @@ class VELaSSCo_UserLogout_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_UserLogout_presult& obj);
 };
 
+typedef struct _VELaSSCo_GetListOfModels_args__isset {
+  _VELaSSCo_GetListOfModels_args__isset() : sessionID(false), groupQualifier(false), modelNamePattern(false), options(false) {}
+  bool sessionID :1;
+  bool groupQualifier :1;
+  bool modelNamePattern :1;
+  bool options :1;
+} _VELaSSCo_GetListOfModels_args__isset;
+
+class VELaSSCo_GetListOfModels_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "C93D890311F28844166CF6E571EB3AC2";
+  static const uint8_t binary_fingerprint[16]; // = {0xC9,0x3D,0x89,0x03,0x11,0xF2,0x88,0x44,0x16,0x6C,0xF6,0xE5,0x71,0xEB,0x3A,0xC2};
+
+  VELaSSCo_GetListOfModels_args(const VELaSSCo_GetListOfModels_args&);
+  VELaSSCo_GetListOfModels_args& operator=(const VELaSSCo_GetListOfModels_args&);
+  VELaSSCo_GetListOfModels_args() : sessionID(), groupQualifier(), modelNamePattern(), options() {
+  }
+
+  virtual ~VELaSSCo_GetListOfModels_args() throw();
+  std::string sessionID;
+  std::string groupQualifier;
+  std::string modelNamePattern;
+  std::string options;
+
+  _VELaSSCo_GetListOfModels_args__isset __isset;
+
+  void __set_sessionID(const std::string& val);
+
+  void __set_groupQualifier(const std::string& val);
+
+  void __set_modelNamePattern(const std::string& val);
+
+  void __set_options(const std::string& val);
+
+  bool operator == (const VELaSSCo_GetListOfModels_args & rhs) const
+  {
+    if (!(sessionID == rhs.sessionID))
+      return false;
+    if (!(groupQualifier == rhs.groupQualifier))
+      return false;
+    if (!(modelNamePattern == rhs.modelNamePattern))
+      return false;
+    if (!(options == rhs.options))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetListOfModels_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetListOfModels_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModels_args& obj);
+};
+
+
+class VELaSSCo_GetListOfModels_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "C93D890311F28844166CF6E571EB3AC2";
+  static const uint8_t binary_fingerprint[16]; // = {0xC9,0x3D,0x89,0x03,0x11,0xF2,0x88,0x44,0x16,0x6C,0xF6,0xE5,0x71,0xEB,0x3A,0xC2};
+
+
+  virtual ~VELaSSCo_GetListOfModels_pargs() throw();
+  const std::string* sessionID;
+  const std::string* groupQualifier;
+  const std::string* modelNamePattern;
+  const std::string* options;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModels_pargs& obj);
+};
+
+typedef struct _VELaSSCo_GetListOfModels_result__isset {
+  _VELaSSCo_GetListOfModels_result__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetListOfModels_result__isset;
+
+class VELaSSCo_GetListOfModels_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "04033E156B45928A866765A4A369D736";
+  static const uint8_t binary_fingerprint[16]; // = {0x04,0x03,0x3E,0x15,0x6B,0x45,0x92,0x8A,0x86,0x67,0x65,0xA4,0xA3,0x69,0xD7,0x36};
+
+  VELaSSCo_GetListOfModels_result(const VELaSSCo_GetListOfModels_result&);
+  VELaSSCo_GetListOfModels_result& operator=(const VELaSSCo_GetListOfModels_result&);
+  VELaSSCo_GetListOfModels_result() {
+  }
+
+  virtual ~VELaSSCo_GetListOfModels_result() throw();
+  rvGetListOfModels success;
+
+  _VELaSSCo_GetListOfModels_result__isset __isset;
+
+  void __set_success(const rvGetListOfModels& val);
+
+  bool operator == (const VELaSSCo_GetListOfModels_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetListOfModels_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetListOfModels_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModels_result& obj);
+};
+
+typedef struct _VELaSSCo_GetListOfModels_presult__isset {
+  _VELaSSCo_GetListOfModels_presult__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetListOfModels_presult__isset;
+
+class VELaSSCo_GetListOfModels_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "04033E156B45928A866765A4A369D736";
+  static const uint8_t binary_fingerprint[16]; // = {0x04,0x03,0x3E,0x15,0x6B,0x45,0x92,0x8A,0x86,0x67,0x65,0xA4,0xA3,0x69,0xD7,0x36};
+
+
+  virtual ~VELaSSCo_GetListOfModels_presult() throw();
+  rvGetListOfModels* success;
+
+  _VELaSSCo_GetListOfModels_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModels_presult& obj);
+};
+
 typedef struct _VELaSSCo_GetElementOfPointsInSpace_args__isset {
   _VELaSSCo_GetElementOfPointsInSpace_args__isset() : sessionID(false), modelName(false), points(false) {}
   bool sessionID :1;
@@ -660,9 +657,9 @@ class VELaSSCo_GetElementOfPointsInSpace_presult {
 };
 
 typedef struct _VELaSSCo_GetBoundaryOfLocalMesh_args__isset {
-  _VELaSSCo_GetBoundaryOfLocalMesh_args__isset() : sessionID(false), modelName(false), meshID(false), analysisID(false), time_step(false) {}
+  _VELaSSCo_GetBoundaryOfLocalMesh_args__isset() : sessionID(false), modelID(false), meshID(false), analysisID(false), time_step(false) {}
   bool sessionID :1;
-  bool modelName :1;
+  bool modelID :1;
   bool meshID :1;
   bool analysisID :1;
   bool time_step :1;
@@ -676,12 +673,12 @@ class VELaSSCo_GetBoundaryOfLocalMesh_args {
 
   VELaSSCo_GetBoundaryOfLocalMesh_args(const VELaSSCo_GetBoundaryOfLocalMesh_args&);
   VELaSSCo_GetBoundaryOfLocalMesh_args& operator=(const VELaSSCo_GetBoundaryOfLocalMesh_args&);
-  VELaSSCo_GetBoundaryOfLocalMesh_args() : sessionID(), modelName(), meshID(), analysisID(), time_step(0) {
+  VELaSSCo_GetBoundaryOfLocalMesh_args() : sessionID(), modelID(), meshID(), analysisID(), time_step(0) {
   }
 
   virtual ~VELaSSCo_GetBoundaryOfLocalMesh_args() throw();
   std::string sessionID;
-  std::string modelName;
+  std::string modelID;
   std::string meshID;
   std::string analysisID;
   double time_step;
@@ -690,7 +687,7 @@ class VELaSSCo_GetBoundaryOfLocalMesh_args {
 
   void __set_sessionID(const std::string& val);
 
-  void __set_modelName(const std::string& val);
+  void __set_modelID(const std::string& val);
 
   void __set_meshID(const std::string& val);
 
@@ -702,7 +699,7 @@ class VELaSSCo_GetBoundaryOfLocalMesh_args {
   {
     if (!(sessionID == rhs.sessionID))
       return false;
-    if (!(modelName == rhs.modelName))
+    if (!(modelID == rhs.modelID))
       return false;
     if (!(meshID == rhs.meshID))
       return false;
@@ -734,7 +731,7 @@ class VELaSSCo_GetBoundaryOfLocalMesh_pargs {
 
   virtual ~VELaSSCo_GetBoundaryOfLocalMesh_pargs() throw();
   const std::string* sessionID;
-  const std::string* modelName;
+  const std::string* modelID;
   const std::string* meshID;
   const std::string* analysisID;
   const double* time_step;
@@ -807,6 +804,161 @@ class VELaSSCo_GetBoundaryOfLocalMesh_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetBoundaryOfLocalMesh_presult& obj);
 };
 
+typedef struct _VELaSSCo_GetResultFromVerticesID_args__isset {
+  _VELaSSCo_GetResultFromVerticesID_args__isset() : sessionID(false), modelID(false), vertexIDs(false), resultID(false), time_step(false), analysisID(false) {}
+  bool sessionID :1;
+  bool modelID :1;
+  bool vertexIDs :1;
+  bool resultID :1;
+  bool time_step :1;
+  bool analysisID :1;
+} _VELaSSCo_GetResultFromVerticesID_args__isset;
+
+class VELaSSCo_GetResultFromVerticesID_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "C7098B368BDF811485FA71FA4B9D5CD3";
+  static const uint8_t binary_fingerprint[16]; // = {0xC7,0x09,0x8B,0x36,0x8B,0xDF,0x81,0x14,0x85,0xFA,0x71,0xFA,0x4B,0x9D,0x5C,0xD3};
+
+  VELaSSCo_GetResultFromVerticesID_args(const VELaSSCo_GetResultFromVerticesID_args&);
+  VELaSSCo_GetResultFromVerticesID_args& operator=(const VELaSSCo_GetResultFromVerticesID_args&);
+  VELaSSCo_GetResultFromVerticesID_args() : sessionID(), modelID(), resultID(), time_step(0), analysisID() {
+  }
+
+  virtual ~VELaSSCo_GetResultFromVerticesID_args() throw();
+  std::string sessionID;
+  std::string modelID;
+  std::vector<int64_t>  vertexIDs;
+  std::string resultID;
+  double time_step;
+  std::string analysisID;
+
+  _VELaSSCo_GetResultFromVerticesID_args__isset __isset;
+
+  void __set_sessionID(const std::string& val);
+
+  void __set_modelID(const std::string& val);
+
+  void __set_vertexIDs(const std::vector<int64_t> & val);
+
+  void __set_resultID(const std::string& val);
+
+  void __set_time_step(const double val);
+
+  void __set_analysisID(const std::string& val);
+
+  bool operator == (const VELaSSCo_GetResultFromVerticesID_args & rhs) const
+  {
+    if (!(sessionID == rhs.sessionID))
+      return false;
+    if (!(modelID == rhs.modelID))
+      return false;
+    if (!(vertexIDs == rhs.vertexIDs))
+      return false;
+    if (!(resultID == rhs.resultID))
+      return false;
+    if (!(time_step == rhs.time_step))
+      return false;
+    if (!(analysisID == rhs.analysisID))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetResultFromVerticesID_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetResultFromVerticesID_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_args& obj);
+};
+
+
+class VELaSSCo_GetResultFromVerticesID_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "C7098B368BDF811485FA71FA4B9D5CD3";
+  static const uint8_t binary_fingerprint[16]; // = {0xC7,0x09,0x8B,0x36,0x8B,0xDF,0x81,0x14,0x85,0xFA,0x71,0xFA,0x4B,0x9D,0x5C,0xD3};
+
+
+  virtual ~VELaSSCo_GetResultFromVerticesID_pargs() throw();
+  const std::string* sessionID;
+  const std::string* modelID;
+  const std::vector<int64_t> * vertexIDs;
+  const std::string* resultID;
+  const double* time_step;
+  const std::string* analysisID;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_pargs& obj);
+};
+
+typedef struct _VELaSSCo_GetResultFromVerticesID_result__isset {
+  _VELaSSCo_GetResultFromVerticesID_result__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetResultFromVerticesID_result__isset;
+
+class VELaSSCo_GetResultFromVerticesID_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "F5BFC349DD50E1076F9E344574552FD5";
+  static const uint8_t binary_fingerprint[16]; // = {0xF5,0xBF,0xC3,0x49,0xDD,0x50,0xE1,0x07,0x6F,0x9E,0x34,0x45,0x74,0x55,0x2F,0xD5};
+
+  VELaSSCo_GetResultFromVerticesID_result(const VELaSSCo_GetResultFromVerticesID_result&);
+  VELaSSCo_GetResultFromVerticesID_result& operator=(const VELaSSCo_GetResultFromVerticesID_result&);
+  VELaSSCo_GetResultFromVerticesID_result() {
+  }
+
+  virtual ~VELaSSCo_GetResultFromVerticesID_result() throw();
+  rvGetResultFromVerticesID_B success;
+
+  _VELaSSCo_GetResultFromVerticesID_result__isset __isset;
+
+  void __set_success(const rvGetResultFromVerticesID_B& val);
+
+  bool operator == (const VELaSSCo_GetResultFromVerticesID_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetResultFromVerticesID_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetResultFromVerticesID_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_result& obj);
+};
+
+typedef struct _VELaSSCo_GetResultFromVerticesID_presult__isset {
+  _VELaSSCo_GetResultFromVerticesID_presult__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetResultFromVerticesID_presult__isset;
+
+class VELaSSCo_GetResultFromVerticesID_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "F5BFC349DD50E1076F9E344574552FD5";
+  static const uint8_t binary_fingerprint[16]; // = {0xF5,0xBF,0xC3,0x49,0xDD,0x50,0xE1,0x07,0x6F,0x9E,0x34,0x45,0x74,0x55,0x2F,0xD5};
+
+
+  virtual ~VELaSSCo_GetResultFromVerticesID_presult() throw();
+  rvGetResultFromVerticesID_B* success;
+
+  _VELaSSCo_GetResultFromVerticesID_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_presult& obj);
+};
+
 class VELaSSCoClient : virtual public VELaSSCoIf {
  public:
   VELaSSCoClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -832,21 +984,24 @@ class VELaSSCoClient : virtual public VELaSSCoIf {
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
-  void send_GetResultFormVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
-  void recv_GetResultFormVerticesID(std::string& _return);
   void UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password);
   void send_UserLogin(const std::string& user_name, const std::string& role, const std::string& password);
   void recv_UserLogin(std::string& _return);
   void UserLogout(std::string& _return, const std::string& sessionID);
   void send_UserLogout(const std::string& sessionID);
   void recv_UserLogout(std::string& _return);
+  void GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options);
+  void send_GetListOfModels(const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options);
+  void recv_GetListOfModels(rvGetListOfModels& _return);
   void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points);
   void send_GetElementOfPointsInSpace(const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points);
   void recv_GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return);
-  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step);
-  void send_GetBoundaryOfLocalMesh(const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step);
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step);
+  void send_GetBoundaryOfLocalMesh(const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step);
   void recv_GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return);
+  void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID);
+  void send_GetResultFromVerticesID(const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID);
+  void recv_GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -862,19 +1017,21 @@ class VELaSSCoProcessor : public ::apache::thrift::TDispatchProcessor {
   typedef  void (VELaSSCoProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
-  void process_GetResultFormVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_UserLogin(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_UserLogout(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetListOfModels(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetElementOfPointsInSpace(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetBoundaryOfLocalMesh(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetResultFromVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VELaSSCoProcessor(boost::shared_ptr<VELaSSCoIf> iface) :
     iface_(iface) {
-    processMap_["GetResultFormVerticesID"] = &VELaSSCoProcessor::process_GetResultFormVerticesID;
     processMap_["UserLogin"] = &VELaSSCoProcessor::process_UserLogin;
     processMap_["UserLogout"] = &VELaSSCoProcessor::process_UserLogout;
+    processMap_["GetListOfModels"] = &VELaSSCoProcessor::process_GetListOfModels;
     processMap_["GetElementOfPointsInSpace"] = &VELaSSCoProcessor::process_GetElementOfPointsInSpace;
     processMap_["GetBoundaryOfLocalMesh"] = &VELaSSCoProcessor::process_GetBoundaryOfLocalMesh;
+    processMap_["GetResultFromVerticesID"] = &VELaSSCoProcessor::process_GetResultFromVerticesID;
   }
 
   virtual ~VELaSSCoProcessor() {}
@@ -903,16 +1060,6 @@ class VELaSSCoMultiface : virtual public VELaSSCoIf {
     ifaces_.push_back(iface);
   }
  public:
-  void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->GetResultFormVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
-    }
-    ifaces_[i]->GetResultFormVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
-    return;
-  }
-
   void UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -933,6 +1080,16 @@ class VELaSSCoMultiface : virtual public VELaSSCoIf {
     return;
   }
 
+  void GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetListOfModels(_return, sessionID, groupQualifier, modelNamePattern, options);
+    }
+    ifaces_[i]->GetListOfModels(_return, sessionID, groupQualifier, modelNamePattern, options);
+    return;
+  }
+
   void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -943,13 +1100,23 @@ class VELaSSCoMultiface : virtual public VELaSSCoIf {
     return;
   }
 
-  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step) {
+  void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->GetBoundaryOfLocalMesh(_return, sessionID, modelName, meshID, analysisID, time_step);
+      ifaces_[i]->GetBoundaryOfLocalMesh(_return, sessionID, modelID, meshID, analysisID, time_step);
     }
-    ifaces_[i]->GetBoundaryOfLocalMesh(_return, sessionID, modelName, meshID, analysisID, time_step);
+    ifaces_[i]->GetBoundaryOfLocalMesh(_return, sessionID, modelID, meshID, analysisID, time_step);
+    return;
+  }
+
+  void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetResultFromVerticesID(_return, sessionID, modelID, vertexIDs, resultID, time_step, analysisID);
+    }
+    ifaces_[i]->GetResultFromVerticesID(_return, sessionID, modelID, vertexIDs, resultID, time_step, analysisID);
     return;
   }
 
