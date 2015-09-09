@@ -165,6 +165,10 @@ public:
    void                                 unset_contact_location() { unsetAttribute(0); }
    bool                                 exists_contact_location() { return isAttrSet(0); }
    void                                 put_contact_location_element(int index, REAL);
+   int                                  get_id();
+   void                                 put_id(int v);
+   void                                 unset_id() { unsetAttribute(1); }
+   bool                                 exists_id() { return isAttrSet(1); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Contact(Model *m, entityType et=et_Contact) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    Contact(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -249,13 +253,13 @@ public:
    Particle*                            get_P1();
    void *                            get_P1(entityType *etp);
    void                                 put_P1(Particle* v);
-   void                                 unset_P1() { unsetAttribute(1); }
-   bool                                 exists_P1() { return isAttrSet(1); }
+   void                                 unset_P1() { unsetAttribute(2); }
+   bool                                 exists_P1() { return isAttrSet(2); }
    Particle*                            get_P2();
    void *                            get_P2(entityType *etp);
    void                                 put_P2(Particle* v);
-   void                                 unset_P2() { unsetAttribute(2); }
-   bool                                 exists_P2() { return isAttrSet(2); }
+   void                                 unset_P2() { unsetAttribute(3); }
+   bool                                 exists_P2() { return isAttrSet(3); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Particle_Particle_contact(Model *m, entityType et=et_Particle_Particle_contact) : Contact(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    Particle_Particle_contact(Model *_m, tEdmiInstData *instData) : Contact(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -299,12 +303,12 @@ public:
    Particle*                            get_P1();
    void *                            get_P1(entityType *etp);
    void                                 put_P1(Particle* v);
-   void                                 unset_P1() { unsetAttribute(1); }
-   bool                                 exists_P1() { return isAttrSet(1); }
+   void                                 unset_P1() { unsetAttribute(2); }
+   bool                                 exists_P1() { return isAttrSet(2); }
    FEM_mesh*                            get_geometry();
    void                                 put_geometry(FEM_mesh* v);
-   void                                 unset_geometry() { unsetAttribute(2); }
-   bool                                 exists_geometry() { return isAttrSet(2); }
+   void                                 unset_geometry() { unsetAttribute(3); }
+   bool                                 exists_geometry() { return isAttrSet(3); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Particle_Geometry_contact(Model *m, entityType et=et_Particle_Geometry_contact) : Contact(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    Particle_Geometry_contact(Model *_m, tEdmiInstData *instData) : Contact(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }

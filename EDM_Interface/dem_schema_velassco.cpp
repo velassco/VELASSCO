@@ -45,9 +45,10 @@ tEdmiAttribute Particle_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG Particle_Subtypes[] = {et_Sphere, et_Template_nn, 0};
-EDMLONG Contact_AttributeLayout[] = {9, 0};
+EDMLONG Contact_AttributeLayout[] = {9, 0, 0};
 tEdmiAttribute Contact_Attributes[] = {
    {"contact_location", 9, 0},
+   {"id", 0, 0},
    {NULL, 0, 0},
 };
 EDMLONG Contact_Subtypes[] = {et_Particle_Particle_contact, et_Particle_Geometry_contact, 0};
@@ -73,9 +74,10 @@ tEdmiAttribute Timestep_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG Timestep_Subtypes[] = {0};
-EDMLONG Particle_Particle_contact_AttributeLayout[] = {9, 8, 8, 0};
+EDMLONG Particle_Particle_contact_AttributeLayout[] = {9, 0, 8, 8, 0};
 tEdmiAttribute Particle_Particle_contact_Attributes[] = {
    {"contact_location", 9, 0},
+   {"id", 0, 0},
    {"P1", 8, 0},
    {"P2", 8, 0},
    {NULL, 0, 0},
@@ -98,9 +100,10 @@ tEdmiAttribute Template_nn_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG Template_nn_Subtypes[] = {0};
-EDMLONG Particle_Geometry_contact_AttributeLayout[] = {9, 8, 8, 0};
+EDMLONG Particle_Geometry_contact_AttributeLayout[] = {9, 0, 8, 8, 0};
 tEdmiAttribute Particle_Geometry_contact_Attributes[] = {
    {"contact_location", 9, 0},
+   {"id", 0, 0},
    {"P1", 8, 0},
    {"geometry", 8, 0},
    {NULL, 0, 0},
@@ -169,14 +172,14 @@ tEdmiEntityData dem_schema_velassco_Entities[] = {
 {"Particle_result_property", 0, 651, 0, 0, 10, et_Particle_result_property, Particle_result_property_AttributeLayout, Particle_result_property_Subtypes, NULL, Particle_result_property_Attributes},
 {"Particle_result", 3, 649, 8, 40, 9, et_Particle_result, Particle_result_AttributeLayout, Particle_result_Subtypes, NULL, Particle_result_Attributes},
 {"Particle", 3, 641, 8, 40, 5, et_Particle, Particle_AttributeLayout, Particle_Subtypes, NULL, Particle_Attributes},
-{"Contact", 1, 637, 8, 24, 3, et_Contact, Contact_AttributeLayout, Contact_Subtypes, NULL, Contact_Attributes},
+{"Contact", 2, 637, 8, 32, 3, et_Contact, Contact_AttributeLayout, Contact_Subtypes, NULL, Contact_Attributes},
 {"Vertex", 1, 635, 8, 24, 2, et_Vertex, Vertex_AttributeLayout, Vertex_Subtypes, NULL, Vertex_Attributes},
 {"FEM_mesh", 2, 633, 8, 32, 1, et_FEM_mesh, FEM_mesh_AttributeLayout, FEM_mesh_Subtypes, NULL, FEM_mesh_Attributes},
 {"Timestep", 4, 631, 8, 48, 0, et_Timestep, Timestep_AttributeLayout, Timestep_Subtypes, NULL, Timestep_Attributes},
-{"Particle_Particle_contact", 3, 639, 8, 40, 4, et_Particle_Particle_contact, Particle_Particle_contact_AttributeLayout, Particle_Particle_contact_Subtypes, NULL, Particle_Particle_contact_Attributes},
+{"Particle_Particle_contact", 4, 639, 8, 48, 4, et_Particle_Particle_contact, Particle_Particle_contact_AttributeLayout, Particle_Particle_contact_Subtypes, NULL, Particle_Particle_contact_Attributes},
 {"Sphere", 4, 643, 8, 48, 6, et_Sphere, Sphere_AttributeLayout, Sphere_Subtypes, NULL, Sphere_Attributes},
 {"Template_nn", 3, 645, 8, 40, 7, et_Template_nn, Template_nn_AttributeLayout, Template_nn_Subtypes, NULL, Template_nn_Attributes},
-{"Particle_Geometry_contact", 3, 647, 8, 40, 8, et_Particle_Geometry_contact, Particle_Geometry_contact_AttributeLayout, Particle_Geometry_contact_Subtypes, NULL, Particle_Geometry_contact_Attributes},
+{"Particle_Geometry_contact", 4, 647, 8, 48, 8, et_Particle_Geometry_contact, Particle_Geometry_contact_AttributeLayout, Particle_Geometry_contact_Subtypes, NULL, Particle_Geometry_contact_Attributes},
 {"Velocity", 1, 653, 8, 24, 11, et_Velocity, Velocity_AttributeLayout, Velocity_Subtypes, NULL, Velocity_Attributes},
 {"Custom_property_vector", 2, 655, 8, 32, 12, et_Custom_property_vector, Custom_property_vector_AttributeLayout, Custom_property_vector_Subtypes, NULL, Custom_property_vector_Attributes},
 {"Custom_property_scalar", 2, 657, 8, 32, 13, et_Custom_property_scalar, Custom_property_scalar_AttributeLayout, Custom_property_scalar_Subtypes, NULL, Custom_property_scalar_Attributes},
@@ -275,6 +278,8 @@ void Contact::put_contact_location_element(int index, REAL element) {
    }
    aggregate->put(index, element);
 }
+int Contact::get_id() { return getATTRIBUTE(8, int, 1); }
+void Contact::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
 /*====================================================================================================
    Vertex
 ====================================================================================================*/
@@ -341,12 +346,12 @@ void Timestep::put_consists_of_element(Particle* element) {
 /*====================================================================================================
    Particle_Particle_contact
 ====================================================================================================*/
-Particle* Particle_Particle_contact::get_P1() { return getSupertypeInstance(8, Particle*, 1, et_Particle); }
-void * Particle_Particle_contact::get_P1(entityType *etp) { return getInstanceAndType(8, Particle*, 1, (int*)etp); }
-void Particle_Particle_contact::put_P1(Particle* v) { putInstance(8, Particle*, v, P1, 1, 8); v->addToUsedIn(c); }
-Particle* Particle_Particle_contact::get_P2() { return getSupertypeInstance(16, Particle*, 2, et_Particle); }
-void * Particle_Particle_contact::get_P2(entityType *etp) { return getInstanceAndType(16, Particle*, 2, (int*)etp); }
-void Particle_Particle_contact::put_P2(Particle* v) { putInstance(16, Particle*, v, P2, 2, 8); v->addToUsedIn(c); }
+Particle* Particle_Particle_contact::get_P1() { return getSupertypeInstance(16, Particle*, 2, et_Particle); }
+void * Particle_Particle_contact::get_P1(entityType *etp) { return getInstanceAndType(16, Particle*, 2, (int*)etp); }
+void Particle_Particle_contact::put_P1(Particle* v) { putInstance(16, Particle*, v, P1, 2, 8); v->addToUsedIn(c); }
+Particle* Particle_Particle_contact::get_P2() { return getSupertypeInstance(24, Particle*, 3, et_Particle); }
+void * Particle_Particle_contact::get_P2(entityType *etp) { return getInstanceAndType(24, Particle*, 3, (int*)etp); }
+void Particle_Particle_contact::put_P2(Particle* v) { putInstance(24, Particle*, v, P2, 3, 8); v->addToUsedIn(c); }
 /*====================================================================================================
    Sphere
 ====================================================================================================*/
@@ -358,11 +363,11 @@ void Sphere::put_radius(double v) { putATTRIBUTE(24, double, v, radius, 3, 1); }
 /*====================================================================================================
    Particle_Geometry_contact
 ====================================================================================================*/
-Particle* Particle_Geometry_contact::get_P1() { return getSupertypeInstance(8, Particle*, 1, et_Particle); }
-void * Particle_Geometry_contact::get_P1(entityType *etp) { return getInstanceAndType(8, Particle*, 1, (int*)etp); }
-void Particle_Geometry_contact::put_P1(Particle* v) { putInstance(8, Particle*, v, P1, 1, 8); v->addToUsedIn(c); }
-FEM_mesh* Particle_Geometry_contact::get_geometry() { return getInstance(16, FEM_mesh*, 2); }
-void Particle_Geometry_contact::put_geometry(FEM_mesh* v) { putInstance(16, FEM_mesh*, v, geometry, 2, 8); v->addToUsedIn(c); }
+Particle* Particle_Geometry_contact::get_P1() { return getSupertypeInstance(16, Particle*, 2, et_Particle); }
+void * Particle_Geometry_contact::get_P1(entityType *etp) { return getInstanceAndType(16, Particle*, 2, (int*)etp); }
+void Particle_Geometry_contact::put_P1(Particle* v) { putInstance(16, Particle*, v, P1, 2, 8); v->addToUsedIn(c); }
+FEM_mesh* Particle_Geometry_contact::get_geometry() { return getInstance(24, FEM_mesh*, 3); }
+void Particle_Geometry_contact::put_geometry(FEM_mesh* v) { putInstance(24, FEM_mesh*, v, geometry, 3, 8); v->addToUsedIn(c); }
 /*====================================================================================================
    Velocity
 ====================================================================================================*/
