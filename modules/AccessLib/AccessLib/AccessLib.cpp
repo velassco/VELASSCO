@@ -39,6 +39,7 @@ VELaSSCo::ClientMap g_clients;
 #define CATCH_ERROR               \
     catch (...)                   \
 	{                             \
+	        DEBUG( "CATCH_ERROR");	  \
 		return VAL_UNKNOWN_ERROR; \
 	}                             \
 
@@ -197,12 +198,13 @@ VAL_Result VAL_API valErrorMessage( /* in */
 	return VAL_SUCCESS;
 }
 
-VAL_Result VAL_API valStartTestServer()
+VAL_Result VAL_API valStartTestServer( const int server_port)
 {
 	try
 	{
-		StartServer();
-
+	  DEBUG( "before StartServer");
+		StartServer( server_port);
+		DEBUG( "after StartServer");
 		return VAL_SUCCESS;
 	}
 	CATCH_ERROR;

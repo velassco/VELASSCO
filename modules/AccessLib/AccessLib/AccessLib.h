@@ -100,7 +100,7 @@ VAL_Result VAL_API valErrorMessage(            /* in */
 /**
  * API testing. 
  */
-VAL_Result VAL_API valStartTestServer();
+VAL_Result VAL_API valStartTestServer( const int server_port);
 
 #ifdef __cplusplus
 }

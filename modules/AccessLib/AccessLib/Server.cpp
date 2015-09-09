@@ -217,10 +217,10 @@ class QueryManager : virtual public QueryManagerIf
 	}
 };
 
-int StartServer() {
+int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;
 
-  int port = 9090;
+  int port = server_port;
   LOGGER << "  using port: " << port << std::endl;
 
   shared_ptr<QueryManager> handler(new QueryManager());
@@ -230,6 +230,8 @@ int StartServer() {
   shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+    DEBUG( "  before serving ...");
   server.serve();
+    DEBUG( "  after serving ...");
   return 0;
 }
