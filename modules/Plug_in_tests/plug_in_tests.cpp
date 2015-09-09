@@ -85,6 +85,38 @@ int main(int argc, char* argv[])
          printf("Comments: %s\n", rvm.report.data());
      }
 
+      if (strEQL(command, "all") || strEQL(command, "GetResultFromVerticesID_FEM")) {
+         rvGetResultFromVerticesID_B rvB;
+         vector<int64_t> vertexIDs;
+
+         printf("\n--->GetResultFromVerticesID - FEM model VELaSSCo_HbaseBasicTest_part_1:\n");
+         client.GetResultFromVerticesID(rvB, sessionID, "VELaSSCo_HbaseBasicTest_part_1", vertexIDs, "Height", 1.0, "geometry");
+         printf("Return status: %s\n", rvB.status.data());
+         printf("Comments: %s\n", rvB.report.data());
+     }
+
+      if (strEQL(command, "all") || strEQL(command, "GetResultFromVerticesID_DEM")) {
+         rvGetResultFromVerticesID_B rvB;
+         vector<int64_t> vertexIDs;
+
+         printf("\n--->GetResultFromVerticesID - DEM model DEM_box:\n");
+         client.GetResultFromVerticesID(rvB, sessionID, "DEM_box", vertexIDs, "Height", 1.0, "geometry");
+         printf("Return status: %s\n", rvB.status.data());
+         printf("Comments: %s\n", rvB.report.data());
+     }
+
+      if (strEQL(command, "all") || strEQL(command, "GetListOfModels")) {
+         rvGetListOfModels modelsInfo;
+
+         printf("\n--->GetListOfModels:\n");
+         client.GetListOfModels(modelsInfo, sessionID, "", "", "");
+         printf("Return status: %s\n", modelsInfo.status.data());
+         printf("Comments: %s\nModels:\n", modelsInfo.report.data());
+         for (std::vector<dli::ModelInfo>::iterator modelIter = modelsInfo.models.begin(); modelIter != modelsInfo.models.end(); modelIter++) {
+            printf("%s\n", modelIter->name.data());
+         }
+     }
+
       transport->close();
    } catch (TException &tx) {
       printf("ERROR: %s\n", tx.what());
