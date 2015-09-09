@@ -125,24 +125,6 @@ VELaSSCoHandler::VELaSSCoHandler() {
    // Your initialization goes here
 }
 
-/**
-* Return the status of the different services
-* which run on the Data Layer.
-* @return string - returns a structured list of avialbe vertices,
-* 	with the attached list of double
-* 	if errors occur the contect is also returned here?
-*
-* @param sessionID
-* @param modelID
-* @param analysisID
-* @param timeStep
-* @param resultID
-* @param listOfVertices
-*/
-void VELaSSCoHandler::GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
-   // Your implementation goes here
-   printf("GetResultFormVerticesID\n");
-}
 
 void gen_random(char *s, const int len) {
    static const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -188,7 +170,7 @@ void VELaSSCoHandler::UserLogout(std::string& _return, const std::string& sessio
 void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points)
 {
    setCurrentSession(sessionID.data());
-   EDMmodelCache *emc = setCurrentModelCache(modelName.data());
+   EDMmodelCache *emc = setCurrentModelCache(atol(modelName.data()));
    FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
 
    Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element));
@@ -445,7 +427,7 @@ void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, 
 {
    try {
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(modelName.data());
+      EDMmodelCache *emc = setCurrentModelCache(atol(modelName.data()));
       if (emc) {
          FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
          std::vector<Triangle>  elements;
@@ -462,4 +444,123 @@ void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, 
       _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
    }
 
+}
+
+
+/**
+* Given a list of vertices id's from the model, vertexIDs, GetResultFromVerticesID will get
+* the result value of a given type (resultID) for each vertex id of the list.
+*
+* @param sessionID
+* @param modelID
+* @param vertexIDs
+* @param resultID
+* @param time_step
+* @param analysisID
+*/
+void VELaSSCoHandler::GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID)
+{
+   try {
+      setCurrentSession(sessionID.data());
+      EDMmodelCache *emc = setCurrentModelCache(atol(modelID.data()));
+      if (emc) {
+         if (emc->type == mtDEM) {
+            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
+         } else {
+            int nResultHeaderMatches = 0;
+            std::vector<VertexResult> vResults;
+
+            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+            for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+               if (strEQL(analysisID.data(), rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID.data(), rh->get_name())) {
+
+                  fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
+                  if (rb) {
+                     if (nResultHeaderMatches == 0) {
+                        Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
+                        fem::entityType resultType;
+                        for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
+                           VertexResult vr;
+                           fem::Node *n = r->get_result_for();
+                           vector<double> values;
+
+                           vr.__set_vertexID(n->get_id());
+                           int size = sizeof(_return);
+                           if (resultType == fem::et_ScalarResult) {
+                              fem::ScalarResult *sr = static_cast<ScalarResult*>(r);
+                              values.push_back(sr->get_val());
+                           } else {
+                              fem::VectorResult *vr = static_cast<VectorResult*>(r);
+                              Iterator<double, fem::entityType> resultIter(vr->get_values());
+                              for (double val = resultIter.first(); resultIter.moreElems(); val = resultIter.next()) {
+                                 values.push_back(val);
+                              }
+                           }
+                           vr.__set_resuls(values);
+                           vResults.push_back(vr);
+                        }
+                     }
+                     nResultHeaderMatches++;
+                  }
+               }
+            }
+            if (nResultHeaderMatches == 0) {
+               _return.__set_status("Error"); _return.__set_report("No set of results satisfy search criteria.");
+            //} else if (nResultHeaderMatches > 1) {
+            //   _return.__set_status("Error"); _return.__set_report("More than one set of results satisfy search criteria.");
+            } else {
+                  _return.__set_status("OK"); _return.__set_vertexResults(vResults);
+            }
+         }
+      } else {
+         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+      }
+   } catch (CedmError *e) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
+   } catch (int thrownRstat) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+   }
+}
+/**
+* Returns a list of names of data sets that are available from the VELaSSCo platform
+* and - optionally - their properties.
+*
+* @param sessionID
+* @param groupQualifier
+* @param modelNamePattern
+* @param options
+*/
+void VELaSSCoHandler::GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options)
+{
+   char *modelName, *repositoryName;
+   SdaiBoolean userDefined;
+   SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 10, numberOfHits = 1;
+   SdaiInstance resultBuffer[1], repositoryID;
+   dli::ModelInfo mi;
+   std::vector<dli::ModelInfo>  infoList;
+
+   do {
+      edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
+         maxBufferSize, &index, &numberOfHits, resultBuffer);
+      index++;
+      if (numberOfHits > 0) {
+         void *sp = sdaiGetAttrBN(resultBuffer[0], "Repository", sdaiINSTANCE, &repositoryID);
+         if (sp) {
+            sp = sdaiGetAttrBN(repositoryID, "USER_DEFINED", sdaiBOOLEAN, &userDefined);
+            sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
+            if (sp) {
+               if (strEQL(repositoryName, "DataRepository") || userDefined) {
+                  sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
+                  if (sp) {
+                     mi.__set_name(modelName);
+                     infoList.push_back(mi);
+                  }
+               }
+            }
+         }
+      }
+   } while (numberOfHits > 0);
+   _return.__set_status("OK");
+   _return.__set_models(infoList);
 }

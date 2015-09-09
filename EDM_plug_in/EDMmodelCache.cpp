@@ -35,26 +35,42 @@ void calculateBoundingBox(fem::Element *ep, BoundingBox *bb)
 }
 
 
-static int FEMclassesToRead[] = { (int)fem::et_Element, (int)fem::et_Mesh, (int)fem::et_Node, 0 };
+static int FEMclassesToRead[] = { (int)fem::et_Element, (int)fem::et_Mesh, (int)fem::et_Node, (int)fem::et_ResultHeader, 0 };
 
 
-EDMmodelCache::EDMmodelCache(Repository *r, CMemoryAllocator *_ma, dbSchema *_schema)
-: Model(r, _ma, _schema)
+EDMmodelCache::EDMmodelCache(Repository *r, dbSchema *_schema)
+: Model(r, &ma, _schema)
 {
 }
 
 
-FEMmodelCache::FEMmodelCache(Repository *r, CMemoryAllocator *_ma, dbSchema *_schema)
-: EDMmodelCache(r, _ma, _schema)
+FEMmodelCache::FEMmodelCache(Repository *r, dbSchema *_schema)
+: EDMmodelCache(r, _schema)
 {
 }
 
+DEMmodelCache::DEMmodelCache(Repository *r, dbSchema *_schema)
+: EDMmodelCache(r, _schema)
+{
+}
+
+void DEMmodelCache::initCache()
+{
+   defineObjectSet(fem::et_Element, 0x4000, true);
+   defineObjectSet(fem::et_Mesh, 0x4000, true);
+   defineObjectSet(fem::et_Node, 0x4000, true);
+   defineObjectSet(fem::et_ResultHeader, 0x4000, true);
+   //readObjectClassesToMemory(FEMclassesToRead);
+   readAllObjectsToMemory();
+}
 void FEMmodelCache::initCache()
 {
    defineObjectSet(fem::et_Element, 0x4000, true);
    defineObjectSet(fem::et_Mesh, 0x4000, true);
    defineObjectSet(fem::et_Node, 0x4000, true);
-   readObjectClassesToMemory(FEMclassesToRead);
+   defineObjectSet(fem::et_ResultHeader, 0x4000, true);
+   //readObjectClassesToMemory(FEMclassesToRead);
+   readAllObjectsToMemory();
 
    Iterator<fem::Element*, fem::entityType> elemIter(getObjectSet(fem::et_Element));
    Iterator<fem::Node*, fem::entityType> nodeIter(getObjectSet(fem::et_Node));
@@ -130,10 +146,10 @@ void VELaSSCoHandler::InitQueryCaches()
    
 =================================================================================================*/
 {
-   char *modelName, *repositoryName;
+   char *repositoryName;
    SdaiBoolean userDefined;
    SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 10, numberOfHits = 1;
-   SdaiInstance resultBuffer[1], repositoryID;
+   SdaiInstance resultBuffer[1], repositoryID, sdaiModelID;
 
    do {
       edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
@@ -146,55 +162,52 @@ void VELaSSCoHandler::InitQueryCaches()
             sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
             if (sp) {
                if (strEQL(repositoryName, "DataRepository") || userDefined) {
-                  sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
+                  sp = sdaiGetAttrBN(resultBuffer[0], "Sdai_Model", sdaiINSTANCE, &sdaiModelID);
                   if (sp) {
-                     setCurrentModelCache(modelName);
-                     //free(modelName);
+                     setCurrentModelCache(sdaiModelID);
                   }
                }
-               //free(repositoryName);
             }
          }
       }
    } while (numberOfHits > 0);
-
 }
-EDMmodelCache *VELaSSCoHandler::setCurrentModelCache(const char *modelName)
+
+EDMmodelCache *VELaSSCoHandler::setCurrentModelCache(SdaiModel sdaiModelID)
 {
-   EDMmodelCache *emc = caches[modelName];
+   EDMmodelCache *emc = caches[sdaiModelID];
    if (emc == NULL) {
       ModelType mType = mtUnknown;
 
-      char *schemaName, condition[1024];
+      char *schemaName, *modelName;
       SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 0, numberOfHits = 1;
-      SdaiInstance resultBuffer[2], schemaID;
+      SdaiInstance resultBuffer[2], schemaID, edmModelID;
 
-      sprintf(condition, "Name = '%s'", modelName);
-      do {
-         edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", condition, 0,
-            maxBufferSize, &index, &numberOfHits, resultBuffer);
-         index++;
-         if (numberOfHits > 0) {
-            void *sp = sdaiGetAttrBN(resultBuffer[0], "schema", sdaiINSTANCE, &schemaID);
+      void *sp = sdaiGetAttrBN(sdaiModelID, "edm_model", sdaiINSTANCE, &edmModelID);
+      if (sp) {
+         sp = sdaiGetAttrBN(edmModelID, "schema", sdaiINSTANCE, &schemaID);
+         if (sp) {
+            sp = sdaiGetAttrBN(sdaiModelID, "name", sdaiSTRING, &modelName);
             if (sp) {
                sp = sdaiGetAttrBN(schemaID, "name", sdaiSTRING, &schemaName);
+               int rk = sdaiErrorQuery();
                if (sp && strEQL(schemaName, "DEM_SCHEMA_VELASSCO")) {
                   mType = mtDEM;
                } else if (sp && strEQL(schemaName, "FEM_SCHEMA_VELASSCO")) {
                   mType = mtFEM;
                }
                if (mType == mtDEM) {
-                  //models[modelName] = m = new Model(currentRepository, &model_ma, currentSchema);
+                  DEMmodelCache *dm = new DEMmodelCache(cDEMrep, &dem_schema_velassco_SchemaObject);
+                  dm->open(modelName, sdaiRO); emc = dm;
+                  dm->initCache(); caches[dm->modelId] = dm;
                } else if (mType == mtFEM) {
-                  FEMmodelCache *fm = new FEMmodelCache(cFEMrep, &model_ma, &fem_schema_velassco_SchemaObject);
-                  fm->open((char*)modelName, sdaiRO); emc = fm;
-                  fm->initCache(); caches[modelName] = fm;
+                  FEMmodelCache *fm = new FEMmodelCache(cFEMrep, &fem_schema_velassco_SchemaObject);
+                  fm->open(modelName, sdaiRO); emc = fm;
+                  fm->initCache(); caches[fm->modelId] = fm;
                }
             }
          }
-      } while (numberOfHits > 0);
-
-
+      }
    }
    return emc;
 }

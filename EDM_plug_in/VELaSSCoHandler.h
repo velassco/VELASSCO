@@ -1,8 +1,8 @@
 class VELaSSCoHandler : public VELaSSCoIf, public EDM_interface
 {
    char                                         errmsg[2048];
-   EDMmodelCache                                *setCurrentModelCache(const char *modelName);
-   std::map<string, EDMmodelCache*>             caches;
+   EDMmodelCache                                *setCurrentModelCache(SdaiModel modelID);
+   std::map<SdaiModel, EDMmodelCache*>          caches;
 public:
    Repository                                   *cFEMrep;
    Repository                                   *cDEMrep;
@@ -25,7 +25,7 @@ public:
    * @param resultID
    * @param listOfVertices
    */
-   void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
+   void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID);
 
    /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
@@ -42,7 +42,18 @@ public:
    * @param sessionID
    */
    void UserLogout(std::string& _return, const std::string& sessionID) ;
-   
+
+   /**
+   * Returns a list of names of data sets that are available from the VELaSSCo platform
+   * and - optionally - their properties.
+   *
+   * @param sessionID
+   * @param groupQualifier
+   * @param modelNamePattern
+   * @param options
+   */
+   void GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options);
+
    /**
    * For each point in the input parameter points, the method returns data about the element that contains the point.
    * The number of elements in the returned list of elements shall be the same as the number of points in the input parameter.

@@ -19,6 +19,7 @@ SCHEMA DEM_SCHEMA_VELASSCO;
   ENTITY Contact
     ABSTRACT SUPERTYPE OF (ONEOF(Particle_Particle_contact, Particle_Geometry_contact));
       contact_location : ARRAY [1:3] OF REAL;
+      id               : INTEGER;
   END_ENTITY;
 
   ENTITY Particle_Particle_contact
