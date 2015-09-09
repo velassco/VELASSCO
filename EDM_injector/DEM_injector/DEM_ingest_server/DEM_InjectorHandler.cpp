@@ -97,6 +97,7 @@ void DEM_InjectorHandler::StoreDEM_Simulation(std::string& _return, const std::s
                   dppc->put_P2(p);
                }
             }
+            dcp->put_id(cContactID++);
             dts->put_has_contact_element(dcp);
             vector<double>::iterator coordIter = contact->contact_location.begin();
             for (int i = 1; i < 4; i++) {
@@ -260,6 +261,7 @@ void DEM_InjectorHandler::store_TIMESTEP_CONTACTS()
                   pgc->put_P1(p1);
                }
                if (c) {
+                  c->put_id(cContactID++);
                   c->put_contact_location_element(1, CX); c->put_contact_location_element(2, CY); c->put_contact_location_element(3, CZ);
                   dem::Contact_result *cr = newObject(dem::Contact_result);
                   dem::Contact_Force  *cf = newObject(dem::Contact_Force);

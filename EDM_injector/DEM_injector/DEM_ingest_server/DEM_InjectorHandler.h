@@ -5,6 +5,7 @@ class DEM_InjectorHandler : public DEM_InjectorIf, public EDM_interface
 {
    map<int, dem::Particle*>               particles;
    map<int, dem::FEM_mesh*>               meshes;
+   int                                    cContactID;
 
    // Data when injecting from files
    map<double, dem::Timestep*>            timesteps;
@@ -31,7 +32,7 @@ class DEM_InjectorHandler : public DEM_InjectorIf, public EDM_interface
    char                                   *injectorFileName;
 public:
    DEM_InjectorHandler(dbSchema *s)  {
-      currentSchema = s;
+      currentSchema = s; cContactID = 0;
    }
    void UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password);
    void UserLogout(std::string& _return, const std::string& sessionID);
