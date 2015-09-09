@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 
 // CLib
 #include <cstdlib>
@@ -31,7 +33,22 @@ int main(int argc, char* argv[])
 	// Test UserLogin()
 	//
 
-	result = valUserLogin("localhost:9090", "andreas", "1234", &sessionID);
+	char hostname_port[ 1024];
+	if ( argc == 2) {
+	  if ( !strncasecmp( argv[ 1], "-h", 2) ||  !strncasecmp( argv[ 1], "--h", 3)) {
+	    printf( "Usage: %s [ hostname [ port]]\n", argv[ 0]);
+	    return EXIT_FAILURE;
+	  }
+	  sprintf( hostname_port, "%s:9090", argv[ 1]);
+	} else if ( argc == 3) {
+	  sprintf( hostname_port, "%s:%s", argv[ 1], argv[ 2]);
+	} else {
+	  strcpy( hostname_port, "localhost:9090");
+	}
+
+	printf( "Connecting to '%s' ...\n", hostname_port);
+
+	result = valUserLogin( hostname_port, "andreas", "1234", &sessionID);
 	CheckVALResult(result);
 
 	//
