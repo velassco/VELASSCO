@@ -41,8 +41,11 @@ add_library(AccessLib STATIC ${ACCESS_LIB_SOURCES} ${THRIFT_GEN_SOURCES})
 target_include_directories(AccessLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Access library link libraries
-#target_link_libraries(AccessLib LINK_PRIVATE libthrift libthriftnb)
-target_link_libraries(AccessLib LINK_PRIVATE thrift thriftnb event boost_regex boost_date_time)
+IF(CMAKE_SYSTEM MATCHES "Linux-([3-9]\\.[0-9]|2\\.[4-9])\\.")
+  target_link_libraries(AccessLib LINK_PRIVATE thrift thriftnb event boost_regex boost_date_time)
+ELSE(CMAKE_SYSTEM MATCHES "Linux-([3-9]\\.[0-9]|2\\.[4-9])\\.")
+  target_link_libraries(AccessLib LINK_PRIVATE libthrift libthriftnb)
+ENDIF(CMAKE_SYSTEM MATCHES "Linux-([3-9]\\.[0-9]|2\\.[4-9])\\.")
 
 # Install Access library
 install(TARGETS AccessLib DESTINATION ${CMAKE_BINARY_DIR}/Install/${CMAKE_PROJECT_NAME}/lib)
