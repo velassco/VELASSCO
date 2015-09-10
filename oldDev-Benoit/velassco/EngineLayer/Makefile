@@ -16,9 +16,9 @@ $(BIN):
 	clear
 	clear
 	mkdir $(BIN)
-	
+
 main.o: main.cpp
-	$(CC) -c main.cpp   -I../gen-cpp/ -I/usr/local/include -I/usr/local/include -I/opt/local/include/ -o $(BIN)/main.o
+	$(CC) -c main.cpp   -I../gen-cpp/ -I/usr/local/include -I/usr/local/include -o $(BIN)/main.o
 
 
 velassco_constants.o: 
