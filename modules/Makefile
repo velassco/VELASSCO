@@ -7,9 +7,9 @@ BIN=bin
 all: $(BIN) $(DL) $(EL)
 
 $(DL): $(BIN)/$(DL)/cJSON.o $(BIN)/$(DL)/base64.o  $(BIN)/$(DL)/Hbase_constants1.o $(BIN)/$(DL)/Hbase_types1.o $(BIN)/$(DL)/hbase1.o $(BIN)/$(DL)/hbaseaccess.o $(BIN)/$(DL)/main.o
-	$(CC) $(BIN)/$(DL)/*.o -L/usr/local/lib -lthrift -Ithrift/hbase/gen-cpp/ -IStorage/gen-cpp -IStorage/gen-cpp -IStorage/header -o $(BIN)/$(DL).exe
+	$(CC) $(BIN)/$(DL)/*.o -L/usr/local/lib -lthrift -Ithrift/VELaSSCo/gen-cpp/ -Ithrift/hbase/gen-cpp/ -IStorage/gen-cpp -IStorage/gen-cpp -IStorage/header -o $(BIN)/$(DL).exe
 $(EL):
-	
+
 $(BIN):
 	clear
 	clear
@@ -18,10 +18,10 @@ $(BIN):
 	mkdir $(BIN)/$(EL)
 
 $(BIN)/$(DL)/main.o: $(BIN)/$(DL)/hbaseaccess.o
-	$(CC) -c Storage/main.cpp -L/usr/local/lib -IStorage/header -lthrift -Ithrift/hbase/gen-cpp/ -Ithrift/hbase/gen-cpp2/ -IStorage/gen-cpp -o $(BIN)/$(DL)/main.o
+	$(CC) -c Storage/main.cpp -L/usr/local/lib -IStorage/header -lthrift -Ithrift/VELaSSCo/gen-cpp/ -Ithrift/hbase/gen-cpp/ -Ithrift/hbase/gen-cpp2/ -IStorage/gen-cpp -o $(BIN)/$(DL)/main.o
 
 $(BIN)/$(DL)/hbaseaccess.o: Storage/src/hbaseaccess.cpp
-	$(CC) -c Storage/src/hbaseaccess.cpp  -L/usr/local/lib -lthrift -Ithrift/hbase/gen-cpp/ -IStorage/gen-cpp -IStorage/gen-cpp -IStorage/header -o $(BIN)/$(DL)/hbaseaccess.o
+	$(CC) -c Storage/src/hbaseaccess.cpp  -L/usr/local/lib -lthrift -Ithrift/VELaSSCo/gen-cpp/ -Ithrift/hbase/gen-cpp/ -IStorage/gen-cpp -IStorage/gen-cpp -IStorage/header -o $(BIN)/$(DL)/hbaseaccess.o
 
 $(BIN)/$(DL)/abstractAcces.o: Storage/src/abstractAcces.cpp
 	$(CC) -c Storage/src/abstractAcces.cpp -IStorage/gen-cpp -IStorage/header -o $(BIN)/$(DL)/abstractAcces.o
