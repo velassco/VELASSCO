@@ -6,7 +6,7 @@ BIN=bin
 all: $(BIN) $(EXEC)
 
 $(EXEC): base64.o  Hbase_constants1.o Hbase_types1.o hbase1.o  VELaSSCo.o cJSON.o velassco_types.o velassco_constants.o  storageModule.o velasscoThrift.o main.o
-	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift  -L/home/blange/lib/curl/lib/ -lcurl -o $(BIN)/$(EXEC)
+	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lcurl -o $(BIN)/$(EXEC)
 	./$(BIN)/$(EXEC)
 
 
@@ -16,12 +16,12 @@ $(BIN):
 	clear
 	clear
 	mkdir $(BIN)
-	
+
 main.o: main.cpp
-	$(CC) -c main.cpp   -I../gen-cpp/ -I/usr/local/include -I/usr/local/include -I/opt/local/include/ -I../thrift/hbase/gen-cpp/  -I/home/blange/lib/curl/include/ -o $(BIN)/main.o
+	$(CC) -c main.cpp   -I../gen-cpp/ -I/usr/local/include -I/usr/local/include -I../thrift/hbase/gen-cpp/ -o $(BIN)/main.o
 
 velasscoThrift.o: 
-	$(CC) -c velasscoThrift.cpp -I../gen-cpp/  -I/home/blange/lib/curl/include/ -o $(BIN)/velasscoThrift.o
+	$(CC) -c velasscoThrift.cpp -I../gen-cpp/ -o $(BIN)/velasscoThrift.o
 
 
 velassco_constants.o: 
@@ -37,7 +37,7 @@ VELaSSCo.o:
 
 
 storageModule.o:
-	$(CC) -c storageModule.cpp -I../gen-cpp/  -I/home/blange/lib/curl/include/ -o $(BIN)/storageModule.o	
+	$(CC) -c storageModule.cpp -I../gen-cpp/ -o $(BIN)/storageModule.o	
 
 cJSON.o: cJSON.c
 	$(CC) -c cJSON.c -o $(BIN)/cJSON.o

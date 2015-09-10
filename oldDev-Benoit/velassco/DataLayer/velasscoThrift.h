@@ -1,7 +1,8 @@
 #ifndef VELASSCOTHRIFT_H
 #define VELASSCOTHRIFT_H
 
-#include "gen-cpp/VELaSSCo.h"
+//#include "gen-cpp/VELaSSCo.h"
+#include "VELaSSCo.h"
 
 class VELaSSCoHandler : virtual public VELaSSCoIf
 {
