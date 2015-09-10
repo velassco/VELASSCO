@@ -24,6 +24,17 @@ void CheckVALResult(VAL_Result result)
 	}
 }
 
+#ifdef _WIN32
+#ifndef strcasecmp
+#define strcasecmp  _stricmp
+#endif
+#endif // _WIN32
+
+bool askForHelp( const char *txt) {
+  return !strcasecmp( txt, "-h") || !strcasecmp( txt, "--h") || !strcasecmp( txt, "-help") || !strcasecmp( txt, "--help");
+}
+
+
 int main(int argc, char* argv[])
 {
 	VAL_Result    result;
@@ -35,7 +46,7 @@ int main(int argc, char* argv[])
 
 	char hostname_port[ 1024];
 	if ( argc == 2) {
-	  if ( !strncasecmp( argv[ 1], "-h", 2) ||  !strncasecmp( argv[ 1], "--h", 3)) {
+          if ( askForHelp( argv[ 1])) {
 	    printf( "Usage: %s [ hostname [ port]]\n", argv[ 0]);
 	    return EXIT_FAILURE;
 	  }

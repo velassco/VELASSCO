@@ -7,11 +7,21 @@
 // VELaSSCo
 #include "AccessLib.h"
 
+#ifdef _WIN32
+#ifndef strcasecmp
+#define strcasecmp  _stricmp
+#endif
+#endif // _WIN32
+
+bool askForHelp( const char *txt) {
+  return !strcasecmp( txt, "-h") || !strcasecmp( txt, "--h") || !strcasecmp( txt, "-help") || !strcasecmp( txt, "--help");
+}
+
 int main(int argc, char* argv[])
 {
   int server_port = 9090; // default port
   if ( argc == 2) {
-    if ( !strncasecmp( argv[ 1], "-h", 2) ||  !strncasecmp( argv[ 1], "--h", 3)) {
+    if ( askForHelp( argv[ 1])) {
       printf( "Usage: %s [ port]\n", argv[ 0]);
       return EXIT_FAILURE;
     }
