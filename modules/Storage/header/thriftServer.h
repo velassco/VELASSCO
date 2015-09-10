@@ -1,5 +1,5 @@
-#ifndef hbaseaccess_H
-#define hbaseaccess_H
+#ifndef thriftServer_H
+#define thriftServer_H
 
 #include "VELaSSCo.h"
 #include <thrift/protocol/TBinaryProtocol.h>

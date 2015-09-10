@@ -1,3 +1,4 @@
+/* -*- C++ -*- */
 #ifndef hbaseaccess_H
 #define hbaseaccess_H
 
@@ -32,16 +33,15 @@ public:
     const char* cat(char *path, char *filename);
     const char* grep(char *path, char *filename, char *dataToFind);
     
-    const char* GetResultOnVerticesId(
-                                      char *path,
-                                      char *filename,
-
-                                  char* session_Id,
-                                  char* model_Id,
-                                  char* analysis_Id,
-                                  double timeStep,
-                                  char* result_Id,
-                                  vector<int> vertices
+    char* GetResultOnVerticesId(
+                                  const char* session_Id,
+                                  const char* model_Id,
+                                  const char* analysis_Id,
+                                  const double timeStep,
+                                  const char* result_Id,
+                                  // vector<int> vertices
+                                  const int *vertices, // should be i64 ...
+				  const int num_vertices // should be i64 ...
                                   ) ;
     
     
