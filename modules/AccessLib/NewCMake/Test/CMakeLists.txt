@@ -1,3 +1,6 @@
+if( MSVC )
+  link_directories( ${THRIFT_LIBRARY_DIR} ${BOOST_LIBRARY_DIR} )
+endif()
 
 # Add Test executables
 add_executable(Test_Client ${SOURCE_ROOT}/Test/Test_Client.cpp)
