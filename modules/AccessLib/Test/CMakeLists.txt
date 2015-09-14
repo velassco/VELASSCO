@@ -1,11 +1,10 @@
-
-# Required 3rd party libraries (for AccessLib)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../3rdParty/thrift-0.9.2/lib/cpp/x64/$(ConfigurationName))
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../3rdParty/boost-1_54_0/lib)
+if( MSVC )
+  link_directories( ${THRIFT_LIBRARY_DIR} ${BOOST_LIBRARY_DIR} )
+endif()
 
 # Add Test executables
-add_executable(Test_Client Test_Client.cpp)
-add_executable(Test_Server Test_Server.cpp)
+add_executable(Test_Client ${SOURCE_ROOT}/Test/Test_Client.cpp)
+add_executable(Test_Server ${SOURCE_ROOT}/Test/Test_Server.cpp)
 
 # Link access libraries
 target_link_libraries(Test_Client LINK_PUBLIC AccessLib)
