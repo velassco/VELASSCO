@@ -40,34 +40,49 @@ int main(int argc, char* argv[])
       
       rvGetElementOfPointsInSpace rv;
       string sessionID;
+      string modelID_of_VELaSSCo_HbaseBasicTest_part_1;
       vector<Point> points;
       Point p;
       int nPoints = sizeof(random_points) / sizeof(random_points[0]);
 
+      printf("\n--->UserLogin\n");
+      client.UserLogin(sessionID, "olav", "myRole", "myPassword");
+      printf("User logged on with session ID: %s\n", sessionID.data());
+      rvOpenModel rvOM;
+
+      printf("\n--->OpenModel - \"VELaSSCo_HbaseBasicTest_part_1\"\n");
+      client.OpenModel(rvOM, sessionID, "VELaSSCo_HbaseBasicTest_part_1", "read");
+      printf("Returned modelID: %s\n", rvOM.modelID.data());
+      printf("Comments: %s\n", rvOM.report.data());
+      modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
+
       if (strEQL(command, "all") || strEQL(command, "GetElementOfPointsInSpace")) {
+
          for (int i = 0; i < nPoints; i++) {
             p.__set_x(random_points[i][0]); p.__set_y(random_points[i][1]); p.__set_z(random_points[i][2]);
             points.push_back(p);
          }
          printf("\n--->GetElementOfPointsInSpace  - 1000 random points:\n");
-         client.GetElementOfPointsInSpace(rv, sessionID, "VELaSSCo_HbaseBasicTest_part_1", points);
+         client.GetElementOfPointsInSpace(rv, sessionID, rvOM.modelID, points);
 
          printf("Return status: %s\n", rv.status.data());
          printf("Comments: %s\n", rv.report.data());
-         int ix = 0;
-         int nErrorFound = false;
-         for (std::vector<dli::Element>::iterator elemId = rv.elements.begin(); elemId != rv.elements.end(); elemId++) {
-            if (elemId->id != elementID_of_random_points[ix]) {
-               printf("illegal elementid for point nr %d", ix); nErrorFound++;
+         if (strEQL(rv.status.data(), "OK")) {
+            int ix = 0;
+            int nErrorFound = false;
+            for (std::vector<dli::Element>::iterator elemId = rv.elements.begin(); elemId != rv.elements.end(); elemId++) {
+               if (elemId->id != elementID_of_random_points[ix]) {
+                  printf("illegal elementid for point nr %d", ix); nErrorFound++;
+               }
+               ix++;
             }
-            ix++;
+            printf(nErrorFound ? "GetElementOfPointsInSpace executed with %d errors\n" : "No errors in returned data detected.\n", nErrorFound);
          }
-         printf(nErrorFound ? "GetElementOfPointsInSpace executed with %d errors\n" : "No errors in returned data detected.\n", nErrorFound);
       }
 
       rvGetBoundaryOfLocalMesh rvm;
       if (strEQL(command, "all") || strEQL(command, "GetBoundaryOfLocalMesh_WithError")) {
-         printf("\n--->GetBoundaryOfLocalMesh with empty model name:\n");
+         printf("\n--->GetBoundaryOfLocalMesh with wrong model id:\n");
          client.GetBoundaryOfLocalMesh(rvm, sessionID, "", "meshID", "analysisID", 1.0);
          printf("Return status: %s\n", rvm.status.data());
          printf("Comments: %s\n", rvm.report.data());
@@ -80,7 +95,7 @@ int main(int argc, char* argv[])
 
       if (strEQL(command, "all") || strEQL(command, "GetBoundaryOfLocalMesh")) {
          printf("\n--->GetBoundaryOfLocalMesh:\n");
-         client.GetBoundaryOfLocalMesh(rvm, sessionID, "VELaSSCo_HbaseBasicTest_part_1", "meshID", "analysisID", 1.0);
+         client.GetBoundaryOfLocalMesh(rvm, sessionID, modelID_of_VELaSSCo_HbaseBasicTest_part_1, "meshID", "analysisID", 1.0);
          printf("Return status: %s\n", rvm.status.data());
          printf("Comments: %s\n", rvm.report.data());
      }
@@ -89,8 +104,9 @@ int main(int argc, char* argv[])
          rvGetResultFromVerticesID_B rvB;
          vector<int64_t> vertexIDs;
 
+         vertexIDs.push_back(37);
          printf("\n--->GetResultFromVerticesID - FEM model VELaSSCo_HbaseBasicTest_part_1:\n");
-         client.GetResultFromVerticesID(rvB, sessionID, "VELaSSCo_HbaseBasicTest_part_1", vertexIDs, "Height", 1.0, "geometry");
+         client.GetResultFromVerticesID(rvB, sessionID, modelID_of_VELaSSCo_HbaseBasicTest_part_1, vertexIDs, "Height", 1.0, "geometry");
          printf("Return status: %s\n", rvB.status.data());
          printf("Comments: %s\n", rvB.report.data());
      }
@@ -107,6 +123,7 @@ int main(int argc, char* argv[])
 
       if (strEQL(command, "all") || strEQL(command, "GetListOfModels")) {
          rvGetListOfModels modelsInfo;
+         rvOpenModel rvOM;
 
          printf("\n--->GetListOfModels:\n");
          client.GetListOfModels(modelsInfo, sessionID, "", "", "");
@@ -115,6 +132,11 @@ int main(int argc, char* argv[])
          for (std::vector<dli::ModelInfo>::iterator modelIter = modelsInfo.models.begin(); modelIter != modelsInfo.models.end(); modelIter++) {
             printf("%s\n", modelIter->name.data());
          }
+         printf("\n--->OpenModel - \"DEM_b*\"\n");
+         client.OpenModel(rvOM, sessionID, "DEM_b*", "read");
+         printf("Returned modelID: %s\n", rvOM.modelID.data());
+         printf("Comments: %s\n", rvOM.report.data());
+
      }
 
       transport->close();
