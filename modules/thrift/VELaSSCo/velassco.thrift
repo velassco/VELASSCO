@@ -123,6 +123,12 @@ struct rvGetListOfModels {
 }
 
 
+struct rvOpenModel {
+   1: string                              modelID
+   2: string                              report
+}
+
+
 
 
 service VELaSSCo 
@@ -203,10 +209,21 @@ service VELaSSCo
    rvGetResultFromVerticesID_B GetResultFromVerticesID(
       1: string                           sessionID
       2: string                           modelID
-      3: list<i64>                        vertexIDs
-      4: string                           resultID
-      5: double                           time_step
-      6: string                           analysisID )
+      3: string                           coordinatesSet
+      4: list<i64>                        vertexIDs
+      5: string                           resultID
+      6: double                           time_step
+      7: string                           analysisID )
 
+
+
+/**
+   Returns a model GUID (from now on ModelID). The model host may do housekeeping actions,
+   such as caching, and update its session model accordingly..
+ */
+   rvOpenModel OpenModel(
+      1: string                           sessionID
+      2: string                           modelName
+      6: string                           requestedAccess )
 
 }
