@@ -12,10 +12,17 @@ namespace cpp dli
 
 
 enum ElementType {
-  LINE = 1,
-  TETRAHEDRA = 2,
-  TRIANGLE = 3,
-  SPHERE = 4
+   PointElement = 1,
+   LineElement = 2,
+   TriangleElement = 3,
+   QuadrilateralElement = 4,
+   TetrahedraElement = 5,
+   HexahedraElement = 6,
+   PrismElement = 7,
+   PyramidElement = 8,
+   SphereElement = 9,
+   CircleElement = 10,
+   ComplexParticleElement = 11
 }
 
 
@@ -123,9 +130,47 @@ struct rvGetListOfModels {
 }
 
 
+struct rvGetThumbnailOfAModel {
+   1: string                              status
+   2: string                              report
+   3: binary                              imageFile
+}
+
+
 struct rvOpenModel {
    1: string                              modelID
    2: string                              report
+}
+
+
+struct rvGetListOfAnalyses {
+   1: string                              status
+   2: string                              report
+   3: list<string>                        analyses
+}
+
+
+struct rvGetListOfTimeSteps {
+   1: string                              status
+   2: string                              report
+   3: list<double>                        time_steps
+}
+
+
+struct MeshInfo {
+   1: string                              name
+   2: ElementType                         type
+   3: i64                                 nVertices
+   4: i64                                 nElements
+   5: string                              meshUnits
+   6: string                              meshColor
+}
+
+
+struct rvGetListOfMeshes {
+   1: string                              status
+   2: string                              report
+   3: list<MeshInfo>                      meshInfos
 }
 
 
@@ -178,6 +223,33 @@ service VELaSSCo
       4: string                           options )
 
 
+/**
+   Description: Removes the possibility to access a model via a previously assigned
+   GUID (OpenModel). Corresponding housekeeping is wrapped up.
+ */
+   string CloseModel(
+      1: string                           sessionID
+      2: string                           modelName )
+
+
+
+/**
+   Description: Store a new thumbnail of a model
+ */
+   string SetThumbnailOfAModel (
+      1: string                           sessionID
+      2: string                           modelID
+      3: binary                           imageFile )
+
+
+/**
+   Description: Return thumbnail of a model.
+ */
+   rvGetThumbnailOfAModel GetThumbnailOfAModel (
+      1: string                           sessionID
+      2: string                           modelID )
+
+
 
 /**
    For each point in the input parameter points, the method returns data about the element that contains the point.
@@ -218,12 +290,34 @@ service VELaSSCo
 
 
 /**
-   Returns a model GUID (from now on ModelID). The model host may do housekeeping actions,
-   such as caching, and update its session model accordingly..
+   Retrieves the list of time steps for a given model and analysis.
  */
-   rvOpenModel OpenModel(
+   rvGetListOfAnalyses GetListOfAnalyses(
       1: string                           sessionID
-      2: string                           modelName
-      6: string                           requestedAccess )
+      2: string                           modelID )
+
+
+
+/**
+   Retrieves the list of time steps for a given model and analysis.
+ */
+   rvGetListOfTimeSteps GetListOfTimeSteps(
+      1: string                           sessionID
+      2: string                           modelID
+      3: string                           analysisID )
+
+
+
+/**
+   Returns a list of meshes present for the given time-step of that analysis.
+   If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+   If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
+   that are present on that step-values of that analysis.
+ */
+   rvGetListOfMeshes GetListOfMeshes(
+      1: string                           sessionID
+      2: string                           modelID
+      3: string                           analysisID
+      4: double                           timeStep )
 
 }
