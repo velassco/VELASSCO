@@ -25,7 +25,7 @@ public:
    * @param resultID
    * @param listOfVertices
    */
-   void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID);
+   void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::string& coordinatesSet, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID);
 
    /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
@@ -77,10 +77,13 @@ public:
    */
    void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step);
 
-   
+   void OpenModel(rvOpenModel& _return, const std::string& sessionID, const std::string& modelName, const std::string& requestedAccess);
+
    void CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle> &elements);
    void ReportError(char *f) { printf(f); }
    void InitQueryCaches();
+   void GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, FEMmodelCache *fmc);
+   void GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, DEMmodelCache *dmc);
 };
 
 

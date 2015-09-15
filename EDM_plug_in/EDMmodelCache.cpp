@@ -56,12 +56,24 @@ DEMmodelCache::DEMmodelCache(Repository *r, dbSchema *_schema)
 
 void DEMmodelCache::initCache()
 {
-   defineObjectSet(fem::et_Element, 0x4000, true);
-   defineObjectSet(fem::et_Mesh, 0x4000, true);
-   defineObjectSet(fem::et_Node, 0x4000, true);
-   defineObjectSet(fem::et_ResultHeader, 0x4000, true);
+   //defineObjectSet(dem::et_Particle, 0x4000, true);
+   //defineObjectSet(dem::et_Particle_Geometry_contact, 0x4000, true);
+   //defineObjectSet(dem::et_Particle_Particle_contact, 0x4000, true);
    //readObjectClassesToMemory(FEMclassesToRead);
+   defineObjectSet(dem::et_Simulation, 0x4000, true);
    readAllObjectsToMemory();
+   //Iterator<dem::Particle*, dem::entityType> pIter(getObjectSet(dem::et_Particle));
+   //for (dem::Particle *p = pIter.first(); p; p = pIter.next()) {
+   //   particles[p->get_id()] = p;
+   //}
+   //Iterator<dem::Particle_Geometry_contact*, dem::entityType> pgcIter(getObjectSet(dem::et_Particle_Geometry_contact));
+   //for (dem::Particle_Geometry_contact *pgc = pgcIter.first(); pgc; pgc = pgcIter.next()) {
+   //   pgContacts[pgc->get_id()] = pgc;
+   //}
+   //Iterator<dem::Particle_Particle_contact*, dem::entityType> ppcIter(getObjectSet(dem::et_Particle_Particle_contact));
+   //for (dem::Particle_Particle_contact *ppc = ppcIter.first(); ppc; ppc = ppcIter.next()) {
+   //   ppContacts[ppc->get_id()] = ppc;
+   //}
 }
 void FEMmodelCache::initCache()
 {

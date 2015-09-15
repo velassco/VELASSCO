@@ -30,7 +30,10 @@ public:
 class DEMmodelCache : public EDMmodelCache
 /*===============================================================================================*/
 {
+   map<int, dem::Particle*>                     particles;
+   map<int, dem::Particle_Particle_contact*>    ppContacts;
+   map<int, dem::Particle_Geometry_contact*>    pgContacts;
 public:
    DEMmodelCache::DEMmodelCache(Repository *r, dbSchema *_schema);
-   void                             initCache();
+   void                                         initCache();
 };

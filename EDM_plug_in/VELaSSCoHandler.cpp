@@ -128,10 +128,10 @@ VELaSSCoHandler::VELaSSCoHandler() {
 
 void gen_random(char *s, const int len) {
    static const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-   for (int i = 0; i < len; ++i) {
+   for (int i = 0; i < len - 1; ++i) {
       s[i] = alphanum[rand() % (sizeof(alphanum)-1)];
    }
-   s[len] = 0;
+   s[len - 1] = 0;
 }
 
 /**
@@ -169,133 +169,136 @@ void VELaSSCoHandler::UserLogout(std::string& _return, const std::string& sessio
 
 void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points)
 {
-   setCurrentSession(sessionID.data());
-   EDMmodelCache *emc = setCurrentModelCache(atol(modelName.data()));
-   FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+   EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelName.data()));
+   if (emc) {
+      FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
 
-   Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element));
-   Iterator<fem::Node*, fem::entityType> nodeIter(fmc->getObjectSet(fem::et_Node));
-  
-
-   bool sequentialSearch = false;
-   bool boxSearch = true;
-   int n_IsPointInsideTetrahedron_1 = 0;
-   int n_IsPointInsideTetrahedron_2 = 0;
-   int n_Points = 0;
-   std::vector<dli::Element>  returnedElements_1;
-   std::vector<dli::Element>  returnedElements_2;
+      Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element));
+      Iterator<fem::Node*, fem::entityType> nodeIter(fmc->getObjectSet(fem::et_Node));
 
 
-   int startTime = GetTickCount();
-   if (boxSearch) {
-      Matrix<Set<fem::Element*>*> *elemBoxMatrix = (Matrix<Set<fem::Element*>*> *)fmc->voidElemBoxMatrix;
-      int nInside = 0, nPointsInsideSeveralElements = 0;
-      std::vector<dli::Point> myPoints = points;
-      for (std::vector<dli::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
+      bool sequentialSearch = false;
+      bool boxSearch = true;
+      int n_IsPointInsideTetrahedron_1 = 0;
+      int n_IsPointInsideTetrahedron_2 = 0;
+      int n_Points = 0;
+      std::vector<dli::Element>  returnedElements_1;
+      std::vector<dli::Element>  returnedElements_2;
 
-         n_Points++;
-         double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
-         int bx = p_in_x / fmc->dx, by = p_in_y / fmc->dy, bz = p_in_z / fmc->dz;
-         Set<fem::Element*> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
-         bool outsideAll = true;
-         Iterator<fem::Element*, fem::entityType> boxElemIter(elemBox);
 
-         for (fem::Element *ep = boxElemIter.first(); ep; ep = boxElemIter.next()) {
-            int elemId = ep->get_id();
+      int startTime = GetTickCount();
+      if (boxSearch) {
+         Matrix<Set<fem::Element*>*> *elemBoxMatrix = (Matrix<Set<fem::Element*>*> *)fmc->voidElemBoxMatrix;
+         int nInside = 0, nPointsInsideSeveralElements = 0;
+         std::vector<dli::Point> myPoints = points;
+         for (std::vector<dli::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
 
-            Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
-            if (nodeOfElemIter.size() == 4) {
-               fem::Node *np = nodeOfElemIter.first();
-               double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
-               double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
-               double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
-               double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
-               double dst, epsilon = 0.000;
-               double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
-               n_IsPointInsideTetrahedron_1++;
-               if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
-                  epsilon, r_a, r_b, r_c, r_d, &dst)) {
-                  int elemId = ep->get_id();
-                  nInside++;
-                  if (outsideAll) {
-                     dli::Element de;
-                     de.__set_id(ep->get_id()); returnedElements_1.push_back(de);
-                  } else {
-                     nPointsInsideSeveralElements++;
+            n_Points++;
+            double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
+            int bx = p_in_x / fmc->dx, by = p_in_y / fmc->dy, bz = p_in_z / fmc->dz;
+            Set<fem::Element*> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
+            bool outsideAll = true;
+            Iterator<fem::Element*, fem::entityType> boxElemIter(elemBox);
+
+            for (fem::Element *ep = boxElemIter.first(); ep; ep = boxElemIter.next()) {
+               int elemId = ep->get_id();
+
+               Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
+               if (nodeOfElemIter.size() == 4) {
+                  fem::Node *np = nodeOfElemIter.first();
+                  double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
+                  double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
+                  double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
+                  double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
+                  double dst, epsilon = 0.000;
+                  double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
+                  n_IsPointInsideTetrahedron_1++;
+                  if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
+                     epsilon, r_a, r_b, r_c, r_d, &dst)) {
+                     int elemId = ep->get_id();
+                     nInside++;
+                     if (outsideAll) {
+                        dli::Element de;
+                        de.__set_id(ep->get_id()); returnedElements_1.push_back(de);
+                     } else {
+                        nPointsInsideSeveralElements++;
+                     }
+                     outsideAll = false;
                   }
-                  outsideAll = false;
                }
             }
-         }
-         if (outsideAll) {
-            dli::Element de;
-            de.__set_id(-1); returnedElements_1.push_back(de);
+            if (outsideAll) {
+               dli::Element de;
+               de.__set_id(-1); returnedElements_1.push_back(de);
+            }
          }
       }
-   }
-   int endTime = GetTickCount();
+      int endTime = GetTickCount();
 
-   if (sequentialSearch) {
-      int nInside = 0, nPointsInsideSeveralElements = 0;
-      std::vector<dli::Point> myPoints = points;
-      for (std::vector<dli::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
+      if (sequentialSearch) {
+         int nInside = 0, nPointsInsideSeveralElements = 0;
+         std::vector<dli::Point> myPoints = points;
+         for (std::vector<dli::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
 
-         double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
-         bool outsideAll = true;
-         for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
-            int elemId = ep->get_id();
+            double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
+            bool outsideAll = true;
+            for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
+               int elemId = ep->get_id();
 
-            Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
-            if (nodeOfElemIter.size() == 4) {
-               fem::Node *np = nodeOfElemIter.first();
-               double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
-               double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
-               double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
-               double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
-               double dst, epsilon = 0.000;
-               double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
-               n_IsPointInsideTetrahedron_2++;
-               if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
-                  epsilon, r_a, r_b, r_c, r_d, &dst)) {
-                  int elemId = ep->get_id();
-                  nInside++;
-                  if (outsideAll) {
-                     dli::Element de;
-                     de.__set_id(ep->get_id()); returnedElements_2.push_back(de);
-                  } else {
-                     nPointsInsideSeveralElements++;
+               Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
+               if (nodeOfElemIter.size() == 4) {
+                  fem::Node *np = nodeOfElemIter.first();
+                  double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
+                  double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
+                  double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
+                  double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
+                  double dst, epsilon = 0.000;
+                  double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
+                  n_IsPointInsideTetrahedron_2++;
+                  if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
+                     epsilon, r_a, r_b, r_c, r_d, &dst)) {
+                     int elemId = ep->get_id();
+                     nInside++;
+                     if (outsideAll) {
+                        dli::Element de;
+                        de.__set_id(ep->get_id()); returnedElements_2.push_back(de);
+                     } else {
+                        nPointsInsideSeveralElements++;
+                     }
+                     outsideAll = false;
                   }
-                  outsideAll = false;
                }
             }
-         }
-         if (outsideAll) {
-            dli::Element de;
-            de.__set_id(-1); returnedElements_2.push_back(de);
-         }
-      }
-   }
-   if (sequentialSearch && boxSearch) {
-      std::vector<dli::Element>::iterator e1 = returnedElements_1.begin();
-      for (std::vector<dli::Element>::iterator e2 = returnedElements_2.begin(); e2 != returnedElements_2.end(); e2++) {
-         if (e1 != returnedElements_1.end()) {
-            if (e1->id != e2->id) {
-               printf("Difference between box search and sequential search!!!");
+            if (outsideAll) {
+               dli::Element de;
+               de.__set_id(-1); returnedElements_2.push_back(de);
             }
-         } else {
-            printf("Different length of box search and sequential search!!!");
          }
-         e1++;
       }
+      if (sequentialSearch && boxSearch) {
+         std::vector<dli::Element>::iterator e1 = returnedElements_1.begin();
+         for (std::vector<dli::Element>::iterator e2 = returnedElements_2.begin(); e2 != returnedElements_2.end(); e2++) {
+            if (e1 != returnedElements_1.end()) {
+               if (e1->id != e2->id) {
+                  printf("Difference between box search and sequential search!!!");
+               }
+            } else {
+               printf("Different length of box search and sequential search!!!");
+            }
+            e1++;
+         }
+      }
+      if (boxSearch) {
+         char msg[10000];
+         sprintf(msg, "Containing element found for %d points.\nIsPointInsideTetrahedron is executed %d times.\nElapsed time for the search is %d millisecponds\n",
+            n_Points, n_IsPointInsideTetrahedron_1, endTime - startTime);
+         _return.__set_report(msg);
+      }
+      _return.__set_status("OK");
+      _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
+   } else {
+      _return.__set_status("Error"); _return.__set_report("Model does not exist.");
    }
-   if (boxSearch) {
-      char msg[10000];
-      sprintf(msg, "Containing element found for %d points.\nIsPointInsideTetrahedron is executed %d times.\nElapsed time for the search is %d millisecponds\n",
-         n_Points, n_IsPointInsideTetrahedron_1, endTime - startTime);
-      _return.__set_report(msg);
-   }
-   _return.__set_status("OK");
-   _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
 }
 
 #define MaxElemRef 100
@@ -427,7 +430,7 @@ void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, 
 {
    try {
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(atol(modelName.data()));
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelName.data()));
       if (emc) {
          FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
          std::vector<Triangle>  elements;
@@ -446,6 +449,96 @@ void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, 
 
 }
 
+void VELaSSCoHandler::GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, FEMmodelCache *fmc)
+{
+   int nResultHeaderMatches = 0;
+   std::vector<VertexResult> vResults;
+
+   Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+   for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+      if (strEQL(analysisID, rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID, rh->get_name())) {
+         fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
+         if (rb) {
+            nResultHeaderMatches++;
+            Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
+            fem::entityType resultType;
+            for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
+               VertexResult vr;
+               fem::Node *n = r->get_result_for();
+               if (allNodes || nodesInParameter[n->get_id()] == 1) {
+                  vector<double> values;
+                  vr.__set_vertexID(n->get_id());
+                  int size = sizeof(_return);
+                  if (resultType == fem::et_ScalarResult) {
+                     fem::ScalarResult *sr = static_cast<ScalarResult*>(r);
+                     values.push_back(sr->get_val());
+                  } else {
+                     fem::VectorResult *vr = static_cast<VectorResult*>(r);
+                     Iterator<double, fem::entityType> resultIter(vr->get_values());
+                     for (double val = resultIter.firstReal(); resultIter.moreElems(); val = resultIter.nextReal()) {
+                        values.push_back(val);
+                     }
+                  }
+                  vr.__set_resuls(values);
+                  vResults.push_back(vr);
+               }
+            }
+         }
+      }
+   }
+   if (nResultHeaderMatches == 0) {
+      _return.__set_status("Error"); _return.__set_report("No set of results satisfy search criteria.");
+   } else {
+      _return.__set_status("OK"); _return.__set_vertexResults(vResults);
+   }
+}
+
+void VELaSSCoHandler::GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, DEMmodelCache *dmc)
+{
+   vector<VertexResult> vResults;
+   //vector<int64_t> theVertexIDs = vertexIDs;
+
+   //for (vector<int64_t>::iterator idIter = theVertexIDs.begin(); idIter != theVertexIDs.end(); idIter++) {
+   //   ;
+   //}
+   //Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+   //for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+   //   if (strEQL(analysisID, rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID, rh->get_name())) {
+   //      fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
+   //      if (rb) {
+   //         nResultHeaderMatches++;
+   //         Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
+   //         fem::entityType resultType;
+   //         for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
+   //            VertexResult vr;
+   //            fem::Node *n = r->get_result_for();
+   //            if (allNodes || nodesInParameter[n->get_id()] == 1) {
+   //               vector<double> values;
+   //               vr.__set_vertexID(n->get_id());
+   //               int size = sizeof(_return);
+   //               if (resultType == fem::et_ScalarResult) {
+   //                  fem::ScalarResult *sr = static_cast<ScalarResult*>(r);
+   //                  values.push_back(sr->get_val());
+   //               } else {
+   //                  fem::VectorResult *vr = static_cast<VectorResult*>(r);
+   //                  Iterator<double, fem::entityType> resultIter(vr->get_values());
+   //                  for (double val = resultIter.firstReal(); resultIter.moreElems(); val = resultIter.nextReal()) {
+   //                     values.push_back(val);
+   //                  }
+   //               }
+   //               vr.__set_resuls(values);
+   //               vResults.push_back(vr);
+   //            }
+   //         }
+   //      }
+   //   }
+   //}
+   //if (nResultHeaderMatches == 0) {
+   //   _return.__set_status("Error"); _return.__set_report("No set of results satisfy search criteria.");
+   //} else {
+   //   _return.__set_status("OK"); _return.__set_vertexResults(vResults);
+   //}
+}
 
 /**
 * Given a list of vertices id's from the model, vertexIDs, GetResultFromVerticesID will get
@@ -458,60 +551,61 @@ void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, 
 * @param time_step
 * @param analysisID
 */
-void VELaSSCoHandler::GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID)
+void VELaSSCoHandler::GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::string& coordinatesSet, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID)
 {
    try {
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(atol(modelID.data()));
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
       if (emc) {
+         std::map<int, int> nodesInParameter;
+         std::vector<int64_t> myVertexIDs = vertexIDs;
+         for (vector < int64_t>::iterator vIter = myVertexIDs.begin(); vIter != myVertexIDs.end(); vIter++) {
+            nodesInParameter[*vIter] = 1;
+         }
          if (emc->type == mtDEM) {
             DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
          } else {
-            int nResultHeaderMatches = 0;
-            std::vector<VertexResult> vResults;
+            GetFEMresultFromVerticesID(_return,myVertexIDs.size() == 0, nodesInParameter, resultID.data(), time_step, analysisID.data(), dynamic_cast<FEMmodelCache*>(emc));
+            //int nResultHeaderMatches = 0;
+            //std::vector<VertexResult> vResults;
 
-            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
-            for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
-               if (strEQL(analysisID.data(), rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID.data(), rh->get_name())) {
+            //FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+            //Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+            //for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+            //   if (strEQL(analysisID.data(), rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID.data(), rh->get_name())) {
+            //      fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
+            //      if (rb) {
+            //         nResultHeaderMatches++;
+            //         Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
+            //         fem::entityType resultType;
+            //         for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
+            //            VertexResult vr;
+            //            fem::Node *n = r->get_result_for();
+            //            vector<double> values;
 
-                  fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
-                  if (rb) {
-                     if (nResultHeaderMatches == 0) {
-                        Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
-                        fem::entityType resultType;
-                        for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
-                           VertexResult vr;
-                           fem::Node *n = r->get_result_for();
-                           vector<double> values;
-
-                           vr.__set_vertexID(n->get_id());
-                           int size = sizeof(_return);
-                           if (resultType == fem::et_ScalarResult) {
-                              fem::ScalarResult *sr = static_cast<ScalarResult*>(r);
-                              values.push_back(sr->get_val());
-                           } else {
-                              fem::VectorResult *vr = static_cast<VectorResult*>(r);
-                              Iterator<double, fem::entityType> resultIter(vr->get_values());
-                              for (double val = resultIter.first(); resultIter.moreElems(); val = resultIter.next()) {
-                                 values.push_back(val);
-                              }
-                           }
-                           vr.__set_resuls(values);
-                           vResults.push_back(vr);
-                        }
-                     }
-                     nResultHeaderMatches++;
-                  }
-               }
-            }
-            if (nResultHeaderMatches == 0) {
-               _return.__set_status("Error"); _return.__set_report("No set of results satisfy search criteria.");
-            //} else if (nResultHeaderMatches > 1) {
-            //   _return.__set_status("Error"); _return.__set_report("More than one set of results satisfy search criteria.");
-            } else {
-                  _return.__set_status("OK"); _return.__set_vertexResults(vResults);
-            }
+            //            vr.__set_vertexID(n->get_id());
+            //            int size = sizeof(_return);
+            //            if (resultType == fem::et_ScalarResult) {
+            //               fem::ScalarResult *sr = static_cast<ScalarResult*>(r);
+            //               values.push_back(sr->get_val());
+            //            } else {
+            //               fem::VectorResult *vr = static_cast<VectorResult*>(r);
+            //               Iterator<double, fem::entityType> resultIter(vr->get_values());
+            //               for (double val = resultIter.first(); resultIter.moreElems(); val = resultIter.next()) {
+            //                  values.push_back(val);
+            //               }
+            //            }
+            //            vr.__set_resuls(values);
+            //            vResults.push_back(vr);
+            //         }
+            //      }
+            //   }
+            //}
+            //if (nResultHeaderMatches == 0) {
+            //   _return.__set_status("Error"); _return.__set_report("No set of results satisfy search criteria.");
+            //} else {
+            //   _return.__set_status("OK"); _return.__set_vertexResults(vResults);
+            //}
          }
       } else {
          _return.__set_status("Error"); _return.__set_report("Model does not exist.");
@@ -563,4 +657,45 @@ void VELaSSCoHandler::GetListOfModels(rvGetListOfModels& _return, const std::str
    } while (numberOfHits > 0);
    _return.__set_status("OK");
    _return.__set_models(infoList);
+}
+
+
+/**
+* Returns a model GUID (from now on ModelID). The model host may do housekeeping actions,
+* such as caching, and update its session model accordingly..
+*
+* @param sessionID
+* @param modelName
+* @param requestedAccess
+*/
+void VELaSSCoHandler::OpenModel(rvOpenModel& _return, const std::string& sessionID, const std::string& modelName, const std::string& requestedAccess)
+{
+   SdaiInteger  maxBufferSize = sizeof(SdaiInstance) * 2, index = 10, numberOfHits = 2;
+   SdaiInstance resultBuffer[2], sdaiModelID;
+   bool notFound = true;
+   int rstat;
+   char condition[1024];
+
+   sprintf(condition, "name like '%s'", modelName.data());
+   if (rstat = edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", condition, 0,
+      maxBufferSize, &index, &numberOfHits, resultBuffer)) {
+      _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
+   } else if (numberOfHits == 0) {
+      _return.__set_modelID("0"); _return.__set_report("No model match the given model name pattern");
+   } else if (numberOfHits == 1) {
+      void *sp = sdaiGetAttrBN(resultBuffer[0], "Sdai_Model", sdaiINSTANCE, &sdaiModelID);
+      if (sp) {
+         if (sdaiOpenModel(sdaiModelID, strEQL(requestedAccess.data(), "read") ? sdaiRO : sdaiRW)) {
+            char smodelID[512];
+            sprintf(smodelID, "%llu", sdaiModelID);
+            _return.__set_modelID(smodelID); _return.__set_report("");
+         } else {
+            _return.__set_modelID("0"); _return.__set_report(getErrorMsg(sdaiErrorQuery()));
+         }
+      } else {
+         _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
+      }
+   } else {
+      _return.__set_modelID("0"); _return.__set_report("Several models match the given model name pattern.");
+   }
 }
