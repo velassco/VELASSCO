@@ -224,6 +224,16 @@ service VELaSSCo
 
 
 /**
+   Returns a model GUID (from now on ModelID). The model host may do housekeeping actions,
+   such as caching, and update its session model accordingly..
+ */
+   rvOpenModel OpenModel(
+      1: string                           sessionID
+      2: string                           modelName
+      6: string                           requestedAccess )
+
+
+/**
    Description: Removes the possibility to access a model via a previously assigned
    GUID (OpenModel). Corresponding housekeeping is wrapped up.
  */
