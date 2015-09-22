@@ -15,6 +15,7 @@
 // Boost
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/foreach.hpp>
+#include <boost/thread.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -27,6 +28,8 @@
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 
+#include "queryManagerModule.h"
+
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
@@ -36,6 +39,29 @@ using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
 
+template <typename T>
+std::vector<T> as_vector(boost::property_tree::ptree const& pt, boost::property_tree::ptree::key_type const& key)
+{
+    std::vector<T> result;
+    
+    BOOST_FOREACH(boost::property_tree::ptree::value_type it, pt.get_child(key)) {
+        result.push_back(it.second.get_value<T>());
+    }
+    
+    return result;
+}
+
+template <typename T>
+std::string as_string(boost::property_tree::ptree const& pt, boost::property_tree::ptree::key_type const& key)
+{
+    std::stringstream ss;
+
+    BOOST_FOREACH(boost::property_tree::ptree::value_type it, pt.get_child(key)) {
+		ss << (ss.str().size()?",":"") << it.second.get_value<T>();
+    }
+    
+    return std::string("[") + ss.str() + "]";
+}
 
 // ***************************************************************************
 //
@@ -164,13 +190,16 @@ class QueryManager : virtual public QueryManagerIf
 		}
 
 		// Parse query JSON
-		std::string name;
 		std::istringstream ss(query);
 		boost::property_tree::ptree pt;
         boost::property_tree::read_json(ss, pt);
-		for (boost::property_tree::ptree::const_iterator it = pt.begin(); it != pt.end(); ++it)
-			if (it->first == "name")
-				name = it->second.get_value<std::string>();
+
+		std::string name       = pt.get<std::string>("name");
+		std::string modelID    = pt.get<std::string>("modelID");
+		std::string resultID   = pt.get<std::string>("resultID");
+		std::string analysisID = pt.get<std::string>("analysisID");
+		std::string vertexIDs  = as_string<size_t>(pt, "vertexIDs");
+		double      timeStep   = pt.get<double>("timeStep");
 
 		// Check query name
 		if (name != "GetResultFromVerticesID")
@@ -183,7 +212,26 @@ class QueryManager : virtual public QueryManagerIf
 
 			return;
 		}
+	
+	    stringstream listOfVertices;
+        listOfVertices << "{\"id\":" << vertexIDs << "}";
+        
+        std::stringstream sessionIDStr;
+        sessionIDStr << sessionID;
+ 		
+		std::string _return_;
 
+		std::cout << "S " << sessionID  << std::endl;
+		std::cout << "M " << modelID    << std::endl;
+		std::cout << "R " << resultID   << std::endl;
+		std::cout << "A " << analysisID << std::endl;
+		std::cout << "V " << vertexIDs  << std::endl;
+		std::cout << "T " << timeStep   << std::endl;
+
+        queryManagerModule::Instance()->getResultFormVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+			
+		LOGGER << _return << std::endl;
+			
 		// Generate example result data
 		{
 			std::vector<int64_t> resultVertexIDs;
@@ -223,11 +271,11 @@ int StartServer( const int server_port) {
   int port = server_port;
   LOGGER << "  using port: " << port << std::endl;
 
-  shared_ptr<QueryManager> handler(new QueryManager());
-  shared_ptr<TProcessor> processor(new QueryManagerProcessor(handler));
-  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+  boost::shared_ptr<QueryManager> handler(new QueryManager());
+  boost::shared_ptr<TProcessor> processor(new QueryManagerProcessor(handler));
+  boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+  boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
     DEBUG( "  before serving ...");
