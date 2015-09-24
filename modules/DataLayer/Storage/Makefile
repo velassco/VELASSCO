@@ -7,20 +7,27 @@ THRIFT_HBASE=../../thrift/Storage/hbase/gen-cpp
 
 all: $(BIN) $(EXEC)
 
-$(EXEC): base64.o  Hbase_constants1.o Hbase_types1.o hbase1.o  VELaSSCo.o cJSON.o velassco_types.o velassco_constants.o  storageModule.o velasscoThrift.o main.o
+$(EXEC): base64.o cJSON.o                                                  \
+         Hbase_constants1.o Hbase_types1.o hbase1.o                        \
+         VELaSSCo.o velassco_types.o velassco_constants.o velasscoThrift.o \
+         storageModule.o HBase.o EDM.o main.o
 	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lcurl -o $(BIN)/$(EXEC)
-
-
-
-
 
 $(BIN):
 	clear
 	clear
 	mkdir $(BIN)
 
+
 main.o: main.cpp
-	$(CC) -c main.cpp   -I$(THRIFT_STORAGE) -I/usr/local/include -I/usr/local/include -I$(THRIFT_HBASE) -o $(BIN)/main.o
+	$(CC) -c main.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/main.o
+
+HBase.o: HBase.cpp
+	$(CC) -c HBase.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/HBase.o
+
+EDM.o: EDM.cpp
+	$(CC) -c EDM.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/EDM.o
+
 
 velasscoThrift.o: 
 	$(CC) -c velasscoThrift.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -o $(BIN)/velasscoThrift.o

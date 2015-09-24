@@ -69,7 +69,7 @@ void queryManagerModule::getStatus()
 }
 
 
-void queryManagerModule::getResultFormVerticesID(std::string _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
+void queryManagerModule::getResultFormVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 {
     try
     {

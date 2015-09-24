@@ -16,12 +16,7 @@ void VELaSSCoHandler::GetResultFormVerticesID(std::string& _return, const std::s
 {
     
     _return = storageModule::Instance()->getResultOnVertices (sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
-
-	std::cout << "[VELaSSCoHandler::GetResultFormVerticesID]" << std::endl;
-	std::cout << _return << std::endl;
-
     // _return = storageModule::Instance()->checkIfAllVerticesArePresent(listOfVertices, _return);
-    
 }
 
 void VELaSSCoHandler::stopAll()

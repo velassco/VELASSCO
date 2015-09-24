@@ -26,7 +26,7 @@ public:
     bool startConnection();
     bool stopConnection();
     void getStatus();
-    void getResultFormVerticesID(std::string _return, std::string sessionID, std::string modelID, std::string analysisID, double timeStep, std::string resultID,  std::string listOfVertices) ;
+    void getResultFormVerticesID(std::string& _return, std::string sessionID, std::string modelID, std::string analysisID, double timeStep, std::string resultID,  std::string listOfVertices) ;
     void stopAll();
     
 private:

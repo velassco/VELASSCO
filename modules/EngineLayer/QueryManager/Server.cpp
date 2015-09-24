@@ -214,7 +214,7 @@ class QueryManager : virtual public QueryManagerIf
 		}
 	
 	    stringstream listOfVertices;
-        listOfVertices << "{\"id\":" << vertexIDs << "}";
+        listOfVertices << "{\"id\":" << "[]" /*vertexIDs*/ << "}";
         
         std::stringstream sessionIDStr;
         sessionIDStr << sessionID;
@@ -229,10 +229,39 @@ class QueryManager : virtual public QueryManagerIf
 		std::cout << "T " << timeStep   << std::endl;
 
         queryManagerModule::Instance()->getResultFormVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+
+		std::vector<int64_t> resultVertexIDs;
+		std::vector<double>  resultValues;
+
+		std::cout << _return_ << std::endl;
+
+		std::istringstream iss(_return_);
+		while (iss)
+		{
+			int64_t id;
+			double  value[3];
 			
-		LOGGER << _return << std::endl;
+			std::string line;
+			std::getline(iss, line);
+			std::istringstream(line) >> id >> value[0] >> value[1] >> value[2];
 			
+			resultVertexIDs.push_back(id);
+			resultValues.push_back(value[0]);
+			resultValues.push_back(value[1]);
+			resultValues.push_back(value[2]);
+		}
+
+		// Pack into string
+		std::string result;
+		std::ostringstream oss;
+		oss << (resultValues.size() / 3) << " 3" << "\n";
+		result += oss.str();
+		result += std::string((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
+		result += std::string((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
+		_return.__set_data(result); 
+
 		// Generate example result data
+		if (0)
 		{
 			std::vector<int64_t> resultVertexIDs;
 			std::vector<double>  resultValues;

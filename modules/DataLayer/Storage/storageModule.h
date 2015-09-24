@@ -29,26 +29,6 @@ using namespace  ::apache::hadoop::hbase::thrift;
 typedef std::map<std::string,TCell> CellMap;
 
 /////////////////////////////////
-// Curl + Json
-/////////////////////////////////
-#include <curl/curl.h>
-#include "cJSON.h"
-
-static char errorBuffer[CURL_ERROR_SIZE];
-static std::string buffer;
-static int writer(char *data, size_t size,
-                  size_t nmemb,
-                  std::string *writerData)
-{
-    if (writerData == NULL)
-        return 0;
-    
-    writerData->append(data, size*nmemb);
-    
-    return size * nmemb;
-}
-
-/////////////////////////////////
 // Base 64
 /////////////////////////////////
 #include "base64.h"
