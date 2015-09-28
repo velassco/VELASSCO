@@ -2,10 +2,6 @@
 // VELaSSCo
 #include "EDM.h"
 
-
-
-
-
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
@@ -41,6 +37,8 @@ std::string EDM::getResultOnVertices( std::string sessionID,
                                       std::string resultID,
                                       std::string listOfVertices )
 {
+
+#ifdef WIN32
    rvOpenModel rvOM;
    string modelID_of_VELaSSCo_HbaseBasicTest_part_1;
    dli::rvGetResultFromVerticesID_B results;
@@ -61,8 +59,14 @@ std::string EDM::getResultOnVertices( std::string sessionID,
       resultString += cb;
    }
    return resultString;
+ #endif
+
 }
 
+#ifdef WIN32
+
+// #define EDM_TEST_SERVER
+#ifdef EDM_TEST_SERVER
 
 /*===============================================================================================*/
 int main(int argc, char* argv[])
@@ -75,12 +79,12 @@ Program to test VELaSSCo Data Layer thrift based server. The program has 3 comma
 Command can eiter be "all" or any of the querynames.
 =================================================================================================*/
 {
-   char *command = "all";
-   char *server = "localhost";
+   const char *command = "all";
+   const char *server = "localhost";
    int port = 9090;
 
    if (argc > 1) server = argv[1];
-   if (argc > 2) port = atol(argv[2]);
+   if (argc > 2) port = atoi(argv[2]);
    if (argc > 3) command = argv[3];
 
    boost::shared_ptr<TTransport> socket(new TSocket(server, port));
@@ -113,3 +117,7 @@ Command can eiter be "all" or any of the querynames.
    getchar();
    return 0;
 }
+
+#endif
+
+#endif

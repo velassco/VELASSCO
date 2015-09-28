@@ -100,7 +100,8 @@ class QueryManager : virtual public QueryManagerIf
 		LOGGER << "  name     : " << name     << std::endl;
 		LOGGER << "  password : " << password << std::endl;
 
-		if (name == "andreas" && password == "1234")
+		if (   (name == "velassco" && password == "VELaSSCo")
+		    || (name == "andreas" && password == "1234") )
 		{
 			// Login time
 			std::string time = boost::posix_time::to_simple_string(boost::posix_time::second_clock::universal_time());
