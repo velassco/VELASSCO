@@ -10,7 +10,7 @@ all: $(BIN) $(EXEC)
 $(EXEC): base64.o cJSON.o                                                  \
          Hbase_constants1.o Hbase_types1.o hbase1.o                        \
          VELaSSCo.o velassco_types.o velassco_constants.o velasscoThrift.o \
-         storageModule.o HBase.o EDM.o main.o
+         storageModule.o HBase.o EDM.o Helpers.o main.o
 	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lcurl -o $(BIN)/$(EXEC)
 
 $(BIN):
@@ -21,6 +21,9 @@ $(BIN):
 
 main.o: main.cpp
 	$(CC) -c main.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/main.o
+
+Helpers.o: Helpers.cpp
+	$(CC) -c Helpers.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/Helpers.o
 
 HBase.o: HBase.cpp
 	$(CC) -c HBase.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/HBase.o

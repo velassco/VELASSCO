@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include "Helpers.h"
 using namespace std;
 
 
@@ -70,7 +71,8 @@ int main(int argc, char **argv)
                            transportFactory,
                            protocolFactory);
     
-    
+    DEBUG( "listening on port " << port);
+
     server.serve();
     return 0;
 }
