@@ -699,3 +699,167 @@ void VELaSSCoHandler::OpenModel(rvOpenModel& _return, const std::string& session
       _return.__set_modelID("0"); _return.__set_report("Several models match the given model name pattern.");
    }
 }
+
+/**
+* Description: Removes the possibility to access a model via a previously assigned
+* GUID (OpenModel). Corresponding housekeeping is wrapped up.
+*
+* @param sessionID
+* @param modelName
+*/
+void VELaSSCoHandler::CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName)
+{
+
+}
+
+
+/**
+* Description: Store a new thumbnail of a model
+*
+* @param sessionID
+* @param modelID
+* @param imageFile
+*/
+void VELaSSCoHandler::SetThumbnailOfAModel(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& imageFile)
+{
+
+}
+
+/**
+* Description: Return thumbnail of a model.
+*
+* @param sessionID
+* @param modelID
+*/
+void VELaSSCoHandler::GetThumbnailOfAModel(rvGetThumbnailOfAModel& _return, const std::string& sessionID, const std::string& modelID)
+{
+
+}
+
+/**
+* Retrieves the list of time steps for a given model and analysis.
+*
+* @param sessionID
+* @param modelID
+*/
+void VELaSSCoHandler::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID)
+{
+   try {
+      setCurrentSession(sessionID.data());
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
+      if (emc) {
+         vector<string> analysisNames;
+        if (emc->type == mtDEM) {
+            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
+            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation));
+            for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
+               analysisNames.push_back(s->get_name());
+            }
+            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
+         } else if (emc->type == mtFEM) {
+            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+            map<string, int> names;
+            for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+               char *name = rh->get_analysis();
+               if (names[rh->get_analysis()] == NULL) {
+                  names[rh->get_analysis()] = 1; analysisNames.push_back(rh->get_analysis());
+               }
+            }
+            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
+         }
+      } else {
+         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+      }
+   } catch (CedmError *e) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
+   } catch (int thrownRstat) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+   }
+}
+
+/**
+* Retrieves the list of time steps for a given model and analysis.
+*
+* @param sessionID
+* @param modelID
+* @param analysisID
+*/
+void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID)
+{
+   try {
+      setCurrentSession(sessionID.data());
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
+      if (emc) {
+         vector<double> timeSteps;
+         if (emc->type == mtDEM) {
+            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
+            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation));
+            for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
+               if (strEQL(s->get_name(), analysisID.data())) {
+                  Iterator<dem::Timestep*, dem::entityType> tsIter(s->get_consists_of());
+                  for (dem::Timestep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+                     timeSteps.push_back(ts->get_time_value());
+                  }
+               }
+            }
+            _return.__set_status("OK"); _return.__set_time_steps(timeSteps);
+         } else {
+            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+            for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+               if (strEQL(rh->get_analysis(), analysisID.data())) {
+                  timeSteps.push_back(rh->get_step());
+               }
+            }
+            _return.__set_status("OK"); _return.__set_time_steps(timeSteps);
+         }
+      } else {
+         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+      }
+   } catch (CedmError *e) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
+   } catch (int thrownRstat) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+   }
+}
+
+/**
+* Returns a list of meshes present for the given time-step of that analysis.
+* If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+* If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
+* that are present on that step-values of that analysis.
+*
+* @param sessionID
+* @param modelID
+* @param analysisID
+* @param timeStep
+*/
+void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep)
+{
+   try {
+      setCurrentSession(sessionID.data());
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
+      if (emc) {
+         if (emc->type == mtDEM) {
+            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
+         } else {
+            vector<dli::MeshInfo> meshInfos;
+            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_ResultHeader));
+            for (fem::Mesh *m = meshIter.first(); m; m = meshIter.next()) {
+               //if (strEQL(rh->get_analysis(), analysisID.data())) {
+               //   timeSteps.push_back(rh->get_step());
+               //}
+            }
+            _return.__set_status("OK"); _return.__set_meshInfos(meshInfos);
+         }
+      } else {
+         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+      }
+   } catch (CedmError *e) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
+   } catch (int thrownRstat) {
+      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+   }
+}

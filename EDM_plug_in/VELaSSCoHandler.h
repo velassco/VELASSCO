@@ -1,4 +1,4 @@
-class VELaSSCoHandler : public VELaSSCoIf, public EDM_interface
+class VELaSSCoHandler : public StorageModuleIf, public EDM_interface
 {
    char                                         errmsg[2048];
    EDMmodelCache                                *setCurrentModelCache(SdaiModel modelID);
@@ -54,6 +54,34 @@ public:
    */
    void GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options);
 
+   void OpenModel(rvOpenModel& _return, const std::string& sessionID, const std::string& modelName, const std::string& requestedAccess);
+
+   /**
+   * Description: Removes the possibility to access a model via a previously assigned
+   * GUID (OpenModel). Corresponding housekeeping is wrapped up.
+   *
+   * @param sessionID
+   * @param modelName
+   */
+   void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName);
+
+   /**
+   * Description: Store a new thumbnail of a model
+   *
+   * @param sessionID
+   * @param modelID
+   * @param imageFile
+   */
+   void SetThumbnailOfAModel(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& imageFile);
+
+   /**
+   * Description: Return thumbnail of a model.
+   *
+   * @param sessionID
+   * @param modelID
+   */
+   void GetThumbnailOfAModel(rvGetThumbnailOfAModel& _return, const std::string& sessionID, const std::string& modelID);
+
    /**
    * For each point in the input parameter points, the method returns data about the element that contains the point.
    * The number of elements in the returned list of elements shall be the same as the number of points in the input parameter.
@@ -77,7 +105,35 @@ public:
    */
    void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step);
 
-   void OpenModel(rvOpenModel& _return, const std::string& sessionID, const std::string& modelName, const std::string& requestedAccess);
+   /**
+   * Retrieves the list of time steps for a given model and analysis.
+   *
+   * @param sessionID
+   * @param modelID
+   */
+   void GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID);
+
+   /**
+   * Retrieves the list of time steps for a given model and analysis.
+   *
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   */
+   void GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID);
+
+   /**
+   * Returns a list of meshes present for the given time-step of that analysis.
+   * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+   * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
+   * that are present on that step-values of that analysis.
+   *
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param timeStep
+   */
+   void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep);
 
    void CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle> &elements);
    void ReportError(char *f) { printf(f); }

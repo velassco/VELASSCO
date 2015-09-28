@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
    int port = atol(argv[1]);
    VELaSSCoHandler *ourVELaSSCoHandler = new VELaSSCoHandler();
    boost::shared_ptr<VELaSSCoHandler> handler(ourVELaSSCoHandler);
-   boost::shared_ptr<TProcessor> processor(new VELaSSCoProcessor(handler));
+   boost::shared_ptr<TProcessor> processor(new StorageModuleProcessor(handler));
    boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
    boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
    boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
@@ -40,8 +40,20 @@ int main(int argc, char* argv[])
       ourVELaSSCoHandler->cFEMrep = &femRepository;
       ourVELaSSCoHandler->InitQueryCaches();
 
- 
+      printf("The EDM VELaSSCo Data.Layer is ready to execute queries.\n\n");
+
       TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+
+      //boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(64);
+      //boost::shared_ptr<PosixThreadFactory> threadFactory = boost::shared_ptr<PosixThreadFactory>(new PosixThreadFactory());
+      //threadManager->threadFactory(threadFactory);
+      //threadManager->start();
+
+      //TThreadedServer server(processor,
+      //   serverTransport,
+      //   transportFactory,
+      //   protocolFactory);
+
       server.serve();
    } catch (CedmError *e) {
       rstat = e->rstat;

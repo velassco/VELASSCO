@@ -47,11 +47,13 @@ EDMmodelCache::EDMmodelCache(Repository *r, dbSchema *_schema)
 FEMmodelCache::FEMmodelCache(Repository *r, dbSchema *_schema)
 : EDMmodelCache(r, _schema)
 {
+   type = mtFEM;
 }
 
 DEMmodelCache::DEMmodelCache(Repository *r, dbSchema *_schema)
 : EDMmodelCache(r, _schema)
 {
+   type = mtDEM;
 }
 
 void DEMmodelCache::initCache()
