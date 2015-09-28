@@ -4,7 +4,7 @@
 
 #include "queryManagerModule.h"
 #include "cJSON.h"
-
+#include "Helpers.h"
 
 // Global static pointer used to ensure a single instance of the class.
 queryManagerModule* queryManagerModule::m_pInstance = NULL;
@@ -21,9 +21,10 @@ queryManagerModule* queryManagerModule::Instance()
 }
 
 
-bool queryManagerModule::startConnection()
+bool queryManagerModule::startConnection( const char *data_layer_hostname, const int data_layer_port)
 {
-    socket= boost::shared_ptr<TTransport>(new TSocket("pez001", 26266));
+  DEBUG( "Connecting to Data Layer at " << data_layer_hostname << ":" << data_layer_port);
+    socket= boost::shared_ptr<TTransport>(new TSocket( data_layer_hostname, data_layer_port));
     transport = boost::shared_ptr<TTransport>(new TBufferedTransport(socket));
     protocol = boost::shared_ptr<TProtocol>(new TBinaryProtocol(transport));
     cli = new VELaSSCoClient(protocol);

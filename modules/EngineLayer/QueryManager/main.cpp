@@ -13,6 +13,7 @@
 
 #include "queryManagerModule.h"
 #include "Server.h"
+#include "Helpers.h"
 
 using namespace std;
 
@@ -88,10 +89,15 @@ int main(int argc, char **argv)
     }
     else if (pid > 0)
     {
-        queryManagerModule::Instance()->startConnection();
+      // eventually to be passed as argument ...
+      int data_layer_port = 26266;
+      const char *data_layer_hostname = "pez001";
+      queryManagerModule::Instance()->startConnection( data_layer_hostname, data_layer_port);
 
 	// boost::thread serverThread(StartServer, 9090);
-	boost::thread serverThread(StartServer, 26267);
+	int port = 26267;
+	DEBUG( "listening on port" << port);
+	boost::thread serverThread(StartServer, port);
 
         string cmd ="";
         do
