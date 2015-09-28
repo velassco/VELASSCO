@@ -28,8 +28,10 @@ if( NOT MSVC )
 
   # http://stackoverflow.com/questions/9948375/cmake-find-package-succeeds-but-returns-wrong-path
   # use -DBoost_NO_BOOST_CMAKE=ON to overcome the problem above described
-  find_package( Boost REQUIRED COMPONENTS 
-    regex date_time )
+  # Added version 1.5 to get version 1.54 on windows and 1.58 on acuario/pez
+  # instead of old 1.41 instaled on /usr/lib64 which shows the problem described in the above link
+  # and 'make' tries to link with '/usr/lib64/lib64/libboost_regex-mt.so.5' and make it.
+  find_package( Boost 1.5 REQUIRED COMPONENTS regex date_time )
 else()
   set( THRIFT_INCLUDE_DIR "${SOURCE_ROOT}/3rdParty/thrift-0.9.2/lib/cpp/src" )
   set( Boost_INCLUDE_DIRS "${SOURCE_ROOT}/3rdParty/boost-1_54_0/include/boost-1_54" )
