@@ -90,7 +90,8 @@ int main(int argc, char **argv)
     {
         queryManagerModule::Instance()->startConnection();
 
-		boost::thread serverThread(StartServer, 9090);
+	// boost::thread serverThread(StartServer, 9090);
+	boost::thread serverThread(StartServer, 26267);
 
         string cmd ="";
         do
