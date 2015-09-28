@@ -1,0 +1,16 @@
+checksum error: 
+   http://stackoverflow.com/questions/10352934/svn-checksum-mismatch-while-updating
+   Just to recap:
+   1. Go to the folder with the file causing problems
+   2. do svn update --set-depth empty (note: this will delete your files, so make a copy first!)
+   3. do svn update --set-depth infinity
+
+problem deleting folder / can not commit update first:
+   http://stackoverflow.com/questions/1786687/svn-undo-delete-before-commit
+   1. do svn revert . --recursive
+   2. parse output for errors like
+      "Failed to revert 'dir1/dir2' -- try updating instead."
+      ( or go through the restored folders "Reverted 'dir1/dir2'")
+   3. call svn up for each of error directories:
+      svn up dir1/dir2
+
