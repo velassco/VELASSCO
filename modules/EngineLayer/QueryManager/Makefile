@@ -8,18 +8,20 @@ THRIFT_QUERY_MANAGER=../../thrift/QueryManager/gen-cpp
 
 all: $(BIN) $(EXEC)
 
-$(EXEC):  querymanager_QueryManager.o querymanager_velassco_types.o querymanager_velassco_constants.o storage_VELaSSCo.o storage_velassco_types.o storage_velassco_constants.o  cJSON.o queryManagerModule.o Server.o main.o
+$(EXEC):  querymanager_QueryManager.o querymanager_velassco_types.o querymanager_velassco_constants.o storage_VELaSSCo.o storage_velassco_types.o storage_velassco_constants.o  cJSON.o queryManagerModule.o Server.o main.o Helpers.o
 	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lboost_date_time -lboost_thread -o $(BIN)/$(EXEC)
 
 $(BIN):
 	clear
 	clear
 	mkdir $(BIN)
-	
+
 main.o: main.cpp
 	$(CC) -c main.cpp -I$(THRIFT_STORAGE) -I/usr/local/include -I/usr/local/include -I/opt/local/include/ -o $(BIN)/main.o
 
 
+Helpers.o: Helpers.cpp
+	$(CC) -c Helpers.cpp -I$(THRIFT_STORAGE) -I/usr/local/include -I/usr/local/include -I/opt/local/include/ -o $(BIN)/Helpers.o
 
 
 storage_velassco_constants.o: 
