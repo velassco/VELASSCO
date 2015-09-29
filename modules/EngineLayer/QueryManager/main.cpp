@@ -80,6 +80,11 @@ int main(int argc, char **argv)
 {
     srand(time(NULL));
     
+    // needs some nice commandline switches
+    // for now: 1st argument: host, 2nd argument port of Storage module
+    const char* data_layer_hostname = (argc > 1) ?      argv[1]  : "pez001";
+    int         data_layer_port     = (argc > 2) ? atoi(argv[2]) : 26266;
+    
         int counter = 0;
     pid_t pid = fork();
     
@@ -89,13 +94,9 @@ int main(int argc, char **argv)
     }
     else if (pid > 0)
     {
-      // eventually to be passed as argument ...
-      int data_layer_port = 26266;
-      const char *data_layer_hostname = "pez001";
       queryManagerModule::Instance()->startConnection( data_layer_hostname, data_layer_port);
 
-	// boost::thread serverThread(StartServer, 9090);
-	int port = 26267;
+	int port = 26267; // standard thrift port : 9090
 	DEBUG( "listening on port" << port);
 	boost::thread serverThread(StartServer, port);
 
