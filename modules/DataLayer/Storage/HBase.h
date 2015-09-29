@@ -12,8 +12,10 @@ namespace VELaSSCo
 
 class HBase : public AbstractDB
 {
-
-public:
+  
+ public:
+  
+	std::string getStatusDB();
 
 	std::string getResultOnVertices( std::string sessionID,
                                      std::string modelID,
@@ -24,6 +26,7 @@ public:
 private:
 
 	double fRand(double fMin, double fMax);
+        std::string parseStatusDB( std::string b);
 	std::string parse1DEM(std::string b, std::string LOVertices);
 };
 

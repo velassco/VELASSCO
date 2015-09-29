@@ -30,6 +30,10 @@ StorageModuleClient *clp = NULL;
 
 using namespace VELaSSCo;
 
+std::string EDM::getStatusDB() {
+  return "EDM::Status\n";
+}
+	
 std::string EDM::getResultOnVertices( std::string sessionID,
                                       std::string modelID,
                                       std::string analysisID,

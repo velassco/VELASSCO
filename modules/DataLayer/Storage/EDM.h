@@ -15,6 +15,8 @@ class EDM : public AbstractDB
 
 public:
 
+        std::string getStatusDB();
+
 	std::string getResultOnVertices( std::string sessionID,
                                      std::string modelID,
                                      std::string analysisID,

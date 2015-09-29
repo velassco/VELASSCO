@@ -38,6 +38,7 @@ class storageModule
 {
 public:
     static storageModule* Instance();
+    string getStatusDB();
     string getResultOnVertices( std::string sessionID,
                                std::string modelID,
                                std::string analysisID,

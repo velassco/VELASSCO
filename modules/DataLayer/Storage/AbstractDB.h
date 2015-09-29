@@ -19,6 +19,11 @@ class AbstractDB
 	
 public:
 
+  /* 
+   * status of the DB engines: HBase or EDM
+   */
+  virtual std::string getStatusDB() = 0;
+
     /*
      * Access the database and return a list o vertices with attributes.
 	 * The result is a string. Each line represents a vertex and is defined as:

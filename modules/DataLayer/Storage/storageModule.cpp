@@ -25,6 +25,19 @@ storageModule* storageModule::Instance()
     return m_pInstance;
 }
 
+string storageModule::getStatusDB() {
+	// HBase
+	VELaSSCo::HBase hbasedb;
+
+	// EDM
+	VELaSSCo::EDM edmdb;
+
+
+	VELaSSCo::AbstractDB &db = hbasedb;
+	
+	return db.getStatusDB();
+}
+
 string storageModule::getResultOnVertices( std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 { 
 	// HBase
