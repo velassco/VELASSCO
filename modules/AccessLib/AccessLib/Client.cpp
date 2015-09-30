@@ -134,3 +134,41 @@ VAL_Result Client::Query( /* in */
 		return VAL_UNKNOWN_ERROR;
 	}
 }
+
+/**
+ * GetStatusDB
+ */
+VAL_Result Client::GetStatusDB( /* in */
+			       SessionID          sessionID,
+			       /* out */
+			       const std::string* &status ) {
+
+  PING;
+  
+  try
+    {
+      m_transport->open();
+      m_client->GetStatusDB( m_getStatusDBResult, sessionID); // using a object's property so that the returned pointers are valid, as they point to the objects data...
+      m_transport->close();
+      
+      LOGGER << "StatusDB_Result: "                                 << std::endl;
+      LOGGER << "        result : " << m_getStatusDBResult.result        << std::endl;
+      LOGGER << "        status : " << m_getStatusDBResult.status << std::endl;
+      
+      // Return pointer to result string (Thrift uses std::string)
+      status = &(m_getStatusDBResult.status);
+      
+      return (VAL_Result)(m_getStatusDBResult.result);
+    }
+  catch (TException& tx)
+    {
+      LOGGER << "ERROR: " << tx.what() << std::endl;
+      return VAL_SYSTEM_NOT_AVAILABLE;
+    }
+  catch (...)
+	{
+	  return VAL_UNKNOWN_ERROR;
+	}
+  
+}
+

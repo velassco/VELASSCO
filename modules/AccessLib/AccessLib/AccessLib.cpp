@@ -165,6 +165,24 @@ VAL_Result VAL_API valGetResultFromVerticesID( /* in */
 	CATCH_ERROR;
 }
 
+VAL_Result VAL_API valGetStatusDB( /* in */
+				  VAL_SessionID   sessionID,
+				  /* out */ 
+				  const char **status) {
+
+  CHECK_SESSION_ID( sessionID );
+  
+	try
+	{
+		// Try to log out from VELaSSCo server
+		const std::string *status;
+		VAL_Result result = g_clients[sessionID]->GetStatusDB( sessionID, status);
+
+		return result;
+	}
+	CATCH_ERROR;
+  }
+
 VAL_Result VAL_API valErrorMessage( /* in */
 	                                VAL_Result   error,
 

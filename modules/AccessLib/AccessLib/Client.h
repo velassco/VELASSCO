@@ -56,6 +56,14 @@ public:
 					  /* out */
 					  const std::string* &data );
 
+	/**
+	 * GetStatusDB
+	 */
+	VAL_Result GetStatusDB( /* in */ 
+			       SessionID          sessionID,
+			       /* out */
+			       const std::string* &status );
+
 private:
 
 	boost::shared_ptr<TTransport> m_socket;
@@ -65,6 +73,7 @@ private:
 	boost::shared_ptr<QueryManagerClient> m_client;
 	
 	Query_Result m_queryResult;
+	StatusDB_Result m_getStatusDBResult;
 };
 
 }

@@ -215,6 +215,36 @@ class QueryManager : virtual public QueryManagerIf
 		LOGGER << "  result : "   << _return.result        << std::endl;
 		LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 	}
+
+	void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) {
+		LOGGER                              << std::endl;
+		LOGGER << "----- GetStatusDB() -----" << std::endl;
+
+		LOGGER                                << std::endl;
+		LOGGER << "Input:"                      << std::endl;
+		LOGGER << "  sessionID : " << sessionID << std::endl;
+
+		// Check session ID
+		if (!ValidSessionID(sessionID))
+		{
+			_return.__set_result( (Result::type)VAL_INVALID_SESSION_ID );
+
+			LOGGER                                    << std::endl;
+			LOGGER << "Output:"                       << std::endl;
+			LOGGER << "  result : " << _return.result << std::endl;
+
+			return;
+		}
+		// Return session id
+		_return.__set_result( (Result::type)VAL_SUCCESS );
+		_return.__set_status( (std::string)"Test_Server OK");
+
+		LOGGER                                          << std::endl;
+		LOGGER << "Output:"                             << std::endl;
+		LOGGER << "  result    : " << _return.result    << std::endl;
+		LOGGER << "  status    : " << _return.status << std::endl;
+	}
+
 };
 
 int StartServer( const int server_port) {

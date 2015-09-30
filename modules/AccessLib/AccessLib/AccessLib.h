@@ -97,6 +97,11 @@ VAL_Result VAL_API valErrorMessage(            /* in */
 									           /* out */
 									           const char*    *message );
 
+  VAL_Result VAL_API valGetStatusDB(  /* in */
+				    VAL_SessionID   sessionID,
+				    /* out */ 
+				    const char **status);
+  
 /**
  * API testing. 
  */
