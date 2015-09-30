@@ -5,6 +5,70 @@
 #include "random_points.h"
 #include "elementID_of_random_points.h"
 
+
+StorageModuleClient *clp = NULL;
+
+std::string getResultOnVertices(std::string sessionID,
+   std::string modelID,
+   std::string analysisID,
+   double      timeStep,
+   std::string resultID,
+   std::string listOfVertices)
+{
+
+   rvOpenModel rvOM;
+   string modelID_of_VELaSSCo_HbaseBasicTest_part_1;
+   dli::rvGetResultFromVerticesID_B results;
+   vector<int64_t> vertexIDs;
+
+   clp->OpenModel(rvOM, sessionID, "VELaSSCo_HbaseBasicTest_part_1", "read");
+   modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
+   clp->GetResultFromVerticesID(results, sessionID, modelID_of_VELaSSCo_HbaseBasicTest_part_1, "", vertexIDs, "Height", 1.0, "geometry");
+
+   string resultString;
+   for (vector<VertexResult>::iterator resIter = results.vertexResults.begin(); resIter != results.vertexResults.end(); resIter++) {
+      char cb[2048], *np;
+      int length = sprintf(cb, "%d ", resIter->vertexID); np = cb + length;
+      for (vector<double>::iterator value = resIter->resuls.begin(); value != resIter->resuls.end(); value++) {
+         length = sprintf(np, " %f", *value); np = np + length;
+      }
+      sprintf(np, "\n");
+      resultString += cb;
+   }
+   return resultString;
+}
+
+
+void testListAnalyses(StorageModuleClient &client, string sessionID, char *modelName)
+{
+
+   rvOpenModel rvOM;
+   string FluidizedbedModelID;
+   rvGetListOfAnalyses rvAnalysisList;
+   rvGetListOfTimeSteps rvTimesteps;
+
+   printf("\n--->OpenModel - \"%s\"\n", modelName);
+   client.OpenModel(rvOM, sessionID, modelName, "read");
+   printf("Returned modelID: %s\n", rvOM.modelID.data());
+   printf("Comments: %s\n", rvOM.report.data());
+   FluidizedbedModelID = rvOM.modelID;
+
+   printf("\n--->GetListOfAnalyses - \"%s\"\n", modelName);
+   client.GetListOfAnalyses(rvAnalysisList, sessionID, FluidizedbedModelID);
+   printf("Return status: %s\n", rvAnalysisList.status.data());
+   printf("%s has %d analyses.\n", modelName, rvAnalysisList.analyses.size());
+   for (vector<string>::iterator nameIter = rvAnalysisList.analyses.begin(); nameIter != rvAnalysisList.analyses.end(); nameIter++) {
+      printf("Analysis name : %s\n", (char*)nameIter->data());
+      client.GetListOfTimeSteps(rvTimesteps, sessionID, FluidizedbedModelID, *nameIter);
+      printf("   %s has the following time steps:\n", (char*)nameIter->data());
+      int i = 0;
+      for (vector<double>::iterator tsIter = rvTimesteps.time_steps.begin(); tsIter != rvTimesteps.time_steps.end(); tsIter++) {
+         printf((i++) % 4 == 0 ? "\n   %lf" : " %lf", *tsIter);
+      }
+   }
+}
+
+
 /*===============================================================================================*/
 int main(int argc, char* argv[])
 /*
@@ -27,7 +91,8 @@ int main(int argc, char* argv[])
    boost::shared_ptr<TTransport> socket(new TSocket(server, port));
    boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
    boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-   VELaSSCoClient client(protocol);
+   StorageModuleClient client(protocol);
+   clp = &client;
 
 #ifdef WIN32
    WSADATA wsaData = {};
@@ -55,6 +120,12 @@ int main(int argc, char* argv[])
       printf("Returned modelID: %s\n", rvOM.modelID.data());
       printf("Comments: %s\n", rvOM.report.data());
       modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
+
+      if (strEQL(command, "all") || strEQL(command, "string_getResultOnVertices")) {
+         string vertices = getResultOnVertices(sessionID, "0", "analysis", 00.1, "resultID", "LOV");
+         printf("getResultOnVertices returns the following string\n");
+         printf(vertices.data());
+      }
 
       if (strEQL(command, "all") || strEQL(command, "GetElementOfPointsInSpace")) {
 
@@ -106,17 +177,7 @@ int main(int argc, char* argv[])
 
          vertexIDs.push_back(37);
          printf("\n--->GetResultFromVerticesID - FEM model VELaSSCo_HbaseBasicTest_part_1:\n");
-         client.GetResultFromVerticesID(rvB, sessionID, modelID_of_VELaSSCo_HbaseBasicTest_part_1, vertexIDs, "Height", 1.0, "geometry");
-         printf("Return status: %s\n", rvB.status.data());
-         printf("Comments: %s\n", rvB.report.data());
-     }
-
-      if (strEQL(command, "all") || strEQL(command, "GetResultFromVerticesID_DEM")) {
-         rvGetResultFromVerticesID_B rvB;
-         vector<int64_t> vertexIDs;
-
-         printf("\n--->GetResultFromVerticesID - DEM model DEM_box:\n");
-         client.GetResultFromVerticesID(rvB, sessionID, "DEM_box", vertexIDs, "Height", 1.0, "geometry");
+         client.GetResultFromVerticesID(rvB, sessionID, modelID_of_VELaSSCo_HbaseBasicTest_part_1, "", vertexIDs, "Height", 1.0, "geometry");
          printf("Return status: %s\n", rvB.status.data());
          printf("Comments: %s\n", rvB.report.data());
      }
@@ -124,6 +185,7 @@ int main(int argc, char* argv[])
       if (strEQL(command, "all") || strEQL(command, "GetListOfModels")) {
          rvGetListOfModels modelsInfo;
          rvOpenModel rvOM;
+         string DEM_boxModelID;
 
          printf("\n--->GetListOfModels:\n");
          client.GetListOfModels(modelsInfo, sessionID, "", "", "");
@@ -136,7 +198,20 @@ int main(int argc, char* argv[])
          client.OpenModel(rvOM, sessionID, "DEM_b*", "read");
          printf("Returned modelID: %s\n", rvOM.modelID.data());
          printf("Comments: %s\n", rvOM.report.data());
+         DEM_boxModelID = rvOM.modelID;
 
+         rvGetResultFromVerticesID_B rvB;
+         vector<int64_t> vertexIDs;
+
+         printf("\n--->GetResultFromVerticesID - DEM model DEM_box:\n");
+         client.GetResultFromVerticesID(rvB, sessionID, DEM_boxModelID, "", vertexIDs, "Height", 1.0, "geometry");
+         printf("Return status: %s\n", rvB.status.data());
+         printf("Comments: %s\n", rvB.report.data());
+     }
+
+      if (strEQL(command, "all") || strEQL(command, "testListAnalyses")) {
+         testListAnalyses(client, sessionID, "VELaSSCo_HbaseBasicTest_part_1");
+         testListAnalyses(client, sessionID, "Fluidizedbed");
      }
 
       transport->close();

@@ -154,9 +154,9 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\modules\thrift\VELaSSCo\gen-cpp\VELaSSCo.cpp" />
-    <ClCompile Include="..\..\modules\thrift\VELaSSCo\gen-cpp\velassco_constants.cpp" />
-    <ClCompile Include="..\..\modules\thrift\VELaSSCo\gen-cpp\velassco_types.cpp" />
+    <ClCompile Include="..\thrift\VELaSSCo\gen-cpp\StorageModule.cpp" />
+    <ClCompile Include="..\thrift\VELaSSCo\gen-cpp\storage_module_constants.cpp" />
+    <ClCompile Include="..\thrift\VELaSSCo\gen-cpp\storage_module_types.cpp" />
     <ClCompile Include="plug_in_tests.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>

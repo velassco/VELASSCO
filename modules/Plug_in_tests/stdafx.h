@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "..\..\modules\thrift\VELaSSCo\gen-cpp\VELaSSCo.h"
+#include "..\..\modules\thrift\VELaSSCo\gen-cpp\StorageModule.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
