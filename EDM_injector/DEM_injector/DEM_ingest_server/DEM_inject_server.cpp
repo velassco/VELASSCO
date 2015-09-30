@@ -54,7 +54,7 @@ int main(int argc, char **argv)
       VELaSSCo_db.open();
       demRepository.open(sdaiRW);
       demInjector.setCurrentRepository(&demRepository);
-      
+
       if (strEQL(argv[1], "Server")) {
          boost::shared_ptr<DEM_InjectorHandler> handler(&demInjector);
          boost::shared_ptr<TProcessor> processor(new DEM_InjectorProcessor(handler));
@@ -74,6 +74,7 @@ int main(int argc, char **argv)
          demInjector.setCurrentModel(argv[5]);
          demInjector.DeleteCurrentModelContent();
          demInjector.InitiateFileInjection();
+
          FILE *paraMfile = fopen(argv[6], "r");
          if (paraMfile) {
             while (fgets(commandline, sizeof(commandline), paraMfile)){

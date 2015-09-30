@@ -177,6 +177,7 @@ void DEM_InjectorHandler::InjectMesh(char *MeshFileFolder, char *MeshName, char 
    char fileName[1024], stlline[2048], command[512], x[512], y[512], z[512], p4[512], p5[512], MeshNameWithVersion[512];
    CMemoryAllocator* ma = m->getMemoryAllocator();
 
+   newTimestep = false;
    for (std::map<double, dem::Timestep*>::iterator tsit = timesteps.begin(); tsit != timesteps.end(); ++tsit) {
       dem::Timestep* ts = tsit->second;
       dem::FEM_mesh *mesh = NULL;
@@ -219,11 +220,8 @@ void DEM_InjectorHandler::InjectMesh(char *MeshFileFolder, char *MeshName, char 
 void DEM_InjectorHandler::store_TIMESTEP_CONTACTS()
 {
    int               nOfContacts, nValues;
-   bool              newTimestep = false;
-   double            timeStep;
-   int               P1, P2, WALL;
-   double            CX, CY, CZ, FX, FY, FZ;
-
+   
+   newTimestep = false;
    readNextLine();
    sscanf(line, "%lf %d", &timeStep, &nOfContacts);
    dem::Timestep *ts = timesteps[timeStep];
@@ -274,6 +272,32 @@ void DEM_InjectorHandler::store_TIMESTEP_CONTACTS()
             }
          }
       }
+   } else if (strEQL(line, " P1 P2 FX FY FZ\n")) {
+      for (int i = 0; i < nOfContacts; i++) {
+         readNextLine();
+         nValues = sscanf(line, "%d %d %lf %lf %lf", &P1, &P2, &FX, &FY, &FZ);
+         if (nValues == 5) {
+            dem::Particle *p1 = findParticle(P1);
+            dem::Particle *p2 = findParticle(P2);
+            if (p1 && p1) {
+               dem::Particle_Particle_contact *ppc = newObject(dem::Particle_Particle_contact);
+               dem::Contact *c = ppc;
+               ppc->put_P1(p1); ppc->put_P2(p2);
+               c->put_id(cContactID++);
+               dem::Contact_result *cr = newObject(dem::Contact_result);
+               dem::Contact_Force  *cf = newObject(dem::Contact_Force);
+               cf->put_Fx_Fy_Fz_element(FX); cf->put_Fx_Fy_Fz_element(FY); cf->put_Fx_Fy_Fz_element(FZ);
+               cr->put_contact_results_properties_element(cf);
+               cr->put_calculated_for(ts);
+               cr->put_valid_for(c);
+               ts->put_has_contact_element(c);
+            } else {
+               printf("Illegal particle number in particle contact file \"%s\"\n", injectorFileName);
+            }
+         } else {
+            printf("Illegal number of columns in particle contact file \"%s\"\n", injectorFileName);
+         }
+      }
    } else if (strEQL(line, "P1 WALL CX CY CZ FX FY FZ\n")) {
       for (int i = 0; i < nOfContacts; i++) {
          readNextLine();
@@ -281,12 +305,42 @@ void DEM_InjectorHandler::store_TIMESTEP_CONTACTS()
          if (nValues == 8) {
             dem::Particle *p1 = findParticle(P1);
             dem::Particle_Geometry_contact *pgc = newObject(dem::Particle_Geometry_contact);
-            pgc->put_P1(p1);
-            dem::FEM_mesh *mesh = meshes[WALL];
-            if (mesh) {
-               pgc->put_geometry(mesh); ts->put_has_contact_element(pgc);
+            dem::Contact *c = pgc;
+            if (p1) {
+               pgc->put_P1(p1);
+               dem::FEM_mesh *mesh = meshes[WALL];
+               if (mesh) {
+                  pgc->put_geometry(mesh); ts->put_has_contact_element(pgc);
+               } else {
+                  printf("Illegal mesh ID \"%ld\" in file \"%s\"\n", WALL, injectorFileName);
+               }
             } else {
-               printf("Illegal mesh ID \"%ld\" in file \"%s\"\n", WALL, injectorFileName);
+               printf("Illegal particle number in particle contact file \"%s\"\n", injectorFileName);
+            }
+         } else {
+            printf("Illegal number of columns in particle contact file \"%s\"\n", injectorFileName);
+         }
+      }
+   } else if (strEQL(line, " P1 FX FY FZ NX NY NZ\n")) {
+      for (int i = 0; i < nOfContacts; i++) {
+         readNextLine();
+         nValues = sscanf(line, "%d %lf %lf %lf %lf %lf %lf", &P1, &FX, &FY, &FZ, &NX, &NY, &NZ);
+         if (nValues == 7) {
+            dem::Particle *p1 = findParticle(P1);
+            dem::Particle_Geometry_contact *pgc = newObject(dem::Particle_Geometry_contact);
+            if (p1) {
+               pgc->put_P1(p1);
+               dem::Contact *c = pgc;
+               c->put_id(cContactID++);
+               dem::Contact_result *cr = newObject(dem::Contact_result);
+               dem::Contact_Force  *cf = newObject(dem::Contact_Force);
+               cf->put_Fx_Fy_Fz_element(FX); cf->put_Fx_Fy_Fz_element(FY); cf->put_Fx_Fy_Fz_element(FZ);
+               cr->put_contact_results_properties_element(cf);
+               cr->put_calculated_for(ts);
+               cr->put_valid_for(c);
+               ts->put_has_contact_element(c);
+            } else {
+               printf("Illegal particle number in particle contact file \"%s\"\n", injectorFileName);
             }
          } else {
             printf("Illegal number of columns in particle contact file \"%s\"\n", injectorFileName);
@@ -348,6 +402,7 @@ void DEM_InjectorHandler::store_TIMESTEP_PARTICLES()
 {
    int nOfParticles;
 
+   newTimestep = false;
    readNextLine();
    sscanf(line, "%lf %d", &timeStep, &nOfParticles);
    ts = timesteps[timeStep];
@@ -379,12 +434,33 @@ void DEM_InjectorHandler::store_TIMESTEP_PARTICLES()
          readNextLine();
          int nValues = sscanf(line, "%d %d %d %lf %lf %lf %lf %lf %lf %lf %lf",
             &ID, &GROUP, &TYPE, &VOLUME, &MASS, &PX, &PY, &PZ, &VX, &VY, &VZ);
-
-         defineParticle();
-         addCoordinates();
-         addParticleResult();
-         addVelocityMassVolume();
+         if (nValues == 11) {
+            defineParticle();
+            addCoordinates();
+            addParticleResult();
+            addVelocityMassVolume();
+         } else {
+            printf("Illegal number of columns in particle contact file \"%s\"\n", injectorFileName);
+         }
       }
+   } else if (strEQL(line, " ID GROUP VOLUME MASS PX PY PZ VX VY VZ Angular_Velocity_X Angular_Velocity_Y Angular_Velocity_Z Kinetic_Energy\n")) {
+      for (int i = 0; i < nOfParticles; i++) {
+         readNextLine();
+         int nValues = sscanf(line, "%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+            &ID, &GROUP, &VOLUME, &MASS, &PX, &PY, &PZ, &VX, &VY, &VZ, &Angular_Velocity_X, &Angular_Velocity_Y, &Angular_Velocity_Z, &Kinetic_Energy);
+         if (nValues == 14) {
+            defineParticle();
+            addCoordinates();
+            addParticleResult();
+            addVelocityMassVolume();
+            pr->put_result_properties_element(newCustomPropertyVector("Angular_Velocity", Angular_Velocity_X, Angular_Velocity_Y, Angular_Velocity_Z));
+            pr->put_result_properties_element(newCustomPropertyScalar("Kinetic_Energy", Kinetic_Energy));
+         } else {
+            printf("Illegal number of columns in particle contact file \"%s\"\n", injectorFileName);
+         }
+      }
+   } else {
+      printf("Illegal column names \"%s\" in file \"%s\"\n", line, injectorFileName);
    }
 }
 

@@ -46,17 +46,31 @@ void FEM_Injector::storeFEM_results(GID::ResultContainerType &resultContainer)
       fem::ResultBlock *rb = newObject(fem::ResultBlock);
       rb->put_header(rh);
       for (std::vector<GID::ResultRowType>::iterator rowIter = resultIter->values.begin(); rowIter != resultIter->values.end(); rowIter++) {
+         fem::Node *n = nodeMap[rowIter->id];
          std::vector<double>::iterator valIter = rowIter->values.begin();
          fem::Result *r;
          if (rowIter->values.size() == 1) {
-            fem::ScalarResult *sr = newObject(fem::ScalarResult); sr->put_val(*valIter); r = sr;
+            double newVal = *valIter;
+            fem::ScalarResult *sr = newObject(fem::ScalarResult); sr->put_val(newVal); r = sr;
+            if (n && n->get_id() == 37) {
+               printf("Node 37 - scalar value: %f\n", newVal);
+            }
          } else {
             fem::VectorResult *vr = newObject(fem::VectorResult); r = vr;
+            if (n && n->get_id() == 37) {
+               printf("Node 37 - vector value: ");
+            }
             while (valIter != rowIter->values.end()) {
-               vr->put_values_element(*valIter); valIter++;
+               double newVal = *valIter;
+               vr->put_values_element(newVal); valIter++;
+               if (n && n->get_id() == 37) {
+                  printf("   %f", newVal);
+               }
+            }
+            if (n && n->get_id() == 37) {
+               printf("\n");
             }
          }
-         fem::Node *n = nodeMap[rowIter->id];
          if (n) r->put_result_for(n);
          rb->put_values_element(r);
       }

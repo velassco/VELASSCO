@@ -22,8 +22,11 @@ class DEM_InjectorHandler : public DEM_InjectorIf, public EDM_interface
    double                                 timeStep;
    int                                    ID, GROUP, TYPE;
    double                                 VOLUME, MASS, PX, PY, PZ, VX, VY, VZ, Orientation_XX, Orientation_XY, Orientation_XZ;
+   double                                 NX, NY, NZ;
    double                                 Orientation_YX, Orientation_YY, Orientation_YZ, Orientation_ZX, Orientation_ZY, Orientation_ZZ;
    double                                 Angular_Velocity_X, Angular_Velocity_Y, Angular_Velocity_Z, Kinetic_Energy;
+   int                                    P1, P2, WALL;
+   double                                 CX, CY, CZ, FX, FY, FZ;
 
    void                                   defineParticle();
    void                                   addCoordinates();
