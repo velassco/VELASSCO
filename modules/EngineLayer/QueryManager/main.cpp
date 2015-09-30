@@ -57,7 +57,9 @@ void parse(string cmd)
     else if( cmd.find("ping")  == 0)
     {
         cout<<"#### Ping ####"<<endl;
-        queryManagerModule::Instance()->getStatus();
+	std::string status;
+        queryManagerModule::Instance()->getStatusDB( status);
+	cout<<"### " << status << endl;
         cout<<"#### /Ping ####"<<endl;
     }
     else if( cmd.find("stop")  == 0)

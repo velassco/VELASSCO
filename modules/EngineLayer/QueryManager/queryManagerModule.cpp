@@ -32,7 +32,9 @@ bool queryManagerModule::startConnection( const char *data_layer_hostname, const
     {
         
         transport->open();
-        getStatus();
+	string status;
+        getStatusDB( status);
+        cout << "\t########## getStatus - " << status << endl;
     }
     catch (TException& tx)
     {
@@ -54,14 +56,11 @@ bool queryManagerModule::stopConnection()
     return true;
 }
 
-void queryManagerModule::getStatus()
+void queryManagerModule::getStatusDB( std::string& _return)
 {
     try
     {
-        
-        string _return;
-        cli->statusDL(_return);
-        cout << "\t########## getStatus - " << _return << endl;
+        cli->statusDL( _return);
     }
     catch (TException& tx)
     {

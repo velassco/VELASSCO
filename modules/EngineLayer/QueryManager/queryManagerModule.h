@@ -25,7 +25,7 @@ public:
     static queryManagerModule* Instance();
     bool startConnection( const char *data_layer_hostname, const int data_layer_port);
     bool stopConnection();
-    void getStatus();
+    void getStatusDB( std::string& _return);
     void getResultFormVerticesID(std::string& _return, std::string sessionID, std::string modelID, std::string analysisID, double timeStep, std::string resultID,  std::string listOfVertices) ;
     void stopAll();
     

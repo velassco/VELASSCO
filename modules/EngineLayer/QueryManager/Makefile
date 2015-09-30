@@ -25,11 +25,11 @@ Helpers.o: Helpers.cpp
 
 
 storage_velassco_constants.o: 
-	$(CC) -c $(THRIFT_STORAGE)/velassco_constants.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_constants.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_constants.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_constants.o
 
 
 storage_velassco_types.o: 
-	$(CC) -c $(THRIFT_STORAGE)/velassco_types.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_types.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_types.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_types.o
 
 
 storage_VELaSSCo.o: 
@@ -38,11 +38,11 @@ storage_VELaSSCo.o:
 
 
 querymanager_velassco_constants.o: 
-	$(CC) -c $(THRIFT_QUERY_MANAGER)/velassco_constants.cpp -I$(THRIFT_QUERY_MANAGER)  -o $(BIN)/querymanager_velassco_constants.o
+	$(CC) -c $(THRIFT_QUERY_MANAGER)/QueryManager_constants.cpp -I$(THRIFT_QUERY_MANAGER)  -o $(BIN)/querymanager_velassco_constants.o
 
 
 querymanager_velassco_types.o: 
-	$(CC) -c $(THRIFT_QUERY_MANAGER)/velassco_types.cpp -I$(THRIFT_QUERY_MANAGER)  -o $(BIN)/querymanager_velassco_types.o
+	$(CC) -c $(THRIFT_QUERY_MANAGER)/QueryManager_types.cpp -I$(THRIFT_QUERY_MANAGER)  -o $(BIN)/querymanager_velassco_types.o
 
 
 querymanager_QueryManager.o: 
