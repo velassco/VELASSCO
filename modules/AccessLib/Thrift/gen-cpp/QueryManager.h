@@ -39,6 +39,13 @@ class QueryManagerIf {
    * @param query
    */
   virtual void Query(Query_Result& _return, const SessionID sessionID, const std::string& query) = 0;
+
+  /**
+   * StatusDB: status of the HBase system or the EDM system
+   * 
+   * @param sessionID
+   */
+  virtual void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) = 0;
 };
 
 class QueryManagerIfFactory {
@@ -75,6 +82,9 @@ class QueryManagerNull : virtual public QueryManagerIf {
     return;
   }
   void Query(Query_Result& /* _return */, const SessionID /* sessionID */, const std::string& /* query */) {
+    return;
+  }
+  void GetStatusDB(StatusDB_Result& /* _return */, const SessionID /* sessionID */) {
     return;
   }
 };
@@ -460,6 +470,126 @@ class QueryManager_Query_presult {
   friend std::ostream& operator<<(std::ostream& out, const QueryManager_Query_presult& obj);
 };
 
+typedef struct _QueryManager_GetStatusDB_args__isset {
+  _QueryManager_GetStatusDB_args__isset() : sessionID(false) {}
+  bool sessionID :1;
+} _QueryManager_GetStatusDB_args__isset;
+
+class QueryManager_GetStatusDB_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  QueryManager_GetStatusDB_args(const QueryManager_GetStatusDB_args&);
+  QueryManager_GetStatusDB_args& operator=(const QueryManager_GetStatusDB_args&);
+  QueryManager_GetStatusDB_args() : sessionID(0) {
+  }
+
+  virtual ~QueryManager_GetStatusDB_args() throw();
+  SessionID sessionID;
+
+  _QueryManager_GetStatusDB_args__isset __isset;
+
+  void __set_sessionID(const SessionID val);
+
+  bool operator == (const QueryManager_GetStatusDB_args & rhs) const
+  {
+    if (!(sessionID == rhs.sessionID))
+      return false;
+    return true;
+  }
+  bool operator != (const QueryManager_GetStatusDB_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const QueryManager_GetStatusDB_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_GetStatusDB_args& obj);
+};
+
+
+class QueryManager_GetStatusDB_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+
+  virtual ~QueryManager_GetStatusDB_pargs() throw();
+  const SessionID* sessionID;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_GetStatusDB_pargs& obj);
+};
+
+typedef struct _QueryManager_GetStatusDB_result__isset {
+  _QueryManager_GetStatusDB_result__isset() : success(false) {}
+  bool success :1;
+} _QueryManager_GetStatusDB_result__isset;
+
+class QueryManager_GetStatusDB_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "23FC8AEC2F4D082E52FC139A12C7E4E0";
+  static const uint8_t binary_fingerprint[16]; // = {0x23,0xFC,0x8A,0xEC,0x2F,0x4D,0x08,0x2E,0x52,0xFC,0x13,0x9A,0x12,0xC7,0xE4,0xE0};
+
+  QueryManager_GetStatusDB_result(const QueryManager_GetStatusDB_result&);
+  QueryManager_GetStatusDB_result& operator=(const QueryManager_GetStatusDB_result&);
+  QueryManager_GetStatusDB_result() {
+  }
+
+  virtual ~QueryManager_GetStatusDB_result() throw();
+  StatusDB_Result success;
+
+  _QueryManager_GetStatusDB_result__isset __isset;
+
+  void __set_success(const StatusDB_Result& val);
+
+  bool operator == (const QueryManager_GetStatusDB_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const QueryManager_GetStatusDB_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const QueryManager_GetStatusDB_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_GetStatusDB_result& obj);
+};
+
+typedef struct _QueryManager_GetStatusDB_presult__isset {
+  _QueryManager_GetStatusDB_presult__isset() : success(false) {}
+  bool success :1;
+} _QueryManager_GetStatusDB_presult__isset;
+
+class QueryManager_GetStatusDB_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "23FC8AEC2F4D082E52FC139A12C7E4E0";
+  static const uint8_t binary_fingerprint[16]; // = {0x23,0xFC,0x8A,0xEC,0x2F,0x4D,0x08,0x2E,0x52,0xFC,0x13,0x9A,0x12,0xC7,0xE4,0xE0};
+
+
+  virtual ~QueryManager_GetStatusDB_presult() throw();
+  StatusDB_Result* success;
+
+  _QueryManager_GetStatusDB_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_GetStatusDB_presult& obj);
+};
+
 class QueryManagerClient : virtual public QueryManagerIf {
  public:
   QueryManagerClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -494,6 +624,9 @@ class QueryManagerClient : virtual public QueryManagerIf {
   void Query(Query_Result& _return, const SessionID sessionID, const std::string& query);
   void send_Query(const SessionID sessionID, const std::string& query);
   void recv_Query(Query_Result& _return);
+  void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID);
+  void send_GetStatusDB(const SessionID sessionID);
+  void recv_GetStatusDB(StatusDB_Result& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -512,12 +645,14 @@ class QueryManagerProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_UserLogin(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_UserLogout(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_Query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetStatusDB(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   QueryManagerProcessor(boost::shared_ptr<QueryManagerIf> iface) :
     iface_(iface) {
     processMap_["UserLogin"] = &QueryManagerProcessor::process_UserLogin;
     processMap_["UserLogout"] = &QueryManagerProcessor::process_UserLogout;
     processMap_["Query"] = &QueryManagerProcessor::process_Query;
+    processMap_["GetStatusDB"] = &QueryManagerProcessor::process_GetStatusDB;
   }
 
   virtual ~QueryManagerProcessor() {}
@@ -573,6 +708,16 @@ class QueryManagerMultiface : virtual public QueryManagerIf {
       ifaces_[i]->Query(_return, sessionID, query);
     }
     ifaces_[i]->Query(_return, sessionID, query);
+    return;
+  }
+
+  void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetStatusDB(_return, sessionID);
+    }
+    ifaces_[i]->GetStatusDB(_return, sessionID);
     return;
   }
 

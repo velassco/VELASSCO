@@ -55,6 +55,16 @@ class QueryManagerHandler : virtual public QueryManagerIf {
     printf("Query\n");
   }
 
+  /**
+   * StatusDB: status of the HBase system or the EDM system
+   * 
+   * @param sessionID
+   */
+  void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) {
+    // Your implementation goes here
+    printf("GetStatusDB\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

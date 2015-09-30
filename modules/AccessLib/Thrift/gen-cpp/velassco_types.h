@@ -36,6 +36,8 @@ class UserLogout_Result;
 
 class Query_Result;
 
+class StatusDB_Result;
+
 typedef struct _UserLogin_Result__isset {
   _UserLogin_Result__isset() : sessionID(false) {}
   bool sessionID :1;
@@ -172,6 +174,56 @@ class Query_Result {
 };
 
 void swap(Query_Result &a, Query_Result &b);
+
+typedef struct _StatusDB_Result__isset {
+  _StatusDB_Result__isset() : status(false) {}
+  bool status :1;
+} _StatusDB_Result__isset;
+
+class StatusDB_Result {
+ public:
+
+  static const char* ascii_fingerprint; // = "24652790C81ECE22B629CB60A19F1E93";
+  static const uint8_t binary_fingerprint[16]; // = {0x24,0x65,0x27,0x90,0xC8,0x1E,0xCE,0x22,0xB6,0x29,0xCB,0x60,0xA1,0x9F,0x1E,0x93};
+
+  StatusDB_Result(const StatusDB_Result&);
+  StatusDB_Result& operator=(const StatusDB_Result&);
+  StatusDB_Result() : result((Result::type)0), status() {
+  }
+
+  virtual ~StatusDB_Result() throw();
+  Result::type result;
+  std::string status;
+
+  _StatusDB_Result__isset __isset;
+
+  void __set_result(const Result::type val);
+
+  void __set_status(const std::string& val);
+
+  bool operator == (const StatusDB_Result & rhs) const
+  {
+    if (!(result == rhs.result))
+      return false;
+    if (__isset.status != rhs.__isset.status)
+      return false;
+    else if (__isset.status && !(status == rhs.status))
+      return false;
+    return true;
+  }
+  bool operator != (const StatusDB_Result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StatusDB_Result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const StatusDB_Result& obj);
+};
+
+void swap(StatusDB_Result &a, StatusDB_Result &b);
 
 } // namespace
 
