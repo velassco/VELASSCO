@@ -2,6 +2,7 @@
 #include <boost/shared_ptr.hpp>
 #include "thrift/transport/TBufferTransports.h"
 #include "thrift/protocol/TBinaryProtocol.h"
+#include <iostream>
 
 using namespace apache::thrift::transport;
 using namespace apache::thrift::protocol;

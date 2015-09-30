@@ -19,6 +19,10 @@
 #include "ParseAsciiResult.h"
 #include "BinarySerialization.h"
 
+//#define DONT_APPLY_MUTATIONS
+#define CHECK_KEY_ENCODING
+//#define USE_THRIFT_SERIALIZATION
+
 using namespace boost::filesystem;
 using boost::lexical_cast;
 using boost::bad_lexical_cast;
@@ -37,6 +41,14 @@ typedef std::vector<TCell> CellVec;
 typedef std::map<std::string,TCell> CellMap;
 
 typedef std::map<int, path> PathContainerType;
+
+#if defined(USE_THRIFT_SERIALIZATION)
+typedef  GID::BinarySerializerThrift BinarySerializerType;
+typedef  GID::BinaryDeserializerThrift BinaryDeserializerType;
+#else
+typedef  GID::BinarySerializerNative BinarySerializerType;
+typedef  GID::BinaryDeserializerNative BinaryDeserializerType;
+#endif
 
 struct ModelFileParts
 {
@@ -480,7 +492,7 @@ int EncodeRowKey_MetaData( const std::string &keyModel,
                    sizeof( lengthStr )  + lengthStr +
                    sizeof( step ) );
   rowKey = keyModel;
-  GID::BinarySerializer binWriter;
+  BinarySerializerType binWriter;
   binWriter.Write( rowKey, analysisName );
   binWriter.Write( rowKey, step );
   return SUCCESS;
@@ -498,7 +510,7 @@ int DecodeRowKey_MetaData( const std::string &rowKey,
     return ERROR_KEY_MINIMUM_LENGTH;
     }
   char uid[16];
-  GID::BinaryDeserializer binReader;
+  BinaryDeserializerType binReader;
   boost::uint32_t pos0 = binReader.Read( rowKey, reinterpret_cast<boost::int8_t*>(&uid[0]), 16 );
   if ( pos0 != 16 )
     {
@@ -550,7 +562,7 @@ int InsertResult_MetaData( const std::string &host, int port,
                                                    // HBASE-4658
       // look for the first mesh with nodes defined
       bool csetFound = false;
-      GID::BinarySerializer binWriter;
+      BinarySerializerType binWriter;
       for( GlobalMeshInfoType::MapHeaderType::const_iterator it = meshInfo.headers.begin( );
            it  != meshInfo.headers.end( ); ++it  )
         {
@@ -559,9 +571,9 @@ int InsertResult_MetaData( const std::string &host, int port,
           if ( it->second.numberOfNodes > 0 )
             {
             mutations.push_back( Mutation() );
-            mutations.back( ).column = "M:c1nm";
+            mutations.back( ).column = "M:c000001nm";
             mutations.back( ).value = it->first;
-            mutations.back( ).column = "M:c1nc";
+            mutations.back( ).column = "M:c000001nc";
             binWriter.Write( mutations.back( ).value, it->second.numberOfNodes );
             csetFound = true;
             }
@@ -576,7 +588,7 @@ int InsertResult_MetaData( const std::string &host, int port,
         mutations.back( ).column = pm;
         mutations.back( ).column += "cn";
         // REVIEW: why not store only the index in binary form?
-        mutations.back( ).value = "c1";
+        mutations.back( ).value = "c000001";
         mutations.push_back( Mutation() );
         mutations.back( ).column = pm;
         mutations.back( ).column += "et";
@@ -594,7 +606,9 @@ int InsertResult_MetaData( const std::string &host, int port,
         mutations.back( ).column += "cl";
         mutations.back( ).value = "";
         // push mesh columns
+#ifndef DONT_APPLY_MUTATIONS
         client.mutateRow( strTableMetaData, keyM, mutations, dummyAttributes);
+#endif
         }
       // process all analysis/timestep/result
       for( GlobalResultInfoType::MapAnalysisType::const_iterator itA = resultInfo.analysis.begin( );
@@ -668,7 +682,7 @@ int InsertResult_MetaData( const std::string &host, int port,
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
                 mutations.back( ).column += "co";
-                mutations.back( ).value = "c1";
+                mutations.back( ).value = "c000001";
                 }
 
               // un
@@ -677,7 +691,9 @@ int InsertResult_MetaData( const std::string &host, int port,
               mutations.back( ).column += "un";
               mutations.back( ).value = "";
               }
+#ifndef DONT_APPLY_MUTATIONS
             client.mutateRow( strTableMetaData, keyR, mutations, dummyAttributes);
+#endif
             }
           else
             {
@@ -718,7 +734,7 @@ int EncodeRowKey_Data( const std::string &keyModel,
                    sizeof( step ) +
                    sizeof( part ) );
   keyData = keyModel;
-  GID::BinarySerializer binWriter;
+  BinarySerializerType binWriter;
   binWriter.Write( keyData, analysisName );
   binWriter.Write( keyData, step );
   binWriter.Write( keyData, part );
@@ -738,7 +754,7 @@ int DecodeRowKey_Data( const std::string &keyData,
     return ERROR_KEY_MINIMUM_LENGTH;
     }
   char uid[16];
-  GID::BinaryDeserializer binReader;
+  BinaryDeserializerType binReader;
   boost::uint32_t pos0 = binReader.Read( keyData, reinterpret_cast<boost::int8_t*>(&uid[0]), 16 );
   if ( pos0 != 16 )
     {
@@ -768,20 +784,27 @@ int DecodeRowKey_Data( const std::string &keyData,
 int EncodeColumn_Data( char family, char prefix, GID::UInt32 indexSet, GID::UInt64 id, std::string &column)
 {
   std::string binId;  
-  GID::BinarySerializer binWriter;
+  BinarySerializerType binWriter;
   char cprefix[3];
   
   cprefix[0] = family;
   cprefix[1] = ':';
   cprefix[2] = prefix;
   column.append( cprefix, 3 );
-  column += boost::lexical_cast<std::string>(indexSet);
+  
+  std::stringstream ss;
+  ss << std::setfill( '0' ) << std::setw( 6 );
+  ss << indexSet;
+  column += ss.str();
+  // column += boost::lexical_cast<std::string>(indexSet);
   column += "_";
   binWriter.Write( binId, id );
   column += binId;
   return SUCCESS;
 }
 
+// REVIEW: this function must be updated see how EncodeColumn_Data
+// works for indexSet coding.
 int DecodeColumn_Data( const std::string &column, char family, char prefix,
                        GID::UInt32 &indexSet, GID::UInt64 &id )
 {
@@ -811,7 +834,7 @@ int DecodeColumn_Data( const std::string &column, char family, char prefix,
     {
     return ERROR_INVALID_COLUMN_NAME_CSET;
     }
-  GID::BinaryDeserializer binReader;
+  BinaryDeserializerType binReader;
   boost::uint32_t pos0 = binReader.Read( column, &id, i + 1 );
   if ( pos0 != i + 1 + sizeof( id ) )
     {
@@ -845,7 +868,9 @@ int InsertPartResult_Data( const std::string &host, int port,
     if ( status == SUCCESS )
       {
       LOG(info) << "keyM = " << keyM;
-      GID::BinarySerializer binWriter;
+      BinarySerializerType binWriter;
+
+#if defined(CHECK_KEY_ENCODING)
       std::string checkKeyModel, checkAnalysisName;
       double checkStep;
       GID::IdPartition checkPart;
@@ -856,98 +881,106 @@ int InsertPartResult_Data( const std::string &host, int port,
                   << "checkAnalysisName = " << checkAnalysisName << ", " 
                   << "checkStep = " << checkStep << ", " 
                   << "checkPart = " << checkPart;
-        assert( checkKeyModel == keyModel );
-        assert( checkAnalysisName == analysisName );
-        assert( checkStep == step );
-        assert( checkPart == indexPart );
-        std::vector<Mutation> mutations;
-        // TODO: first prototype use only one coordinate set
-        GID::UInt32 indexCSet = 1;
-        const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
-                                                     // HBASE-4658
-        // mutations for coordinate set
-        for( std::vector<GID::MeshNodeType>::const_iterator it = meshPart.nodes.begin( );
-             it != meshPart.nodes.end(); it++ )
+        if( checkKeyModel != keyModel ||
+            checkAnalysisName != analysisName ||
+            checkStep != step ||
+            checkPart != indexPart )
           {
-          mutations.push_back( Mutation( ) );
-          
-          status = EncodeColumn_Data( 'M', 'c', indexCSet, it->id, mutations.back().column );
-          if ( status != SUCCESS )
-            {
-            break;
-            }
-          binWriter.Write( mutations.back().value, it->x );
-          binWriter.Write( mutations.back().value, it->y );
-          binWriter.Write( mutations.back().value, it->z );
-          }
-        // mutations for element set
-        if ( status == SUCCESS )
-          {
-          for( std::vector<GID::MeshElementType>::const_iterator it = meshPart.elements.begin( );
-               it != meshPart.elements.end(); it++ )
-            {
-            mutations.push_back( Mutation( ) );
-            status = EncodeColumn_Data( 'M', 'm', indexESet, (*it)[0], mutations.back().column );
-            if ( status != SUCCESS )
-              {
-              break;
-              }
-            GID::BinarySerializer binWriter;
-            for( size_t i = 1; i < it->size(); i++ )
-              {
-              // copy from boost::long_long_type to boost::uint64_t
-              // which must be compatible
-              GID::IdNode idN = (*it)[i];
-              binWriter.Write( mutations.back().value, idN );
-              }
-            GID::UInt64 GG = 0;
-            binWriter.Write( mutations.back().value, GG );
-            }
-          }
-        // mutations for results
-        if( status == SUCCESS )
-          {
-          client.mutateRow( strTableData, keyM, mutations, dummyAttributes);
-          LOG(info) << "inserted " << meshPart.nodes.size() << " coordinates";
-          LOG(info) << "inserted " << meshPart.elements.size() << " elements";
-
-          for( std::vector<GID::ResultBlockType>::const_iterator itR = resultPart.results.begin( );
-               itR != resultPart.results.end( ); itR++ )
-            {
-            std::string keyR;
-            status = EncodeRowKey_Data( keyModel, itR->header.analysis, itR->header.step, indexPart, keyR );
-            if ( status != SUCCESS )
-              {
-              break;
-              }
-            mutations.clear( );
-            GID::UInt64 indexMData = itR->header.indexMData;
-            for( std::vector<GID::ResultRowType>::const_iterator itV = itR->values.begin( );
-                 itV != itR->values.end( ); itV++ ) 
-              {
-              mutations.push_back( Mutation( ) );
-              status = EncodeColumn_Data( 'R', 'r', indexMData, itV->id, mutations.back().column );
-              if ( status != SUCCESS )
-                {
-                break;
-                }
-              for( std::vector<double>::const_iterator itD = itV->values.begin( );
-                   itD != itV->values.end( ); itD++ )
-                {
-                binWriter.Write( mutations.back().value, *itD );
-                }
-              }
-            client.mutateRow( strTableData, keyR, mutations, dummyAttributes);
-            }
-          }
-        if ( status == SUCCESS )
-          {
-          LOG(info) << "inserted " << resultPart.results.size() << " results";
+          LOG(error) << "DecodeRowKey_Data does not return the expected key fields";
           }
         }
       else
         {
         LOG(error) << "failed check of mesh data key with error code " << status;
+        }
+#endif
+      std::vector<Mutation> mutations;
+      // TODO: first prototype use only one coordinate set
+      GID::UInt32 indexCSet = 1;
+      const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
+      // HBASE-4658
+      // mutations for coordinate set
+      for( std::vector<GID::MeshNodeType>::const_iterator it = meshPart.nodes.begin( );
+           it != meshPart.nodes.end(); it++ )
+        {
+        mutations.push_back( Mutation( ) );
+        
+        status = EncodeColumn_Data( 'M', 'c', indexCSet, it->id, mutations.back().column );
+        if ( status != SUCCESS )
+          {
+          break;
+          }
+        binWriter.Write( mutations.back().value, it->x );
+        binWriter.Write( mutations.back().value, it->y );
+        binWriter.Write( mutations.back().value, it->z );
+        }
+      // mutations for element set
+      if ( status == SUCCESS )
+        {
+        for( std::vector<GID::MeshElementType>::const_iterator it = meshPart.elements.begin( );
+             it != meshPart.elements.end(); it++ )
+          {
+          mutations.push_back( Mutation( ) );
+          status = EncodeColumn_Data( 'M', 'm', indexESet, (*it)[0], mutations.back().column );
+          if ( status != SUCCESS )
+            {
+            break;
+            }
+          BinarySerializerType binWriter;
+          for( size_t i = 1; i < it->size(); i++ )
+            {
+            // copy from boost::long_long_type to boost::uint64_t
+            // which must be compatible
+            GID::IdNode idN = (*it)[i];
+            binWriter.Write( mutations.back().value, idN );
+            }
+          GID::UInt64 GG = 0;
+          binWriter.Write( mutations.back().value, GG );
+          }
+        }
+      // mutations for results
+      if( status == SUCCESS )
+        {
+#ifndef DONT_APPLY_MUTATIONS
+        client.mutateRow( strTableData, keyM, mutations, dummyAttributes);
+#endif
+        LOG(info) << "inserted " << meshPart.nodes.size() << " coordinates";
+        LOG(info) << "inserted " << meshPart.elements.size() << " elements";
+        
+        for( std::vector<GID::ResultBlockType>::const_iterator itR = resultPart.results.begin( );
+             itR != resultPart.results.end( ); itR++ )
+          {
+          std::string keyR;
+          status = EncodeRowKey_Data( keyModel, itR->header.analysis, itR->header.step, indexPart, keyR );
+          if ( status != SUCCESS )
+            {
+            break;
+            }
+          mutations.clear( );
+          GID::UInt64 indexMData = itR->header.indexMData;
+          for( std::vector<GID::ResultRowType>::const_iterator itV = itR->values.begin( );
+               itV != itR->values.end( ); itV++ ) 
+            {
+            mutations.push_back( Mutation( ) );
+            status = EncodeColumn_Data( 'R', 'r', indexMData, itV->id, mutations.back().column );
+            if ( status != SUCCESS )
+              {
+              break;
+              }
+            for( std::vector<double>::const_iterator itD = itV->values.begin( );
+                 itD != itV->values.end( ); itD++ )
+              {
+              binWriter.Write( mutations.back().value, *itD );
+              }
+            }
+#ifndef DONT_APPLY_MUTATIONS
+          client.mutateRow( strTableData, keyR, mutations, dummyAttributes);
+#endif
+          }
+        }
+      if ( status == SUCCESS )
+        {
+        LOG(info) << "inserted " << resultPart.results.size() << " results";
         }
       }
     else
@@ -1004,7 +1037,7 @@ int InsertModelInfo( const std::string &host, int port,
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
   boost::shared_ptr<TProtocol> protocol( new TBinaryProtocol( transport ) );
   HbaseClient client( protocol );
-  GID::BinarySerializer binBuffer;
+  BinarySerializerType binBuffer;
   try 
     {    
     transport->open( );
@@ -1044,7 +1077,9 @@ int InsertModelInfo( const std::string &host, int port,
     keyModel = tmp;
     LOG(trace) << "using UUID = " << uid << "( '" << keyModel << " ')"
                << " length = " << keyModel.length( );
+#ifndef DONT_APPLY_MUTATIONS
     client.mutateRow( strTableModels, keyModel, mutations, dummyAttributes );
+#endif
     transport->close( );
     }
   catch (const TException &tx) 
@@ -1160,14 +1195,18 @@ int ProcessInput( const po::variables_map &vm )
       }
     else
       {
+      LOG(trace) << "START PARSING: \"" << msh_files.m_Parts[it->first].string() << "\"";
       status = GID::ParseMeshFile( msh_files.m_Parts[it->first].string(), meshPart );
+      LOG(trace) << "END PARSING: \"" << msh_files.m_Parts[it->first].string() << "\"";
       if ( status != SUCCESS )
         {
         return status;
         }
       // TODO: check status returned
       meshInfo.Update( meshPart );
+      LOG(trace) << "START PARSING: \"" << it->second.string() << "\"";
       status = GID::ParseResultFile( it->second.string(), resultPart );
+      LOG(trace) << "END PARSING: \"" << it->second.string() << "\"";
       if ( status != SUCCESS )
         {
         return status;
@@ -1196,9 +1235,6 @@ int main( int argc, char *argv[] )
   try 
   { 
     std::string appName = boost::filesystem::basename(argv[0]); 
-    int add = 0; 
-    int like = 0; 
-    std::vector<std::string> sentence; 
  
     /** Define and parse the program options 
      */ 
