@@ -29,6 +29,11 @@ struct Query_Result {
   2: optional binary data
 }
 
+struct StatusDB_Result {
+  1: required Result result,
+  2: optional string status
+}
+
 service QueryManager {
 
     /**
@@ -48,4 +53,9 @@ service QueryManager {
      */
 
     Query_Result Query(1:SessionID sessionID, 2:string query)
+
+    /**
+      * StatusDB: status of the HBase system or the EDM system
+      */
+      StatusDB_Result GetStatusDB(1:SessionID sessionID)
 }
