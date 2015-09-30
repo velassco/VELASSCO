@@ -41,11 +41,11 @@ velasscoThrift.o:
 
 
 velassco_constants.o: 
-	$(CC) -c $(THRIFT_STORAGE)/velassco_constants.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_constants.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_constants.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_constants.o
 
 
 velassco_types.o: 
-	$(CC) -c $(THRIFT_STORAGE)/velassco_types.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_types.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_types.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_types.o
 
 
 VELaSSCo.o: 
