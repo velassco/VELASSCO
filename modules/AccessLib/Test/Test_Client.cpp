@@ -106,6 +106,11 @@ int main(int argc, char* argv[])
   // Test UserLogout()
   //
 
+  const char *status = NULL;
+  result = valGetStatusDB( sessionID, &status);
+  CheckVALResult(result);
+  std::cout << "status = " << status << std::endl;
+
   result = valUserLogout(sessionID);
   CheckVALResult(result);
 
