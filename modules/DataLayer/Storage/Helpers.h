@@ -33,7 +33,8 @@
 
 #define ENABLE_LOGGING
 #ifdef ENABLE_LOGGING
-#	define LOGGER (std::cerr << "[VELaSSCo] ")
+// to know that the messages belongs to the DataLayer
+#	define LOGGER (std::cerr << "[VELaSSCo-DL] ")
 #else
 #	define LOGGER (std::ostream(0))
 #endif
