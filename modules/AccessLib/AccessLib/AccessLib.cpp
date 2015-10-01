@@ -175,9 +175,9 @@ VAL_Result VAL_API valGetStatusDB( /* in */
 	try
 	{
 		// Try to log out from VELaSSCo server
-		const std::string *status;
-		VAL_Result result = g_clients[sessionID]->GetStatusDB( sessionID, status);
-
+		const std::string *str_status;
+		VAL_Result result = g_clients[sessionID]->GetStatusDB( sessionID, str_status);
+		*status = str_status->c_str();
 		return result;
 	}
 	CATCH_ERROR;
