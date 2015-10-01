@@ -41,6 +41,9 @@ using boost::shared_ptr;
 
 #include "storageModule.h"
 
+bool askForHelp( const char *txt) {
+  return !strcasecmp( txt, "-h") || !strcasecmp( txt, "--h") || !strcasecmp( txt, "-help") || !strcasecmp( txt, "--help");
+}
 
 using namespace std;
 int main(int argc, char **argv)
@@ -48,13 +51,23 @@ int main(int argc, char **argv)
     
     srand(time(NULL));
     
-    int port = 26266;
+    int listen_port = 26266;
+    if ( argc == 2) {
+      if ( askForHelp( argv[ 1])) {
+	printf( "Usage: %s [ port (default %d)]\n", argv[ 0], listen_port);
+	return EXIT_FAILURE;
+      }
+      int new_port = listen_port;
+      int n = sscanf( argv[ 1], "%d", &new_port);
+      if ( n == 1) // sscanf ok
+	listen_port = new_port;
+    }
     
     const int workerCount = 64;
     
     boost::shared_ptr<VELaSSCoHandler> handler(new VELaSSCoHandler());
     boost::shared_ptr<TProcessor> processor(new VELaSSCoProcessor(handler));
-    boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+    boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(listen_port));
     boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
     
@@ -71,7 +84,7 @@ int main(int argc, char **argv)
                            transportFactory,
                            protocolFactory);
     
-    DEBUG( "listening on port " << port);
+    DEBUG( "listening on port " << listen_port);
 
     server.serve();
     return 0;
