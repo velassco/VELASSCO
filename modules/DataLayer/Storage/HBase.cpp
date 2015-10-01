@@ -449,7 +449,7 @@ std::string HBase::getResultOnVertices( std::string sessionID,
     //key << resultID;
 
     //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
-	key << "*";
+    key << "4*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
 
     cmd += key.str();
     cout << cmd << endl;
