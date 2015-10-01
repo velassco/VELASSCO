@@ -78,16 +78,67 @@ void printListOfCmd()
     cout <<" ################################################" << endl << endl;
 }
 
+bool askForHelp( const char *txt) {
+  return !strcasecmp( txt, "-h") || !strcasecmp( txt, "--h") || !strcasecmp( txt, "-help") || !strcasecmp( txt, "--help");
+}
+
+bool thereIsHelpSwitch( int argc, char **argv) {
+  // check help switch
+  bool ret = false;
+  for ( int ia = 1; ia < argc; ia++) {
+    if ( askForHelp( argv[ ia])) {
+      ret = true;
+    }
+  }
+  return ret;
+}
+
 int main(int argc, char **argv)
 {
     srand(time(NULL));
     
-    // needs some nice commandline switches
-    // for now: 1st argument: host, 2nd argument port of Storage module
-    const char* data_layer_hostname = (argc > 1) ?      argv[1]  : "pez001";
-    int         data_layer_port     = (argc > 2) ? atoi(argv[2]) : 26266;
-    
-        int counter = 0;
+    int listen_port = 26267; // standard thrift port : 9090
+    const char *data_layer_hostname = "pez001";
+    int         data_layer_port     = 26266;
+    if ( thereIsHelpSwitch( argc, argv)) {
+      printf( "Usage: %s [ options] \n", argv[ 0]);
+      printf( "  -port port_number         listening port for the this Engine Layer server (default %d)]\n", listen_port);
+      printf( "  -dl_host hostname         host name of the Data Layer Server (default %s)]\n", data_layer_hostname);
+      printf( "  -dl_port port_number      port of the Data Layer Server (default %d)]\n", data_layer_port);
+      return EXIT_FAILURE;
+    }
+
+    int processed_args = 1; // first is the program name itself
+    for ( int ia = 1; ia < argc; ia++) {
+      if ( !strcasecmp( argv[ ia], "-port")) {
+	ia++;
+	int new_port = listen_port;
+	if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+	  listen_port = new_port;
+	  processed_args += 2;
+	}
+      } else if ( !strcasecmp( argv[ ia], "-dl_host")) {
+	ia++;
+	data_layer_hostname = argv[ ia];
+	processed_args += 2;
+      } else if ( !strcasecmp( argv[ ia], "-dl_port")) {
+	ia++;
+	int new_port = data_layer_port;
+	if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+	  data_layer_port = new_port;
+	  processed_args += 2;
+	}
+      } else {
+	break;
+      }
+    }
+
+    if ( processed_args != argc) {
+      printf( "Error processing options.\n");
+      return EXIT_FAILURE;
+    }
+
+    int counter = 0;
     pid_t pid = fork();
     
     if (pid == 0)
@@ -98,9 +149,8 @@ int main(int argc, char **argv)
     {
       queryManagerModule::Instance()->startConnection( data_layer_hostname, data_layer_port);
 
-	int port = 26267; // standard thrift port : 9090
-	DEBUG( "listening on port" << port);
-	boost::thread serverThread(StartServer, port);
+	DEBUG( "listening on port" << listen_port);
+	boost::thread serverThread(StartServer, listen_port);
 
         string cmd ="";
         do
