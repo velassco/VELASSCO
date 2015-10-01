@@ -33,7 +33,8 @@
 
 #define ENABLE_LOGGING
 #ifdef ENABLE_LOGGING
-#	define LOGGER (std::cerr << "[EngineLayer] ")
+// to know that the messages belongs to the EngineLayer
+#	define LOGGER (std::cerr << "[VELaSSCo-EL] ")
 #else
 #	define LOGGER (std::ostream(0))
 #endif
