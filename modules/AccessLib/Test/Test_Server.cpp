@@ -19,18 +19,19 @@ bool askForHelp( const char *txt) {
 
 int main(int argc, char* argv[])
 {
-  int server_port = 9090; // default port
+  int listen_port = 9990; // default port
   if ( argc == 2) {
     if ( askForHelp( argv[ 1])) {
-      printf( "Usage: %s [ port]\n", argv[ 0]);
+      printf( "Usage: %s [ listen_port (default %d)]\n", argv[ 0], listen_port);
       return EXIT_FAILURE;
     }
-    int n = sscanf( argv[ 1], "%d", &server_port);
-    if ( n != 1) // some error in sscanf
-      server_port = 9090; // default port
+    int new_port = listen_port;
+    int n = sscanf( argv[ 1], "%d", &new_port);
+    if ( n == 1) // sscanf ok
+      listen_port = new_port;
   }
   
-  valStartTestServer( server_port);
+  valStartTestServer( listen_port);
   
   return EXIT_SUCCESS;
 }

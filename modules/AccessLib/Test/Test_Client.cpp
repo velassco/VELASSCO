@@ -46,12 +46,13 @@ int main(int argc, char* argv[])
   //
 
   char hostname_port[ 1024];
+  int remote_port = 9990; // default port
   if ( argc == 2) {
     if ( askForHelp( argv[ 1])) {
-      printf( "Usage: %s [ hostname [ port]]\n", argv[ 0]);
+      printf( "Usage: %s [ hostname [ port (default %d)]]\n", argv[ 0], remote_port);
       return EXIT_FAILURE;
     }
-    sprintf( hostname_port, "%s:9090", argv[ 1]);
+    sprintf( hostname_port, "%s:%d", argv[ 1], remote_port);
   } else if ( argc == 3) {
     sprintf( hostname_port, "%s:%s", argv[ 1], argv[ 2]);
   } else {
