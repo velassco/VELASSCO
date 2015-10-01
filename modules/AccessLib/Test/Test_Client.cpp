@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
   } else if ( argc == 3) {
     sprintf( hostname_port, "%s:%s", argv[ 1], argv[ 2]);
   } else {
-    strcpy( hostname_port, "localhost:9090");
+    strcpy( hostname_port, "localhost:9990");
   }
 
   printf( "Connecting to '%s' ...\n", hostname_port);
