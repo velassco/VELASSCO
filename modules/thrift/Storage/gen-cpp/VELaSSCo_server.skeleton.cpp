@@ -30,11 +30,23 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
   }
 
   /**
+   * Data Query operations
+   * 
+   * @param sessionID
+   * @param model_group_qualifier
+   * @param model_name_pattern
+   */
+  void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern) {
+    // Your implementation goes here
+    printf("GetListOfModelNames\n");
+  }
+
+  /**
    * Return the status of the different services
    * which run on the Data Layer.
    * @return string - returns a structured list of avialbe vertices,
-   * 	with the attached list of double
-   * 	if errors occur the contect is also returned here?
+   * with the attached list of double
+   * if errors occur the contect is also returned here?
    * 
    * @param sessionID
    * @param modelID
@@ -43,9 +55,9 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
    * @param resultID
    * @param listOfVertices
    */
-  void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
+  void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
     // Your implementation goes here
-    printf("GetResultFormVerticesID\n");
+    printf("GetResultFromVerticesID\n");
   }
 
   /**

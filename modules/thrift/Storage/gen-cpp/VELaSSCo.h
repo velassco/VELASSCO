@@ -23,11 +23,20 @@ class VELaSSCoIf {
   virtual void statusDL(std::string& _return) = 0;
 
   /**
+   * Data Query operations
+   * 
+   * @param sessionID
+   * @param model_group_qualifier
+   * @param model_name_pattern
+   */
+  virtual void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern) = 0;
+
+  /**
    * Return the status of the different services
    * which run on the Data Layer.
    * @return string - returns a structured list of avialbe vertices,
-   * 	with the attached list of double
-   * 	if errors occur the contect is also returned here?
+   * with the attached list of double
+   * if errors occur the contect is also returned here?
    * 
    * @param sessionID
    * @param modelID
@@ -36,7 +45,7 @@ class VELaSSCoIf {
    * @param resultID
    * @param listOfVertices
    */
-  virtual void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) = 0;
+  virtual void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) = 0;
 
   /**
    * Stop Data Layer
@@ -74,7 +83,10 @@ class VELaSSCoNull : virtual public VELaSSCoIf {
   void statusDL(std::string& /* _return */) {
     return;
   }
-  void GetResultFormVerticesID(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */, const std::string& /* listOfVertices */) {
+  void GetListOfModelNames(rvGetListOfModels& /* _return */, const std::string& /* sessionID */, const std::string& /* model_group_qualifier */, const std::string& /* model_name_pattern */) {
+    return;
+  }
+  void GetResultFromVerticesID(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */, const std::string& /* listOfVertices */) {
     return;
   }
   void stopAll() {
@@ -190,28 +202,162 @@ class VELaSSCo_statusDL_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_statusDL_presult& obj);
 };
 
-typedef struct _VELaSSCo_GetResultFormVerticesID_args__isset {
-  _VELaSSCo_GetResultFormVerticesID_args__isset() : sessionID(false), modelID(false), analysisID(false), timeStep(false), resultID(false), listOfVertices(false) {}
+typedef struct _VELaSSCo_GetListOfModelNames_args__isset {
+  _VELaSSCo_GetListOfModelNames_args__isset() : sessionID(false), model_group_qualifier(false), model_name_pattern(false) {}
+  bool sessionID :1;
+  bool model_group_qualifier :1;
+  bool model_name_pattern :1;
+} _VELaSSCo_GetListOfModelNames_args__isset;
+
+class VELaSSCo_GetListOfModelNames_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
+  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
+
+  VELaSSCo_GetListOfModelNames_args(const VELaSSCo_GetListOfModelNames_args&);
+  VELaSSCo_GetListOfModelNames_args& operator=(const VELaSSCo_GetListOfModelNames_args&);
+  VELaSSCo_GetListOfModelNames_args() : sessionID(), model_group_qualifier(), model_name_pattern() {
+  }
+
+  virtual ~VELaSSCo_GetListOfModelNames_args() throw();
+  std::string sessionID;
+  std::string model_group_qualifier;
+  std::string model_name_pattern;
+
+  _VELaSSCo_GetListOfModelNames_args__isset __isset;
+
+  void __set_sessionID(const std::string& val);
+
+  void __set_model_group_qualifier(const std::string& val);
+
+  void __set_model_name_pattern(const std::string& val);
+
+  bool operator == (const VELaSSCo_GetListOfModelNames_args & rhs) const
+  {
+    if (!(sessionID == rhs.sessionID))
+      return false;
+    if (!(model_group_qualifier == rhs.model_group_qualifier))
+      return false;
+    if (!(model_name_pattern == rhs.model_name_pattern))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetListOfModelNames_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetListOfModelNames_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModelNames_args& obj);
+};
+
+
+class VELaSSCo_GetListOfModelNames_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
+  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
+
+
+  virtual ~VELaSSCo_GetListOfModelNames_pargs() throw();
+  const std::string* sessionID;
+  const std::string* model_group_qualifier;
+  const std::string* model_name_pattern;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModelNames_pargs& obj);
+};
+
+typedef struct _VELaSSCo_GetListOfModelNames_result__isset {
+  _VELaSSCo_GetListOfModelNames_result__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetListOfModelNames_result__isset;
+
+class VELaSSCo_GetListOfModelNames_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "2870C56E64E7E8FBDC53B026E04AE909";
+  static const uint8_t binary_fingerprint[16]; // = {0x28,0x70,0xC5,0x6E,0x64,0xE7,0xE8,0xFB,0xDC,0x53,0xB0,0x26,0xE0,0x4A,0xE9,0x09};
+
+  VELaSSCo_GetListOfModelNames_result(const VELaSSCo_GetListOfModelNames_result&);
+  VELaSSCo_GetListOfModelNames_result& operator=(const VELaSSCo_GetListOfModelNames_result&);
+  VELaSSCo_GetListOfModelNames_result() {
+  }
+
+  virtual ~VELaSSCo_GetListOfModelNames_result() throw();
+  rvGetListOfModels success;
+
+  _VELaSSCo_GetListOfModelNames_result__isset __isset;
+
+  void __set_success(const rvGetListOfModels& val);
+
+  bool operator == (const VELaSSCo_GetListOfModelNames_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCo_GetListOfModelNames_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCo_GetListOfModelNames_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModelNames_result& obj);
+};
+
+typedef struct _VELaSSCo_GetListOfModelNames_presult__isset {
+  _VELaSSCo_GetListOfModelNames_presult__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCo_GetListOfModelNames_presult__isset;
+
+class VELaSSCo_GetListOfModelNames_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "2870C56E64E7E8FBDC53B026E04AE909";
+  static const uint8_t binary_fingerprint[16]; // = {0x28,0x70,0xC5,0x6E,0x64,0xE7,0xE8,0xFB,0xDC,0x53,0xB0,0x26,0xE0,0x4A,0xE9,0x09};
+
+
+  virtual ~VELaSSCo_GetListOfModelNames_presult() throw();
+  rvGetListOfModels* success;
+
+  _VELaSSCo_GetListOfModelNames_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetListOfModelNames_presult& obj);
+};
+
+typedef struct _VELaSSCo_GetResultFromVerticesID_args__isset {
+  _VELaSSCo_GetResultFromVerticesID_args__isset() : sessionID(false), modelID(false), analysisID(false), timeStep(false), resultID(false), listOfVertices(false) {}
   bool sessionID :1;
   bool modelID :1;
   bool analysisID :1;
   bool timeStep :1;
   bool resultID :1;
   bool listOfVertices :1;
-} _VELaSSCo_GetResultFormVerticesID_args__isset;
+} _VELaSSCo_GetResultFromVerticesID_args__isset;
 
-class VELaSSCo_GetResultFormVerticesID_args {
+class VELaSSCo_GetResultFromVerticesID_args {
  public:
 
   static const char* ascii_fingerprint; // = "028F20434CE844656C7FFE290B942938";
   static const uint8_t binary_fingerprint[16]; // = {0x02,0x8F,0x20,0x43,0x4C,0xE8,0x44,0x65,0x6C,0x7F,0xFE,0x29,0x0B,0x94,0x29,0x38};
 
-  VELaSSCo_GetResultFormVerticesID_args(const VELaSSCo_GetResultFormVerticesID_args&);
-  VELaSSCo_GetResultFormVerticesID_args& operator=(const VELaSSCo_GetResultFormVerticesID_args&);
-  VELaSSCo_GetResultFormVerticesID_args() : sessionID(), modelID(), analysisID(), timeStep(0), resultID(), listOfVertices() {
+  VELaSSCo_GetResultFromVerticesID_args(const VELaSSCo_GetResultFromVerticesID_args&);
+  VELaSSCo_GetResultFromVerticesID_args& operator=(const VELaSSCo_GetResultFromVerticesID_args&);
+  VELaSSCo_GetResultFromVerticesID_args() : sessionID(), modelID(), analysisID(), timeStep(0), resultID(), listOfVertices() {
   }
 
-  virtual ~VELaSSCo_GetResultFormVerticesID_args() throw();
+  virtual ~VELaSSCo_GetResultFromVerticesID_args() throw();
   std::string sessionID;
   std::string modelID;
   std::string analysisID;
@@ -219,7 +365,7 @@ class VELaSSCo_GetResultFormVerticesID_args {
   std::string resultID;
   std::string listOfVertices;
 
-  _VELaSSCo_GetResultFormVerticesID_args__isset __isset;
+  _VELaSSCo_GetResultFromVerticesID_args__isset __isset;
 
   void __set_sessionID(const std::string& val);
 
@@ -233,7 +379,7 @@ class VELaSSCo_GetResultFormVerticesID_args {
 
   void __set_listOfVertices(const std::string& val);
 
-  bool operator == (const VELaSSCo_GetResultFormVerticesID_args & rhs) const
+  bool operator == (const VELaSSCo_GetResultFromVerticesID_args & rhs) const
   {
     if (!(sessionID == rhs.sessionID))
       return false;
@@ -249,27 +395,27 @@ class VELaSSCo_GetResultFormVerticesID_args {
       return false;
     return true;
   }
-  bool operator != (const VELaSSCo_GetResultFormVerticesID_args &rhs) const {
+  bool operator != (const VELaSSCo_GetResultFromVerticesID_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const VELaSSCo_GetResultFormVerticesID_args & ) const;
+  bool operator < (const VELaSSCo_GetResultFromVerticesID_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_args& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_args& obj);
 };
 
 
-class VELaSSCo_GetResultFormVerticesID_pargs {
+class VELaSSCo_GetResultFromVerticesID_pargs {
  public:
 
   static const char* ascii_fingerprint; // = "028F20434CE844656C7FFE290B942938";
   static const uint8_t binary_fingerprint[16]; // = {0x02,0x8F,0x20,0x43,0x4C,0xE8,0x44,0x65,0x6C,0x7F,0xFE,0x29,0x0B,0x94,0x29,0x38};
 
 
-  virtual ~VELaSSCo_GetResultFormVerticesID_pargs() throw();
+  virtual ~VELaSSCo_GetResultFromVerticesID_pargs() throw();
   const std::string* sessionID;
   const std::string* modelID;
   const std::string* analysisID;
@@ -279,70 +425,70 @@ class VELaSSCo_GetResultFormVerticesID_pargs {
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_pargs& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_pargs& obj);
 };
 
-typedef struct _VELaSSCo_GetResultFormVerticesID_result__isset {
-  _VELaSSCo_GetResultFormVerticesID_result__isset() : success(false) {}
+typedef struct _VELaSSCo_GetResultFromVerticesID_result__isset {
+  _VELaSSCo_GetResultFromVerticesID_result__isset() : success(false) {}
   bool success :1;
-} _VELaSSCo_GetResultFormVerticesID_result__isset;
+} _VELaSSCo_GetResultFromVerticesID_result__isset;
 
-class VELaSSCo_GetResultFormVerticesID_result {
+class VELaSSCo_GetResultFromVerticesID_result {
  public:
 
   static const char* ascii_fingerprint; // = "9A73381FEFD6B67F432E717102246330";
   static const uint8_t binary_fingerprint[16]; // = {0x9A,0x73,0x38,0x1F,0xEF,0xD6,0xB6,0x7F,0x43,0x2E,0x71,0x71,0x02,0x24,0x63,0x30};
 
-  VELaSSCo_GetResultFormVerticesID_result(const VELaSSCo_GetResultFormVerticesID_result&);
-  VELaSSCo_GetResultFormVerticesID_result& operator=(const VELaSSCo_GetResultFormVerticesID_result&);
-  VELaSSCo_GetResultFormVerticesID_result() : success() {
+  VELaSSCo_GetResultFromVerticesID_result(const VELaSSCo_GetResultFromVerticesID_result&);
+  VELaSSCo_GetResultFromVerticesID_result& operator=(const VELaSSCo_GetResultFromVerticesID_result&);
+  VELaSSCo_GetResultFromVerticesID_result() : success() {
   }
 
-  virtual ~VELaSSCo_GetResultFormVerticesID_result() throw();
+  virtual ~VELaSSCo_GetResultFromVerticesID_result() throw();
   std::string success;
 
-  _VELaSSCo_GetResultFormVerticesID_result__isset __isset;
+  _VELaSSCo_GetResultFromVerticesID_result__isset __isset;
 
   void __set_success(const std::string& val);
 
-  bool operator == (const VELaSSCo_GetResultFormVerticesID_result & rhs) const
+  bool operator == (const VELaSSCo_GetResultFromVerticesID_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     return true;
   }
-  bool operator != (const VELaSSCo_GetResultFormVerticesID_result &rhs) const {
+  bool operator != (const VELaSSCo_GetResultFromVerticesID_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const VELaSSCo_GetResultFormVerticesID_result & ) const;
+  bool operator < (const VELaSSCo_GetResultFromVerticesID_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_result& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_result& obj);
 };
 
-typedef struct _VELaSSCo_GetResultFormVerticesID_presult__isset {
-  _VELaSSCo_GetResultFormVerticesID_presult__isset() : success(false) {}
+typedef struct _VELaSSCo_GetResultFromVerticesID_presult__isset {
+  _VELaSSCo_GetResultFromVerticesID_presult__isset() : success(false) {}
   bool success :1;
-} _VELaSSCo_GetResultFormVerticesID_presult__isset;
+} _VELaSSCo_GetResultFromVerticesID_presult__isset;
 
-class VELaSSCo_GetResultFormVerticesID_presult {
+class VELaSSCo_GetResultFromVerticesID_presult {
  public:
 
   static const char* ascii_fingerprint; // = "9A73381FEFD6B67F432E717102246330";
   static const uint8_t binary_fingerprint[16]; // = {0x9A,0x73,0x38,0x1F,0xEF,0xD6,0xB6,0x7F,0x43,0x2E,0x71,0x71,0x02,0x24,0x63,0x30};
 
 
-  virtual ~VELaSSCo_GetResultFormVerticesID_presult() throw();
+  virtual ~VELaSSCo_GetResultFromVerticesID_presult() throw();
   std::string* success;
 
-  _VELaSSCo_GetResultFormVerticesID_presult__isset __isset;
+  _VELaSSCo_GetResultFromVerticesID_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFormVerticesID_presult& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCo_GetResultFromVerticesID_presult& obj);
 };
 
 
@@ -463,9 +609,12 @@ class VELaSSCoClient : virtual public VELaSSCoIf {
   void statusDL(std::string& _return);
   void send_statusDL();
   void recv_statusDL(std::string& _return);
-  void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
-  void send_GetResultFormVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
-  void recv_GetResultFormVerticesID(std::string& _return);
+  void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern);
+  void send_GetListOfModelNames(const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern);
+  void recv_GetListOfModelNames(rvGetListOfModels& _return);
+  void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
+  void send_GetResultFromVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
+  void recv_GetResultFromVerticesID(std::string& _return);
   void stopAll();
   void send_stopAll();
   void recv_stopAll();
@@ -485,13 +634,15 @@ class VELaSSCoProcessor : public ::apache::thrift::TDispatchProcessor {
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
   void process_statusDL(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_GetResultFormVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetListOfModelNames(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetResultFromVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_stopAll(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VELaSSCoProcessor(boost::shared_ptr<VELaSSCoIf> iface) :
     iface_(iface) {
     processMap_["statusDL"] = &VELaSSCoProcessor::process_statusDL;
-    processMap_["GetResultFormVerticesID"] = &VELaSSCoProcessor::process_GetResultFormVerticesID;
+    processMap_["GetListOfModelNames"] = &VELaSSCoProcessor::process_GetListOfModelNames;
+    processMap_["GetResultFromVerticesID"] = &VELaSSCoProcessor::process_GetResultFromVerticesID;
     processMap_["stopAll"] = &VELaSSCoProcessor::process_stopAll;
   }
 
@@ -531,13 +682,23 @@ class VELaSSCoMultiface : virtual public VELaSSCoIf {
     return;
   }
 
-  void GetResultFormVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
+  void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->GetResultFormVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
+      ifaces_[i]->GetListOfModelNames(_return, sessionID, model_group_qualifier, model_name_pattern);
     }
-    ifaces_[i]->GetResultFormVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
+    ifaces_[i]->GetListOfModelNames(_return, sessionID, model_group_qualifier, model_name_pattern);
+    return;
+  }
+
+  void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetResultFromVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
+    }
+    ifaces_[i]->GetResultFromVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
     return;
   }
 

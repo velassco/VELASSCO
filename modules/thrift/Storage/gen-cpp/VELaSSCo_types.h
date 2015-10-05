@@ -19,6 +19,114 @@
 
 
 
+class FullyQualifiedModelName;
+
+class rvGetListOfModels;
+
+typedef struct _FullyQualifiedModelName__isset {
+  _FullyQualifiedModelName__isset() : name(false), full_path(false) {}
+  bool name :1;
+  bool full_path :1;
+} _FullyQualifiedModelName__isset;
+
+class FullyQualifiedModelName {
+ public:
+
+  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
+  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+
+  FullyQualifiedModelName(const FullyQualifiedModelName&);
+  FullyQualifiedModelName& operator=(const FullyQualifiedModelName&);
+  FullyQualifiedModelName() : name(), full_path() {
+  }
+
+  virtual ~FullyQualifiedModelName() throw();
+  std::string name;
+  std::string full_path;
+
+  _FullyQualifiedModelName__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_full_path(const std::string& val);
+
+  bool operator == (const FullyQualifiedModelName & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(full_path == rhs.full_path))
+      return false;
+    return true;
+  }
+  bool operator != (const FullyQualifiedModelName &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FullyQualifiedModelName & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const FullyQualifiedModelName& obj);
+};
+
+void swap(FullyQualifiedModelName &a, FullyQualifiedModelName &b);
+
+typedef struct _rvGetListOfModels__isset {
+  _rvGetListOfModels__isset() : status(false), report(false), models(false) {}
+  bool status :1;
+  bool report :1;
+  bool models :1;
+} _rvGetListOfModels__isset;
+
+class rvGetListOfModels {
+ public:
+
+  static const char* ascii_fingerprint; // = "1848732E16BA92FD1D7986907B4AB1E3";
+  static const uint8_t binary_fingerprint[16]; // = {0x18,0x48,0x73,0x2E,0x16,0xBA,0x92,0xFD,0x1D,0x79,0x86,0x90,0x7B,0x4A,0xB1,0xE3};
+
+  rvGetListOfModels(const rvGetListOfModels&);
+  rvGetListOfModels& operator=(const rvGetListOfModels&);
+  rvGetListOfModels() : status(), report() {
+  }
+
+  virtual ~rvGetListOfModels() throw();
+  std::string status;
+  std::string report;
+  std::vector<FullyQualifiedModelName>  models;
+
+  _rvGetListOfModels__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_models(const std::vector<FullyQualifiedModelName> & val);
+
+  bool operator == (const rvGetListOfModels & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(models == rhs.models))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetListOfModels &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetListOfModels & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetListOfModels& obj);
+};
+
+void swap(rvGetListOfModels &a, rvGetListOfModels &b);
+
 
 
 #endif

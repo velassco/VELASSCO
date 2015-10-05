@@ -14,3 +14,263 @@
 
 
 
+FullyQualifiedModelName::~FullyQualifiedModelName() throw() {
+}
+
+
+void FullyQualifiedModelName::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void FullyQualifiedModelName::__set_full_path(const std::string& val) {
+  this->full_path = val;
+}
+
+const char* FullyQualifiedModelName::ascii_fingerprint = "07A9615F837F7D0A952B595DD3020972";
+const uint8_t FullyQualifiedModelName::binary_fingerprint[16] = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+
+uint32_t FullyQualifiedModelName::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->full_path);
+          this->__isset.full_path = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t FullyQualifiedModelName::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("FullyQualifiedModelName");
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("full_path", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->full_path);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(FullyQualifiedModelName &a, FullyQualifiedModelName &b) {
+  using ::std::swap;
+  swap(a.name, b.name);
+  swap(a.full_path, b.full_path);
+  swap(a.__isset, b.__isset);
+}
+
+FullyQualifiedModelName::FullyQualifiedModelName(const FullyQualifiedModelName& other0) {
+  name = other0.name;
+  full_path = other0.full_path;
+  __isset = other0.__isset;
+}
+FullyQualifiedModelName& FullyQualifiedModelName::operator=(const FullyQualifiedModelName& other1) {
+  name = other1.name;
+  full_path = other1.full_path;
+  __isset = other1.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const FullyQualifiedModelName& obj) {
+  using apache::thrift::to_string;
+  out << "FullyQualifiedModelName(";
+  out << "name=" << to_string(obj.name);
+  out << ", " << "full_path=" << to_string(obj.full_path);
+  out << ")";
+  return out;
+}
+
+
+rvGetListOfModels::~rvGetListOfModels() throw() {
+}
+
+
+void rvGetListOfModels::__set_status(const std::string& val) {
+  this->status = val;
+}
+
+void rvGetListOfModels::__set_report(const std::string& val) {
+  this->report = val;
+}
+
+void rvGetListOfModels::__set_models(const std::vector<FullyQualifiedModelName> & val) {
+  this->models = val;
+}
+
+const char* rvGetListOfModels::ascii_fingerprint = "1848732E16BA92FD1D7986907B4AB1E3";
+const uint8_t rvGetListOfModels::binary_fingerprint[16] = {0x18,0x48,0x73,0x2E,0x16,0xBA,0x92,0xFD,0x1D,0x79,0x86,0x90,0x7B,0x4A,0xB1,0xE3};
+
+uint32_t rvGetListOfModels::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->report);
+          this->__isset.report = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->models.clear();
+            uint32_t _size2;
+            ::apache::thrift::protocol::TType _etype5;
+            xfer += iprot->readListBegin(_etype5, _size2);
+            this->models.resize(_size2);
+            uint32_t _i6;
+            for (_i6 = 0; _i6 < _size2; ++_i6)
+            {
+              xfer += this->models[_i6].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.models = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t rvGetListOfModels::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("rvGetListOfModels");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("report", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->report);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("models", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->models.size()));
+    std::vector<FullyQualifiedModelName> ::const_iterator _iter7;
+    for (_iter7 = this->models.begin(); _iter7 != this->models.end(); ++_iter7)
+    {
+      xfer += (*_iter7).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(rvGetListOfModels &a, rvGetListOfModels &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.report, b.report);
+  swap(a.models, b.models);
+  swap(a.__isset, b.__isset);
+}
+
+rvGetListOfModels::rvGetListOfModels(const rvGetListOfModels& other8) {
+  status = other8.status;
+  report = other8.report;
+  models = other8.models;
+  __isset = other8.__isset;
+}
+rvGetListOfModels& rvGetListOfModels::operator=(const rvGetListOfModels& other9) {
+  status = other9.status;
+  report = other9.report;
+  models = other9.models;
+  __isset = other9.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const rvGetListOfModels& obj) {
+  using apache::thrift::to_string;
+  out << "rvGetListOfModels(";
+  out << "status=" << to_string(obj.status);
+  out << ", " << "report=" << to_string(obj.report);
+  out << ", " << "models=" << to_string(obj.models);
+  out << ")";
+  return out;
+}
+
+
