@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="2.0" xmlns="http://java.sun.com/xml/ns/persistence/orm" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_0.xsd">
+    <description>DataNucleus JPA for VPH Model</description>
+    <package>vphshare.metadatamanagement.mastermetadata.bean</package>
+    <entity class="vphshare.metadatamanagement.mastermetadata.bean.GenericMetadata" name="GenericMetadata">
+        <table name="vph_metadata_extended"/>        
+        <inheritance strategy="SINGLE_TABLE"/>        
+ 		<discriminator-column name="common-mtdt:type" discriminator-type="STRING"/> 
+        <attributes>
+            <id name="globalID">
+               <column name="common-mtdt:globalID"/>
+            </id>
+            <basic name="type">
+                 <column name="common-mtdt:type" />
+            </basic>
+            <basic name="name">
+                 <column name="common-mtdt:name"/>
+            </basic>
+            <basic name="description">
+                 <column name="common-mtdt:description"/>
+            </basic>
+            <basic name="author">
+                 <column name="common-mtdt:author"/>
+            </basic>
+            <basic name="creationDate">
+                 <column name="common-mtdt:creationDate"/>
+            </basic>
+            <basic name="updateDate">
+                 <column name="common-mtdt:updateDate"/>
+            </basic>
+            <basic name="metadataCreationDate">
+                 <column name="common-mtdt:metadataCreationDate"/>
+            </basic>
+            <basic name="metadataUpdateDate">
+                 <column name="common-mtdt:metadataUpdateDate"/>
+            </basic>
+            <basic name="category">
+                 <column name="common-mtdt:category"/>
+            </basic>
+            <basic name="tags">
+                 <column name="common-mtdt:tags"/>
+            </basic>
+            <basic name="licence">
+                 <column name="common-mtdt:licence"/>
+            </basic>
+             <basic name="rating">
+                 <column name="common-mtdt:rating"/>
+            </basic>
+            <basic name="views">
+                 <column name="common-mtdt:views"/>
+            </basic>
+            <basic name="status">
+                 <column name="common-mtdt:status"/>
+            </basic>
+            <basic name="localID">
+                 <column name="common-mtdt:localID"/>
+            </basic>
+            <basic name="resourceURL">
+                 <column name="common-mtdt:resourceURL"/>
+            </basic>
+            <basic name="provenance">
+                 <column name="common-mtdt:provenance"/>
+            </basic>
+            <one-to-many name="linkedTo" target-entity="Link" fetch="EAGER">
+ 				<join-column name="common-mtdt:linkedTo" updatable="true" nullable="true"/>
+ 			</one-to-many>
+ 			<one-to-many name="relatedResources" target-entity="RelatedResource" fetch="EAGER"  >
+ 				<join-column name="common-mtdt:relatedResources" updatable="true" nullable="true"/>
+ 			</one-to-many>   
+ 			<one-to-many name="semanticAnnotations" target-entity="SemanticConcept" fetch="EAGER" > 			
+ 				<join-column name="common-mtdt:semanticAnnotations" updatable="true" nullable="true"/>
+ 				<cascade>
+ 					<cascade-merge/> 					
+ 				</cascade> 				
+ 			</one-to-many>  
+ 			
+ 			<!-- <embedded name="file">
+				 <attribute-override name="subjectID">
+				 <column name="file:subjectID"/>
+				 </attribute-override>
+				 <attribute-override name="type">
+				 <column name="file:type"/>
+				 </attribute-override>
+				 <attribute-override name="format">
+				 <column name="file:format"/>
+				 </attribute-override>
+				 <attribute-override name="size">
+				 <column name="file:size"/>
+				 </attribute-override>
+			</embedded>
+			<embedded name="dataset">
+				 <attribute-override name="sparqlEndpoint">
+				 <column name="dataset:sparqlEndpoint"/>	
+				 </attribute-override>			 
+			</embedded>
+			<embedded name="atomicService">
+				 <attribute-override name="endpoints">
+				 <column name="atomicService:endpoints"/>	
+				 </attribute-override>			 
+			</embedded> 
+			<embedded name="workflow">
+				 <attribute-override name="type">
+				 <column name="workflow:type"/>	
+				 </attribute-override>
+				 <attribute-override name="atomicServices">
+				 <column name="workflow:atomicServices"/>	
+				 </attribute-override>	
+				 <attribute-override name="semanticWebServices">
+				 <column name="workflow:semanticWebServices"/>	
+				 </attribute-override>			 
+			</embedded> -->
+                    
+        </attributes>
+    </entity>
+    
+    <entity class="vphshare.metadatamanagement.mastermetadata.bean.Endpoint" name="Endpoint">
+        <table name="endpoints"/>
+        
+        <attributes>
+            <id name="endpointID">
+               <column name="endpointID"/>
+            </id>
+            <basic name="name">
+                 <column name="name"/>
+            </basic>
+            <basic name="description">
+                 <column name="description"/>
+            </basic>
+            
+        </attributes>
+    </entity>
+    
+    
+    <entity class="vphshare.metadatamanagement.mastermetadata.bean.File" name="File">
+        <table name="vph_metadata_extended"/>        
+ 		<discriminator-value>File</discriminator-value> 		       
+        <attributes>
+        
+        <basic name="subjectID">
+			 <column name="file:subjectID"/>
+		</basic>
+		<basic name="fileType">
+			 <column name="file:type"/>
+		 </basic>
+		 <basic name="format">
+			 <column name="file:format"/>
+		 </basic>
+		 <basic name="size">
+			 <column name="file:size"/>
+		 </basic> 
+          <!-- <embedded name="file">
+				 <attribute-override name="subjectID">
+				 <column name="file:subjectID"/>
+				 </attribute-override>
+				 <attribute-override name="type">
+				 <column name="file:type"/>
+				 </attribute-override>
+				 <attribute-override name="format">
+				 <column name="file:format"/>
+				 </attribute-override>
+				 <attribute-override name="size">
+				 <column name="file:size"/>
+				 </attribute-override>
+			</embedded> --> 
+		</attributes>
+    </entity> 
+    
+    <entity class="vphshare.metadatamanagement.mastermetadata.bean.Dataset" name="Dataset">
+        <table name="vph_metadata_extended"/>        
+ 		<discriminator-value>Dataset</discriminator-value> 		       
+        <attributes>
+            <basic name="sparqlEndpoint">
+               <column name="dataset:sparqlEndpoint"/>
+            </basic>
+            
+        </attributes>
+    </entity> 
+    
+    <entity class="vphshare.metadatamanagement.mastermetadata.bean.AtomicService" name="AtomicService">
+        <table name="vph_metadata_extended"/>  
+ 		<discriminator-value>AtomicService</discriminator-value> 		       
+        <attributes>        	
+            <one-to-many name="endpoints" target-entity="Endpoint" fetch="EAGER" >
+ 				<join-column name="atomicService:endpoints" updatable="true" nullable="true"/>
+ 			</one-to-many> 
+		</attributes>
+    </entity> 
+
+ 	<entity class="vphshare.metadatamanagement.mastermetadata.bean.Workflow" name="Workflow">
+        <table name="vph_metadata_extended"/>        
+ 		<discriminator-value>Workflow</discriminator-value> 
+		 <attributes>
+		    <basic name="workflowType">  
+		        <column name="workflow:type"/>             
+            </basic>
+		    <one-to-many name="atomicServices" target-entity="AtomicService" fetch="EAGER" >
+ 				<join-column name="workflow:atomicServices" updatable="true" nullable="true"/>
+ 			</one-to-many>
+		    <one-to-many name="semanticWebServices" target-entity="SemanticWebService" fetch="EAGER">
+ 				<join-column name="workflow:semanticWebServices" updatable="true" nullable="true"/>
+ 			</one-to-many>
+        </attributes>
+	</entity> 
+	
+	<entity class="vphshare.metadatamanagement.mastermetadata.bean.SemanticWebService" name="SemanticWebService">
+        <table name="vph_metadata_extended"/>        
+ 		<discriminator-value>SemanticWebService</discriminator-value> 
+		 <attributes>
+		    <basic name="semanticWebServiceType">  
+		        <column name="sws:type"/>             
+            </basic>
+             <basic name="semanticWebServiceURL">  
+		        <column name="sws:url"/>             
+            </basic>
+		    <one-to-many name="atomicServices" target-entity="AtomicService" fetch="EAGER">
+ 				<join-column name="sws:atomicServices" updatable="true" nullable="true"/>
+ 			</one-to-many>		    
+        </attributes>
+	</entity> 
+	
+	<entity class="vphshare.metadatamanagement.mastermetadata.bean.Workspace" name="Workspace">
+        <table name="vph_metadata_extended"/>        
+ 		<discriminator-value>Workspace</discriminator-value> 
+		 <attributes>
+		    <one-to-many name="atomicServices" target-entity="AtomicService" fetch="EAGER">
+ 				<join-column name="workspace:atomicServices" updatable="true" nullable="true"/>
+ 			</one-to-many>
+		    <one-to-many name="semanticWebServices" target-entity="SemanticWebService" fetch="EAGER">
+ 				<join-column name="workspace:semanticWebServices" updatable="true" nullable="true"/>
+ 			</one-to-many>	
+ 			 <one-to-many name="workflows" target-entity="Workflow" fetch="EAGER">
+ 				<join-column name="workspace:workflows" updatable="true" nullable="true"/>
+ 			</one-to-many>
+		    <one-to-many name="datasets" target-entity="Dataset" fetch="EAGER">
+ 				<join-column name="workspace:datasets" updatable="true" nullable="true"/>
+ 			</one-to-many>		    
+        </attributes>
+	</entity>
+
+	<entity class="vphshare.metadatamanagement.mastermetadata.bean.Link" name="Link">		
+		<table name="links"/>  	 	
+		 <attributes>
+		 <id name="internalId">
+		 	<column name="linkID"/>		 	
+		 </id>
+		 <basic name="linkURI">		  	
+		    <column name="linkURI"/>
+		 </basic>
+		 <basic name="linkType">
+		 	<column name="linkType"/>		 
+		 </basic>
+		 </attributes>
+	</entity>
+	
+	<entity class="vphshare.metadatamanagement.mastermetadata.bean.RelatedResource" name="RelatedResource">	 	
+		 <table name="related_resources"/>  
+		 <attributes>
+		 <id name="internalId">
+		 	<column name="resourceID"/>
+		 </id>
+		 <basic name="description">		  	
+		    <column name="description"/>
+		 </basic>		 
+		 </attributes>
+	</entity>
+	
+	<entity class="vphshare.metadatamanagement.mastermetadata.bean.SemanticConcept" name="SemanticConcept">	 	
+		 <table name="semantic_concepts"/>  
+		 <attributes>
+		 <id name="conceptURI">
+		 	<column name="conceptURI" updatable="true"/>
+		 </id>
+		 <basic name="label">		  	
+		    <column name="label"/>
+		 </basic>		 
+		 </attributes>
+	</entity>
+	
+	<entity class="vphshare.metadatamanagement.mastermetadata.bean.Tag" name="Tag">	 	
+		 <table name="vph_tag_cloud"/>  
+		 <attributes>
+		 <id name="tagName">
+		 	<column name="tag:name"/>
+		 </id>
+		 <basic name="count">		  	
+		    <column name="tag:count"/>
+		 </basic>		 
+		 </attributes>
+	</entity>
+	
+
+    
+</entity-mappings>

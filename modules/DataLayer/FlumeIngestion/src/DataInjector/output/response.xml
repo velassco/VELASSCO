@@ -1,0 +1,24 @@
+{&quot;Row&quot;:[{&quot;Cell&quot;:[{&quot;column&quot;:&quot;simulation_info:partResult&quot;,&quot;timestamp&quot;:1.41019224E12,&quot;$&quot;:&quot;Welcome&quot;},{&quot;column&quot;:&quot;simulation_info:raw_data&quot;,&quot;timestamp&quot;:1.41019224E12,&quot;$&quot;:&quot;Flume
+is a distributed, reliable, and available service for efficiently
+collecting, aggregating, and moving large amounts of log
+data.&quot;},{&quot;column&quot;:&quot;simulation_info:simulId&quot;,&quot;timestamp&quot;:1.41019224E12,&quot;$&quot;:&quot;001&quot;}],&quot;key&quot;:&quot;1410192283757-GkbXAwHY7V-7&quot;},{&quot;Cell&quot;:[{&quot;column&quot;:&quot;simulation_info:partResult&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;Releases&quot;},{&quot;column&quot;:&quot;simulation_info:raw_data&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;The
+current stable release is Apache Flume Version
+1.5.0.1.&quot;},{&quot;column&quot;:&quot;simulation_info:simulId&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;002&quot;}],&quot;key&quot;:&quot;1410192309793-GkbXAwHY7V-8&quot;},{&quot;Cell&quot;:[{&quot;column&quot;:&quot;simulation_info:partResult&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;Download&quot;},{&quot;column&quot;:&quot;simulation_info:raw_data&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;Apache
+Flume is distributed under the Apache License, version
+2.0&quot;},{&quot;column&quot;:&quot;simulation_info:simulId&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;003&quot;}],&quot;key&quot;:&quot;1410192344163-GkbXAwHY7V-9&quot;},{&quot;Cell&quot;:[{&quot;column&quot;:&quot;simulation_info:partResult&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;Team&quot;},{&quot;column&quot;:&quot;simulation_info:raw_data&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;A
+successful project requires many people to play many different roles.
+Some members write code or documentation, while others are valuable as
+testers, submitting patches and
+suggestions.&quot;},{&quot;column&quot;:&quot;simulation_info:simulId&quot;,&quot;timestamp&quot;:1.41019238E12,&quot;$&quot;:&quot;004&quot;}],&quot;key&quot;:&quot;1410192369171-GkbXAwHY7V-10&quot;},{&quot;Cell&quot;:[{&quot;column&quot;:&quot;simulation_info:partResult&quot;,&quot;timestamp&quot;:1.41019251E12,&quot;$&quot;:&quot;Documentation&quot;},{&quot;column&quot;:&quot;simulation_info:raw_data&quot;,&quot;timestamp&quot;:1.41019251E12,&quot;$&quot;:&quot;The
+documents below are the very most recent versions of the documentation
+and may contain features that have not been released.\n\nFlume User
+Guide (unreleased version)\nFlume Developer Guide (unreleased
+version)\nFor documentation on released versions of Flume, please see
+the Releases
+page.&quot;},{&quot;column&quot;:&quot;simulation_info:simulId&quot;,&quot;timestamp&quot;:1.41019251E12,&quot;$&quot;:&quot;005&quot;}],&quot;key&quot;:&quot;1410192442186-GkbXAwHY7V-11&quot;},{&quot;Cell&quot;:[{&quot;column&quot;:&quot;simulation_info:partResult&quot;,&quot;timestamp&quot;:1.41035228E12,&quot;$&quot;:&quot;Team&quot;},{&quot;column&quot;:&quot;simulation_info:raw_data&quot;,&quot;timestamp&quot;:1.41035228E12,&quot;$&quot;:&quot;A
+successful project requires many people to play many different roles.
+Some members write code or documentation, while others are valuable as
+testers, submitting patches and
+suggestions.&quot;},{&quot;column&quot;:&quot;simulation_info:simulId&quot;,&quot;timestamp&quot;:1.41035228E12,&quot;$&quot;:&quot;006&quot;}],&quot;key&quot;:&quot;1410352337104-GkbXAwHY7V-12&quot;},{&quot;Cell&quot;:[{&quot;column&quot;:&quot;simulation_info:partResult&quot;,&quot;timestamp&quot;:1.41045295E12,&quot;$&quot;:&quot;Wiki&quot;},{&quot;column&quot;:&quot;simulation_info:raw_data&quot;,&quot;timestamp&quot;:1.41045295E12,&quot;$&quot;:&quot;Welcome
+to the Apache Flume
+wiki!&quot;},{&quot;column&quot;:&quot;simulation_info:simulId&quot;,&quot;timestamp&quot;:1.41045295E12,&quot;$&quot;:&quot;007&quot;}],&quot;key&quot;:&quot;1410452910211-GkbXAwHY7V-13&quot;}]}

@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>VELaSSCo Project: DataInjector REST API</title><style type="text/css">
+                    body {
+                        font-family: sans-serif;
+                        font-size: 0.85em;
+                        margin: 2em 8em;
+                    }
+                    .methods {
+                        background-color: #eef;
+                        padding: 1em;
+                    }
+                    h1 {
+                        font-size: 2.5em;
+                    }
+                    h2 {
+                        border-bottom: 1px solid black;
+                        margin-top: 1em;
+                        margin-bottom: 0.5em;
+                        font-size: 2em;
+                       }
+                    h3 {
+                        color: orange;
+                        font-size: 1.75em;
+                        margin-top: 1.25em;
+                        margin-bottom: 0em;
+                    }
+                    h4 {
+                        margin: 0em;
+                        padding: 0em;
+                        border-bottom: 2px solid white;
+                    }
+                    h6 {
+                        font-size: 1.1em;
+                        color: #99a;
+                        margin: 0.5em 0em 0.25em 0em;
+                    }
+                    dd {
+                        margin-left: 1em;
+                    }
+                    tt {
+                        font-size: 1.2em;
+                    }
+                    table {
+                        margin-bottom: 0.5em;
+                    }
+                    th {
+                        text-align: left;
+                        font-weight: normal;
+                        color: black;
+                        border-bottom: 1px solid black;
+                        padding: 3px 6px;
+                    }
+                    td {
+                        padding: 3px 6px;
+                        vertical-align: top;
+                        background-color: f6f6ff;
+                        font-size: 0.85em;
+                    }
+                    td p {
+                        margin: 0px;
+                    }
+                    ul {
+                        padding-left: 1.75em;
+                    }
+                    p + ul, p + ol, p + dl {
+                        margin-top: 0em;
+                    }
+                    .optional {
+                        font-weight: normal;
+                        opacity: 0.75;
+                    }
+                </style></head><body><h1>VELaSSCo Project: DataInjector REST API</h1><h3 xmlns="">URL TO INVOKE THE METHODS: http://.../rest/ + method<br>
+</h3>
+<h2 xmlns=""><a href="http://212.170.156.84:8080/metadata-extended/application.wadl" target="_blank">See WADL File</a></h2>
+<br xmlns="">
+		
+				
+    <ul><li><a href="#resources">Resources</a><ul><li><a href="#id121354">http://velassco.atosresearch.eu/data</a><ul><li><a href="#id121356">http://velassco.atosresearch.eu/data/sendSimulData</a></li><li><a href="#id119500">http://velassco.atosresearch.eu/data/get</a></li></ul></li></ul></li></ul><h2 id="resources">Resources</h2><div class="resource"><h3 id="id121354">/data</h3><h6>Methods</h6><div class="methods"></div></div><div class="resource"><h3 id="id121356">/data/sendSimulData<span class="optional">?simulationName</span><span class="optional">&amp;analysisName</span><span class="optional">&amp;partitionId</span><span class="optional">&amp;type</span></h3><h6>Methods</h6><div class="methods"><div class="method"><h4 id="http://velassco.atosresearch.eu#sendSimulData">POST</h4><p>This method allows data insertion on HBase database given the simulation name and analysis type as parameters</p><h6>request query parameters</h6><table><tr><th>parameter</th><th>value</th><th>description</th></tr><tr><td><p><strong>simulationName</strong></p></td><td><p><em><a href="http://www.w3.org/TR/xmlschema-2/#string">string</a></em></p></td><td><p>Type of simulation input data (DEM, FEM, etc)</p></td></tr><tr><td><p><strong>analysisName</strong></p></td><td><p><em><a href="http://www.w3.org/TR/xmlschema-2/#string">string</a></em></p></td><td><p>Name of the simulation data file</p></td></tr><tr><td><p><strong>partitionId</strong></p></td><td><p><em><a href="http://www.w3.org/TR/xmlschema-2/#string">string</a></em></p></td><td><p>Identifier of simulation part</p></td></tr><tr><td><p><strong>type</strong></p></td><td><p><em><a href="http://www.w3.org/TR/xmlschema-2/#string">string</a></em></p></td><td><p>Type of coordinate set (only for DEM)</p></td></tr></table><p><em>available response representations:</em></p><ul><li><a href="#id119507">application/xml<abbr title="{http://research.sun.com/wadl/2006/10} "></abbr></a></li></ul></div></div></div><div class="resource"><h3 id="id119500">/data/get<span class="optional">?rowkey</span><span class="optional">&amp;database</span></h3><h6>Methods</h6><div class="methods"><div class="method"><h4 id="http://velassco.atosresearch.eu#getDataFromHBase">GET</h4><p>This method is used to query the HBase table via REST API service</p><h6>request query parameters</h6><table><tr><th>parameter</th><th>value</th><th>description</th></tr><tr><td><p><strong>rowkey</strong></p></td><td><p><em><a href="http://www.w3.org/TR/xmlschema-2/#string">string</a></em></p></td><td></td></tr><tr><td><p><strong>database</strong></p></td><td><p><em><a href="http://www.w3.org/TR/xmlschema-2/#string">string</a></em></p></td><td></td></tr></table><p><em>available response representations:</em></p><ul><li><a href="#id119696">application/xml<abbr title="{http://research.sun.com/wadl/2006/10} "></abbr></a></li></ul></div></div></div></body></html>

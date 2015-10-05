@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<javadocOptions>
+  <docletArtifacts>
+    <docletArtifact />
+    <docletArtifact>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>wadl-resourcedoc-doclet</artifactId>
+      <version>1.12</version>
+    </docletArtifact>
+    <docletArtifact>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>1.13-b01</version>
+    </docletArtifact>
+    <docletArtifact>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>2.9.1</version>
+    </docletArtifact>
+  </docletArtifacts>
+  <tagletArtifacts>
+    <tagletArtifact />
+  </tagletArtifacts>
+  <javadocResourcesDirectory>src/main/javadoc</javadocResourcesDirectory>
+</javadocOptions>

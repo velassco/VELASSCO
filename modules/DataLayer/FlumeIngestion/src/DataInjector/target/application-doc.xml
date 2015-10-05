@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<applicationDocs targetNamespace="http://research.sun.com/wadl/2006/10">
+
+	<doc xml:lang="en" title="VELaSSCo Project: DataInjector REST API">
+		<h3>URL TO INVOKE THE METHODS: http://.../rest/ + method<br/></h3>
+		<h2><a href="http://212.170.156.84:8080/metadata-extended/application.wadl" target="_blank">See WADL File</a></h2><br/>
+		
+		<!-- <img src="http://xxx/pages/architecture.jpg" alt="VPH-SHARE Toolkit Architecture"/> -->		
+    </doc>
+	
+</applicationDocs>

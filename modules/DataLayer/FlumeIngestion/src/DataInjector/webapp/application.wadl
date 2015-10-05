@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns2:application
+        xmlns:ns2="http://research.sun.com/wadl/2006/10"><ns2:doc
+        jersey:generatedBy="Jersey: 1.8 06/24/2011 12:17 PM"
+        xmlns:jersey="http://jersey.java.net/"/><ns2:doc xml:lang="en"
+                title="VELaSSCo Project: DataInjector REST API"><h3>URL TO INVOKE THE METHODS: http://.../rest/ + method<br/></h3><h2><a
+                href="http://212.170.156.84:8080/metadata-extended/application.wadl"
+            target="_blank">See WADL File</a></h2><br/><![CDATA[
+		
+				
+    ]]></ns2:doc><ns2:grammars><ns2:include
+        href="schema.xsd"/></ns2:grammars><ns2:resources
+            base="http://velassco.atosresearch.eu"><ns2:resource
+                path="data"><ns2:resource
+                    path="sendSimulData"><ns2:method name="POST"
+                            id="sendSimulData"><ns2:doc><![CDATA[This method allows data insertion on HBase database given the simulation name and analysis type as parameters]]></ns2:doc><ns2:request><ns2:param
+                            type="xs:string" style="query"
+                            name="simulationName"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema"><ns2:doc><![CDATA[Type of simulation input data (DEM, FEM, etc)]]></ns2:doc></ns2:param><ns2:param
+                            type="xs:string" style="query"
+                            name="analysisName"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema"><ns2:doc><![CDATA[Name of the simulation data file]]></ns2:doc></ns2:param><ns2:param
+                            type="xs:string" style="query"
+                            name="partitionId"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema"><ns2:doc><![CDATA[Identifier of simulation part]]></ns2:doc></ns2:param><ns2:param
+                            type="xs:string" style="query" name="type"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema"><ns2:doc><![CDATA[Type of coordinate set (only for DEM)]]></ns2:doc></ns2:param></ns2:request><ns2:response><ns2:doc><![CDATA[A message with status of data insertion]]></ns2:doc><ns2:representation
+                mediaType="application/xml"/></ns2:response></ns2:method></ns2:resource><ns2:resource
+                    path="get"><ns2:method name="GET"
+                            id="getDataFromHBase"><ns2:doc><![CDATA[This method is used to query the HBase table via REST API service]]></ns2:doc><ns2:request><ns2:param
+                            type="xs:string" style="query" name="rowkey"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema"/><ns2:param
+                            type="xs:string" style="query"
+                            name="database"
+                            xmlns:xs="http://www.w3.org/2001/XMLSchema"/></ns2:request><ns2:response><ns2:doc><![CDATA[XML query response]]></ns2:doc><ns2:representation mediaType="application/xml"/></ns2:response></ns2:method></ns2:resource></ns2:resource></ns2:resources></ns2:application>

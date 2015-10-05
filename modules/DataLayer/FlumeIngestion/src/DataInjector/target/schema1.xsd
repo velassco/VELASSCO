@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="message" type="messageBean"/>
+
+  <xs:element name="messageData" type="messageData"/>
+
+  <xs:element name="outputPartXML" type="outputPartXML"/>
+
+  <xs:element name="responseXML" type="responseXML"/>
+
+  <xs:complexType name="cellOutClass"/>
+
+  <xs:complexType name="messageBean">
+    <xs:sequence>
+      <xs:element name="data" type="messageData" minOccurs="0"/>
+      <xs:element name="state" type="xs:string" minOccurs="0"/>
+      <xs:element name="_timeExec" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="messageData">
+    <xs:sequence>
+      <xs:element name="_global_id" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="outputPartXML">
+    <xs:sequence>
+      <xs:element name="partNumber" type="xs:string" minOccurs="0"/>
+      <xs:element name="raw_data" type="xs:string" minOccurs="0"/>
+      <xs:element name="simulId" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="row">
+    <xs:sequence>
+      <xs:element name="cells" type="cell" nillable="true" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element name="key" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="cell">
+    <xs:sequence>
+      <xs:element name="$" type="xs:string" minOccurs="0"/>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="timestamp" type="xs:float"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="response">
+    <xs:sequence>
+      <xs:element name="rows" type="row" nillable="true" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="rowXML">
+    <xs:sequence>
+      <xs:element name="cells" type="cellXML" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element name="key" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="cellXML">
+    <xs:sequence>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="timestamp" type="xs:float"/>
+      <xs:element name="value" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="responseXML">
+    <xs:sequence>
+      <xs:element name="rows" type="rowXML" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="demSimulation">
+    <xs:complexContent>
+      <xs:extension base="simulationManager">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="simulationManager"/>
+
+  <xs:complexType name="demSimulationEntities">
+    <xs:complexContent>
+      <xs:extension base="demSimulation">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="demSimulationHBase"/>
+
+  <xs:complexType name="femSimulation">
+    <xs:complexContent>
+      <xs:extension base="simulationManager">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="dataInjectorLoadBalancer"/>
+
+  <xs:complexType name="dataInjectorManager"/>
+
+  <xs:complexType name="hBaseManager"/>
+
+  <xs:complexType name="hBaseManagerBinary"/>
+
+  <xs:complexType name="json2Map"/>
+
+  <xs:complexType name="simpleRowKeyGenerator"/>
+
+  <xs:complexType name="solrManager"/>
+
+  <xs:complexType name="vphConstants"/>
+
+  <xs:complexType name="flumeAVROManager"/>
+
+  <xs:complexType name="flumeHBaseAgent"/>
+
+  <xs:complexType name="flumeHDFSAgent"/>
+
+  <xs:complexType name="flumeInterceptor"/>
+
+  <xs:complexType name="multiCFRegexHbaseEventSerializer"/>
+
+  <xs:complexType name="regexHbaseEventSerializer"/>
+
+  <xs:complexType name="simpleHBaseEventSerializer"/>
+
+  <xs:complexType name="splittingSerializer"/>
+
+  <xs:simpleType name="keyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TSNANO"/>
+      <xs:enumeration value="TS"/>
+      <xs:enumeration value="RANDOM"/>
+      <xs:enumeration value="UUID"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+
