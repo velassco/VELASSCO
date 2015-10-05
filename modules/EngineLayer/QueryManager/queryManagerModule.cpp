@@ -32,9 +32,11 @@ bool queryManagerModule::startConnection( const char *data_layer_hostname, const
     {
         
         transport->open();
-	string status;
-        getStatusDB( status);
-        cout << "\t########## getStatus - " << status << endl;
+	// just testing connection:
+	// string status;
+        // getStatusDB( status);
+        // cout << "\t########## getStatus - " << status << endl;
+	// now it's a VQuery so it can be issued by the Viz Client
     }
     catch (TException& tx)
     {
@@ -69,12 +71,12 @@ void queryManagerModule::getStatusDB( std::string& _return)
 }
 
 
-void queryManagerModule::getResultFormVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
+void queryManagerModule::getResultFromVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 {
     try
     {
         
-        cli->GetResultFormVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
+        cli->GetResultFromVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
         cout << "########## getStatus - " << _return << endl;
     }
     catch (TException& tx)

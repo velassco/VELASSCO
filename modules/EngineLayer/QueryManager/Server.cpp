@@ -229,7 +229,7 @@ class QueryManager : virtual public QueryManagerIf
 		std::cout << "V " << vertexIDs  << std::endl;
 		std::cout << "T " << timeStep   << std::endl;
 
-        queryManagerModule::Instance()->getResultFormVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+        queryManagerModule::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
 
 		std::vector<int64_t> resultVertexIDs;
 		std::vector<double>  resultValues;

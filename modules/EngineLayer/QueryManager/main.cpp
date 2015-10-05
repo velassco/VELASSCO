@@ -50,7 +50,7 @@ void parse(string cmd)
         string analysisID  = "DEM";
         double timeStep = 1;
         string resultID = "00001";
-        queryManagerModule::Instance()->getResultFormVerticesID(_return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+        queryManagerModule::Instance()->getResultFromVerticesID(_return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
         cout<<"#### /Query ####"<<endl;
         
     }
