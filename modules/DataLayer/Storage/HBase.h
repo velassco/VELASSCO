@@ -1,4 +1,4 @@
-
+/* -*- c++ -*- */
 #pragma once
 
 // STD
@@ -10,24 +10,28 @@
 namespace VELaSSCo
 {
 
-class HBase : public AbstractDB
-{
+  class HBase : public AbstractDB
+  {
   
- public:
+  public:
   
-	std::string getStatusDB();
+    std::string getStatusDB();
 
-	std::string getResultOnVertices( std::string sessionID,
+    std::string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+				     const std::string &sessionID, const std::string &model_group_qualifier, 
+				     const std::string &model_name_pattern);
+
+    std::string getResultOnVertices( std::string sessionID,
                                      std::string modelID,
                                      std::string analysisID,
                                      double      timeStep,
                                      std::string resultID,
                                      std::string listOfVertices );
-private:
+  private:
 
-	double fRand(double fMin, double fMax);
-        std::string parseStatusDB( std::string b);
-	std::string parse1DEM(std::string b, std::string LOVertices);
-};
+    double fRand(double fMin, double fMax);
+    std::string parseStatusDB( std::string b);
+    std::string parse1DEM(std::string b, std::string LOVertices);
+  };
 
 } 

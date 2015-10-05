@@ -31,9 +31,16 @@ StorageModuleClient *clp = NULL;
 using namespace VELaSSCo;
 
 std::string EDM::getStatusDB() {
-  return "EDM::Status\n";
+  return "EDM::Status not implemented.";
 }
-	
+
+std::string EDM::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+				      const std::string &sessionID, const std::string &model_group_qualifier, 
+				      const std::string &model_name_pattern) {
+  report = "EDM::getListOfModelNames not implemented.";
+  return "Error";
+}
+
 std::string EDM::getResultOnVertices( std::string sessionID,
                                       std::string modelID,
                                       std::string analysisID,

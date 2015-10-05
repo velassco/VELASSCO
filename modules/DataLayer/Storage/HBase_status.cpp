@@ -18,6 +18,7 @@
 #include "cJSON.h"
 #include "base64.h"
 
+#include "Curl_cmd.h"
 
 using namespace std;
 using namespace VELaSSCo;
@@ -450,71 +451,29 @@ std::string HBase::parseStatusDB( std::string b) {
 
 std::string HBase::getStatusDB() {
   // return "HBase::Status\n";
- http://pez001:8880/status/cluster
+  // http://pez001:8880/status/cluster
+  std::cout << "getStatusDB: =====" << std::endl;
   string cmd = "http://pez001:8880/";
   cmd += "status/cluster";
   cout << cmd << endl;
-  CURL *curl = NULL;
-  CURLcode res;
+
+  CurlCommand do_curl;
+  
+  bool ok = do_curl.Evaluate( buffer, cmd);
+  
+  string result;
+  if ( ok) {
+    std::cout << "**********\n";    
+    std::cout << buffer << std::endl;
+    std::cout << "**********\n";    
     
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-  curl = curl_easy_init();
-  if(curl)
-    {
-      res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
-      if(res != CURLE_OK)
-        {
-	  fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
-        }
-        
-      res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
-      if(res != CURLE_OK)
-        {
-	  fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
-        }
-        
-      res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-      if(res != CURLE_OK)
-        {
-	  fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
-        }
-      res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
-      if(res != CURLE_OK)
-        {
-	  fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
-        }
-        
-      res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-      if(res != CURLE_OK)
-        {
-	  fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
-        }
-        
-      struct curl_slist *chunk = NULL;
-      chunk = curl_slist_append(chunk, "Accept: application/json;");
-      res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-      if(res != CURLE_OK)
-        {
-	  fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
-        }
-        
-      res = curl_easy_perform(curl);
-      if(res != CURLE_OK)
-        {
-	  fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        }
-        
-      curl_easy_cleanup(curl);
-      curl_slist_free_all(chunk);
-        
-        
-    }
-    
-  std::cout << "**********\n";    
-  std::cout << buffer << std::endl;
-  std::cout << "**********\n";    
-    
-  string result = parseStatusDB( buffer);
+    result = parseStatusDB( buffer);
+  } else {
+    std::cout << "ERROR**********\n";    
+    std::cout << buffer << std::endl;
+    std::cout << "ERROR**********\n";    
+    result = buffer;
+  }
   return result;
 
 }

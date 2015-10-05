@@ -38,6 +38,16 @@ string storageModule::getStatusDB() {
 	return db.getStatusDB();
 }
 
+string storageModule::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+					   const std::string &sessionID, const std::string &model_group_qualifier, 
+					   const std::string &model_name_pattern) { 
+  VELaSSCo::HBase hbasedb;   // HBase
+  VELaSSCo::EDM edmdb;       // EDM
+  VELaSSCo::AbstractDB &db = hbasedb;
+  return db.getListOfModelNames( report, listOfModelNames, 
+				 sessionID, model_group_qualifier, model_name_pattern);
+}
+
 string storageModule::getResultOnVertices( std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 { 
 	// HBase

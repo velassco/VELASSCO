@@ -34,11 +34,16 @@ typedef std::map<std::string,TCell> CellMap;
 #include "base64.h"
 
 using namespace std;
+class FullyQualifiedModelName;
+
 class storageModule
 {
 public:
     static storageModule* Instance();
     string getStatusDB();
+    string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+				const std::string &sessionID, const std::string &model_group_qualifier, 
+				const std::string &model_name_pattern);
     string getResultOnVertices( std::string sessionID,
                                std::string modelID,
                                std::string analysisID,

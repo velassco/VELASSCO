@@ -28,25 +28,7 @@ using namespace VELaSSCo;
 #include <curl/curl.h>
 #include "cJSON.h"
 
-static char errorBuffer[CURL_ERROR_SIZE];
-static std::string buffer;
-static int writer(char *data, size_t size,
-                  size_t nmemb,
-                  std::string *writerData)
-{
-    if (writerData == NULL)
-        return 0;
-    
-    writerData->append(data, size*nmemb);
-    
-    return size * nmemb;
-}
-
-double HBase::fRand(double fMin, double fMax)
-{
-    double f = (double)rand() / RAND_MAX;
-    return fMin + f * (fMax - fMin);
-}
+#include "Curl_cmd.h"
 
 std::string HBase::parse1DEM(string b, std::string LOVertices)
 {
@@ -431,12 +413,13 @@ std::string HBase::getResultOnVertices( std::string sessionID,
                                         std::string resultID,
                                         std::string listOfVertices )
 {
-	std::cout << "S " << sessionID      << std::endl;
-	std::cout << "M " << modelID        << std::endl;
-	std::cout << "R " << resultID       << std::endl;
-	std::cout << "A " << analysisID     << std::endl;
-	std::cout << "V " << listOfVertices << std::endl;
-	std::cout << "T " << timeStep       << std::endl;
+  std::cout << "getResultOnVertices: =====" << std::endl;
+  std::cout << "S " << sessionID      << std::endl;
+  std::cout << "M " << modelID        << std::endl;
+  std::cout << "R " << resultID       << std::endl;
+  std::cout << "A " << analysisID     << std::endl;
+  std::cout << "V " << listOfVertices << std::endl;
+  std::cout << "T " << timeStep       << std::endl;
 	
     string cmd = "http://pez001:8880/";
     cmd += "Simulations_Data";
@@ -453,61 +436,68 @@ std::string HBase::getResultOnVertices( std::string sessionID,
 
     cmd += key.str();
     cout << cmd << endl;
-    CURL *curl = NULL;
-    CURLcode res;
+
     
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-    if(curl)
-    {
-        res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
-        }
-        
-        res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
-        }
-        
-        res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
-        }
-        res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
-        }
-        
-        res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
-        }
-        
-        struct curl_slist *chunk = NULL;
-        chunk = curl_slist_append(chunk, "Accept: application/json;");
-        res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
-        }
-        
-        res = curl_easy_perform(curl);
-        if(res != CURLE_OK)
-        {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        }
-        
-        curl_easy_cleanup(curl);
-        curl_slist_free_all(chunk);
-        
-        
-    }
+    CurlCommand do_curl;
+    string buffer;
+    
+    bool ok = do_curl.Evaluate( buffer, cmd);
+
+    // CURL *curl = NULL;
+    // CURLcode res;
+    // 
+    // curl_global_init(CURL_GLOBAL_DEFAULT);
+    // curl = curl_easy_init();
+    // if(curl)
+    // {
+    //     res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
+    //     if(res != CURLE_OK)
+    //     {
+    //         fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
+    //     }
+    //     
+    //     res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
+    //     if(res != CURLE_OK)
+    //     {
+    //         fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
+    //     }
+    //     
+    //     res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    //     if(res != CURLE_OK)
+    //     {
+    //         fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
+    //     }
+    //     res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+    //     if(res != CURLE_OK)
+    //     {
+    //         fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
+    //     }
+    //     
+    //     res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+    //     if(res != CURLE_OK)
+    //     {
+    //         fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
+    //     }
+    //     
+    //     struct curl_slist *chunk = NULL;
+    //     chunk = curl_slist_append(chunk, "Accept: application/json;");
+    //     res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+    //     if(res != CURLE_OK)
+    //     {
+    //         fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
+    //     }
+    //     
+    //     res = curl_easy_perform(curl);
+    //     if(res != CURLE_OK)
+    //     {
+    //         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    //     }
+    //     
+    //     curl_easy_cleanup(curl);
+    //     curl_slist_free_all(chunk);
+    //     
+    //     
+    // }
     
     std::cout << "**********\n";    
     std::cout << buffer << std::endl;
