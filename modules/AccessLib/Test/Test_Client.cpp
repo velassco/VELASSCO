@@ -75,13 +75,19 @@ int main(int argc, char* argv[])
   // Test GetListOfModels()
   //
   const char *return_list = NULL;
-  const char *group_qualifier = "*";
+  const char *group_qualifier = "";
   const char *name_pattern = "*";
   result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
   CheckVALResult(result);
-  std::cout << "status = " << status << std::endl;
-  std::cout << "model_list = " << return_list << std::endl;
-
+  std::cout << "in VELaSSCo_models:" << std::endl;
+  std::cout << "   status = " << status << std::endl;
+  std::cout << "   model_list = " << return_list << std::endl;
+  group_qualifier = "VELaSSCo_Models_V4CIMNE";
+  result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
+  CheckVALResult(result);
+  std::cout << "in VELaSSCo_Models_V4CIMNE:" << std::endl;
+  std::cout << "   status = " << status << std::endl;
+  std::cout << "   model_list = " << return_list << std::endl;
 
   //
   // Test GetResultFromVerticesID()
