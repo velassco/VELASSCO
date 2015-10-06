@@ -73,8 +73,10 @@ void parse(string cmd)
 void printListOfCmd()
 {
     cout << "List of avaiblable cmd :" << endl;
+    cout << "stop: stop the dataLayer application" << endl;
+    cout << "ping: get Status of DB" << endl;
+    cout << "query: does a query" << endl;
     cout << "exit (or quit): stop the current application (enginelayer)" << endl;
-    cout << "dl_exit (or dl_quit or dlq or dle): stop the dataLayer application" << endl;
     cout <<" ################################################" << endl << endl;
 }
 
