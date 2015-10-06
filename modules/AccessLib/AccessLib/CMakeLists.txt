@@ -19,8 +19,8 @@ set(ACCESS_LIB_SOURCES ${ACCESS_LIB_SOURCE_DIR}/AccessLib.h
                        ${ACCESS_LIB_SOURCE_DIR}/AccessLib.cpp 
 					   ${ACCESS_LIB_SOURCE_DIR}/Client.h 
 					   ${ACCESS_LIB_SOURCE_DIR}/Client.cpp
-					   ${ACCESS_LIB_SOURCE_DIR}/Server.h
-					   ${ACCESS_LIB_SOURCE_DIR}/Server.cpp
+					   ${ACCESS_LIB_SOURCE_DIR}/DemoServer.h
+					   ${ACCESS_LIB_SOURCE_DIR}/DemoServer.cpp
 					   ${ACCESS_LIB_SOURCE_DIR}/Helpers.h
 					   ${ACCESS_LIB_SOURCE_DIR}/Helpers.cpp)
 

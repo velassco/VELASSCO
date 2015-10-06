@@ -8,7 +8,7 @@
 #include "AccessLib.h"
 #include "Client.h"
 #include "Helpers.h"
-#include "Server.h"
+#include "DemoServer.h" // for the StartServer() function
 
 namespace VELaSSCo
 {
@@ -165,6 +165,50 @@ VAL_Result VAL_API valGetResultFromVerticesID( /* in */
 	CATCH_ERROR;
 }
 
+VAL_Result VAL_API valGetListOfModels( /* in */
+				      VAL_SessionID   sessionID,
+				      const char     *group_qualifier,
+				      const char     *name_pattern,
+				      /* out */
+				      const char    **result_status,
+				      const char    **result_list_of_models /* will be: "Name: model_1\nFullPath: path_1\nName: model_2..." */
+				       ) {
+  CHECK_SESSION_ID( sessionID );
+  CHECK_QUERY_POINTER( group_qualifier );
+  CHECK_QUERY_POINTER( name_pattern );
+  CHECK_QUERY_POINTER( result_status );
+  CHECK_QUERY_POINTER( result_list_of_models );
+  
+  try
+    {
+      std::stringstream  queryCommand;
+      const std::string* queryData;
+      
+      // Build JSON command string
+      queryCommand << "{\n"
+		   << "  \"name\"           : \"" << "GetListOfModels" << "\",\n"
+		   << "  \"groupQualifier\" : \"" << group_qualifier   << "\",\n"
+		   << "  \"namePattern\"    : \"" << name_pattern      << "\"\n";
+      queryCommand << "}\n";
+      
+      // Send command string and get back result data
+      VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+
+      // Give back pointers to actual binary data
+      if (result == VAL_SUCCESS) {
+	/* will be: "NumberOfModels: 1234\nName: model_1\nFullPath: path_1\nName: model_2..." */
+	*result_status = queryData->c_str(); // eventually strdup() ...
+      } else {
+	// in case of error queryData has the error message from the data layer
+	*result_status = queryData->c_str(); // eventually strdup() ...
+      }
+
+      return result;
+    }
+  CATCH_ERROR;
+}
+
+
 VAL_Result VAL_API valGetStatusDB( /* in */
 				  VAL_SessionID   sessionID,
 				  /* out */ 
@@ -177,7 +221,7 @@ VAL_Result VAL_API valGetStatusDB( /* in */
 		// Try to log out from VELaSSCo server
 		const std::string *str_status;
 		VAL_Result result = g_clients[sessionID]->GetStatusDB( sessionID, str_status);
-		*status = str_status->c_str();
+		*status = str_status->c_str(); // eventually strdup() ...
 		return result;
 	}
 	CATCH_ERROR;
@@ -205,6 +249,10 @@ VAL_Result VAL_API valErrorMessage( /* in */
 
 		/* UserLogout */
 		case VAL_LOGOUT_UNSUCCESSFUL:           *message = "Logout unsuccessful.";           break;
+
+  	        /* GetListOfModels */
+	        case VAL_NO_MODELS_IN_PLATFORM:         *message = "No models in platform.";         break;
+ 	        case VAL_NO_MODEL_MATCHES_PATTERN:      *message = "No models match with pattern.";  break;
 
 		/* GetResultFromVerticesID */
 		case VAL_RESULT_ID_NOT_AVAILABLE:       *message = "Result ID not available.";       break;

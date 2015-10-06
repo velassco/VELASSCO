@@ -71,6 +71,17 @@ int main(int argc, char* argv[])
   CheckVALResult(result);
   std::cout << "status = " << status << std::endl;
 
+  //
+  // Test GetListOfModels()
+  //
+  const char *return_list = NULL;
+  const char *group_qualifier = "*";
+  const char *name_pattern = "*";
+  result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
+  CheckVALResult(result);
+  std::cout << "status = " << status << std::endl;
+  std::cout << "model_list = " << return_list << std::endl;
+
 
   //
   // Test GetResultFromVerticesID()
