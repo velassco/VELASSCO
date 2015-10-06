@@ -31,6 +31,7 @@ namespace VELaSSCo
 
     double fRand(double fMin, double fMax);
     std::string parseStatusDB( std::string b);
+    std::string parseListOfModelNames( std::string b);
     std::string parse1DEM(std::string b, std::string LOVertices);
   };
 

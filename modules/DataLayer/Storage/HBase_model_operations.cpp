@@ -29,6 +29,10 @@ using namespace VELaSSCo;
 #include <curl/curl.h>
 #include "cJSON.h"
 
+std::string HBase::parseListOfModelNames( std::string b) {
+  return "";
+}
+
 std::string HBase::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					const std::string &sessionID, const std::string &model_group_qualifier, 
 					const std::string &model_name_pattern) {
