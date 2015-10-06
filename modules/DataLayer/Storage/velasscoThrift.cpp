@@ -9,7 +9,7 @@ VELaSSCoHandler::VELaSSCoHandler()
 
 void VELaSSCoHandler::statusDL(std::string& _return)
 {
-    _return = "statusDL \n";
+  // _return = "statusDL \n";
     // printf("%s", _return.c_str());
     _return = storageModule::Instance()->getStatusDB();
     DEBUG( _return);
