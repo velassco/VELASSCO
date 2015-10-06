@@ -1,4 +1,4 @@
-
+/* -*- c++ -*- */
 #ifndef VELASSCO_ACCESS_LIB_H
 #define VELASSCO_ACCESS_LIB_H
 
@@ -42,9 +42,13 @@ typedef enum
 	/* UserLogout */
 	VAL_LOGOUT_UNSUCCESSFUL           = 0x0200,
 
+	/* GetListOfModels */
+	VAL_NO_MODELS_IN_PLATFORM         = 0x0300,
+	VAL_NO_MODEL_MATCHES_PATTERN      = 0x0301,
+
 	/* GetResultFromVerticesID */
-	VAL_RESULT_ID_NOT_AVAILABLE       = 0x0300,
-	VAL_SOME_VERTEX_IDS_NOT_AVAILABLE = 0x0301
+	VAL_RESULT_ID_NOT_AVAILABLE       = 0x1000,
+	VAL_SOME_VERTEX_IDS_NOT_AVAILABLE = 0x1001
 
 } VAL_Result;
 
@@ -59,58 +63,67 @@ extern "C" {
  * credentials are verified, and, if approved, a session identifier is
  * returned.
  */
-VAL_Result VAL_API valUserLogin(               /* in */
-	                                           const char*     url,
-						  	                   const char*     name,
-							                   const char*     password,
-
-											   /* out */
-								               VAL_SessionID  *sessionID );
-
-/**
- * Logout from the VELaSSCo platform.
- * After successfully logging out, the session identifier is invalid.
- */
-VAL_Result VAL_API valUserLogout(              /* in */
-								               VAL_SessionID   sessionID );
-
-/**
- * Given a list of vertices IDs from the model, get the result value of a
- * given type of result for each vertex id of the list.
- */
-VAL_Result VAL_API valGetResultFromVerticesID( /* in */
+  VAL_Result VAL_API valUserLogin(               /* in */
+				  const char*     url,
+				  const char*     name,
+				  const char*     password,
+				  
+				  /* out */
+				  VAL_SessionID  *sessionID );
+  
+  /**
+   * Logout from the VELaSSCo platform.
+   * After successfully logging out, the session identifier is invalid.
+   */
+  VAL_Result VAL_API valUserLogout(              /* in */
+				   VAL_SessionID   sessionID );
+  
+  /**
+   * Given a list of vertices IDs from the model, get the result value of a
+   * given type of result for each vertex id of the list.
+   */
+  VAL_Result VAL_API valGetResultFromVerticesID( /* in */
 	                                           VAL_SessionID   sessionID,
-											   const char*     modelID,
-											   const char*     resultID,
-											   const char*     analysisID,
-											   const int64_t*  vertexIDs,
-											   double          timeStep,
-
-											   /* out */
-											   const int64_t* *resultVertexIDs,
-											   const double*  *resultValues,
-											   size_t         *resultNumVertices );
-
-/**
- * Translate a numerical result code into an error message string.
- * The memory for the string does not need to be released by the user.
- */
-VAL_Result VAL_API valErrorMessage(            /* in */
-	                                           VAL_Result      error,
-
-									           /* out */
-									           const char*    *message );
-
+						   const char*     modelID,
+						   const char*     resultID,
+						   const char*     analysisID,
+						   const int64_t*  vertexIDs,
+						   double          timeStep,
+						   
+						   /* out */
+						   const int64_t* *resultVertexIDs,
+						   const double*  *resultValues,
+						   size_t         *resultNumVertices );
+  
+  VAL_Result VAL_API valGetListOfModels( /* in */
+					VAL_SessionID   sessionID,
+					const char     *model_group_qualifier,
+					const char     *model_name_pattern,
+					/* out */
+					const char    **status,
+					const char   ***list_of_models
+					 );					
+  
+  /**
+   * Translate a numerical result code into an error message string.
+   * The memory for the string does not need to be released by the user.
+   */
+  VAL_Result VAL_API valErrorMessage(            /* in */
+				     VAL_Result      error,
+				     
+				     /* out */
+				     const char*    *message );
+  
   VAL_Result VAL_API valGetStatusDB(  /* in */
 				    VAL_SessionID   sessionID,
 				    /* out */ 
 				    const char **status);
   
-/**
- * API testing. 
- */
-VAL_Result VAL_API valStartTestServer( const int server_port);
-
+  /**
+   * API testing. 
+   */
+  VAL_Result VAL_API valStartTestServer( const int server_port);
+  
 #ifdef __cplusplus
 }
 #endif

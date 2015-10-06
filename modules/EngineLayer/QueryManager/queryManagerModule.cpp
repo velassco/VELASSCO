@@ -58,18 +58,24 @@ bool queryManagerModule::stopConnection()
     return true;
 }
 
-void queryManagerModule::getStatusDB( std::string& _return)
-{
-    try
-    {
-        cli->statusDL( _return);
-    }
-    catch (TException& tx)
-    {
-        cout << "ERROR: " << tx.what() << endl;
+void queryManagerModule::getStatusDB( std::string& _return) {
+    try {
+      cli->statusDL( _return);
+    } catch (TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
     }
 }
 
+
+void queryManagerModule::getListOfModels( rvGetListOfModels &_return,
+					  const std::string &sessionID, 
+					  const std::string &model_group_qualifier, const std::string &model_name_pattern) {
+  try {
+    cli->GetListOfModelNames( _return, sessionID, model_group_qualifier, model_name_pattern);
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
 
 void queryManagerModule::getResultFromVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 {

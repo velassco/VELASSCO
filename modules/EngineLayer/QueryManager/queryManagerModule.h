@@ -1,3 +1,4 @@
+/* -*- c++ -*- */
 #ifndef queryManagerModule_H
 #define queryManagerModule_H
 
@@ -19,6 +20,7 @@ using namespace std;
 
 #include "VELaSSCo.h"
 
+// handles connection to Storage Module:
 class queryManagerModule
 {
 public:
@@ -26,7 +28,12 @@ public:
     bool startConnection( const char *data_layer_hostname, const int data_layer_port);
     bool stopConnection();
     void getStatusDB( std::string& _return);
-    void getResultFromVerticesID(std::string& _return, std::string sessionID, std::string modelID, std::string analysisID, double timeStep, std::string resultID,  std::string listOfVertices) ;
+    void getResultFromVerticesID( std::string& _return, 
+				  std::string sessionID, std::string modelID, std::string analysisID, 
+				  double timeStep, std::string resultID,  std::string listOfVertices) ;
+    void getListOfModels( rvGetListOfModels &_return,
+			  const std::string &sessionID, 
+			  const std::string &group_qualifier, const std::string &name_pattern);
     void stopAll();
     
 private:
@@ -41,9 +48,6 @@ private:
     boost::shared_ptr<TTransport> socket;
     boost::shared_ptr<TTransport> transport;
     boost::shared_ptr<TProtocol> protocol;
-    
-
-
 };
 
 #endif
