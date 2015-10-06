@@ -1,4 +1,4 @@
-
+/* -*- c++ -*- */
 // CLib
 #include <cmath>
 #include <cstddef>
@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 // Curl
 #include <curl/curl.h>
@@ -43,58 +44,64 @@ class CurlCommand {
 };
 
 inline bool CurlCommand::Evaluate( std::string &result, const std::string &cmd) {
-  CURL *curl = NULL;
-  CURLcode res;
+  bool curl_ok = false;
+  try {    
+    CURL *curl = NULL;
+    CURLcode res;
     
-  *m_errorBuffer = '\0';
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-  curl = curl_easy_init();
-  if(curl) {
-    res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, m_errorBuffer);
-    if(res != CURLE_OK) {
-      fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
+    *m_errorBuffer = '\0';
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+    if(curl) {
+      res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, m_errorBuffer);
+      if(res != CURLE_OK) {
+	fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
+      }
+    
+      res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
+      if(res != CURLE_OK) {
+	fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
+      }
+    
+      res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+      if(res != CURLE_OK) {
+	fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
+      }
+      res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlCommand::writer);
+      if(res != CURLE_OK) {
+	fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
+      }
+    
+      res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &m_buffer);
+      if(res != CURLE_OK) {
+	fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
+      }
+    
+      struct curl_slist *chunk = NULL;
+      chunk = curl_slist_append(chunk, "Accept: application/json;");
+      res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+      if(res != CURLE_OK) {
+	fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
+      }
+    
+      res = curl_easy_perform(curl);
+      if(res != CURLE_OK) {
+	fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+      }
+    
+      curl_easy_cleanup(curl);
+      curl_slist_free_all(chunk);   
+    }
+    if ( res == CURLE_OK) {
+      result = m_buffer;
     }
     
-    res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
-    if(res != CURLE_OK) {
-      fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
-    }
-    
-    res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    if(res != CURLE_OK) {
-      fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
-    }
-    res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlCommand::writer);
-    if(res != CURLE_OK) {
-      fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
-    }
-    
-    res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &m_buffer);
-    if(res != CURLE_OK) {
-      fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
-    }
-    
-    struct curl_slist *chunk = NULL;
-    chunk = curl_slist_append(chunk, "Accept: application/json;");
-    res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-    if(res != CURLE_OK) {
-      fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
-    }
-    
-    res = curl_easy_perform(curl);
-    if(res != CURLE_OK) {
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }
-    
-    curl_easy_cleanup(curl);
-    curl_slist_free_all(chunk);   
+    curl_ok = ( res == CURLE_OK);
+  } catch (...) {
+    curl_ok = false;
+    result = "ERROR: Curl error evaluating " + cmd;
   }
-
-  if ( res == CURLE_OK) {
-    result = m_buffer;
-  }
-
-  return res == CURLE_OK;
+  return curl_ok;
 }
   
 static char *until_comma( char *str) {

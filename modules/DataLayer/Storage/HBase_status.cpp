@@ -450,9 +450,9 @@ std::string HBase::getStatusDB() {
   
   string result;
   if ( ok) {
-    std::cout << "**********\n";    
-    std::cout << buffer << std::endl;
-    std::cout << "**********\n";    
+    // std::cout << "**********\n";    
+    // std::cout << buffer << std::endl;
+    // std::cout << "**********\n";    
     
     result = parseStatusDB( buffer);
   } else {
