@@ -29,30 +29,6 @@ using namespace VELaSSCo;
 #include <curl/curl.h>
 #include "cJSON.h"
 
-static char errorBuffer[CURL_ERROR_SIZE];
-static std::string buffer;
-static int writer(char *data, size_t size,
-                  size_t nmemb,
-                  std::string *writerData)
-{
-  if (writerData == NULL)
-    return 0;
-    
-  writerData->append(data, size*nmemb);
-    
-  return size * nmemb;
-}
-
-static char *until_comma( char *str) {
-  for ( char *c = str; c && *c; c++) {
-    if ( *c == ',') {
-      *c = '\0';
-      break;
-    }
-  }
-  return str;
-}
-
 std::string HBase::parseStatusDB( std::string b) {
   std::stringstream result;
 
@@ -458,6 +434,7 @@ std::string HBase::getStatusDB() {
   cout << cmd << endl;
 
   CurlCommand do_curl;
+  string buffer;
   
   bool ok = do_curl.Evaluate( buffer, cmd);
   

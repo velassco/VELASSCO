@@ -443,6 +443,7 @@ std::string HBase::getResultOnVertices( std::string sessionID,
     
     bool ok = do_curl.Evaluate( buffer, cmd);
 
+    // to be deleted if above works:
     // CURL *curl = NULL;
     // CURLcode res;
     // 

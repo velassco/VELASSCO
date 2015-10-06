@@ -18,6 +18,8 @@
 #include "cJSON.h"
 #include "base64.h"
 
+#include "Curl_cmd.h"
+
 using namespace std;
 using namespace VELaSSCo;
 
@@ -43,9 +45,28 @@ std::string HBase::getListOfModelNames( std::string &report, std::vector< FullyQ
   key << "*"; // we have to parse through all models
   cmd += key.str();
   cout << cmd << endl;
+  
+  CurlCommand do_curl;
+  string buffer;
+  
+  bool ok = do_curl.Evaluate( buffer, cmd);
+  string result;
+  if ( ok) {
+    std::cout << "**********\n";    
+    std::cout << buffer << std::endl;
+    std::cout << "**********\n";    
+    result = "Ok";
+    
+    result = parseStatusDB( buffer);
+  } else {
+    std::cout << "ERROR**********\n";    
+    std::cout << buffer << std::endl;
+    std::cout << "ERROR**********\n";    
+    result = "Error";
+  }
 
   report = "HBase::getListOfModelNames not implemented.";
-  return "Error";
+  return result;
 }
 
 

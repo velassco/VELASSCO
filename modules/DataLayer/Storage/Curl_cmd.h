@@ -36,16 +36,6 @@ class CurlCommand {
     writerData->append(data, size*nmemb);
     return size * nmemb;
   }
-  
-  static char *until_comma( char *str) {
-    for ( char *c = str; c && *c; c++) {
-      if ( *c == ',') {
-	*c = '\0';
-	break;
-      }
-    }
-    return str;
-  }
 
  private:  
   char m_errorBuffer[ CURL_ERROR_SIZE];
@@ -105,4 +95,14 @@ inline bool CurlCommand::Evaluate( std::string &result, const std::string &cmd) 
   }
 
   return res == CURLE_OK;
+}
+  
+static char *until_comma( char *str) {
+  for ( char *c = str; c && *c; c++) {
+    if ( *c == ',') {
+      *c = '\0';
+      break;
+    }
+  }
+  return str;
 }
