@@ -364,10 +364,12 @@ void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const Ses
       std::ostringstream oss;
       oss << "NumberOfModels: " << _return_.models.size() << std::endl;
       // C++11 : for ( auto &it : _return_.models)
+      char hex_string[ 1024];
       for ( std::vector< FullyQualifiedModelName>::iterator it = _return_.models.begin();
           it != _return_.models.end(); it++) {
 	oss << "Name: " << it->name << std::endl;
 	oss << "FullPath: " << it->full_path << std::endl;
+	oss << "ModelID: " << ToHexString( hex_string, 1024, it->modelID.c_str(), it->modelID.size()) << std::endl;
       }
       _return.__set_data( oss.str());
     }

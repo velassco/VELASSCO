@@ -26,8 +26,12 @@ void FullyQualifiedModelName::__set_full_path(const std::string& val) {
   this->full_path = val;
 }
 
-const char* FullyQualifiedModelName::ascii_fingerprint = "07A9615F837F7D0A952B595DD3020972";
-const uint8_t FullyQualifiedModelName::binary_fingerprint[16] = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+void FullyQualifiedModelName::__set_modelID(const std::string& val) {
+  this->modelID = val;
+}
+
+const char* FullyQualifiedModelName::ascii_fingerprint = "AB879940BD15B6B25691265F7384B271";
+const uint8_t FullyQualifiedModelName::binary_fingerprint[16] = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
 
 uint32_t FullyQualifiedModelName::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -65,6 +69,14 @@ uint32_t FullyQualifiedModelName::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->modelID);
+          this->__isset.modelID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -90,6 +102,10 @@ uint32_t FullyQualifiedModelName::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeString(this->full_path);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeBinary(this->modelID);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   oprot->decrementRecursionDepth();
@@ -100,17 +116,20 @@ void swap(FullyQualifiedModelName &a, FullyQualifiedModelName &b) {
   using ::std::swap;
   swap(a.name, b.name);
   swap(a.full_path, b.full_path);
+  swap(a.modelID, b.modelID);
   swap(a.__isset, b.__isset);
 }
 
 FullyQualifiedModelName::FullyQualifiedModelName(const FullyQualifiedModelName& other0) {
   name = other0.name;
   full_path = other0.full_path;
+  modelID = other0.modelID;
   __isset = other0.__isset;
 }
 FullyQualifiedModelName& FullyQualifiedModelName::operator=(const FullyQualifiedModelName& other1) {
   name = other1.name;
   full_path = other1.full_path;
+  modelID = other1.modelID;
   __isset = other1.__isset;
   return *this;
 }
@@ -119,6 +138,7 @@ std::ostream& operator<<(std::ostream& out, const FullyQualifiedModelName& obj) 
   out << "FullyQualifiedModelName(";
   out << "name=" << to_string(obj.name);
   out << ", " << "full_path=" << to_string(obj.full_path);
+  out << ", " << "modelID=" << to_string(obj.modelID);
   out << ")";
   return out;
 }
@@ -140,8 +160,8 @@ void rvGetListOfModels::__set_models(const std::vector<FullyQualifiedModelName> 
   this->models = val;
 }
 
-const char* rvGetListOfModels::ascii_fingerprint = "1848732E16BA92FD1D7986907B4AB1E3";
-const uint8_t rvGetListOfModels::binary_fingerprint[16] = {0x18,0x48,0x73,0x2E,0x16,0xBA,0x92,0xFD,0x1D,0x79,0x86,0x90,0x7B,0x4A,0xB1,0xE3};
+const char* rvGetListOfModels::ascii_fingerprint = "979D51C4D7C36D568BA276F63093B227";
+const uint8_t rvGetListOfModels::binary_fingerprint[16] = {0x97,0x9D,0x51,0xC4,0xD7,0xC3,0x6D,0x56,0x8B,0xA2,0x76,0xF6,0x30,0x93,0xB2,0x27};
 
 uint32_t rvGetListOfModels::read(::apache::thrift::protocol::TProtocol* iprot) {
 

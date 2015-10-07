@@ -24,25 +24,27 @@ class FullyQualifiedModelName;
 class rvGetListOfModels;
 
 typedef struct _FullyQualifiedModelName__isset {
-  _FullyQualifiedModelName__isset() : name(false), full_path(false) {}
+  _FullyQualifiedModelName__isset() : name(false), full_path(false), modelID(false) {}
   bool name :1;
   bool full_path :1;
+  bool modelID :1;
 } _FullyQualifiedModelName__isset;
 
 class FullyQualifiedModelName {
  public:
 
-  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
-  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
+  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
 
   FullyQualifiedModelName(const FullyQualifiedModelName&);
   FullyQualifiedModelName& operator=(const FullyQualifiedModelName&);
-  FullyQualifiedModelName() : name(), full_path() {
+  FullyQualifiedModelName() : name(), full_path(), modelID() {
   }
 
   virtual ~FullyQualifiedModelName() throw();
   std::string name;
   std::string full_path;
+  std::string modelID;
 
   _FullyQualifiedModelName__isset __isset;
 
@@ -50,11 +52,15 @@ class FullyQualifiedModelName {
 
   void __set_full_path(const std::string& val);
 
+  void __set_modelID(const std::string& val);
+
   bool operator == (const FullyQualifiedModelName & rhs) const
   {
     if (!(name == rhs.name))
       return false;
     if (!(full_path == rhs.full_path))
+      return false;
+    if (!(modelID == rhs.modelID))
       return false;
     return true;
   }
@@ -82,8 +88,8 @@ typedef struct _rvGetListOfModels__isset {
 class rvGetListOfModels {
  public:
 
-  static const char* ascii_fingerprint; // = "1848732E16BA92FD1D7986907B4AB1E3";
-  static const uint8_t binary_fingerprint[16]; // = {0x18,0x48,0x73,0x2E,0x16,0xBA,0x92,0xFD,0x1D,0x79,0x86,0x90,0x7B,0x4A,0xB1,0xE3};
+  static const char* ascii_fingerprint; // = "979D51C4D7C36D568BA276F63093B227";
+  static const uint8_t binary_fingerprint[16]; // = {0x97,0x9D,0x51,0xC4,0xD7,0xC3,0x6D,0x56,0x8B,0xA2,0x76,0xF6,0x30,0x93,0xB2,0x27};
 
   rvGetListOfModels(const rvGetListOfModels&);
   rvGetListOfModels& operator=(const rvGetListOfModels&);

@@ -67,6 +67,7 @@ bool HBase::parseListOfModelNames( std::string &report,
       // printf( "keyJ(decod) = %s", Hexdump( key).c_str());
 
       FullyQualifiedModelName model_info;
+      model_info.__set_modelID( key);
       for (int k = 0; k < cJSON_GetArraySize(cellsJ); k++) {
 	// printf( "   cell # %d\n", k);
 	cJSON *contents = cJSON_GetArrayItem (cellsJ, k);

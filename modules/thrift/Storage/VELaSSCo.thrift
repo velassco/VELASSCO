@@ -7,6 +7,7 @@
 struct FullyQualifiedModelName {
    1: string name
    2: string full_path
+   3: binary modelID
 }
 
 // as of OP-22.055 GetListOfModelNames
