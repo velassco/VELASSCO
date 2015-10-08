@@ -420,7 +420,21 @@ std::string HBase::getResultOnVertices( std::string sessionID,
   std::cout << "A " << analysisID     << std::endl;
   std::cout << "V " << listOfVertices << std::endl;
   std::cout << "T " << timeStep       << std::endl;
-	
+
+  // trying binary row keys ...
+  // string cmd2 = "http://pez001:8880/Simulations_Data/%1d%fa%14%ef%88%7d%15%41%5d%62%d3%48%9c%4c%e4%1f*";
+  // 
+  // CurlCommand do_curl2;
+  // string buffer2;
+  // 
+  // bool ok2 = do_curl2.Evaluate( buffer2, cmd2);
+  // 
+  // std::cout << "**********\n";    
+  // std::cout << cmd2 << " = " << ok2 << std::endl;
+  // std::cout << "**********\n";    
+  // std::cout << buffer2 << std::endl;
+  // std::cout << "**********\n";    
+
     string cmd = "http://pez001:8880/";
     cmd += "Simulations_Data";
     cmd += "/";
@@ -432,7 +446,7 @@ std::string HBase::getResultOnVertices( std::string sessionID,
     //key << resultID;
 
     //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
-    key << "4*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
+    key << "*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
 
     cmd += key.str();
     cout << cmd << endl;
