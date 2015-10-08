@@ -2,16 +2,22 @@
 #include "storageModule.h"
 #include "Helpers.h"
 
-VELaSSCoHandler::VELaSSCoHandler()
-{
-    
+VELaSSCoHandler::VELaSSCoHandler( const DL_SM_DB_TYPE db_type, const char *db_host, const int db_port) {
+  storageModule *sm = storageModule::Instance();
+  sm->startConnection( db_type, db_host, db_port);
+}
+
+VELaSSCoHandler::~VELaSSCoHandler() {
+  storageModule *sm = storageModule::Instance();
+  sm->stopConnection();
 }
 
 void VELaSSCoHandler::statusDL(std::string& _return)
 {
   // _return = "statusDL \n";
     // printf("%s", _return.c_str());
-    _return = storageModule::Instance()->getStatusDB();
+  storageModule *sm = storageModule::Instance();
+    _return = sm->getStatusDB();
     DEBUG( _return);
 }
 
@@ -32,7 +38,8 @@ void VELaSSCoHandler::GetResultFromVerticesID(std::string& _return, const std::s
     // _return = storageModule::Instance()->checkIfAllVerticesArePresent(listOfVertices, _return);
 }
 
-void VELaSSCoHandler::stopAll()
-{
-    exit(0);
+void VELaSSCoHandler::stopAll() {
+  storageModule *sm = storageModule::Instance();
+  sm->stopConnection();
+  exit(0);
 }

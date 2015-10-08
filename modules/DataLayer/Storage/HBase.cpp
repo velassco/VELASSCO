@@ -17,7 +17,7 @@
 
 #include "cJSON.h"
 #include "base64.h"
-
+#include "Helpers.h"
 
 using namespace std;
 using namespace VELaSSCo;
@@ -29,6 +29,44 @@ using namespace VELaSSCo;
 #include "cJSON.h"
 
 #include "Curl_cmd.h"
+
+using namespace VELaSSCo;
+
+bool HBase::startConnection( const char *DB_hostname, const int DB_port) {
+  _socket = new boost::shared_ptr<TTransport>( new TSocket( DB_hostname, DB_port));
+  _transport = new boost::shared_ptr<TTransport>( new TBufferedTransport( *_socket));
+  _protocol = new boost::shared_ptr<TProtocol>( new TBinaryProtocol( *_transport));
+  _hbase_client = new HbaseClient( *_protocol);
+  bool connected = true;
+  try {
+    ( *_transport)->open();
+    DEBUG( "Connected to HBase on " << DB_hostname << ":" << DB_port << endl);
+  } catch ( TException &tx) {
+    DEBUG( "Opening HBase connection error: " << tx.what() << endl);
+    connected = false;
+  }
+  return connected;
+}
+
+bool HBase::stopConnection() {
+  bool disconnected = true;
+  try {
+    ( *_transport)->close();
+    DEBUG( "Disconnected from HBase server" << endl);
+  } catch ( TException &tx) {
+    DEBUG( "Closing HBase connection error: " << tx.what() << endl);
+    disconnected = false;
+  }
+  delete _hbase_client;
+  delete _protocol;
+  delete _transport;
+  delete _socket;
+  _hbase_client = NULL;
+  _protocol = NULL;
+  _transport = NULL;
+  _socket = NULL;
+  return disconnected;
+}
 
 std::string HBase::parse1DEM(string b, std::string LOVertices)
 {
@@ -406,14 +444,14 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
     return result.str();
 }
 
-std::string HBase::getResultOnVertices( std::string sessionID,
-                                        std::string modelID,
-                                        std::string analysisID,
-                                        double      timeStep,
-                                        std::string resultID,
-                                        std::string listOfVertices )
+std::string HBase::getResultOnVertices_curl( const std::string &sessionID,
+					     const std::string &modelID,
+					     const std::string &analysisID,
+					     const double       timeStep,
+					     const std::string &resultID,
+					     const std::string &listOfVertices )
 {
-  std::cout << "getResultOnVertices: =====" << std::endl;
+  std::cout << "getResultOnVertices CURL: =====" << std::endl;
   std::cout << "S " << sessionID      << std::endl;
   std::cout << "M " << modelID        << std::endl;
   std::cout << "R " << resultID       << std::endl;
@@ -443,63 +481,6 @@ std::string HBase::getResultOnVertices( std::string sessionID,
     
   bool ok = do_curl.Evaluate( buffer, cmd);
 
-  // to be deleted if above works:
-  // CURL *curl = NULL;
-  // CURLcode res;
-  // 
-  // curl_global_init(CURL_GLOBAL_DEFAULT);
-  // curl = curl_easy_init();
-  // if(curl)
-  // {
-  //     res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
-  //     if(res != CURLE_OK)
-  //     {
-  //         fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
-  //     }
-  //     
-  //     res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
-  //     if(res != CURLE_OK)
-  //     {
-  //         fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
-  //     }
-  //     
-  //     res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-  //     if(res != CURLE_OK)
-  //     {
-  //         fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
-  //     }
-  //     res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
-  //     if(res != CURLE_OK)
-  //     {
-  //         fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
-  //     }
-  //     
-  //     res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-  //     if(res != CURLE_OK)
-  //     {
-  //         fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
-  //     }
-  //     
-  //     struct curl_slist *chunk = NULL;
-  //     chunk = curl_slist_append(chunk, "Accept: application/json;");
-  //     res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-  //     if(res != CURLE_OK)
-  //     {
-  //         fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
-  //     }
-  //     
-  //     res = curl_easy_perform(curl);
-  //     if(res != CURLE_OK)
-  //     {
-  //         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-  //     }
-  //     
-  //     curl_easy_cleanup(curl);
-  //     curl_slist_free_all(chunk);
-  //     
-  //     
-  // }
-    
   std::cout << "**********\n";    
   std::cout << buffer << std::endl;
   std::cout << "**********\n";    
@@ -517,3 +498,130 @@ std::string HBase::getResultOnVertices( std::string sessionID,
 
   return result;
 }
+
+std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
+					       const std::string &modelID,
+					       const std::string &analysisID,
+					       const double       timeStep,
+					       const std::string &resultID,
+					       const std::string &listOfVertices )
+{
+  std::cout << "getResultOnVertices THRIFT: =====" << std::endl;
+  std::cout << "S " << sessionID      << std::endl;
+  std::cout << "M " << modelID        << std::endl;
+  std::cout << "R " << resultID       << std::endl;
+  std::cout << "A " << analysisID     << std::endl;
+  std::cout << "V " << listOfVertices << std::endl;
+  std::cout << "T " << timeStep       << std::endl;
+
+  string table_name = "Simulations_Data";
+  string result;
+
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  // TScan ts;
+  // std::stringstream filter;
+  // filter.str("");
+  // ts.__set_filterString(filter.str());
+  StrVec cols;
+  cols.push_back( "M:"); // all qualifiers inside the M column family
+  const char *ascii_model_id = "1dfa14ef887d15415d62d3489c4ce41f";
+  char bin_row_key[ 20];
+  assert( strlen( ascii_model_id) == 32);
+  FromHexString( bin_row_key, 20, ascii_model_id, strlen( ascii_model_id));
+  std::string base64_key = base64_encode( bin_row_key, 16);
+  string start_row = base64_decode( base64_key); // decode base64 to binary string
+  for ( int i = 0; i < 16; i++) {
+    std::cout << ( int)bin_row_key[ i] << ", ";
+  }
+ std:cout << endl;
+  for ( int i = 0; i < 16; i++) {
+    std::cout << ( int)start_row.data()[ i] << ", ";
+  }
+  std::cout << endl;
+  ScannerID scan_id = _hbase_client->scannerOpen( table_name, start_row, cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+  bool scan_ok = true;
+  try {
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+	break;
+      // process rowsResult
+      std::cout << "numberof rows = " << rowsResult.size() << endl;
+      for ( int i = 0; i < rowsResult.size(); i++) {
+	// convert to return type
+	// FullyQualifiedModelName model_info;
+	// bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
+	// if ( ok) {
+	//   listOfModelNames.push_back( model_info);
+	// }
+	printRow( rowsResult[ i]);
+      }
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    result = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    result = tmp.str();
+  } catch (...) {
+    result = "other error";
+  }
+  _hbase_client->scannerClose( scan_id);
+
+  std::cout << "**********\n";
+  std::cout << result << endl;
+  std::cout << "**********\n";
+
+  return "Error";
+  // cmd += "/";
+  // std::stringstream key;
+  // //key << "0x";
+  // //key << modelID;
+  // //key << analysisID;
+  // //key << timeStep;
+  // //key << resultID;
+  // 
+  // //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
+  // key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
+  // 
+  // cmd += key.str();
+  // cout << cmd << endl;
+  // 
+  //   
+  // CurlCommand do_curl;
+  // string buffer;
+  //   
+  // bool ok = do_curl.Evaluate( buffer, cmd);
+  // 
+  // std::cout << "**********\n";    
+  // std::cout << buffer << std::endl;
+  // std::cout << "**********\n";    
+  //   
+  // //
+  // string result;
+  // if(analysisID.find("DEM") >= 0)
+  //   {
+  //     result = parse1DEM(buffer, listOfVertices);
+  //   }
+  // else if(analysisID.find("FEM") >= 0)
+  //   {
+  //     cout << buffer << endl;
+  //   }
+  // 
+  // return result;
+}
+
+std::string HBase::getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
+					const std::string &analysisID, const double       timeStep,  
+					const std::string &resultID,   const std::string &listOfVertices ) {
+  return getResultOnVertices_curl( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
+  // return getResultOnVertices_thrift( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
+}
+

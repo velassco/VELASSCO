@@ -1,3 +1,4 @@
+/* -*- c++ -*- */
 #ifndef STORAGEMODULE_H
 #define STORAGEMODULE_H
 
@@ -8,38 +9,28 @@
 #include <math.h> 
 
 /////////////////////////////////
-// Thrift
-/////////////////////////////////
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
-#include <thrift/transport/TSocket.h>
-#include <thrift/transport/TServerSocket.h>
-#include <thrift/transport/TTransportUtils.h>
-#include <thrift/transport/TBufferTransports.h>
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
-
-/////////////////////////////////
-// HBase Thrift 1
-/////////////////////////////////
-#include "Hbase.h"
-using namespace  ::apache::hadoop::hbase::thrift;
-typedef std::map<std::string,TCell> CellMap;
-
-/////////////////////////////////
 // Base 64
 /////////////////////////////////
 #include "base64.h"
 
+#include "AbstractDB.h"
+
 using namespace std;
 class FullyQualifiedModelName;
+
+typedef enum {
+  DL_SM_DB_HBASE = 0,
+  DL_SM_DB_EDM = 1
+} DL_SM_DB_TYPE;
 
 class storageModule
 {
 public:
     static storageModule* Instance();
+
+    bool startConnection( DL_SM_DB_TYPE db_type, const char *DB_hostname, const int DB_port);
+    bool stopConnection();
+
     string getStatusDB();
     string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 				const std::string &sessionID, const std::string &model_group_qualifier, 
@@ -54,14 +45,17 @@ public:
     string checkIfAllVerticesArePresent(std::string listOfVertices, string contentToCheck);
 
 private:
-    storageModule(){};
-    storageModule(storageModule const&){};
-    storageModule& operator=(storageModule const&){};
+  storageModule(): _db( NULL) {};
+  ~storageModule() { stopConnection();}
+
+  // storageModule(storageModule const&){};
+  // storageModule& operator=(storageModule const&){};
     static storageModule* m_pInstance;
     double fRand(double fMin, double fMax);
     
     string parse1DEM(string, string);
 
+  VELaSSCo::AbstractDB *_db;
 };
 
 #endif

@@ -4,12 +4,14 @@
 
 //#include "gen-cpp/VELaSSCo.h"
 #include "VELaSSCo.h"
+#include "storageModule.h"
 
 class VELaSSCoHandler : virtual public VELaSSCoIf
 {
 public:
-  VELaSSCoHandler();
-    
+  VELaSSCoHandler( const DL_SM_DB_TYPE db_type, const char *db_host, const int db_port);
+  ~VELaSSCoHandler();
+
   /**
    * Return the status of the different services
    * which run on the Data Layer.

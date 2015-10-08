@@ -5,6 +5,27 @@
 #include <string>
 #include <vector>
 
+/////////////////////////////////
+// Thrift
+/////////////////////////////////
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/server/TSimpleServer.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TTransportUtils.h>
+#include <thrift/transport/TBufferTransports.h>
+using namespace ::apache::thrift;
+using namespace ::apache::thrift::protocol;
+using namespace ::apache::thrift::transport;
+using namespace ::apache::thrift::server;
+
+/////////////////////////////////
+// HBase Thrift 1
+/////////////////////////////////
+#include "Hbase.h"
+using namespace  ::apache::hadoop::hbase::thrift;
+typedef std::map<std::string,TCell> CellMap;
+
 class FullyQualifiedModelName;
 
 namespace VELaSSCo
@@ -22,6 +43,9 @@ namespace VELaSSCo
   {
 	
   public:
+
+    virtual bool startConnection( const char *DB_hostname, const int DB_port) = 0;
+    virtual bool stopConnection() = 0;
 
     /* 
      * status of the DB engines: HBase or EDM
@@ -45,12 +69,12 @@ namespace VELaSSCo
      * describes two vertices with IDs 0 and 1. Here just one attribute per vertex is used.
      * 
      */
-    virtual std::string getResultOnVertices( std::string sessionID,
-                                             std::string modelID,
-                                             std::string analysisID,
-                                             double      timeStep,
-                                             std::string resultID,
-                                             std::string listOfVertices ) = 0;
+    virtual std::string getResultOnVertices( const std::string &sessionID,
+                                             const std::string &modelID,
+                                             const std::string &analysisID,
+                                             const double       timeStep,
+                                             const std::string &resultID,
+                                             const std::string &listOfVertices ) = 0;
   };
 
 }

@@ -98,21 +98,49 @@ bool HBase::parseListOfModelNames( std::string &report,
   return there_are_models;
 }
 
-std::string HBase::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
-					const std::string &sessionID, const std::string &model_group_qualifier, 
-					const std::string &model_name_pattern) {
-  std::cout << "getListOfModelNames: =====" << std::endl;
+void printRow(const TRowResult &rowResult) {
+  char hex_string[ 1024];
+  std::cout << "row: " << ToHexString( hex_string, 1024, rowResult.row.c_str(), rowResult.row.size()) << ", cols: ";
+  for (CellMap::const_iterator it = rowResult.columns.begin(); 
+      it != rowResult.columns.end(); ++it) {
+    std::cout << "   col_value = ( " << it->first << " , " << it->second.value << " )" << endl;
+  }
+}
+
+static bool getModelInfoFromRow( FullyQualifiedModelName &model_info, const TRowResult &rowResult) {
+  model_info.__set_modelID( rowResult.row); // the key is the modelID;
+
+  int num_filled = 1; // key has already been added
+  for (CellMap::const_iterator it = rowResult.columns.begin(); 
+       it != rowResult.columns.end(); ++it) {
+    if ( it->first == "Properties:nm") {
+      model_info.__set_name( it->second.value);
+      num_filled++; // another value
+    } else if ( it->first == "Properties:fp") {
+      model_info.__set_full_path( it->second.value);
+      num_filled++; // another value
+    }
+  }
+  return num_filled == 3;
+}
+
+std::string HBase::getListOfModelNames_curl( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+					     const std::string &sessionID, const std::string &model_group_qualifier, 
+					     const std::string &model_name_pattern) {
+  std::cout << "getListOfModelNames CURL : =====" << std::endl;
   std::cout << "S " << sessionID              << std::endl;
   std::cout << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
   std::cout << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
-	
-  string cmd = "http://pez001:8880/";
+
+  string table_name;
   if ( !model_group_qualifier.size() || ( model_group_qualifier == "*")) {
-    cmd += "VELaSSCo_Models";
+    table_name = "VELaSSCo_Models";
   } else {
-    cmd += model_group_qualifier;
+    table_name = model_group_qualifier;
   }
-  cmd += "/";
+
+  string cmd = "http://pez001:8880/";
+  cmd += table_name + "/";
 
   std::stringstream key;
   key << "*"; // we have to parse through all models
@@ -140,10 +168,94 @@ std::string HBase::getListOfModelNames( std::string &report, std::vector< FullyQ
     std::cout << buffer << std::endl;
     std::cout << "ERROR**********\n";
     result = "Error";
-    report = "HBase::getListOfModelNames could not evaluate CURL command.";
+    report = "HBase::getListOfModelNames CURL could not evaluate command.";
   }
 
   return result;
 }
 
+std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+					       const std::string &sessionID, const std::string &model_group_qualifier, 
+					       const std::string &model_name_pattern) {
+  std::cout << "getListOfModelNames THRIFT: =====" << std::endl;
+  std::cout << "S " << sessionID              << std::endl;
+  std::cout << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
+  std::cout << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
+
+  string table_name;
+  if ( !model_group_qualifier.size() || ( model_group_qualifier == "*")) {
+    table_name = "VELaSSCo_Models";
+  } else {
+    table_name = model_group_qualifier;
+  }
+
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  // TScan ts;
+  // std::stringstream filter;
+  // filter.str("");
+  // ts.__set_filterString(filter.str());
+  StrVec cols;
+  cols.push_back( "Properties:nm"); // name of model
+  cols.push_back( "Properties:fp"); // full path
+  ScannerID scan_id = _hbase_client->scannerOpen( table_name, "", cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+  bool scan_ok = true;
+  try {
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+	break;
+      // process rowsResult
+      // std::cout << "number of rows = " << rowsResult.size() << endl;
+      for ( int i = 0; i < rowsResult.size(); i++) {
+	// convert to return type
+	FullyQualifiedModelName model_info;
+	bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
+	if ( ok) {
+	  listOfModelNames.push_back( model_info);
+	}
+      }
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    report = tmp.str();
+  }
+  _hbase_client->scannerClose( scan_id);
+
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    std::cout << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
+    bool there_are_models = listOfModelNames.size();
+    if ( there_are_models) {
+      result = "Ok";
+    } else {
+      result = "Error";
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::getListOfModelNames THRIFT could not scan.";
+  }
+
+  return result;
+}
+
+std::string HBase::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+					const std::string &sessionID, const std::string &model_group_qualifier, 
+					const std::string &model_name_pattern) {
+  // return HBase::getListOfModelNames_curl( report, listOfModelNames,
+  // 					  sessionID, model_group_qualifier, model_name_pattern);
+  return HBase::getListOfModelNames_thrift( report, listOfModelNames,
+					    sessionID, model_group_qualifier, model_name_pattern);
+}
 

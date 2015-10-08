@@ -30,6 +30,14 @@ StorageModuleClient *clp = NULL;
 
 using namespace VELaSSCo;
 
+bool EDM::startConnection( const char *DB_hostname, const int DB_port) {
+  return true;
+}
+
+bool EDM::stopConnection() {
+  return true;
+}
+
 std::string EDM::getStatusDB() {
   return "EDM::Status not implemented.";
 }
@@ -41,12 +49,12 @@ std::string EDM::getListOfModelNames( std::string &report, std::vector< FullyQua
   return "Error";
 }
 
-std::string EDM::getResultOnVertices( std::string sessionID,
-                                      std::string modelID,
-                                      std::string analysisID,
-                                      double      timeStep,
-                                      std::string resultID,
-                                      std::string listOfVertices )
+std::string EDM::getResultOnVertices( const std::string &sessionID,
+                                      const std::string &modelID,
+                                      const std::string &analysisID,
+                                      const double       timeStep,
+                                      const std::string &resultID,
+                                      const std::string &listOfVertices )
 {
 
 #ifdef WIN32
