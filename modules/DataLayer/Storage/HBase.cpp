@@ -421,113 +421,99 @@ std::string HBase::getResultOnVertices( std::string sessionID,
   std::cout << "V " << listOfVertices << std::endl;
   std::cout << "T " << timeStep       << std::endl;
 
-  // trying binary row keys ...
-  // string cmd2 = "http://pez001:8880/Simulations_Data/%1d%fa%14%ef%88%7d%15%41%5d%62%d3%48%9c%4c%e4%1f*";
+  string cmd = "http://pez001:8880/";
+  cmd += "Simulations_Data";
+  cmd += "/";
+  std::stringstream key;
+  //key << "0x";
+  //key << modelID;
+  //key << analysisID;
+  //key << timeStep;
+  //key << resultID;
+
+  //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
+  key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
+
+  cmd += key.str();
+  cout << cmd << endl;
+
+    
+  CurlCommand do_curl;
+  string buffer;
+    
+  bool ok = do_curl.Evaluate( buffer, cmd);
+
+  // to be deleted if above works:
+  // CURL *curl = NULL;
+  // CURLcode res;
   // 
-  // CurlCommand do_curl2;
-  // string buffer2;
-  // 
-  // bool ok2 = do_curl2.Evaluate( buffer2, cmd2);
-  // 
-  // std::cout << "**********\n";    
-  // std::cout << cmd2 << " = " << ok2 << std::endl;
-  // std::cout << "**********\n";    
-  // std::cout << buffer2 << std::endl;
-  // std::cout << "**********\n";    
-
-    string cmd = "http://pez001:8880/";
-    cmd += "Simulations_Data";
-    cmd += "/";
-    std::stringstream key;
-    //key << "0x";
-    //key << modelID;
-    //key << analysisID;
-    //key << timeStep;
-    //key << resultID;
-
-    //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
-    key << "*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
-
-    cmd += key.str();
-    cout << cmd << endl;
-
+  // curl_global_init(CURL_GLOBAL_DEFAULT);
+  // curl = curl_easy_init();
+  // if(curl)
+  // {
+  //     res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
+  //     if(res != CURLE_OK)
+  //     {
+  //         fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
+  //     }
+  //     
+  //     res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
+  //     if(res != CURLE_OK)
+  //     {
+  //         fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
+  //     }
+  //     
+  //     res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+  //     if(res != CURLE_OK)
+  //     {
+  //         fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
+  //     }
+  //     res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+  //     if(res != CURLE_OK)
+  //     {
+  //         fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
+  //     }
+  //     
+  //     res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+  //     if(res != CURLE_OK)
+  //     {
+  //         fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
+  //     }
+  //     
+  //     struct curl_slist *chunk = NULL;
+  //     chunk = curl_slist_append(chunk, "Accept: application/json;");
+  //     res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+  //     if(res != CURLE_OK)
+  //     {
+  //         fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
+  //     }
+  //     
+  //     res = curl_easy_perform(curl);
+  //     if(res != CURLE_OK)
+  //     {
+  //         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+  //     }
+  //     
+  //     curl_easy_cleanup(curl);
+  //     curl_slist_free_all(chunk);
+  //     
+  //     
+  // }
     
-    CurlCommand do_curl;
-    string buffer;
+  std::cout << "**********\n";    
+  std::cout << buffer << std::endl;
+  std::cout << "**********\n";    
     
-    bool ok = do_curl.Evaluate( buffer, cmd);
-
-    // to be deleted if above works:
-    // CURL *curl = NULL;
-    // CURLcode res;
-    // 
-    // curl_global_init(CURL_GLOBAL_DEFAULT);
-    // curl = curl_easy_init();
-    // if(curl)
-    // {
-    //     res = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
-    //     if(res != CURLE_OK)
-    //     {
-    //         fprintf(stderr, "CURLOPT_ERRORBUFFER failed: %s\n", curl_easy_strerror(res));
-    //     }
-    //     
-    //     res = curl_easy_setopt(curl, CURLOPT_URL, cmd.c_str());
-    //     if(res != CURLE_OK)
-    //     {
-    //         fprintf(stderr, "CURLOPT_URL failed: %s\n", curl_easy_strerror(res));
-    //     }
-    //     
-    //     res = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    //     if(res != CURLE_OK)
-    //     {
-    //         fprintf(stderr, "CURLOPT_FOLLOWLOCATION failed: %s\n", curl_easy_strerror(res));
-    //     }
-    //     res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
-    //     if(res != CURLE_OK)
-    //     {
-    //         fprintf(stderr, "CURLOPT_WRITEFUNCTION failed: %s\n", curl_easy_strerror(res));
-    //     }
-    //     
-    //     res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-    //     if(res != CURLE_OK)
-    //     {
-    //         fprintf(stderr, "CURLOPT_WRITEDATA failed: %s\n", curl_easy_strerror(res));
-    //     }
-    //     
-    //     struct curl_slist *chunk = NULL;
-    //     chunk = curl_slist_append(chunk, "Accept: application/json;");
-    //     res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-    //     if(res != CURLE_OK)
-    //     {
-    //         fprintf(stderr, "CURLOPT_HTTPHEADER failed: %s\n", curl_easy_strerror(res));
-    //     }
-    //     
-    //     res = curl_easy_perform(curl);
-    //     if(res != CURLE_OK)
-    //     {
-    //         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    //     }
-    //     
-    //     curl_easy_cleanup(curl);
-    //     curl_slist_free_all(chunk);
-    //     
-    //     
-    // }
-    
-    std::cout << "**********\n";    
-    std::cout << buffer << std::endl;
-    std::cout << "**********\n";    
-    
-    //
-    string result;
-    if(analysisID.find("DEM") >= 0)
+  //
+  string result;
+  if(analysisID.find("DEM") >= 0)
     {
-        result = parse1DEM(buffer, listOfVertices);
+      result = parse1DEM(buffer, listOfVertices);
     }
-    else if(analysisID.find("FEM") >= 0)
+  else if(analysisID.find("FEM") >= 0)
     {
-        cout << buffer << endl;
+      cout << buffer << endl;
     }
 
-	return result;
+  return result;
 }
