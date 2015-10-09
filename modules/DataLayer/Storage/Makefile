@@ -1,4 +1,4 @@
-CC=g++ -std=c++0x
+CC=g++ -std=c++0x -g
 EXEC=Storage
 BIN=bin
 

@@ -104,14 +104,14 @@ int main(int argc, char **argv)
     int         data_layer_port     = 26266;
     if ( thereIsHelpSwitch( argc, argv)) {
       printf( "Usage: %s [ options] \n", argv[ 0]);
-      printf( "  -port port_number         listening port for the this Engine Layer server (default %d)]\n", listen_port);
-      printf( "  -dl_host hostname         host name of the Data Layer Server (default %s)]\n", data_layer_hostname);
-      printf( "  -dl_port port_number      port of the Data Layer Server (default %d)]\n", data_layer_port);
+      printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
+      printf( "  -dl_host hostname         host name of the Data Layer Server (default %s)\n", data_layer_hostname);
+      printf( "  -dl_port port_number      port of the Data Layer Server (default %d)\n", data_layer_port);
       return EXIT_FAILURE;
     }
 
     int processed_args = 1; // first is the program name itself
-    for ( int ia = 1; ia < argc; ia++) {
+    for ( int ia = 1; ia + 1 < argc; ia++) {
       if ( !strcasecmp( argv[ ia], "-port")) {
 	ia++;
 	int new_port = listen_port;

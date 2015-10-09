@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     }
 
     int processed_args = 1; // first is the program name itself
-    for ( int ia = 1; ia < argc; ia++) {
+    for ( int ia = 1; ia + 1 < argc; ia++) {
       if ( !strcasecmp( argv[ ia], "-port")) {
 	ia++;
 	int new_port = listen_port;
