@@ -98,9 +98,17 @@ bool HBase::parseListOfModelNames( std::string &report,
   return there_are_models;
 }
 
+static std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
+  if ( modelID.length() == 16) {
+    return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
+  } else {
+    return modelID;
+  }
+}
+
 void printRow(const TRowResult &rowResult) {
   char hex_string[ 1024];
-  std::cout << "row: " << ToHexString( hex_string, 1024, rowResult.row.c_str(), rowResult.row.size()) << ", cols: ";
+  std::cout << "row: " << ModelID_DoHexStringConversionIfNecesary( rowResult.row, hex_string, 1024) << ", cols: ";
   for (CellMap::const_iterator it = rowResult.columns.begin(); 
       it != rowResult.columns.end(); ++it) {
     std::cout << "   col_value = ( " << it->first << " , " << it->second.value << " )" << endl;

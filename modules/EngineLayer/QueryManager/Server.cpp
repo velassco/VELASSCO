@@ -322,6 +322,14 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
 
+static std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
+  if ( modelID.length() == 16) {
+    return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
+  } else {
+    return modelID;
+  }
+}
+
 void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON
   std::istringstream ss(query);
@@ -369,7 +377,9 @@ void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const Ses
           it != _return_.models.end(); it++) {
 	oss << "Name: " << it->name << std::endl;
 	oss << "FullPath: " << it->full_path << std::endl;
-	oss << "ModelID: " << ToHexString( hex_string, 1024, it->modelID.c_str(), it->modelID.size()) << std::endl;
+	// oss << "ModelID: " << ToHexString( hex_string, 1024, it->modelID.c_str(), it->modelID.size()) << std::endl;
+	oss << "ModelID: " << ModelID_DoHexStringConversionIfNecesary( it->modelID, hex_string, 1024) << std::endl;
+
       }
       _return.__set_data( oss.str());
     }
