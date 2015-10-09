@@ -45,30 +45,77 @@ bool askForHelp( const char *txt) {
   return !strcasecmp( txt, "-h") || !strcasecmp( txt, "--h") || !strcasecmp( txt, "-help") || !strcasecmp( txt, "--help");
 }
 
+bool thereIsHelpSwitch( int argc, char **argv) {
+  // check help switch
+  bool ret = false;
+  for ( int ia = 1; ia < argc; ia++) {
+    if ( askForHelp( argv[ ia])) {
+      ret = true;
+    }
+  }
+  return ret;
+}
+
 using namespace std;
 int main(int argc, char **argv)
 {
-    
     srand(time(NULL));
     
     int listen_port = 26266;
-    if ( argc == 2) {
-      if ( askForHelp( argv[ 1])) {
-	printf( "Usage: %s [ port (default %d)]\n", argv[ 0], listen_port);
-	return EXIT_FAILURE;
-      }
-      int new_port = listen_port;
-      int n = sscanf( argv[ 1], "%d", &new_port);
-      if ( n == 1) // sscanf ok
-	listen_port = new_port;
-    }
-    
-    const int workerCount = 64;
-    
     DL_SM_DB_TYPE db_type = DL_SM_DB_HBASE; // DB_EDM
     const char *db_host = "localhost"; // or pez001
     int db_port = 9090; // hbase thrift server
 
+    // begin processing args
+    if ( thereIsHelpSwitch( argc, argv)) {
+      printf( "Usage: %s [ options] \n", argv[ 0]);
+      printf( "  -port port_number         listening port for this Data Layer server (default %d)\n", listen_port);
+      printf( "  -db_type { hbase | edm}   type of DB engine to connect to (default %s)\n", getStringFromDBType( db_type));
+      printf( "  -db_host hostname         host name of the DB engine Server (default %s)]\n", db_host);
+      printf( "  -db_port port_number      port of the DB engine Server (default %d)]\n", db_port);
+      return EXIT_FAILURE;
+    }
+
+    int processed_args = 1; // first is the program name itself
+    for ( int ia = 1; ia < argc; ia++) {
+      if ( !strcasecmp( argv[ ia], "-port")) {
+	ia++;
+	int new_port = listen_port;
+	if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+	  listen_port = new_port;
+	  processed_args += 2;
+	}
+      } else if ( !strcasecmp( argv[ ia], "-db_host")) {
+	ia++;
+	db_host = argv[ ia];
+	processed_args += 2;
+      } else if ( !strcasecmp( argv[ ia], "-db_port")) {
+	ia++;
+	int new_port = db_port;
+	if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+	  db_port = new_port;
+	  processed_args += 2;
+	}
+      } else if ( !strcasecmp( argv[ ia], "-db_type")) {
+	ia++;
+	DL_SM_DB_TYPE new_type = getDBTypeFromString( argv[ ia]);
+	if ( new_type != DL_SM_DB_UNKNOWN) {
+	  db_type = new_type;
+	  processed_args += 2;
+	}
+      } else {
+	break;
+      }
+    }
+
+    if ( processed_args != argc) {
+      printf( "Error processing options.\n");
+      return EXIT_FAILURE;
+    }
+    // end processing args
+    
+    const int workerCount = 64;
+    
     boost::shared_ptr<VELaSSCoHandler> handler(new VELaSSCoHandler( db_type, db_host, db_port));
     boost::shared_ptr<TProcessor> processor(new VELaSSCoProcessor(handler));
     boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(listen_port));

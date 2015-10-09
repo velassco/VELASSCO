@@ -19,9 +19,31 @@ using namespace std;
 class FullyQualifiedModelName;
 
 typedef enum {
-  DL_SM_DB_HBASE = 0,
-  DL_SM_DB_EDM = 1
+  DL_SM_DB_UNKNOWN = 0,
+  DL_SM_DB_HBASE = 1,
+  DL_SM_DB_EDM = 2
 } DL_SM_DB_TYPE;
+
+inline const char *getStringFromDBType( DL_SM_DB_TYPE db) {
+  const char *ret = "N/A";
+  switch( db) {
+  case DL_SM_DB_UNKNOWN:  ret = "unknown"; break;
+  case DL_SM_DB_HBASE:    ret = "hbase"; break;
+  case DL_SM_DB_EDM:      ret = "edm"; break;
+  default:                ret = "N/A"; break;
+  }
+  return ret;
+}
+
+inline DL_SM_DB_TYPE getDBTypeFromString( const char *str) {
+  DL_SM_DB_TYPE ret = DL_SM_DB_UNKNOWN;
+  if ( !strcasecmp( str, "hbase")) {
+    ret = DL_SM_DB_HBASE;
+  } else if ( !strcasecmp( str, "edm")) {
+    ret = DL_SM_DB_EDM;
+  }
+  return ret;
+}
 
 class storageModule
 {

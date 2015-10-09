@@ -1,4 +1,7 @@
 
+// STL
+#include <iostream>
+
 // VELaSSCo
 #include "EDM.h"
 
@@ -10,6 +13,11 @@
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
+
+// VELaSSCo
+#include "cJSON.h"
+#include "base64.h"
+#include "Helpers.h"
 
 
 using namespace std;
@@ -31,20 +39,24 @@ StorageModuleClient *clp = NULL;
 using namespace VELaSSCo;
 
 bool EDM::startConnection( const char *DB_hostname, const int DB_port) {
+  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
   return true;
 }
 
 bool EDM::stopConnection() {
+  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
   return true;
 }
 
 std::string EDM::getStatusDB() {
+  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
   return "EDM::Status not implemented.";
 }
 
 std::string EDM::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 				      const std::string &sessionID, const std::string &model_group_qualifier, 
 				      const std::string &model_name_pattern) {
+  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
   report = "EDM::getListOfModelNames not implemented.";
   return "Error";
 }
