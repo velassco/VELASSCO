@@ -42,6 +42,8 @@ typedef enum
 	VAL_NO_MODELS_IN_PLATFORM         = 0x0300,
 	VAL_NO_MODEL_MATCHES_PATTERN      = 0x0301,
 
+	/* OpenModel */
+
 	/* GetResultFromVerticesID */
 	VAL_RESULT_ID_NOT_AVAILABLE       = 0x1000,
 	VAL_SOME_VERTEX_IDS_NOT_AVAILABLE = 0x1001
@@ -100,6 +102,15 @@ extern "C" {
 					const char    **list_of_models
 					/* will be: "NumberOfModels: 1234\nName: model_1\nFullPath: path_1\nName: model_2..." */
 					 );					
+
+  VAL_Result VAL_API valOpenModel( /* in */
+				  VAL_SessionID   sessionID,
+				  const char     *unique_model_name, /* accepted Hbase_TableName:FullPath_as_in_Properties_fp */
+				  const char     *requested_acces, /* unused at the moment */
+				  /* out */
+				  const char    **status,
+				  const char    **modelID  /* a 16-digit binary ID or a 32-digit hexadecimal */
+				   );					
   
   /**
    * Translate a numerical result code into an error message string.

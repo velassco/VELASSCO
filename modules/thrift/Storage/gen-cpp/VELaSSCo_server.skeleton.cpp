@@ -41,6 +41,11 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
     printf("GetListOfModelNames\n");
   }
 
+  void FindModelFS(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern) {
+    // Your implementation goes here
+    printf("FindModelFS\n");
+  }
+
   /**
    * Return the status of the different services
    * which run on the Data Layer.

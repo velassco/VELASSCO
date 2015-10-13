@@ -294,3 +294,133 @@ std::ostream& operator<<(std::ostream& out, const rvGetListOfModels& obj) {
 }
 
 
+rvOpenModel::~rvOpenModel() throw() {
+}
+
+
+void rvOpenModel::__set_status(const std::string& val) {
+  this->status = val;
+}
+
+void rvOpenModel::__set_report(const std::string& val) {
+  this->report = val;
+}
+
+void rvOpenModel::__set_modelID(const std::string& val) {
+  this->modelID = val;
+}
+
+const char* rvOpenModel::ascii_fingerprint = "AB879940BD15B6B25691265F7384B271";
+const uint8_t rvOpenModel::binary_fingerprint[16] = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
+
+uint32_t rvOpenModel::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->report);
+          this->__isset.report = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->modelID);
+          this->__isset.modelID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t rvOpenModel::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("rvOpenModel");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("report", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->report);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeBinary(this->modelID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(rvOpenModel &a, rvOpenModel &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.report, b.report);
+  swap(a.modelID, b.modelID);
+  swap(a.__isset, b.__isset);
+}
+
+rvOpenModel::rvOpenModel(const rvOpenModel& other10) {
+  status = other10.status;
+  report = other10.report;
+  modelID = other10.modelID;
+  __isset = other10.__isset;
+}
+rvOpenModel& rvOpenModel::operator=(const rvOpenModel& other11) {
+  status = other11.status;
+  report = other11.report;
+  modelID = other11.modelID;
+  __isset = other11.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const rvOpenModel& obj) {
+  using apache::thrift::to_string;
+  out << "rvOpenModel(";
+  out << "status=" << to_string(obj.status);
+  out << ", " << "report=" << to_string(obj.report);
+  out << ", " << "modelID=" << to_string(obj.modelID);
+  out << ")";
+  return out;
+}
+
+

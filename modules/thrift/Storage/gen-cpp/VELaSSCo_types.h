@@ -23,6 +23,8 @@ class FullyQualifiedModelName;
 
 class rvGetListOfModels;
 
+class rvOpenModel;
+
 typedef struct _FullyQualifiedModelName__isset {
   _FullyQualifiedModelName__isset() : name(false), full_path(false), modelID(false) {}
   bool name :1;
@@ -132,6 +134,61 @@ class rvGetListOfModels {
 };
 
 void swap(rvGetListOfModels &a, rvGetListOfModels &b);
+
+typedef struct _rvOpenModel__isset {
+  _rvOpenModel__isset() : status(false), report(false), modelID(false) {}
+  bool status :1;
+  bool report :1;
+  bool modelID :1;
+} _rvOpenModel__isset;
+
+class rvOpenModel {
+ public:
+
+  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
+  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
+
+  rvOpenModel(const rvOpenModel&);
+  rvOpenModel& operator=(const rvOpenModel&);
+  rvOpenModel() : status(), report(), modelID() {
+  }
+
+  virtual ~rvOpenModel() throw();
+  std::string status;
+  std::string report;
+  std::string modelID;
+
+  _rvOpenModel__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_modelID(const std::string& val);
+
+  bool operator == (const rvOpenModel & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(modelID == rhs.modelID))
+      return false;
+    return true;
+  }
+  bool operator != (const rvOpenModel &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvOpenModel & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvOpenModel& obj);
+};
+
+void swap(rvOpenModel &a, rvOpenModel &b);
 
 
 

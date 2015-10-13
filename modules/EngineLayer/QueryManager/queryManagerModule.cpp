@@ -77,6 +77,17 @@ void queryManagerModule::getListOfModels( rvGetListOfModels &_return,
   }
 }
 
+void queryManagerModule::openModel( rvOpenModel &_return,
+				    const std::string &sessionID, 
+				    const std::string &unique_name, const std::string &requested_access) {
+  try {
+    cli->FindModelFS( _return, sessionID, unique_name); // requested_access not used at the momemnt
+    cout << "WARNING: queryManagerModule::openModel requested_access not used at the moment." << endl;
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
+
 void queryManagerModule::getResultFromVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 {
     try

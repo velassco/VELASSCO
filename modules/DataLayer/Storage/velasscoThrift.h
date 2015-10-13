@@ -25,7 +25,8 @@ public:
    * @param model_group_qualifier
    * @param model_name_pattern
    */
-  void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern) ;
+  void GetListOfModelNames(rvGetListOfModels &_return, const std::string &sessionID, const std::string &model_group_qualifier, const std::string &model_name_pattern) ;
+  void FindModelFS(rvOpenModel &_return, const std::string &sessionID, const std::string &unique_model_name_pattern);
     
   /**
    *  Return the status of the different services
@@ -41,7 +42,7 @@ public:
    * 					with the attached list of double
    * 					if errors occur the contect is also returned here?
    */
-  void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) ;
+  void GetResultFromVerticesID(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID, const std::string &listOfVertices) ;
 
   /**
    * Stop Data Layer

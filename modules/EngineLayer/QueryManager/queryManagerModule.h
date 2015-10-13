@@ -34,6 +34,9 @@ public:
     void getListOfModels( rvGetListOfModels &_return,
 			  const std::string &sessionID, 
 			  const std::string &group_qualifier, const std::string &name_pattern);
+    void openModel( rvOpenModel &_return,
+		    const std::string &sessionID, 
+		    const std::string &unique_name, const std::string &requested_access);
     void stopAll();
     
 private:

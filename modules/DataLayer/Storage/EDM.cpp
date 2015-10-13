@@ -61,6 +61,13 @@ std::string EDM::getListOfModelNames( std::string &report, std::vector< FullyQua
   return "Error";
 }
 
+std::string EDM::findModelFS( std::string &report, std::string &modelID, 
+			      const std::string &sessionID, const std::string &unique_model_name_pattern) {
+  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
+  report = "EDM::findModelFS not implemented.";
+  return "Error";
+}
+
 std::string EDM::getResultOnVertices( const std::string &sessionID,
                                       const std::string &modelID,
                                       const std::string &analysisID,

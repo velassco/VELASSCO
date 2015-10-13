@@ -17,6 +17,12 @@ struct rvGetListOfModels {
    3: list< FullyQualifiedModelName>      models
 }
 
+struct rvOpenModel {
+   1: string status // OK / Error
+   2: string report // Error report
+   3: binary modelID
+}
+
 service VELaSSCo 
 {
   /**
@@ -31,7 +37,11 @@ service VELaSSCo
   // OP-22.055 GetListOfModelNames includes CO-22.03 GetListOfModels
   rvGetListOfModels GetListOfModelNames( 1: string sessionID, 
     2: string model_group_qualifier,    // in Hbase we use it as full_path_pattern ( Properties:fp)
-    3: string model_name_pattern),      // model name pattern ( Properties:nm)
+    3: string model_name_pattern)       // model name pattern ( Properties:nm)
+
+    // as of OP-24.058 FindModelFS ( should be OpenModel !!!)
+   rvOpenModel FindModelFS( 1: string sessionID, 
+     2: string unique_model_name_pattern)      // model name pattern ( Properties:fp), can be TableName:ModelName
 
   /**
    Return the status of the different services 

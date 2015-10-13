@@ -187,6 +187,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetResultFromVerticesID( _return, sessionID, query);
   } else if ( name == "GetListOfModels") {
     ManageGetListOfModels( _return, sessionID, query);
+  } else if ( name == "OpenModel") {
+    ManageOpenModel( _return, sessionID, query);
   } else {
     _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS );
     
@@ -322,14 +324,6 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
 
-static std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
-  if ( modelID.length() == 16) {
-    return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
-  } else {
-    return modelID;
-  }
-}
-
 void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON
   std::istringstream ss(query);
@@ -390,6 +384,50 @@ void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const Ses
   LOGGER << "  result : "   << _return.result        << std::endl;
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   LOGGER << "  data   : \n" << _return.data << std::endl;
+}
+
+void QueryManagerServer::ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  std::string unique_name        = pt.get<std::string>("uniqueName");
+  std::string requested_access   = pt.get<std::string>("requestedAccess");
+  
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  std::cout << "S " << sessionID        << std::endl;
+  std::cout << "P " << unique_name      << std::endl;
+  std::cout << "A " << requested_access << std::endl;
+  
+  rvOpenModel _return_;
+  queryManagerModule::Instance()->openModel( _return_,
+					     sessionIDStr.str(), unique_name, requested_access);
+  		  
+  std::cout << _return_ << std::endl;
+
+  if ( _return_.status == "Error") {
+    if ( _return_.report == "No models") {
+      _return.__set_result( (Result::type)VAL_NO_MODELS_IN_PLATFORM);
+    } else if ( _return_.report == "Not found") {
+      _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
+    } else {
+      _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    }
+    _return.__set_data( _return_.report);
+  } else {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( _return_.modelID);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  char hex_string[ 1024];
+  LOGGER << "  data   : \n" << ModelID_DoHexStringConversionIfNecesary( _return.data, hex_string, 1024) << std::endl;
 }
 
 

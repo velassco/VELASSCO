@@ -98,14 +98,6 @@ bool HBase::parseListOfModelNames( std::string &report,
   return there_are_models;
 }
 
-static std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
-  if ( modelID.length() == 16) {
-    return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
-  } else {
-    return modelID;
-  }
-}
-
 void printRow(const TRowResult &rowResult) {
   char hex_string[ 1024];
   std::cout << "row: " << ModelID_DoHexStringConversionIfNecesary( rowResult.row, hex_string, 1024) << ", cols: ";
@@ -267,3 +259,145 @@ std::string HBase::getListOfModelNames( std::string &report, std::vector< FullyQ
 					    sessionID, model_group_qualifier, model_name_pattern);
 }
 
+
+bool HBase::storeTableNames( const std::string &sessionID, const std::string &modelID, 
+			     const std::string &model_table_name) {
+  const DicTableModels::iterator it = _table_models.find( sessionID + modelID);
+  if ( it != _table_models.end()) {
+    // if present delete it ....
+    _table_models.erase( it);
+  }
+
+  std::string metadata_table_name, data_table_name;
+  bool known = true;
+  if ( model_table_name == "VELaSSCo_Models") {
+    metadata_table_name = "Simulations_Metadata";
+    data_table_name = "Simulations_Data";
+  } else if ( model_table_name == "VELaSSCo_Models_V4CIMNE") {
+    metadata_table_name = "Simulations_Metadata_V4CIMNE";
+    data_table_name = "Simulations_Data_V4CIMNE";
+  } else if ( model_table_name == "Test_VELaSSCo_Models") {
+    metadata_table_name = "Test_Simulations_Metadata";
+    data_table_name = "Test_Simulations_Data";
+  } else {
+    known = false;
+  }
+  if ( known) {
+    TableModelEntry entry = { model_table_name, metadata_table_name, data_table_name};
+    _table_models[ sessionID + modelID] = entry;
+  }
+  return known;
+}
+
+
+std::string HBase::findModelFS( std::string &report, std::string &return_modelID, 
+			 const std::string &sessionID, const std::string &unique_model_name_pattern) {
+  // strip "unique_model_name_pattern" down to
+  // TableName:model_name_pattern
+  // model_name_pattern corresponds to Properties:fp
+
+  char *table_to_use = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
+  char *path_to_search = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
+  char *separator = strchr( table_to_use, ':');
+  if ( separator) {
+    *separator = '\0';
+    separator++;
+    strcpy( path_to_search, separator);
+  } else {
+    free( table_to_use);
+    table_to_use = strdup( "VELaSSCo_Models");
+  }
+
+  std::string modelID_to_return;
+  std::cout << "findModelFS THRIFT: ====="       << std::endl;
+  std::cout << "S " << sessionID                 << std::endl;
+  std::cout << "U " << unique_model_name_pattern << std::endl;
+  std::cout << "T " << table_to_use                << std::endl; // table name
+  std::cout << "P " << path_to_search                << std::endl; // model path ( Properties:fp)
+
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  // TScan ts;
+  // std::stringstream filter;
+  // filter.str("");
+  // ts.__set_filterString(filter.str());
+  StrVec cols;
+  cols.push_back( "Properties:nm"); // name of model
+  cols.push_back( "Properties:fp"); // full path
+  ScannerID scan_id = _hbase_client->scannerOpen( table_to_use, "", cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_to_use, ts, m);
+  bool scan_ok = true;
+  bool found = false;
+  bool there_are_models = false; // no conform with the vquery and operation forms
+  try {
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( !found) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+	break;
+      // process rowsResult
+      // std::cout << "number of rows = " << rowsResult.size() << endl;
+      for ( int i = 0; i < rowsResult.size(); i++) {
+	// convert to return type
+	FullyQualifiedModelName model_info;
+	bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
+	if ( ok) {
+	  if ( model_info.full_path == path_to_search) {
+	    modelID_to_return = model_info.modelID;
+	    found = true;
+	    break;
+	  }
+	  there_are_models = true;
+	}
+      }
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    report = tmp.str();
+  }
+  _hbase_client->scannerClose( scan_id);
+
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    std::cout << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
+    if ( found) {
+      // let's store the info and check if tablename is known to retrieve the data
+      bool known_table_name = storeTableNames( sessionID, modelID_to_return, table_to_use);
+      // needs to be deleted when logout or close model ....
+      if ( known_table_name) {
+	result = "Ok";
+	return_modelID = modelID_to_return;
+      } else {
+	result = "Error";
+	report = "Unknown table name: " + std::string( table_to_use);
+      }
+    } else {
+      result = "Error";
+      if ( there_are_models) {
+	report = "Not found";
+      } else {
+	report = "No models";
+      }
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::findModelFS THRIFT could not scan.";
+  }
+
+  // cout << "*** Result = " << result << endl;
+  // cout << "*** Report = " << report << endl;
+
+  free( table_to_use);
+  free( path_to_search);
+
+  return result;
+}

@@ -164,6 +164,8 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageGetResultFromVerticesID( _return, sessionID, query);
   } else if ( name == "GetListOfModels") {
     ManageGetListOfModels( _return, sessionID, query);
+  } else if ( name == "OpenModel") {
+    ManageOpenModel( _return, sessionID, query);
   } else {
     _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS );
     
@@ -293,6 +295,7 @@ void QM_DemoServer::ManageGetListOfModels( Query_Result &_return, const SessionI
   oss << "Name: " << "fine_mesh-ascii_" << std::endl;
   oss << "FullPath: " << "../../../../../VELASSCO-Data/Telescope_128subdomains_ascii" << std::endl;
   _return.__set_data( oss.str());
+  _return.__set_result( (Result::type)VAL_SUCCESS );
 		  
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
@@ -301,6 +304,16 @@ void QM_DemoServer::ManageGetListOfModels( Query_Result &_return, const SessionI
   LOGGER << "  data   : \n" << _return.data << std::endl;
 }
 
+void QM_DemoServer::ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  _return.__set_data( "00112233445566778899aabbccddeeff");
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+}
 
 int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;

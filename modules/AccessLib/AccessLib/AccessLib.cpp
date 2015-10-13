@@ -208,6 +208,48 @@ VAL_Result VAL_API valGetListOfModels( /* in */
     }
   CATCH_ERROR;
 }
+  
+VAL_Result VAL_API valOpenModel( /* in */
+				VAL_SessionID   sessionID,
+				const char     *unique_model_name, /* accepted Hbase_TableName:FullPath_as_in_Properties_fp */
+				const char     *requested_access, /* unused at the moment */
+				/* out */
+				const char    **result_status,
+				const char    **result_modelID  /* a 16-digit binary ID or a 32-digit hexadecimal */
+				 ) {
+  CHECK_SESSION_ID( sessionID );
+  CHECK_QUERY_POINTER( unique_model_name );
+  CHECK_QUERY_POINTER( requested_access );
+  
+  try
+    {
+      std::stringstream  queryCommand;
+      const std::string* queryData;
+      
+      // Build JSON command string
+      queryCommand << "{\n"
+		   << "  \"name\"            : \"" << "OpenModel" << "\",\n"
+		   << "  \"uniqueName\"      : \"" << unique_model_name   << "\",\n"
+		   << "  \"requestedAccess\" : \"" << requested_access      << "\"\n";
+      queryCommand << "}\n";
+      
+      // Send command string and get back result data
+      VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+
+      // Give back pointers to actual binary data
+      if (result == VAL_SUCCESS) {
+	/* will be: "NumberOfModels: 1234\nName: model_1\nFullPath: path_1\nName: model_2..." */
+	*result_modelID = queryData->c_str(); // eventually strdup() ...
+	*result_status = "Ok"; // eventually strdup() ...
+      } else {
+	// in case of error queryData has the error message from the data layer
+	*result_status = queryData->c_str(); // eventually strdup() ...
+      }
+
+      return result;
+    }
+  CATCH_ERROR;
+}
 
 
 VAL_Result VAL_API valGetStatusDB( /* in */

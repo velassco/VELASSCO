@@ -123,6 +123,14 @@
     return ( ( isrc == src_len) && !error) ? dst : NULL;
   }
 
+  inline std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
+    if ( modelID.length() == 16) {
+      return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
+    } else {
+      return modelID;
+    }
+  }
+
   // ---------------------------------------------------------------------------
 	
   /**
@@ -143,7 +151,7 @@
       if ( boost::regex_match(m_url, matches, expression) )
 	{
 	  m_scheme   = matches["scheme"];
-	  m_userinfo = matches["uersinfo"];
+	  m_userinfo = matches["userinfo"];
 	  m_host     = matches["host"];
 	  m_port     = matches["port"];
 	  m_part     = matches["part"];
