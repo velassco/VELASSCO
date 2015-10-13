@@ -98,7 +98,7 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
             cJSON *keyJ = cJSON_GetArrayItem (keyC, 0);
             //Row key
             string key = base64_decode(keyJ->valuestring);
-            // cout<< "key : "<< key <<endl;
+            //cout<< "key : "<< key <<endl;
             cJSON *cellsJ = cJSON_GetArrayItem (keyC, 1);
             
             
@@ -418,17 +418,33 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     //tmp = base64_decode(elem->valuestring);
                     //cout << tmp <<" Error "<< base64_decode(elem->valuestring)<< endl;
                     
-                    //cout << tmp << " " << base64_decode(elem->valuestring)<< endl;
+                    //cout << tmp << " " << base64_decode(elem->valuestring)<< endl;                    
+                    
 					if (tmp.find("M:c") == 0) {
-						result << vertexID++ << " " << base64_decode(elem->valuestring) << endl;
+						// result << vertexID++ << " " << base64_decode(elem->valuestring) << endl;
+						std::string value = base64_decode(elem->valuestring);
+                        // cout << tmp << " " << value.size() << " " << value << " " << endl << Hexdump(value);
+                        
+                        uint64_t v[3];
+                        double vertex[3];
+                        
+                        v[0] = *((uint64_t*)(&(value[ 0])));
+                        v[0] = __builtin_bswap64(v[0]);
+                        vertex[0] = *((double*)(&v[0]));
+                        v[1] = *((uint64_t*)(&(value[8])));
+                        v[1] = __builtin_bswap64(v[1]);
+                        vertex[1] = *((double*)(&v[1]));
+                        v[2] = *((uint64_t*)(&(value[16])));
+                        v[2] = __builtin_bswap64(v[2]);
+                        vertex[2] = *((double*)(&v[2]));
+                       
+                        result << vertexID++ << " " << vertex[0] << " " << vertex[1] << " " << vertex[2] << "  0" << endl;
 					}
                 }
                 
                 //cout << cJSON_Print(value) << endl;
-                //                cout << base64_decode(cJSON_GetArrayItem(value, 0)->valuestring) << endl;
+                //cout << base64_decode(cJSON_GetArrayItem(value, 0)->valuestring) << endl;
                 //cout <<"------------"<<endl;
-                
-                
             }
         }
         // exit(0);
@@ -523,6 +539,7 @@ std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
   // std::stringstream filter;
   // filter.str("");
   // ts.__set_filterString(filter.str());
+
   StrVec cols;
   cols.push_back( "M:"); // all qualifiers inside the M column family
   const char *ascii_model_id = "1dfa14ef887d15415d62d3489c4ce41f";
@@ -531,14 +548,16 @@ std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
   FromHexString( bin_row_key, 20, ascii_model_id, strlen( ascii_model_id));
   std::string base64_key = base64_encode( bin_row_key, 16);
   string start_row = base64_decode( base64_key); // decode base64 to binary string
+
   for ( int i = 0; i < 16; i++) {
     std::cout << ( int)bin_row_key[ i] << ", ";
   }
- std:cout << endl;
+  std:cout << endl;
   for ( int i = 0; i < 16; i++) {
     std::cout << ( int)start_row.data()[ i] << ", ";
   }
   std::cout << endl;
+
   ScannerID scan_id = _hbase_client->scannerOpen( table_name, start_row, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
   bool scan_ok = true;
