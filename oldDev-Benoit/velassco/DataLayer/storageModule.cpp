@@ -395,7 +395,7 @@ string storageModule::parse1DEM(string b,   std::string LOVertices)
 string storageModule::getResultOnVertices( std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 {
     
-    string cmd = "http://node001:8880/";
+    string cmd = "http://pez001:8880/";
     cmd += "Simulations_Data";
     cmd += "/";
     std::stringstream key;

@@ -73,13 +73,14 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
 	std::stringstream result;
 	int64_t           vertexID = 0;
 	
-    cout<< "List Of vertices : "<< LOVertices <<endl<<endl;
+    // cout<< "List Of vertices : "<< LOVertices <<endl<<endl;
     cJSON *sentListOfVertices = cJSON_GetObjectItem(cJSON_Parse(LOVertices.c_str()), "id");
     
     cJSON *_return = cJSON_CreateObject();
     cJSON *listOfVertices = cJSON_CreateArray();
     cJSON_AddItemToObject(_return, "vertices", listOfVertices);
     
+    printf("Parsing JSON tree ...\n");
     cJSON *json = cJSON_Parse(b.c_str());
     vector<cJSON*> velem;
     vector<bool> enableVElem;
@@ -98,10 +99,9 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
             cJSON *keyJ = cJSON_GetArrayItem (keyC, 0);
             //Row key
             string key = base64_decode(keyJ->valuestring);
-            //cout<< "key : "<< key <<endl;
+			// cout << "key : "<< key << endl; 
+
             cJSON *cellsJ = cJSON_GetArrayItem (keyC, 1);
-            
-            
             cJSON * elem  = cJSON_CreateObject();
             
             for (int k = 0; k < cJSON_GetArraySize(cellsJ); k++ )
@@ -418,7 +418,7 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     //tmp = base64_decode(elem->valuestring);
                     //cout << tmp <<" Error "<< base64_decode(elem->valuestring)<< endl;
                     
-                    //cout << tmp << " " << base64_decode(elem->valuestring)<< endl;                    
+                    // cout << tmp << " " << base64_decode(elem->valuestring)<< endl;                    
                     
 					if (tmp.find("M:c") == 0) {
 						// result << vertexID++ << " " << base64_decode(elem->valuestring) << endl;
@@ -431,14 +431,25 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                         v[0] = *((uint64_t*)(&(value[ 0])));
                         v[0] = __builtin_bswap64(v[0]);
                         vertex[0] = *((double*)(&v[0]));
-                        v[1] = *((uint64_t*)(&(value[8])));
+                        v[1] = *((uint64_t*)(&(value[ 8])));
                         v[1] = __builtin_bswap64(v[1]);
                         vertex[1] = *((double*)(&v[1]));
                         v[2] = *((uint64_t*)(&(value[16])));
                         v[2] = __builtin_bswap64(v[2]);
                         vertex[2] = *((double*)(&v[2]));
                        
-                        result << vertexID++ << " " << vertex[0] << " " << vertex[1] << " " << vertex[2] << "  0" << endl;
+   						if (vertexID >= 3000)
+   						{
+							result << vertexID << " " << vertex[0] << " " << vertex[1] << " " << vertex[2] << "  0" << endl;
+							printf("\rReading vertex : %d ...", vertexID-3000);
+						}
+						if (vertexID >= 4000)
+						{
+							printf("\n");
+							break;
+						}
+
+						vertexID++;
 					}
                 }
                 
@@ -476,7 +487,9 @@ std::string HBase::getResultOnVertices_curl( const std::string &sessionID,
   std::cout << "T " << timeStep       << std::endl;
 
   string cmd = "http://pez001:8880/";
-  cmd += "Simulations_Data";
+  // cmd += "Simulations_Data";
+  // cmd += "Test_VELaSSCo_Models";
+  cmd += "T_Simulations_Data";
   cmd += "/";
   std::stringstream key;
   //key << "0x";
@@ -486,7 +499,24 @@ std::string HBase::getResultOnVertices_curl( const std::string &sessionID,
   //key << resultID;
 
   //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
-  key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
+  //key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
+
+  // key << "D*";
+  // key << "scanner/14448375409011a4cbd8";
+	
+	unsigned partitionID = 1;
+	
+	std::string simulationID_hex       = "4d0e0c37be088e715de50d2230887579";
+	std::string analysisNameLength_hex = toHexString(byteSwap((uint32_t)analysisID.size()));
+	std::string analysisNameChars      = analysisID;
+	std::string timeStep_hex           = toHexString(byteSwap((double)timeStep));
+	std::string partitionID_hex        = toHexString(byteSwap((uint32_t)partitionID));
+
+	key << simulationID_hex
+		<< analysisNameLength_hex
+		<< analysisNameChars
+		<< timeStep_hex
+		<< partitionID_hex;
 
   cmd += key.str();
   cout << cmd << endl;
@@ -636,6 +666,7 @@ std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
   // 
   // return result;
 }
+
 
 std::string HBase::getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
 					const std::string &analysisID, const double       timeStep,  

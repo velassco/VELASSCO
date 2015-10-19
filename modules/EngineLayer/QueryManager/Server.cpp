@@ -252,12 +252,12 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   
   std::string _return_;
   
-  std::cout << "S " << sessionID  << std::endl;
-  std::cout << "M " << modelID    << std::endl;
-  std::cout << "R " << resultID   << std::endl;
-  std::cout << "A " << analysisID << std::endl;
-  std::cout << "V " << vertexIDs  << std::endl;
-  std::cout << "T " << timeStep   << std::endl;
+  //std::cout << "S " << sessionID  << std::endl;
+  //std::cout << "M " << modelID    << std::endl;
+  //std::cout << "R " << resultID   << std::endl;
+  //std::cout << "A " << analysisID << std::endl;
+  //std::cout << "V " << vertexIDs  << std::endl;
+  //std::cout << "T " << timeStep   << std::endl;
   
   queryManagerModule::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
   

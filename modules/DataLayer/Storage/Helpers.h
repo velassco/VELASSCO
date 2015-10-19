@@ -92,15 +92,44 @@ namespace VELaSSCo
 
     return out.str();
   }
+  
+	template<typename T>
+	inline T byteSwap(T value)
+	{
+		if (sizeof(T) == 8)
+		{
+			uint64_t src = reinterpret_cast<uint64_t&>(value);
+			uint64_t dst = __builtin_bswap64(src);
+		
+			return reinterpret_cast<T&>(dst);
+		}
+		else if (sizeof(T) == 4)
+		{
+			uint32_t src = reinterpret_cast<uint32_t&>(value);
+			uint32_t dst = __builtin_bswap32(src);
+		
+			return reinterpret_cast<T&>(dst);
+		}
+	}
+
+	template<typename T>
+	inline std::string toHexString(T value, const char *format="%02x")
+	{
+		char buffer[2*sizeof(value)];
+		ToHexString(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
+
+		return std::string(buffer, sizeof(buffer));
+	}
+
 
   // returns NULL if dst_len is too short, otherwise return dst
-  inline const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len) {
+  inline const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len, const char *format="%02x") {
     if ( !dst) return NULL;
     int isrc = 0;
     for ( int idst = 0; 
 	  ( isrc < src_len) && ( idst < dst_len - 1); 
 	  isrc++, idst += 2) {
-      sprintf( &dst[ idst], "%02x", ( unsigned char)src[ isrc]);
+      sprintf( &dst[ idst], format, ( unsigned char)src[ isrc]);
     }
     // if all chars converted, then return dst
     return ( isrc == src_len) ? dst : NULL;
