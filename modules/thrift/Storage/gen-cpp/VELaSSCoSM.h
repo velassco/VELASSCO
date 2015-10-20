@@ -8,7 +8,7 @@
 #define VELaSSCoSM_H
 
 #include <thrift/TDispatchProcessor.h>
-#include "VELaSSCo_types.h"
+#include "VELaSSCoSM_types.h"
 
 namespace VELaSSCoSM {
 
