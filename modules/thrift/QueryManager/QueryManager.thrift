@@ -39,19 +39,16 @@ service QueryManager {
     /**
      * User login
      */
-
     UserLogin_Result UserLogin(1:string url, 2:string name, 3:string password),
 
     /**
      * User logout
      */
-
     UserLogout_Result UserLogout(1:SessionID sessionID),
 
     /**
      * Query
      */
-
     Query_Result Query(1:SessionID sessionID, 2:string query)
 
     /**

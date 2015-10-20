@@ -23,6 +23,59 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
   }
 
   /**
+   * Return the status of the different services
+   * which run on the Data Layer.
+   */
+  void statusDL(std::string& _return) {
+    // Your implementation goes here
+    printf("statusDL\n");
+  }
+
+  /**
+   * Data Query operations
+   * 
+   * @param sessionID
+   * @param model_group_qualifier
+   * @param model_name_pattern
+   */
+  void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern) {
+    // Your implementation goes here
+    printf("GetListOfModelNames\n");
+  }
+
+  void FindModelFS(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern) {
+    // Your implementation goes here
+    printf("FindModelFS\n");
+  }
+
+  /**
+   * Return the status of the different services
+   * which run on the Data Layer.
+   * @return string - returns a structured list of avialbe vertices,
+   * with the attached list of double
+   * if errors occur the contect is also returned here?
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param timeStep
+   * @param resultID
+   * @param listOfVertices
+   */
+  void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
+    // Your implementation goes here
+    printf("GetResultFromVerticesID\n");
+  }
+
+  /**
+   * Stop Data Layer
+   */
+  void stopAll() {
+    // Your implementation goes here
+    printf("stopAll\n");
+  }
+
+  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name
@@ -45,17 +98,38 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
   }
 
   /**
-   * Returns a list of names of data sets that are available from the VELaSSCo platform
-   * and - optionally - their properties.
+   * Description: Removes the possibility to access a model via a previously assigned
+   * GUID (OpenModel). Corresponding housekeeping is wrapped up.
    * 
    * @param sessionID
-   * @param groupQualifier
-   * @param modelNamePattern
-   * @param options
+   * @param modelName
    */
-  void GetListOfModels(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern, const std::string& options) {
+  void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName) {
     // Your implementation goes here
-    printf("GetListOfModels\n");
+    printf("CloseModel\n");
+  }
+
+  /**
+   * Description: Store a new thumbnail of a model
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param imageFile
+   */
+  void SetThumbnailOfAModel(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& imageFile) {
+    // Your implementation goes here
+    printf("SetThumbnailOfAModel\n");
+  }
+
+  /**
+   * Description: Return thumbnail of a model.
+   * 
+   * @param sessionID
+   * @param modelID
+   */
+  void GetThumbnailOfAModel(rvGetThumbnailOfAModel& _return, const std::string& sessionID, const std::string& modelID) {
+    // Your implementation goes here
+    printf("GetThumbnailOfAModel\n");
   }
 
   /**
@@ -88,19 +162,42 @@ class VELaSSCoHandler : virtual public VELaSSCoIf {
   }
 
   /**
-   * Given a list of vertices id's from the model, vertexIDs, GetResultFromVerticesID will get
-   * the result value of a given type (resultID) for each vertex id of the list.
+   * Retrieves the list of time steps for a given model and analysis.
    * 
    * @param sessionID
    * @param modelID
-   * @param vertexIDs
-   * @param resultID
-   * @param time_step
+   */
+  void GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID) {
+    // Your implementation goes here
+    printf("GetListOfAnalyses\n");
+  }
+
+  /**
+   * Retrieves the list of time steps for a given model and analysis.
+   * 
+   * @param sessionID
+   * @param modelID
    * @param analysisID
    */
-  void GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID) {
+  void GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID) {
     // Your implementation goes here
-    printf("GetResultFromVerticesID\n");
+    printf("GetListOfTimeSteps\n");
+  }
+
+  /**
+   * Returns a list of meshes present for the given time-step of that analysis.
+   * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+   * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
+   * that are present on that step-values of that analysis.
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param timeStep
+   */
+  void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep) {
+    // Your implementation goes here
+    printf("GetListOfMeshes\n");
   }
 
 };

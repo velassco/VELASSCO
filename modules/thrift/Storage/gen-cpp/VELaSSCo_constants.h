@@ -9,7 +9,7 @@
 
 #include "VELaSSCo_types.h"
 
-
+namespace VELaSSCoSM {
 
 class VELaSSCoConstants {
  public:
@@ -19,6 +19,6 @@ class VELaSSCoConstants {
 
 extern const VELaSSCoConstants g_VELaSSCo_constants;
 
-
+} // namespace
 
 #endif
