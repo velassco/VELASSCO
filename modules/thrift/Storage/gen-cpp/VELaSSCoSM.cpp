@@ -6,7 +6,7 @@
  */
 #include "VELaSSCoSM.h"
 
-namespace VELaSSCoSM {
+
 
 
 VELaSSCoSM_statusDL_args::~VELaSSCoSM_statusDL_args() throw() {
@@ -4892,5 +4892,5 @@ void VELaSSCoSMProcessor::process_GetListOfMeshes(int32_t seqid, ::apache::thrif
   ::boost::shared_ptr< ::apache::thrift::TProcessor > processor(new VELaSSCoSMProcessor(handler));
   return processor;
 }
-} // namespace
+
 

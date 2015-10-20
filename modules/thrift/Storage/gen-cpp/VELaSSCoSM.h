@@ -10,7 +10,7 @@
 #include <thrift/TDispatchProcessor.h>
 #include "VELaSSCoSM_types.h"
 
-namespace VELaSSCoSM {
+
 
 class VELaSSCoSMIf {
  public:
@@ -2460,6 +2460,6 @@ class VELaSSCoSMMultiface : virtual public VELaSSCoSMIf {
 
 };
 
-} // namespace
+
 
 #endif

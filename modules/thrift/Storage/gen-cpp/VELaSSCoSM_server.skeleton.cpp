@@ -14,8 +14,6 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
-using namespace  ::VELaSSCoSM;
-
 class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
  public:
   VELaSSCoSMHandler() {

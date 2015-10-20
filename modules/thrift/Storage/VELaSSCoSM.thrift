@@ -9,8 +9,8 @@
 // namespace cpp dli
 
 
-namespace cpp VELaSSCoSM
-namespace java VELaSSCoSM
+// namespace cpp VELaSSCoSM
+// namespace java VELaSSCoSM
 
 
 
