@@ -4,8 +4,8 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#ifndef VELaSSCo_TYPES_H
-#define VELaSSCo_TYPES_H
+#ifndef VELaSSCoSM_TYPES_H
+#define VELaSSCoSM_TYPES_H
 
 #include <iosfwd>
 
@@ -17,7 +17,7 @@
 #include <thrift/cxxfunctional.h>
 
 
-namespace VELaSSCoSM {
+
 
 struct ElementShapeType {
   enum type {
@@ -1194,6 +1194,6 @@ class rvGetListOfMeshes {
 
 void swap(rvGetListOfMeshes &a, rvGetListOfMeshes &b);
 
-} // namespace
+
 
 #endif
