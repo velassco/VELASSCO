@@ -36,14 +36,14 @@ std::string ResultHeaderType::GetAsString( )
 
 ResultContainerType::ResultContainerType( )
 {
-  gaussPoints[ "GP_LINE_1" ] = { "GP_LINE_1", LINE, 1, {}, false };
-  gaussPoints[ "GP_TRIANGLE_1" ] = { "GP_TRIANGLE_1", TRIANGLE, 1, {}, false };
-  gaussPoints[ "GP_TRIANGLE_3" ] = { "GP_TRIANGLE_3", TRIANGLE, 3, {}, false };
-  gaussPoints[ "GP_TRIANGLE_6" ] = { "GP_TRIANGLE_6", TRIANGLE, 6, {}, false };
-  gaussPoints[ "GP_TETRAHEDRA_1" ] = { "GP_TETRAHEDRA_1", TETRAHEDRA, 1, {}, false };
-  gaussPoints[ "GP_TETRAHEDRA_4" ] = { "GP_TETRAHEDRA_4", TETRAHEDRA, 4, {}, false };
-  gaussPoints[ "GP_TETRAHEDRA_10" ] = { "GP_TETRAHEDRA_10", TETRAHEDRA, 10, {}, false };
-  gaussPoints[ "GP_SPHERE_1" ] = { "GP_SPHERE_1", SPHERE, 1, {}, false };
+  gaussPoints[ "GP_LINE_1" ] = { "GP_LINE_1", "", LINE, 1, {}, false };
+  gaussPoints[ "GP_TRIANGLE_1" ] = { "GP_TRIANGLE_1", "", TRIANGLE, 1, {}, false };
+  gaussPoints[ "GP_TRIANGLE_3" ] = { "GP_TRIANGLE_3", "", TRIANGLE, 3, {}, false };
+  gaussPoints[ "GP_TRIANGLE_6" ] = { "GP_TRIANGLE_6", "", TRIANGLE, 6, {}, false };
+  gaussPoints[ "GP_TETRAHEDRA_1" ] = { "GP_TETRAHEDRA_1", "", TETRAHEDRA, 1, {}, false };
+  gaussPoints[ "GP_TETRAHEDRA_4" ] = { "GP_TETRAHEDRA_4", "", TETRAHEDRA, 4, {}, false };
+  gaussPoints[ "GP_TETRAHEDRA_10" ] = { "GP_TETRAHEDRA_10", "", TETRAHEDRA, 10, {}, false };
+  gaussPoints[ "GP_SPHERE_1" ] = { "GP_SPHERE_1", "", SPHERE, 1, {}, false };
 }
 
 static
@@ -133,7 +133,7 @@ bool parse_result_header(Iterator first, Iterator last, VecSectionArg &vec)
      no_case[
        lit("GAUSSPOINTS")[ boost::bind(&VecSectionArg::init_type, &vec, SECTION_GAUSS_POINT) ] >>
        as_string[quoted_string][boost::bind(&VecSectionArg::addArg, &vec, ::_1)] >>
-       lit("ELEMTYPE") >> sym_element
+       lit("ELEMTYPE") >> sym_element[boost::bind(&VecSectionArg::addArg, &vec, ::_1)]
        |
        lit("RESULTRANGESTABLE")[ boost::bind(&VecSectionArg::init_type, &vec, SECTION_RANGE_TABLE) ] >>
        as_string[quoted_string][boost::bind(&VecSectionArg::addArg, &vec, ::_1)]
