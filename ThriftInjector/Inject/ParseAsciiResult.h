@@ -44,6 +44,7 @@ struct ResultHeaderType
 struct GaussPointDefinition
 {
   std::string name;
+  std::string nameMesh;
   ElementType etype;
   UInt32 size;
   std::vector<double> coordinates;
