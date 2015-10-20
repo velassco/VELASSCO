@@ -27,7 +27,7 @@ bool queryManagerModule::startConnection( const char *data_layer_hostname, const
     socket= boost::shared_ptr<TTransport>(new TSocket( data_layer_hostname, data_layer_port));
     transport = boost::shared_ptr<TTransport>(new TBufferedTransport(socket));
     protocol = boost::shared_ptr<TProtocol>(new TBinaryProtocol(transport));
-    cli = new VELaSSCoClient(protocol);
+    cli = new VELaSSCoSMClient(protocol);
     try
     {
         

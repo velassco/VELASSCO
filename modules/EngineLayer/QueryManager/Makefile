@@ -25,15 +25,15 @@ Helpers.o: Helpers.cpp
 
 
 storage_velassco_constants.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_constants.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_constants.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_constants.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_constants.o
 
 
 storage_velassco_types.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_types.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_types.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_types.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_types.o
 
 
 storage_VELaSSCo.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_VELaSSCo.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_VELaSSCo.o
 
 
 

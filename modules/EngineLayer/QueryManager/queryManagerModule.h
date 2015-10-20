@@ -18,7 +18,7 @@ using boost::shared_ptr;
 using namespace std;
 
 
-#include "VELaSSCo.h"
+#include "VELaSSCoSM.h"
 
 // handles connection to Storage Module:
 class queryManagerModule
@@ -44,8 +44,8 @@ private:
     queryManagerModule(queryManagerModule const&){};
     queryManagerModule& operator=(queryManagerModule const&){};
     
-    static queryManagerModule* m_pInstance;
-    VELaSSCoClient* cli;
+    static queryManagerModule *m_pInstance;
+    VELaSSCoSMClient *cli;
     
     
     boost::shared_ptr<TTransport> socket;
