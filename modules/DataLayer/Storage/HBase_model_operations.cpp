@@ -290,8 +290,9 @@ bool HBase::storeTableNames( const std::string &sessionID, const std::string &mo
 }
 
 
-std::string HBase::findModelFS( std::string &report, std::string &return_modelID, 
-			 const std::string &sessionID, const std::string &unique_model_name_pattern) {
+std::string HBase::findModel( std::string &report, std::string &return_modelID, 
+			      const std::string &sessionID, const std::string &unique_model_name_pattern, 
+			      const std::string &requested_access) {
   // strip "unique_model_name_pattern" down to
   // TableName:model_name_pattern
   // model_name_pattern corresponds to Properties:fp
@@ -322,11 +323,13 @@ std::string HBase::findModelFS( std::string &report, std::string &return_modelID
   }
 
   std::string modelID_to_return;
-  std::cout << "findModelFS THRIFT: ====="       << std::endl;
+  std::cout << "findModel THRIFT: ====="       << std::endl;
   std::cout << "S " << sessionID                 << std::endl;
   std::cout << "U " << unique_model_name_pattern << std::endl;
+  std::cout << "A " << requested_access << std::endl;
   std::cout << "T " << table_to_use                << std::endl; // table name
   std::cout << "P " << path_to_search                << std::endl; // model path ( Properties:fp)
+  std::cout << "WARNING: StorageModule::FindModel requested_access not used at the moment." << std::endl;
 
   vector< TRowResult> rowsResult;
   std::map<std::string,std::string> m;
@@ -403,7 +406,7 @@ std::string HBase::findModelFS( std::string &report, std::string &return_modelID
   } else {
     std::cout << "ERROR**********\n";
     result = "Error";
-    report = "HBase::findModelFS THRIFT could not scan.";
+    report = "HBase::findModel THRIFT could not scan.";
   }
 
   // cout << "*** Result = " << result << endl;

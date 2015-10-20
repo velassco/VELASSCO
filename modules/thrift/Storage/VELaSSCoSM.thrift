@@ -7,12 +7,8 @@
    Namespace dl (Data Layer Interface)
  */
 // namespace cpp dli
-
-
-// namespace cpp VELaSSCoSM
-// namespace java VELaSSCoSM
-
-
+namespace cpp VELaSSCoSM
+namespace java VELaSSCoSM
 
 enum ElementShapeType {
    PointElement = 1,
@@ -224,8 +220,9 @@ service VELaSSCoSM
     3: string model_name_pattern),       // model name pattern ( Properties:nm)
     
   // as of OP-24.058 FindModelFS ( should be OpenModel !!!)
-  rvOpenModel FindModelFS( 1: string sessionID, 
-     2: string unique_model_name_pattern)      // model name pattern ( Properties:fp), can be TableName:ModelName
+  rvOpenModel FindModel( 1: string sessionID, 
+    2: string unique_model_name_pattern,
+    3: string requested_access)      // model name pattern ( Properties:fp), can be TableName:ModelName
 
   /**
    Return the status of the different services 

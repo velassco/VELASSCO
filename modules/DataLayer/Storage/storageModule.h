@@ -16,7 +16,6 @@
 #include "AbstractDB.h"
 
 using namespace std;
-class FullyQualifiedModelName;
 
 typedef enum {
   DL_SM_DB_UNKNOWN = 0,
@@ -57,8 +56,9 @@ public:
   string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 			      const std::string &sessionID, const std::string &model_group_qualifier, 
 			      const std::string &model_name_pattern);
-  string findModelFS( std::string &report, std::string &modelID, 
-		      const std::string &sessionID, const std::string &unique_model_name_pattern);
+  string findModel( std::string &report, std::string &modelID, 
+		    const std::string &sessionID, const std::string &unique_model_name_pattern, 
+		    const std::string &requested_access);
   string getResultOnVertices( std::string sessionID,
 			      std::string modelID,
 			      std::string analysisID,

@@ -54,9 +54,10 @@ string storageModule::getListOfModelNames( std::string &report, std::vector< Ful
 				 sessionID, model_group_qualifier, model_name_pattern);
 }
 
-string storageModule::findModelFS( std::string &report, std::string &modelID, 
-				   const std::string &sessionID, const std::string &unique_model_name_pattern) {
-  return _db->findModelFS( report, modelID, sessionID, unique_model_name_pattern);
+string storageModule::findModel( std::string &report, std::string &modelID, 
+				 const std::string &sessionID, 
+				 const std::string &unique_model_name_pattern, const std::string &requested_access) {
+  return _db->findModel( report, modelID, sessionID, unique_model_name_pattern, requested_access);
 }
 
 string storageModule::getResultOnVertices( std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)

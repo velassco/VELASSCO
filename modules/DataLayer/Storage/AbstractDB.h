@@ -26,9 +26,9 @@ using namespace ::apache::thrift::server;
 using namespace  ::apache::hadoop::hbase::thrift;
 typedef std::map<std::string,TCell> CellMap;
 
-class FullyQualifiedModelName;
-// #include "VELaSSCoSM.h"
-// using namespace VELaSSCoSM;
+#include "VELaSSCoSM.h"
+using namespace VELaSSCoSM;
+// class FullyQualifiedModelName;
 
 namespace VELaSSCo
 {
@@ -57,8 +57,9 @@ namespace VELaSSCo
     virtual std::string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					     const std::string &sessionID, const std::string &model_group_qualifier, 
 					     const std::string &model_name_pattern) = 0;
-    virtual std::string findModelFS( std::string &report, std::string &modelID, 
-				     const std::string &sessionID, const std::string &unique_model_name_pattern) = 0;
+    virtual std::string findModel( std::string &report, std::string &modelID, 
+				   const std::string &sessionID, const std::string &unique_model_name_pattern, 
+				   const std::string &requested_access) = 0;
 
     /*
      * Access the database and return a list o vertices with attributes.

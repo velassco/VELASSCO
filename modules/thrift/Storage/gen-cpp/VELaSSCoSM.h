@@ -10,7 +10,7 @@
 #include <thrift/TDispatchProcessor.h>
 #include "VELaSSCoSM_types.h"
 
-
+namespace VELaSSCoSM {
 
 class VELaSSCoSMIf {
  public:
@@ -30,7 +30,7 @@ class VELaSSCoSMIf {
    * @param model_name_pattern
    */
   virtual void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern) = 0;
-  virtual void FindModelFS(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern) = 0;
+  virtual void FindModel(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern, const std::string& requested_access) = 0;
 
   /**
    * Return the status of the different services
@@ -182,7 +182,7 @@ class VELaSSCoSMNull : virtual public VELaSSCoSMIf {
   void GetListOfModelNames(rvGetListOfModels& /* _return */, const std::string& /* sessionID */, const std::string& /* model_group_qualifier */, const std::string& /* model_name_pattern */) {
     return;
   }
-  void FindModelFS(rvOpenModel& /* _return */, const std::string& /* sessionID */, const std::string& /* unique_model_name_pattern */) {
+  void FindModel(rvOpenModel& /* _return */, const std::string& /* sessionID */, const std::string& /* unique_model_name_pattern */, const std::string& /* requested_access */) {
     return;
   }
   void GetResultFromVerticesID(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */, const std::string& /* listOfVertices */) {
@@ -465,131 +465,138 @@ class VELaSSCoSM_GetListOfModelNames_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfModelNames_presult& obj);
 };
 
-typedef struct _VELaSSCoSM_FindModelFS_args__isset {
-  _VELaSSCoSM_FindModelFS_args__isset() : sessionID(false), unique_model_name_pattern(false) {}
+typedef struct _VELaSSCoSM_FindModel_args__isset {
+  _VELaSSCoSM_FindModel_args__isset() : sessionID(false), unique_model_name_pattern(false), requested_access(false) {}
   bool sessionID :1;
   bool unique_model_name_pattern :1;
-} _VELaSSCoSM_FindModelFS_args__isset;
+  bool requested_access :1;
+} _VELaSSCoSM_FindModel_args__isset;
 
-class VELaSSCoSM_FindModelFS_args {
+class VELaSSCoSM_FindModel_args {
  public:
 
-  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
-  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
+  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
 
-  VELaSSCoSM_FindModelFS_args(const VELaSSCoSM_FindModelFS_args&);
-  VELaSSCoSM_FindModelFS_args& operator=(const VELaSSCoSM_FindModelFS_args&);
-  VELaSSCoSM_FindModelFS_args() : sessionID(), unique_model_name_pattern() {
+  VELaSSCoSM_FindModel_args(const VELaSSCoSM_FindModel_args&);
+  VELaSSCoSM_FindModel_args& operator=(const VELaSSCoSM_FindModel_args&);
+  VELaSSCoSM_FindModel_args() : sessionID(), unique_model_name_pattern(), requested_access() {
   }
 
-  virtual ~VELaSSCoSM_FindModelFS_args() throw();
+  virtual ~VELaSSCoSM_FindModel_args() throw();
   std::string sessionID;
   std::string unique_model_name_pattern;
+  std::string requested_access;
 
-  _VELaSSCoSM_FindModelFS_args__isset __isset;
+  _VELaSSCoSM_FindModel_args__isset __isset;
 
   void __set_sessionID(const std::string& val);
 
   void __set_unique_model_name_pattern(const std::string& val);
 
-  bool operator == (const VELaSSCoSM_FindModelFS_args & rhs) const
+  void __set_requested_access(const std::string& val);
+
+  bool operator == (const VELaSSCoSM_FindModel_args & rhs) const
   {
     if (!(sessionID == rhs.sessionID))
       return false;
     if (!(unique_model_name_pattern == rhs.unique_model_name_pattern))
       return false;
+    if (!(requested_access == rhs.requested_access))
+      return false;
     return true;
   }
-  bool operator != (const VELaSSCoSM_FindModelFS_args &rhs) const {
+  bool operator != (const VELaSSCoSM_FindModel_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const VELaSSCoSM_FindModelFS_args & ) const;
+  bool operator < (const VELaSSCoSM_FindModel_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModelFS_args& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModel_args& obj);
 };
 
 
-class VELaSSCoSM_FindModelFS_pargs {
+class VELaSSCoSM_FindModel_pargs {
  public:
 
-  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
-  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
+  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
 
 
-  virtual ~VELaSSCoSM_FindModelFS_pargs() throw();
+  virtual ~VELaSSCoSM_FindModel_pargs() throw();
   const std::string* sessionID;
   const std::string* unique_model_name_pattern;
+  const std::string* requested_access;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModelFS_pargs& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModel_pargs& obj);
 };
 
-typedef struct _VELaSSCoSM_FindModelFS_result__isset {
-  _VELaSSCoSM_FindModelFS_result__isset() : success(false) {}
+typedef struct _VELaSSCoSM_FindModel_result__isset {
+  _VELaSSCoSM_FindModel_result__isset() : success(false) {}
   bool success :1;
-} _VELaSSCoSM_FindModelFS_result__isset;
+} _VELaSSCoSM_FindModel_result__isset;
 
-class VELaSSCoSM_FindModelFS_result {
+class VELaSSCoSM_FindModel_result {
  public:
 
   static const char* ascii_fingerprint; // = "A71E7FF97EC799A15E9FAA4841AFE42D";
   static const uint8_t binary_fingerprint[16]; // = {0xA7,0x1E,0x7F,0xF9,0x7E,0xC7,0x99,0xA1,0x5E,0x9F,0xAA,0x48,0x41,0xAF,0xE4,0x2D};
 
-  VELaSSCoSM_FindModelFS_result(const VELaSSCoSM_FindModelFS_result&);
-  VELaSSCoSM_FindModelFS_result& operator=(const VELaSSCoSM_FindModelFS_result&);
-  VELaSSCoSM_FindModelFS_result() {
+  VELaSSCoSM_FindModel_result(const VELaSSCoSM_FindModel_result&);
+  VELaSSCoSM_FindModel_result& operator=(const VELaSSCoSM_FindModel_result&);
+  VELaSSCoSM_FindModel_result() {
   }
 
-  virtual ~VELaSSCoSM_FindModelFS_result() throw();
+  virtual ~VELaSSCoSM_FindModel_result() throw();
   rvOpenModel success;
 
-  _VELaSSCoSM_FindModelFS_result__isset __isset;
+  _VELaSSCoSM_FindModel_result__isset __isset;
 
   void __set_success(const rvOpenModel& val);
 
-  bool operator == (const VELaSSCoSM_FindModelFS_result & rhs) const
+  bool operator == (const VELaSSCoSM_FindModel_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     return true;
   }
-  bool operator != (const VELaSSCoSM_FindModelFS_result &rhs) const {
+  bool operator != (const VELaSSCoSM_FindModel_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const VELaSSCoSM_FindModelFS_result & ) const;
+  bool operator < (const VELaSSCoSM_FindModel_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModelFS_result& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModel_result& obj);
 };
 
-typedef struct _VELaSSCoSM_FindModelFS_presult__isset {
-  _VELaSSCoSM_FindModelFS_presult__isset() : success(false) {}
+typedef struct _VELaSSCoSM_FindModel_presult__isset {
+  _VELaSSCoSM_FindModel_presult__isset() : success(false) {}
   bool success :1;
-} _VELaSSCoSM_FindModelFS_presult__isset;
+} _VELaSSCoSM_FindModel_presult__isset;
 
-class VELaSSCoSM_FindModelFS_presult {
+class VELaSSCoSM_FindModel_presult {
  public:
 
   static const char* ascii_fingerprint; // = "A71E7FF97EC799A15E9FAA4841AFE42D";
   static const uint8_t binary_fingerprint[16]; // = {0xA7,0x1E,0x7F,0xF9,0x7E,0xC7,0x99,0xA1,0x5E,0x9F,0xAA,0x48,0x41,0xAF,0xE4,0x2D};
 
 
-  virtual ~VELaSSCoSM_FindModelFS_presult() throw();
+  virtual ~VELaSSCoSM_FindModel_presult() throw();
   rvOpenModel* success;
 
-  _VELaSSCoSM_FindModelFS_presult__isset __isset;
+  _VELaSSCoSM_FindModel_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModelFS_presult& obj);
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_FindModel_presult& obj);
 };
 
 typedef struct _VELaSSCoSM_GetResultFromVerticesID_args__isset {
@@ -2194,9 +2201,9 @@ class VELaSSCoSMClient : virtual public VELaSSCoSMIf {
   void GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern);
   void send_GetListOfModelNames(const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern);
   void recv_GetListOfModelNames(rvGetListOfModels& _return);
-  void FindModelFS(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern);
-  void send_FindModelFS(const std::string& sessionID, const std::string& unique_model_name_pattern);
-  void recv_FindModelFS(rvOpenModel& _return);
+  void FindModel(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern, const std::string& requested_access);
+  void send_FindModel(const std::string& sessionID, const std::string& unique_model_name_pattern, const std::string& requested_access);
+  void recv_FindModel(rvOpenModel& _return);
   void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
   void send_GetResultFromVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
   void recv_GetResultFromVerticesID(std::string& _return);
@@ -2250,7 +2257,7 @@ class VELaSSCoSMProcessor : public ::apache::thrift::TDispatchProcessor {
   ProcessMap processMap_;
   void process_statusDL(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetListOfModelNames(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_FindModelFS(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_FindModel(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetResultFromVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_stopAll(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_UserLogin(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -2268,7 +2275,7 @@ class VELaSSCoSMProcessor : public ::apache::thrift::TDispatchProcessor {
     iface_(iface) {
     processMap_["statusDL"] = &VELaSSCoSMProcessor::process_statusDL;
     processMap_["GetListOfModelNames"] = &VELaSSCoSMProcessor::process_GetListOfModelNames;
-    processMap_["FindModelFS"] = &VELaSSCoSMProcessor::process_FindModelFS;
+    processMap_["FindModel"] = &VELaSSCoSMProcessor::process_FindModel;
     processMap_["GetResultFromVerticesID"] = &VELaSSCoSMProcessor::process_GetResultFromVerticesID;
     processMap_["stopAll"] = &VELaSSCoSMProcessor::process_stopAll;
     processMap_["UserLogin"] = &VELaSSCoSMProcessor::process_UserLogin;
@@ -2329,13 +2336,13 @@ class VELaSSCoSMMultiface : virtual public VELaSSCoSMIf {
     return;
   }
 
-  void FindModelFS(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern) {
+  void FindModel(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern, const std::string& requested_access) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->FindModelFS(_return, sessionID, unique_model_name_pattern);
+      ifaces_[i]->FindModel(_return, sessionID, unique_model_name_pattern, requested_access);
     }
-    ifaces_[i]->FindModelFS(_return, sessionID, unique_model_name_pattern);
+    ifaces_[i]->FindModel(_return, sessionID, unique_model_name_pattern, requested_access);
     return;
   }
 
@@ -2460,6 +2467,6 @@ class VELaSSCoSMMultiface : virtual public VELaSSCoSMIf {
 
 };
 
-
+} // namespace
 
 #endif

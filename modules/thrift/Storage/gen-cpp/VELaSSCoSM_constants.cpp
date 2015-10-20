@@ -6,12 +6,12 @@
  */
 #include "VELaSSCoSM_constants.h"
 
-
+namespace VELaSSCoSM {
 
 const VELaSSCoSMConstants g_VELaSSCoSM_constants;
 
 VELaSSCoSMConstants::VELaSSCoSMConstants() {
 }
 
-
+} // namespace
 

@@ -31,11 +31,12 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels &_return, const std:
   _return.__set_models( listOfModelNames);
 }
 
-void VELaSSCoHandler::FindModelFS(rvOpenModel &_return, const std::string &sessionID, const std::string &unique_model_name_pattern) {
+void VELaSSCoHandler::FindModel( rvOpenModel &_return, const std::string &sessionID, 
+				 const std::string &unique_model_name_pattern, const std::string &requested_access) {
   std::string report;
   std::string modelID;
   std::vector< FullyQualifiedModelName>listOfModelNames;
-  std::string status = storageModule::Instance()->findModelFS( report, modelID, sessionID, unique_model_name_pattern);
+  std::string status = storageModule::Instance()->findModel( report, modelID, sessionID, unique_model_name_pattern, requested_access);
   _return.__set_status( status);
   _return.__set_report( report);
   _return.__set_modelID( modelID);

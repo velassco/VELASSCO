@@ -20,6 +20,8 @@ using namespace std;
 
 #include "VELaSSCoSM.h"
 
+using namespace VELaSSCoSM;
+
 // handles connection to Storage Module:
 class queryManagerModule
 {

@@ -81,8 +81,7 @@ void queryManagerModule::openModel( rvOpenModel &_return,
 				    const std::string &sessionID, 
 				    const std::string &unique_name, const std::string &requested_access) {
   try {
-    cli->FindModelFS( _return, sessionID, unique_name); // requested_access not used at the momemnt
-    cout << "WARNING: queryManagerModule::openModel requested_access not used at the moment." << endl;
+    cli->FindModel( _return, sessionID, unique_name, requested_access); // requested_access not used at the momemnt
   } catch ( TException& tx) {
     cout << "ERROR: " << tx.what() << endl;
   }

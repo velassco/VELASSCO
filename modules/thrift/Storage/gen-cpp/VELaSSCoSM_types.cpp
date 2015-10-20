@@ -11,7 +11,7 @@
 
 #include <thrift/TToString.h>
 
-
+namespace VELaSSCoSM {
 
 int _kElementShapeTypeValues[] = {
   ElementShapeType::PointElement,
@@ -3033,4 +3033,4 @@ std::ostream& operator<<(std::ostream& out, const rvGetListOfMeshes& obj) {
   return out;
 }
 
-
+} // namespace

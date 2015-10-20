@@ -14,6 +14,8 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
+using namespace  ::VELaSSCoSM;
+
 class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
  public:
   VELaSSCoSMHandler() {
@@ -41,9 +43,9 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
     printf("GetListOfModelNames\n");
   }
 
-  void FindModelFS(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern) {
+  void FindModel(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern, const std::string& requested_access) {
     // Your implementation goes here
-    printf("FindModelFS\n");
+    printf("FindModel\n");
   }
 
   /**

@@ -6,7 +6,7 @@
  */
 #include "VELaSSCoSM.h"
 
-
+namespace VELaSSCoSM {
 
 
 VELaSSCoSM_statusDL_args::~VELaSSCoSM_statusDL_args() throw() {
@@ -392,11 +392,11 @@ uint32_t VELaSSCoSM_GetListOfModelNames_presult::read(::apache::thrift::protocol
 }
 
 
-VELaSSCoSM_FindModelFS_args::~VELaSSCoSM_FindModelFS_args() throw() {
+VELaSSCoSM_FindModel_args::~VELaSSCoSM_FindModel_args() throw() {
 }
 
 
-uint32_t VELaSSCoSM_FindModelFS_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t VELaSSCoSM_FindModel_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -432,6 +432,14 @@ uint32_t VELaSSCoSM_FindModelFS_args::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->requested_access);
+          this->__isset.requested_access = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -444,10 +452,10 @@ uint32_t VELaSSCoSM_FindModelFS_args::read(::apache::thrift::protocol::TProtocol
   return xfer;
 }
 
-uint32_t VELaSSCoSM_FindModelFS_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t VELaSSCoSM_FindModel_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   oprot->incrementRecursionDepth();
-  xfer += oprot->writeStructBegin("VELaSSCoSM_FindModelFS_args");
+  xfer += oprot->writeStructBegin("VELaSSCoSM_FindModel_args");
 
   xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->sessionID);
@@ -457,6 +465,10 @@ uint32_t VELaSSCoSM_FindModelFS_args::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeString(this->unique_model_name_pattern);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("requested_access", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->requested_access);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   oprot->decrementRecursionDepth();
@@ -464,14 +476,14 @@ uint32_t VELaSSCoSM_FindModelFS_args::write(::apache::thrift::protocol::TProtoco
 }
 
 
-VELaSSCoSM_FindModelFS_pargs::~VELaSSCoSM_FindModelFS_pargs() throw() {
+VELaSSCoSM_FindModel_pargs::~VELaSSCoSM_FindModel_pargs() throw() {
 }
 
 
-uint32_t VELaSSCoSM_FindModelFS_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t VELaSSCoSM_FindModel_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   oprot->incrementRecursionDepth();
-  xfer += oprot->writeStructBegin("VELaSSCoSM_FindModelFS_pargs");
+  xfer += oprot->writeStructBegin("VELaSSCoSM_FindModel_pargs");
 
   xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString((*(this->sessionID)));
@@ -481,6 +493,10 @@ uint32_t VELaSSCoSM_FindModelFS_pargs::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeString((*(this->unique_model_name_pattern)));
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("requested_access", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString((*(this->requested_access)));
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   oprot->decrementRecursionDepth();
@@ -488,11 +504,11 @@ uint32_t VELaSSCoSM_FindModelFS_pargs::write(::apache::thrift::protocol::TProtoc
 }
 
 
-VELaSSCoSM_FindModelFS_result::~VELaSSCoSM_FindModelFS_result() throw() {
+VELaSSCoSM_FindModel_result::~VELaSSCoSM_FindModel_result() throw() {
 }
 
 
-uint32_t VELaSSCoSM_FindModelFS_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t VELaSSCoSM_FindModel_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -532,11 +548,11 @@ uint32_t VELaSSCoSM_FindModelFS_result::read(::apache::thrift::protocol::TProtoc
   return xfer;
 }
 
-uint32_t VELaSSCoSM_FindModelFS_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t VELaSSCoSM_FindModel_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("VELaSSCoSM_FindModelFS_result");
+  xfer += oprot->writeStructBegin("VELaSSCoSM_FindModel_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -549,11 +565,11 @@ uint32_t VELaSSCoSM_FindModelFS_result::write(::apache::thrift::protocol::TProto
 }
 
 
-VELaSSCoSM_FindModelFS_presult::~VELaSSCoSM_FindModelFS_presult() throw() {
+VELaSSCoSM_FindModel_presult::~VELaSSCoSM_FindModel_presult() throw() {
 }
 
 
-uint32_t VELaSSCoSM_FindModelFS_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t VELaSSCoSM_FindModel_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -3286,20 +3302,21 @@ void VELaSSCoSMClient::recv_GetListOfModelNames(rvGetListOfModels& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetListOfModelNames failed: unknown result");
 }
 
-void VELaSSCoSMClient::FindModelFS(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern)
+void VELaSSCoSMClient::FindModel(rvOpenModel& _return, const std::string& sessionID, const std::string& unique_model_name_pattern, const std::string& requested_access)
 {
-  send_FindModelFS(sessionID, unique_model_name_pattern);
-  recv_FindModelFS(_return);
+  send_FindModel(sessionID, unique_model_name_pattern, requested_access);
+  recv_FindModel(_return);
 }
 
-void VELaSSCoSMClient::send_FindModelFS(const std::string& sessionID, const std::string& unique_model_name_pattern)
+void VELaSSCoSMClient::send_FindModel(const std::string& sessionID, const std::string& unique_model_name_pattern, const std::string& requested_access)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("FindModelFS", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("FindModel", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  VELaSSCoSM_FindModelFS_pargs args;
+  VELaSSCoSM_FindModel_pargs args;
   args.sessionID = &sessionID;
   args.unique_model_name_pattern = &unique_model_name_pattern;
+  args.requested_access = &requested_access;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -3307,7 +3324,7 @@ void VELaSSCoSMClient::send_FindModelFS(const std::string& sessionID, const std:
   oprot_->getTransport()->flush();
 }
 
-void VELaSSCoSMClient::recv_FindModelFS(rvOpenModel& _return)
+void VELaSSCoSMClient::recv_FindModel(rvOpenModel& _return)
 {
 
   int32_t rseqid = 0;
@@ -3327,12 +3344,12 @@ void VELaSSCoSMClient::recv_FindModelFS(rvOpenModel& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("FindModelFS") != 0) {
+  if (fname.compare("FindModel") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  VELaSSCoSM_FindModelFS_presult result;
+  VELaSSCoSM_FindModel_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -3342,7 +3359,7 @@ void VELaSSCoSMClient::recv_FindModelFS(rvOpenModel& _return)
     // _return pointer has now been filled
     return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "FindModelFS failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "FindModel failed: unknown result");
 }
 
 void VELaSSCoSMClient::GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices)
@@ -4185,38 +4202,38 @@ void VELaSSCoSMProcessor::process_GetListOfModelNames(int32_t seqid, ::apache::t
   }
 }
 
-void VELaSSCoSMProcessor::process_FindModelFS(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void VELaSSCoSMProcessor::process_FindModel(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("VELaSSCoSM.FindModelFS", callContext);
+    ctx = this->eventHandler_->getContext("VELaSSCoSM.FindModel", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCoSM.FindModelFS");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCoSM.FindModel");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "VELaSSCoSM.FindModelFS");
+    this->eventHandler_->preRead(ctx, "VELaSSCoSM.FindModel");
   }
 
-  VELaSSCoSM_FindModelFS_args args;
+  VELaSSCoSM_FindModel_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "VELaSSCoSM.FindModelFS", bytes);
+    this->eventHandler_->postRead(ctx, "VELaSSCoSM.FindModel", bytes);
   }
 
-  VELaSSCoSM_FindModelFS_result result;
+  VELaSSCoSM_FindModel_result result;
   try {
-    iface_->FindModelFS(result.success, args.sessionID, args.unique_model_name_pattern);
+    iface_->FindModel(result.success, args.sessionID, args.unique_model_name_pattern, args.requested_access);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "VELaSSCoSM.FindModelFS");
+      this->eventHandler_->handlerError(ctx, "VELaSSCoSM.FindModel");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("FindModelFS", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("FindModel", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -4225,17 +4242,17 @@ void VELaSSCoSMProcessor::process_FindModelFS(int32_t seqid, ::apache::thrift::p
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "VELaSSCoSM.FindModelFS");
+    this->eventHandler_->preWrite(ctx, "VELaSSCoSM.FindModel");
   }
 
-  oprot->writeMessageBegin("FindModelFS", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("FindModel", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "VELaSSCoSM.FindModelFS", bytes);
+    this->eventHandler_->postWrite(ctx, "VELaSSCoSM.FindModel", bytes);
   }
 }
 
@@ -4892,5 +4909,5 @@ void VELaSSCoSMProcessor::process_GetListOfMeshes(int32_t seqid, ::apache::thrif
   ::boost::shared_ptr< ::apache::thrift::TProcessor > processor(new VELaSSCoSMProcessor(handler));
   return processor;
 }
-
+} // namespace
 

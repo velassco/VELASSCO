@@ -17,7 +17,7 @@
 #include <thrift/cxxfunctional.h>
 
 
-
+namespace VELaSSCoSM {
 
 struct ElementShapeType {
   enum type {
@@ -1194,6 +1194,6 @@ class rvGetListOfMeshes {
 
 void swap(rvGetListOfMeshes &a, rvGetListOfMeshes &b);
 
-
+} // namespace
 
 #endif

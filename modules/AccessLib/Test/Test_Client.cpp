@@ -105,23 +105,27 @@ int main(int argc, char* argv[])
   std::cout << "in VELaSSCo_models:" << std::endl;
   std::cout << "   status = " << status << std::endl;
   std::cout << "   model_list = " << return_list << std::endl;
-  // group_qualifier = "VELaSSCo_Models_V4CIMNE";
-  // result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
-  // CheckVALResult(result);
-  // std::cout << "in VELaSSCo_Models_V4CIMNE:" << std::endl;
-  // std::cout << "   status = " << status << std::endl;
-  // std::cout << "   model_list = " << return_list << std::endl;
-
-  result = valGetStatusDB( sessionID, &status);
+  group_qualifier = "Test_VELaSSCo_Models";
+  result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
   CheckVALResult(result);
-  std::cout << "status = " << status << std::endl;
+  std::cout << "in VELaSSCo_Models_V4CIMNE:" << std::endl;
+  std::cout << "   status = " << status << std::endl;
+  std::cout << "   model_list = " << return_list << std::endl;
+
+  // result = valGetStatusDB( sessionID, &status);
+  // CheckVALResult(result);
+  // std::cout << "status = " << status << std::endl;
 
   // 
   // Test OpenModel
+
+  // const char *unique_name = ""; // can be empty to get the first one
+  // const char *unique_name = "Test_VELaSSCo_Models:"; // or using only the table's name and get the first one
   const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
   const char *access = "";
   const char *return_modelID = NULL;
   result = valOpenModel( sessionID, unique_name, access, &status, &return_modelID);
+  std::cout << "OpenModel: " << std::endl;
   std::cout << "   status = " << status << std::endl;
   char hex_string[ 1024];
   std::cout << "   model_modelID = " << ModelID_DoHexStringConversionIfNecesary( return_modelID, hex_string, 1024) << std::endl;

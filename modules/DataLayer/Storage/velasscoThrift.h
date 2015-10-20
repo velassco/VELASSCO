@@ -6,6 +6,8 @@
 #include "VELaSSCoSM.h"
 #include "storageModule.h"
 
+using namespace VELaSSCoSM;
+
 class VELaSSCoHandler : virtual public VELaSSCoSMIf
 {
 public:
@@ -26,7 +28,7 @@ public:
    * @param model_name_pattern
    */
   void GetListOfModelNames(rvGetListOfModels &_return, const std::string &sessionID, const std::string &model_group_qualifier, const std::string &model_name_pattern) ;
-  void FindModelFS(rvOpenModel &_return, const std::string &sessionID, const std::string &unique_model_name_pattern);
+  void FindModel(rvOpenModel &_return, const std::string &sessionID, const std::string &unique_model_name_pattern, const std::string &requested_access);
     
   /**
    *  Return the status of the different services
