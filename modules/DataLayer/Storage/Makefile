@@ -9,7 +9,7 @@ all: $(BIN) $(EXEC)
 
 $(EXEC): base64.o cJSON.o                                                  \
          Hbase_constants1.o Hbase_types1.o hbase1.o                        \
-         VELaSSCo.o velassco_types.o velassco_constants.o velasscoThrift.o \
+         VELaSSCoSM.o velassco_types.o velassco_constants.o velasscoThrift.o \
          storageModule.o HBase.o EDM.o Helpers.o main.o \
 	 HBase_status.o HBase_model_operations.o
 	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lcurl -o $(BIN)/$(EXEC)
@@ -44,15 +44,15 @@ velasscoThrift.o:
 
 
 velassco_constants.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_constants.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_constants.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_constants.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_constants.o
 
 
 velassco_types.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo_types.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_types.o
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_types.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_types.o
 
 
-VELaSSCo.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCo.cpp -I$(THRIFT_STORAGE) -o $(BIN)/VELaSSCo.o
+VELaSSCoSM.o: 
+	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM.cpp -I$(THRIFT_STORAGE) -o $(BIN)/VELaSSCoSM.o
 
 
 storageModule.o:

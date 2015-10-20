@@ -27,6 +27,8 @@ using namespace  ::apache::hadoop::hbase::thrift;
 typedef std::map<std::string,TCell> CellMap;
 
 class FullyQualifiedModelName;
+// #include "VELaSSCoSM.h"
+// using namespace VELaSSCoSM;
 
 namespace VELaSSCo
 {

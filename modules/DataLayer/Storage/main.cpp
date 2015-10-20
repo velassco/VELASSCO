@@ -117,7 +117,7 @@ int main(int argc, char **argv)
     const int workerCount = 64;
     
     boost::shared_ptr<VELaSSCoHandler> handler(new VELaSSCoHandler( db_type, db_host, db_port));
-    boost::shared_ptr<TProcessor> processor(new VELaSSCoProcessor(handler));
+    boost::shared_ptr<TProcessor> processor(new VELaSSCoSMProcessor(handler));
     boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(listen_port));
     boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());

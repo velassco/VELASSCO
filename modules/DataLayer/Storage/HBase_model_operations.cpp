@@ -15,7 +15,7 @@
 
 // VELaSSCo
 #include "HBase.h"
-#include "VELaSSCo.h" // for class FullyQualifiedModelName
+#include "VELaSSCoSM.h" // for class FullyQualifiedModelName
 #include "cJSON.h"
 #include "base64.h"
 
@@ -296,16 +296,29 @@ std::string HBase::findModelFS( std::string &report, std::string &return_modelID
   // TableName:model_name_pattern
   // model_name_pattern corresponds to Properties:fp
 
-  char *table_to_use = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
-  char *path_to_search = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
-  char *separator = strchr( table_to_use, ':');
-  if ( separator) {
-    *separator = '\0';
-    separator++;
-    strcpy( path_to_search, separator);
-  } else {
-    free( table_to_use);
+  bool use_first_model = false;
+  char *table_to_use = NULL;
+  char *path_to_search = NULL;
+  char *separator = NULL;
+  if ( unique_model_name_pattern.length() == 0) {
+    use_first_model = true;
     table_to_use = strdup( "VELaSSCo_Models");
+  } else {
+    table_to_use = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
+    path_to_search = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
+    separator = strchr( table_to_use, ':');
+    if ( separator) {
+      *separator = '\0';
+      separator++;
+      *path_to_search = '\0';
+      if ( *separator)
+	strcpy( path_to_search, separator);
+      else
+	use_first_model = true; // it only hash "Test_VELaSSCo_Models:"
+    } else {
+      free( table_to_use);
+      table_to_use = strdup( "VELaSSCo_Models");
+    }
   }
 
   std::string modelID_to_return;
@@ -342,7 +355,7 @@ std::string HBase::findModelFS( std::string &report, std::string &return_modelID
 	FullyQualifiedModelName model_info;
 	bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
 	if ( ok) {
-	  if ( model_info.full_path == path_to_search) {
+	  if ( use_first_model || ( model_info.full_path == path_to_search)) {
 	    modelID_to_return = model_info.modelID;
 	    found = true;
 	    break;
