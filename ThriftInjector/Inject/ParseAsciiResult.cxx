@@ -196,31 +196,33 @@ int ParseResultFileHeader( const std::string &line, ResultContainerType &result 
   return r ? 0 : -1;
 };
 
-int ParseResultSectionHeader( const std::string &line, ResultContainerType &result, SectionHeaderType &section )
+int ParseResultSectionHeader( const std::string &line, ResultContainerType &result,
+                              SectionHeaderType &section, std::string &name )
 {
   VecSectionArg vec;
-  std::string gpname;
   //vec._trace = true;
+  name = "";
   if ( parse_result_header( line.begin(), line.end(), vec ) )
     {
     section = boost::get<SectionHeaderType>( vec[ 0 ] );
     switch ( section )
       {
       case SECTION_GAUSS_POINT:
-        // TODO: process gauss point
-        LOG(warning) << "found GaussPoints section, still not processed";
-        gpname = boost::get<std::string>( vec[ 1 ] );
-        result.gaussPoints[ gpname ] = GaussPointDefinition( );
-        result.gaussPoints[ gpname ].name = gpname;
+        name = boost::get<std::string>( vec[ 1 ] );
+        result.gaussPoints[ name ] = GaussPointDefinition( );
+        result.gaussPoints[ name ].name = name;
+        result.gaussPoints[ name ].etype = boost::get<ElementType>( vec[ 2 ] );
         break;
       case SECTION_RANGE_TABLE:
         LOG(warning) << "found RangesTable section, still not processed";
         result.rangeTables.push_back( RangeTableType( ) );
-        result.rangeTables.back( ).name = boost::get<std::string>( vec[ 1 ] );
+        name = boost::get<std::string>( vec[ 1 ] );
+        result.rangeTables.back( ).name = name;
         break;
       case SECTION_RESULT:
       result.results.push_back( ResultBlockType() );
-      result.results.back().setName( boost::get<std::string>( vec[ 1 ] ) );
+      name = boost::get<std::string>( vec[ 1 ] );
+      result.results.back().setName( name );
       result.results.back().setAnalysis( boost::get<std::string>( vec[ 2 ] ) );
       result.results.back().setStep( boost::get<double>( vec[ 3 ] ) );
       result.results.back().setResultType( boost::get<ValueType>( vec[ 4 ] ) );
@@ -284,26 +286,117 @@ int ParseRangeTableProperties( const std::string &line,
   return r ? 0 : -1;
 }
 
+struct GPProperties
+{
+  unsigned int numberOfGP;
+  int nodesIncluded;
+  int naturalCoordinates;
+  std::vector<double> coords;
+  bool endFound;
+  bool errorFound;
+
+  GPProperties()
+    : numberOfGP( 0 ), nodesIncluded( -1 ), naturalCoordinates( -1 ), endFound( false ), errorFound( false )
+  {
+  }
+
+  void init()
+  {
+    numberOfGP = 0;
+    nodesIncluded = -1;
+    naturalCoordinates = -1;
+    coords.clear( );
+    endFound = false;
+    errorFound = false;
+  }
+
+  void setNumber( unsigned int v )
+  {
+    if ( numberOfGP > 0 )
+      {
+      LOG(error) << "'Number of Gauss Points' already provided with value " << numberOfGP << " while trying to set as " << v;
+      errorFound = true;
+      }
+    else
+      {
+      numberOfGP = v;
+      }
+  }
+
+  void setIncluded( bool v )
+  {
+    if ( nodesIncluded >= 0 )
+      {
+      LOG(error) << (nodesIncluded?"'Nodes included'":"'Nodes not included'")
+                 << " already provided while trying to set as " 
+                 << (v?"'Nodes included'":"'Nodes not included'");
+      errorFound = true;
+      }
+    else
+      {
+      nodesIncluded = int(v);
+      }
+  }
+
+  void setCoordinates( std::string const &v )
+  {
+    if ( naturalCoordinates >= 0 )
+      {
+      LOG(error) << "'Natural Coordinates' already provided with value " 
+                 << (naturalCoordinates?"internal":"given") << " while to trying to set as '" << v << "'";
+      errorFound = true;
+      }
+    else
+      {
+      if ( boost::iequals( v, "internal" ) )
+        {
+        naturalCoordinates = 1;
+        }
+      else
+        {
+        naturalCoordinates = 0;
+        }
+      }
+  }
+
+  void setEnd()
+  {
+    endFound = true;
+  }
+};
+
 // TODO: for now we are skipping the gauss points definitions
 int ParseGaussPointProperties( const std::string &line, 
-                               ResultContainerType &result, SectionHeaderType &section )
+                               GPProperties &gp )
 {
+  using qi::double_;
+  using qi::uint_;
   using qi::lit;
   using qi::eoi;
   using ascii::no_case;
   using ascii::space;
-  
+  using qi::as_string;
+
   std::string::const_iterator first = line.begin();
   std::string::const_iterator last = line.end();
   
-  VecSectionArg vec;
-
   bool r = qi::phrase_parse
     (first, last,
      //  Begin grammar
      no_case[
-       lit("end") >> lit("gausspoints")[boost::bind(&VecSectionArg::init_type, &vec, SECTION_END)]
+       lit("END") >> lit("GAUSSPOINTS")[boost::bind(&GPProperties::setEnd, &gp)]
        |
+       lit("NUMBER") >> lit("OF") >> lit("GAUSS") >> lit("POINTS") >> lit(":") >>
+       uint_ [boost::bind(&GPProperties::setNumber, &gp, ::_1)]
+       |
+       lit("NODES") >> lit("NOT") >> 
+       lit("INCLUDED") [ boost::bind(&GPProperties::setIncluded, &gp, false) ]
+       | 
+       lit("NODES") >> lit("INCLUDED") [ boost::bind(&GPProperties::setIncluded, &gp, true) ]
+       | 
+       lit("NATURAL") >> lit("COORDINATES") >> lit(":") >> 
+       as_string [(lit("INTERNAL") | lit("GIVEN"))] [ boost::bind(&GPProperties::setCoordinates, &gp, ::_1) ]
+       | 
        eoi
        ]
      //  End grammar
@@ -315,12 +408,7 @@ int ParseGaussPointProperties( const std::string &line,
     }
   if ( r )
     {
-    assert( vec.size() <= 1 );
-    if ( vec.size() == 1 )
-      {
-      assert( boost::get<SectionHeaderType>( vec[ 0 ] ) == SECTION_END );
-      section = SECTION_END;
-      }
+    r = !gp.errorFound;
     }
   else
     {
@@ -487,6 +575,8 @@ int ParseResultFile( const std::string& pathFile, ResultContainerType &result )
   bool flagValues;
   ResultStateType state = START;
   SectionHeaderType section;
+  GPProperties gp;
+  std::string section_name;
 
   while( std::getline( fin, line ) )
     {
@@ -510,13 +600,14 @@ int ParseResultFile( const std::string& pathFile, ResultContainerType &result )
           }
         break;
       case FILE_HEADER:
-        if ( ParseResultSectionHeader( line, result, section ) == 0 )
+        if ( ParseResultSectionHeader( line, result, section, section_name ) == 0 )
           {
           LOG(trace) << line;
           switch ( section )
             {
             case SECTION_GAUSS_POINT:
               state = GAUSS_POINT;
+              gp.init( );
               break;
             case SECTION_RANGE_TABLE:
               state = RANGE_TABLE;
@@ -533,11 +624,38 @@ int ParseResultFile( const std::string& pathFile, ResultContainerType &result )
           }
         break;
       case GAUSS_POINT:
-        if( ParseGaussPointProperties( line, result, section ) == 0 )
+        if( ParseGaussPointProperties( line, gp ) == 0 )
           {
-          if ( section == SECTION_END )
+          if ( gp.endFound )
             {
             // TODO: validate if all properties are OK
+            GaussPointDefinition &gpDef = result.gaussPoints[ section_name ];
+            if ( gp.numberOfGP == 0 )
+              {
+              LOG(error) << "'Number of gauss points' not provided";
+              return -1;
+              }
+            gpDef.size = gp.numberOfGP;
+            if ( gp.nodesIncluded < 0 )
+              {
+              LOG(warning) << "'Nodes ?not? included' not provided, assuming 'not included'";
+              }
+            gpDef.includeNodes = bool(gp.nodesIncluded);
+            
+            if ( gp.naturalCoordinates < 0 )
+              {
+              LOG(warning) << "'Natural coordinates' not provided, assuming 'internal'";
+              }
+            if ( gp.naturalCoordinates )
+              {
+              if ( gp.coords.size() == 0 )
+                {
+                LOG(error) << "Natural Coordinates specified as 'given' but no coordinates values were given";
+                return -1;
+                }
+              gpDef.coordinates.clear();
+              std::copy( gp.coords.begin(), gp.coords.end(), gpDef.coordinates.begin() );
+              }
             state = FILE_HEADER;
             }
           }
