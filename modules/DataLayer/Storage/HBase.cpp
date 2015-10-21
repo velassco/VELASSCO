@@ -72,6 +72,13 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
 {
 	std::stringstream result;
 	int64_t           vertexID = 0;
+
+    printf("Parsing JSON tree ...\n");
+    cJSON *json = cJSON_Parse(b.c_str());
+    if ( !json) {
+      printf("not a JSON tree !\n");
+      return "";
+    }
 	
     // cout<< "List Of vertices : "<< LOVertices <<endl<<endl;
     cJSON *sentListOfVertices = cJSON_GetObjectItem(cJSON_Parse(LOVertices.c_str()), "id");
@@ -80,8 +87,6 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
     cJSON *listOfVertices = cJSON_CreateArray();
     cJSON_AddItemToObject(_return, "vertices", listOfVertices);
     
-    printf("Parsing JSON tree ...\n");
-    cJSON *json = cJSON_Parse(b.c_str());
     vector<cJSON*> velem;
     vector<bool> enableVElem;
     for (int i = 0; i < cJSON_GetArraySize(json); i ++ )
@@ -532,10 +537,18 @@ std::string HBase::getResultOnVertices_curl( const std::string &sessionID,
   std::cout << "**********\n";    
     
   //
-  string result;
+  string result( "");
   if(analysisID.find("DEM") >= 0)
     {
-      result = parse1DEM(buffer, listOfVertices);
+      // buffer should be checked against "Not found"
+      std::size_t found = buffer.find( "Not found");
+      if ( ( found == string::npos) || ( found > 10)) {
+	// assume that the error message "Not found" should be at the begining of the returned buffer
+	result = parse1DEM(buffer, listOfVertices);
+      }
+      if ( result == "") { // there has been some errors parsing the JSON tree or is "Not found"
+	result = buffer;
+      }
     }
   else if(analysisID.find("FEM") >= 0)
     {
