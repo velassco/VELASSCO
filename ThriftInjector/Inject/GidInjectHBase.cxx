@@ -22,6 +22,13 @@
 //#define DONT_APPLY_MUTATIONS
 #define CHECK_KEY_ENCODING
 //#define USE_THRIFT_SERIALIZATION
+//#define USE_BINARY_ROWKEY
+
+#if defined( USE_BINARY_ROWKEY )
+#define MODEL_ROWKEY_LENGTH 16
+#else
+#define MODEL_ROWKEY_LENGTH 32
+#endif
 
 using namespace boost::filesystem;
 using boost::lexical_cast;
@@ -482,7 +489,7 @@ int EncodeRowKey_MetaData( const std::string &keyModel,
                            const std::string &analysisName,
                            double step, std::string &rowKey )
 {
-  if ( keyModel.length( ) != 16 )
+  if ( keyModel.length( ) != MODEL_ROWKEY_LENGTH )
     {
     return ERROR_BAD_UUID_LENGTH;
     }
@@ -493,6 +500,11 @@ int EncodeRowKey_MetaData( const std::string &keyModel,
                    sizeof( step ) );
   rowKey = keyModel;
   BinarySerializerType binWriter;
+#if defined( USE_BINARY_ROWKEY )
+  binWriter.SetConvertToHex( false );
+#else
+  binWriter.SetConvertToHex( true );
+#endif
   binWriter.Write( rowKey, analysisName );
   binWriter.Write( rowKey, step );
   return SUCCESS;
@@ -503,28 +515,39 @@ int DecodeRowKey_MetaData( const std::string &rowKey,
                            std::string &analysisName,
                            double &step )
 {
+#if defined(USE_BINARY_ROWKEY)
   const int minimumLength = 
-    16 + sizeof(boost::uint32_t) + sizeof(step);
+    MODEL_ROWKEY_LENGTH + sizeof(boost::uint32_t) + sizeof(step);
+#else
+  const int minimumLength = 
+    MODEL_ROWKEY_LENGTH + ( sizeof(boost::uint32_t) + sizeof(step) ) * 2;
+#endif
   if ( rowKey.length( ) < minimumLength )
     {
     return ERROR_KEY_MINIMUM_LENGTH;
     }
-  char uid[16];
+  char uid[MODEL_ROWKEY_LENGTH];
   BinaryDeserializerType binReader;
-  boost::uint32_t pos0 = binReader.Read( rowKey, reinterpret_cast<boost::int8_t*>(&uid[0]), 16 );
-  if ( pos0 != 16 )
+  binReader.SetConvertFromHex( false );
+  boost::uint32_t pos0 = binReader.Read( rowKey, reinterpret_cast<boost::int8_t*>(&uid[0]), MODEL_ROWKEY_LENGTH );
+  if ( pos0 != MODEL_ROWKEY_LENGTH )
     {
     return ERROR_KEY_BAD_READ;
     }
-  keyModel.assign( uid, 16 );
+  keyModel.assign( uid, MODEL_ROWKEY_LENGTH );
+#if defined(USE_BINARY_ROWKEY)
+  binReader.SetConvertFromHex( false );
+#else
+  binReader.SetConvertFromHex( true );
+#endif
   boost::uint32_t pos1 = binReader.Read( rowKey, analysisName, pos0 );
-  if ( pos1 - pos0 < sizeof(boost::uint32_t) )
+  if ( pos1 <= pos0  )
     {
     return ERROR_KEY_BAD_READ;
     }
   pos0 = pos1;
   pos1 = binReader.Read( rowKey, &step, 1, pos0 );
-  if ( pos1 - pos0 != sizeof( step ) )
+  if ( pos1 <= pos0 )
     {
     return ERROR_KEY_BAD_READ;
     }
@@ -542,12 +565,12 @@ int InsertResult_MetaData( const std::string &host, int port,
   HbaseClient client( protocol );
   GID::MeshResultType mesh;
   int status;
-  boost::uuids::uuid id;
-  StringToUUID( keyModel, id );
+  //boost::uuids::uuid id;
+  //StringToUUID( keyModel, id );
   try 
     {    
     transport->open( );
-    LOG(info) << "inserting result metada for model " << id;
+    LOG(info) << "inserting result metada for model " << keyModel;
     // REVIEW: up to this point the mesh is static
     std::string analysisName( "" );
     double step = 0.0;
@@ -563,6 +586,7 @@ int InsertResult_MetaData( const std::string &host, int port,
       // look for the first mesh with nodes defined
       bool csetFound = false;
       BinarySerializerType binWriter;
+      binWriter.SetConvertToHex( false );
       for( GlobalMeshInfoType::MapHeaderType::const_iterator it = meshInfo.headers.begin( );
            it  != meshInfo.headers.end( ); ++it  )
         {
@@ -723,18 +747,30 @@ int EncodeRowKey_Data( const std::string &keyModel,
                        const std::string &analysisName,
                        double step, GID::IdPartition part, std::string &keyData )
 {
-  if ( keyModel.length() != 16 )
+  if ( keyModel.length() != MODEL_ROWKEY_LENGTH )
     {
     return ERROR_BAD_UUID_LENGTH;
     }
 
   boost::uint32_t lengthStr = analysisName.length( );
+#if defined(USE_BINARY_ROWKEY)
   keyData.reserve( keyModel.length( ) +
                    sizeof( lengthStr )  + lengthStr +
                    sizeof( step ) +
                    sizeof( part ) );
+#else
+  keyData.reserve( keyModel.length( ) +
+                   ( sizeof( lengthStr )  + lengthStr +
+                     sizeof( step ) +
+                     sizeof( part ) ) * 2 );
+#endif
   keyData = keyModel;
   BinarySerializerType binWriter;
+#if defined(USE_BINARY_ROWKEY)
+  binWriter.SetConvertToHex( false );
+#else
+  binWriter.SetConvertToHex( true );
+#endif
   binWriter.Write( keyData, analysisName );
   binWriter.Write( keyData, step );
   binWriter.Write( keyData, part );
@@ -746,36 +782,50 @@ int DecodeRowKey_Data( const std::string &keyData,
                        std::string &analysisName,
                        double &step, GID::IdPartition &part )
 {
+#if defined(USE_BINARY_ROWKEY)
   const int minimumLength = 
-    16 + sizeof(boost::uint32_t) +
-    sizeof(step) + sizeof(part);
+    MODEL_ROWKEY_LENGTH + sizeof(boost::uint32_t) + sizeof(step) + sizeof(part);
+#else
+  const int minimumLength = 
+    MODEL_ROWKEY_LENGTH + ( sizeof(boost::uint32_t) + sizeof(step) + sizeof(part) ) * 2;
+#endif
   if ( keyData.length( ) < minimumLength )
     {
     return ERROR_KEY_MINIMUM_LENGTH;
     }
-  char uid[16];
+  char uid[MODEL_ROWKEY_LENGTH];
   BinaryDeserializerType binReader;
-  boost::uint32_t pos0 = binReader.Read( keyData, reinterpret_cast<boost::int8_t*>(&uid[0]), 16 );
-  if ( pos0 != 16 )
+  binReader.SetConvertFromHex( false );
+  boost::uint32_t pos0 = binReader.Read( keyData, reinterpret_cast<boost::int8_t*>(&uid[0]), MODEL_ROWKEY_LENGTH );
+  if ( pos0 != MODEL_ROWKEY_LENGTH )
     {
+    LOG(error) << "while reading model rowkey";
     return ERROR_KEY_BAD_READ;
     }
-  keyModel.assign( uid, 16 );
+  keyModel.assign( uid, MODEL_ROWKEY_LENGTH );
+#if defined(USE_BINARY_ROWKEY)
+  binReader.SetConvertToHex( false );
+#else
+  binReader.SetConvertFromHex( true );
+#endif
   boost::uint32_t pos1 = binReader.Read( keyData, analysisName, pos0 );
-  if ( pos1 - pos0 < sizeof(boost::uint32_t) )
+  if ( pos1 <= pos0 )
     {
+    LOG(error) << "while reading analysis name";
     return ERROR_KEY_BAD_READ;
     }
   pos0 = pos1;
   pos1 = binReader.Read( keyData, &step, 1, pos0 );
-  if ( pos1 - pos0 != sizeof( step ) )
+  if ( pos1 <= pos0 )
     {
+    LOG(error) << "while reading step";
     return ERROR_KEY_BAD_READ;
     }
   pos0 = pos1;
   pos1 = binReader.Read( keyData, &part, 1, pos0 );
-  if ( pos1 - pos0 != sizeof( part ) )
+  if ( pos1 <= pos0 )
     {
+    LOG(error) << "while reading partition";
     return ERROR_KEY_BAD_READ;
     }
   return SUCCESS;
@@ -786,7 +836,9 @@ int EncodeColumn_Data( char family, char prefix, GID::UInt32 indexSet, GID::UInt
   std::string binId;  
   BinarySerializerType binWriter;
   char cprefix[3];
-  
+
+  binWriter.SetConvertToHex( false );
+
   cprefix[0] = family;
   cprefix[1] = ':';
   cprefix[2] = prefix;
@@ -835,12 +887,42 @@ int DecodeColumn_Data( const std::string &column, char family, char prefix,
     return ERROR_INVALID_COLUMN_NAME_CSET;
     }
   BinaryDeserializerType binReader;
+  binReader.SetConvertFromHex( false );
   boost::uint32_t pos0 = binReader.Read( column, &id, i + 1 );
   if ( pos0 != i + 1 + sizeof( id ) )
     {
     return ERROR_INVALID_COLUMN_NAME_ID;
     }
   return SUCCESS;
+}
+
+void CheckDecodeRowKey_Data( const std::string & rowkey,
+                             const std::string & keyModel,
+                             const std::string & analysisName,
+                             double step, GID::IdPartition indexPart )
+{
+  std::string checkKeyModel, checkAnalysisName;
+  double checkStep;
+  GID::IdPartition checkPart;
+  int status = DecodeRowKey_Data( rowkey, checkKeyModel, checkAnalysisName, checkStep, checkPart );
+  if ( status == SUCCESS )
+    {
+    if( checkKeyModel != keyModel ||
+        checkAnalysisName != analysisName ||
+        checkStep != step ||
+        checkPart != indexPart )
+      {
+      LOG(info) << "checkKeyModel = " << checkKeyModel << ", " 
+                << "checkAnalysisName = " << checkAnalysisName << ", " 
+                << "checkStep = " << checkStep << ", " 
+                << "checkPart = " << checkPart;
+      LOG(error) << "DecodeRowKey_Data does not return the expected key fields";
+      }
+    }
+  else
+    {
+    LOG(error) << "failed check of mesh data key with error code " << status;
+    }
 }
 
 int InsertPartResult_Data( const std::string &host, int port,
@@ -868,32 +950,11 @@ int InsertPartResult_Data( const std::string &host, int port,
     if ( status == SUCCESS )
       {
       LOG(info) << "keyM = " << keyM;
-      BinarySerializerType binWriter;
-
 #if defined(CHECK_KEY_ENCODING)
-      std::string checkKeyModel, checkAnalysisName;
-      double checkStep;
-      GID::IdPartition checkPart;
-      status = DecodeRowKey_Data( keyM, checkKeyModel, checkAnalysisName, checkStep, checkPart );
-      if ( status == SUCCESS )
-        {
-        LOG(info) << "checkKeyModel = " << checkKeyModel << ", " 
-                  << "checkAnalysisName = " << checkAnalysisName << ", " 
-                  << "checkStep = " << checkStep << ", " 
-                  << "checkPart = " << checkPart;
-        if( checkKeyModel != keyModel ||
-            checkAnalysisName != analysisName ||
-            checkStep != step ||
-            checkPart != indexPart )
-          {
-          LOG(error) << "DecodeRowKey_Data does not return the expected key fields";
-          }
-        }
-      else
-        {
-        LOG(error) << "failed check of mesh data key with error code " << status;
-        }
+      CheckDecodeRowKey_Data( keyM, keyModel, analysisName, step, indexPart );
 #endif
+      BinarySerializerType binWriter;
+      binWriter.SetConvertToHex( false );
       std::vector<Mutation> mutations;
       // TODO: first prototype use only one coordinate set
       GID::UInt32 indexCSet = 1;
@@ -927,6 +988,7 @@ int InsertPartResult_Data( const std::string &host, int port,
             break;
             }
           BinarySerializerType binWriter;
+          binWriter.SetConvertToHex( false );
           for( size_t i = 1; i < it->size(); i++ )
             {
             // copy from boost::long_long_type to boost::uint64_t
@@ -956,6 +1018,10 @@ int InsertPartResult_Data( const std::string &host, int port,
             {
             break;
             }
+#if defined(CHECK_KEY_ENCODING)
+          CheckDecodeRowKey_Data( keyR, keyModel, itR->header.analysis,
+                                  itR->header.step, indexPart );
+#endif
           mutations.clear( );
           GID::UInt64 indexMData = itR->header.indexMData;
           for( std::vector<GID::ResultRowType>::const_iterator itV = itR->values.begin( );
@@ -1038,6 +1104,7 @@ int InsertModelInfo( const std::string &host, int port,
   boost::shared_ptr<TProtocol> protocol( new TBinaryProtocol( transport ) );
   HbaseClient client( protocol );
   BinarySerializerType binBuffer;
+  binBuffer.SetConvertToHex( false );
   try 
     {    
     transport->open( );
@@ -1047,7 +1114,7 @@ int InsertModelInfo( const std::string &host, int port,
     mutations.back().value = modelInfo.m_ModelName;
     mutations.push_back( Mutation( ) );
     mutations.back().column = "Properties:fp";
-    mutations.back().value = modelInfo.m_PathRoot.string();
+    mutations.back().value = canonical( modelInfo.m_PathRoot ).string();
     mutations.push_back( Mutation( ) );
     mutations.back().column = "Properties:np";
     //mutations.back().value = Int2Array( modelInfo.GetNumberOfParts() );
@@ -1074,8 +1141,12 @@ int InsertModelInfo( const std::string &host, int port,
     //LOG(trace) << "UUID as string has length = " << ss.str( ).length( );
     //keyModel = ss.str( );
     std::string tmp( uid.begin( ), uid.end( ) );
+#if defined( USE_BINARY_ROWKEY )
     keyModel = tmp;
-    LOG(trace) << "using UUID = " << uid << "( '" << keyModel << " ')"
+#else
+    keyModel = GID::BinarySerializer::BinToHex( tmp );
+#endif
+    LOG(trace) << "using UUID = " << uid << "( '" << keyModel << "')"
                << " length = " << keyModel.length( );
 #ifndef DONT_APPLY_MUTATIONS
     client.mutateRow( strTableModels, keyModel, mutations, dummyAttributes );
