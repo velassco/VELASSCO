@@ -117,7 +117,7 @@ VAL_Result Client::Query( /* in */
 
 		LOGGER << "Query_Result: "                                 << std::endl;
 		LOGGER << "    result : "   << m_queryResult.result        << std::endl;
-		LOGGER << "    data   : \n" << Hexdump(m_queryResult.data) << std::endl;
+		LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 32) << std::endl;
 
 		// Return pointer to result string (Thrift uses std::string)
 		data = &(m_queryResult.data);

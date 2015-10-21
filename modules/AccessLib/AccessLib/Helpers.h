@@ -59,11 +59,16 @@ namespace VELaSSCo
    * Converts a std::string containing binary to a hex dump ASCII string.
    */ 
 
-  inline std::string Hexdump(const std::string input)
+  inline std::string Hexdump(const std::string input, const size_t max_len = 0)
   {
     std::stringstream out;
 
-    for (size_t i=0; i<input.size(); i+=16)
+    size_t end = input.size();
+    if ( max_len && ( end > max_len)) {
+      end = max_len;
+    }
+    size_t i = 0;
+    for (i=0; i<end; i+=16)
       {
 	out << std::hex << std::setw(2*sizeof(size_t)) << std::setfill('0') << (size_t)i << ": ";
 	for (size_t j=0; j<16; j++) 
@@ -82,6 +87,11 @@ namespace VELaSSCo
 
 	out << std::endl;
       }
+
+    if ( input.size() > end) {
+      out << std::hex << std::setw(2*sizeof(size_t)) << std::setfill('0') << (size_t)( i + 16) << ": ";
+      out << " . . ." << std::endl;
+    }
 
     return out.str();
   }
