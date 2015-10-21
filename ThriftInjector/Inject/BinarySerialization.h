@@ -11,8 +11,21 @@ BEGIN_GID_DECLS
 class BinarySerializer
 {
 public:
-  BinarySerializer( ) { };
+  BinarySerializer( ) : m_ConvertToHex( false ) { };
   virtual ~BinarySerializer( ) { };
+  
+  void SetConvertToHex( bool x )
+  {
+    this->m_ConvertToHex = x;
+  }
+
+  bool GetConvertToHex()
+  {
+    return this->m_ConvertToHex;
+  }
+
+  static std::string BinToHex( const std::string &source );
+  static void BinToHex( char c, char buffer[2] );
 
   // int8_t
   virtual boost::uint32_t Write( std::string &dest, const boost::int8_t *values, boost::uint32_t n ) = 0;
@@ -89,6 +102,9 @@ public:
   {
     return this->Write( dest, &value, 1 );
   }
+
+ private:
+  bool m_ConvertToHex;
 };
 
 class BinarySerializerThrift : public BinarySerializer
@@ -149,8 +165,18 @@ public:
 class BinaryDeserializer
 {
 public:
-  BinaryDeserializer( ) { };
+  BinaryDeserializer( )  : m_ConvertFromHex( false ) { };
   ~BinaryDeserializer( ) { };
+
+  void SetConvertFromHex( bool x )
+  {
+    this->m_ConvertFromHex = x;
+  }
+
+  bool GetConvertFromHex()
+  {
+    return this->m_ConvertFromHex;
+  }
 
   // int8_t
   virtual boost::uint32_t Read( const std::string &source,
@@ -203,6 +229,9 @@ public:
   virtual boost::uint32_t Read( const std::string &source,
 				double *values, boost::uint32_t n, 
 				boost::uint32_t pos = 0 ) = 0;
+
+ private:
+  bool m_ConvertFromHex;
 };
 
 class BinaryDeserializerThrift : public BinaryDeserializer

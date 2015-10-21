@@ -1,9 +1,96 @@
 #include "BinarySerialization.h"
+#include <iostream>
 
 using namespace apache::thrift::transport;
 using namespace apache::thrift::protocol;
 
 BEGIN_GID_DECLS
+
+static char hexTable[] =
+{
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  'A', 'B', 'C', 'D', 'E', 'F'
+};
+
+inline void CharToHex( char c, char hex[2] )
+{
+  hex[0] = hexTable[ (0xF0 & c) >> 4 ];
+  hex[1] = hexTable[ (0x0F & c) ];
+};
+
+template <class T>
+inline void BinToHex( T v, char hex[ sizeof( T ) * 2 ] )
+{
+  char *addr =reinterpret_cast<char*> (&v);
+  char tmp[2];
+  for( int i = sizeof( T ) - 1, j = 0; i >= 0; --i, ++j )
+    {
+    CharToHex( addr[ i ], tmp );
+    hex[ 2 * j ] = tmp[ 0 ];
+    hex[ 2 * j + 1 ] = tmp[ 1 ];
+    } 
+}
+
+inline bool HexValue( char h, char & c )
+{
+  if ( h >= '0' && h <= '9' )
+    {
+    c = h - '0';
+    return true;
+    }
+  if ( h >= 'A' && h <= 'F' )
+    {
+    c = h - 'A' + 10;
+    return true;
+    }
+  c = 0xFF;
+  return false;
+}
+
+inline bool HexToChar( const char hex[2], char & c )
+{
+  char h0, h1;
+  if ( HexValue( hex[0], h0 ) && HexValue( hex[1], h1 ) )
+    {
+    c = (h0 << 4) | h1;
+    return true;
+    }
+  return false;
+};
+
+template <class T>
+inline bool HexToBin( const char hex[ sizeof( T ) * 2 ], T & v )
+{
+  char *addr =reinterpret_cast<char*> (&v);
+  char h;
+  for( int i = sizeof( T ) - 1, j = 0; i >= 0; --i, j+=2 )
+    {
+    if ( !HexToChar( hex + j, h ) )
+      {
+      return false;
+      }
+    addr[i] = h;
+    }
+  return true;
+}
+
+void BinarySerializer::BinToHex( char c, char buffer[2] )
+{
+  CharToHex( c, buffer );
+}
+
+std::string BinarySerializer::BinToHex( const std::string &source )
+{
+  std::string hexStr;
+  char tmp[2];
+  for( std::string::const_iterator it = source.begin( );
+       it != source.end( ); it++ )
+    {
+    CharToHex( *it, tmp );
+    hexStr.append( tmp, 2 );
+    }
+  return hexStr;
+}
 
 BinarySerializerThrift::BinarySerializerThrift( )
   : m_Transport( new TMemoryBuffer( ) ), 
@@ -114,56 +201,138 @@ BinarySerializerNative::~BinarySerializerNative( )
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
                                                const boost::int8_t *values, boost::uint32_t n )
 {
-  const char *pChar = reinterpret_cast<const char*>(values); 
-  dest.append( pChar, n );
-  return n;
+  const char *pChar = reinterpret_cast<const char*>(values);
+  if ( this->GetConvertToHex( ) )
+    {
+    std::string tmp0( pChar, n );
+    std::string tmp = BinarySerializer::BinToHex( tmp0 );
+    dest.append( tmp );
+    return 2 * n;
+    }
+  else
+    {
+    dest.append( pChar, n );
+    return n;
+    }
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest, const std::string &str )
 {
   boost::uint32_t lengthStr = str.length( );
-  boost::uint32_t n = sizeof( lengthStr ) + lengthStr;
-  boost::uint32_t *pLength = &lengthStr;
-  char *pChar = reinterpret_cast<char*>(pLength);
-  dest.append( pChar, sizeof( lengthStr ) );
+  boost::uint32_t n;
+  
+  if ( this->GetConvertToHex( ) )
+    {
+    char tmp[ sizeof(lengthStr)*2 ];
+    GID::BinToHex( lengthStr, tmp );
+    dest.append( tmp, sizeof( lengthStr ) * 2 );
+    n = sizeof( lengthStr ) * 2;
+    }
+  else
+    {
+    boost::uint32_t *pLength = &lengthStr;
+    char *pChar = reinterpret_cast<char*>(pLength);
+    dest.append( pChar, sizeof( lengthStr ) );
+    n = sizeof( lengthStr );
+    }
   dest.append( str );
+  n += lengthStr;
   return n;
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
                                                const boost::int16_t *values, boost::uint32_t n )
 {
-  boost::uint32_t needed = sizeof( boost::int16_t ) * n;
-  const char *pChar = reinterpret_cast<const char*>(values);
-  dest.append( pChar, needed );
-  return needed;
+  const boost::uint32_t sizeValue = sizeof( boost::int16_t );
+  boost::uint32_t needed = sizeValue * n;
+  if ( this->GetConvertToHex( ) )
+    {
+    char tmp[sizeValue * 2];
+    for( int i = 0; i < n; i++ )
+      {
+      GID::BinToHex( values[i], tmp );
+      dest.append( tmp, sizeValue * 2 );
+      }
+    return needed * 2;    
+    }
+  else
+    {
+    const char *pChar = reinterpret_cast<const char*>( values );
+    dest.append( pChar, needed );
+    return needed;
+    }
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
                                                const boost::int32_t *values, boost::uint32_t n )
 {
-  boost::uint32_t needed = sizeof( boost::int32_t ) * n;
-  const char *pChar = reinterpret_cast<const char*>(values);
-  dest.append( pChar, needed );
-  return needed;
+  const boost::uint32_t sizeValue = sizeof( boost::int32_t );
+  boost::uint32_t needed = sizeValue * n;
+
+  if ( this->GetConvertToHex( ) )
+    {
+    char tmp[sizeValue * 2];
+    for( int i = 0; i < n; i++ )
+      {
+      GID::BinToHex( values[i], tmp );
+      dest.append( tmp, sizeValue *2 );      
+      }
+    return needed * 2;    
+    }
+  else
+    {
+    const char *pChar = reinterpret_cast<const char*>(values);
+    dest.append( pChar, needed );
+    return needed;
+    }
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
                                                const boost::int64_t *values, boost::uint32_t n )
 {
-  boost::uint32_t needed = sizeof( boost::int64_t ) * n;
-  const char *pChar = reinterpret_cast<const char*>(values);
-  dest.append( pChar, needed );
-  return needed;
+  const boost::uint32_t sizeValue = sizeof( boost::int64_t );
+  boost::uint32_t needed = sizeValue * n;
+
+  if ( this->GetConvertToHex( ) )
+    {
+    char tmp[sizeValue * 2];
+    for( int i = 0; i < n; i++ )
+      {
+      GID::BinToHex( values[i], tmp );
+      dest.append( tmp, sizeValue * 2 );      
+      }
+    return needed * 2;    
+    }
+  else
+    {
+    const char *pChar = reinterpret_cast<const char*>(values);
+    dest.append( pChar, needed );
+    return needed;
+    }
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
                                                const double *values, boost::uint32_t n )
 {
-  boost::uint32_t needed = sizeof( double ) * n;
-  const char *pChar = reinterpret_cast<const char*>(values);
-  dest.append( pChar, needed );
-  return needed;
+  const boost::uint32_t sizeValue = sizeof( double );
+  boost::uint32_t needed = sizeValue * n;
+
+  if ( this->GetConvertToHex( ) )
+    {
+    char tmp[ sizeValue * 2 ];
+    for( int i = 0; i < n; i++ )
+      {
+      GID::BinToHex( values[i], tmp );
+      dest.append( tmp, sizeValue * 2 );      
+      }
+    return needed * 2;    
+    }
+  else
+    {
+    const char *pChar = reinterpret_cast<const char*>(values);
+    dest.append( pChar, needed );
+    return needed;
+    }
 }
 
 BinaryDeserializerThrift::BinaryDeserializerThrift( )
@@ -321,31 +490,78 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
                                                 boost::int8_t *values, boost::uint32_t n,
                                                 boost::uint32_t pos )
 {
-  if ( !CheckBuffer( source, pos, n ) )
+  boost::uint32_t needed;
+  int step;
+  if ( this->GetConvertFromHex( ) )
+    {
+    needed = n * 2;
+    }
+  else
+    {
+    needed = n;
+    }
+  if ( !this->CheckBuffer( source, pos, needed ) )
     {
     return pos;
     }
-  const boost::int8_t *ptrValues = reinterpret_cast<const boost::int8_t*>( source.c_str( ) + pos );  
-  for( boost::uint32_t i = 0; i < n; i++ )
+  const char *ptrValues = reinterpret_cast<const char*>( source.c_str( ) + pos );  
+  char c;
+  if ( this->GetConvertFromHex( ) )
     {
-    values[ i ] = ptrValues[ i ];
+    for( boost::uint32_t i = 0; i < n; i += 2 )
+      {
+      if ( HexToChar( ptrValues + i, c ) )
+        {
+        values[ i ] = c;
+        }
+      else
+        {
+        return pos;
+        }
+      }
     }
-  return pos + n;
+  else
+    {
+    for( boost::uint32_t i = 0; i < n; ++i )
+      {
+      values[ i ] = ptrValues[ i ];
+      }
+    }
+  return pos + needed;
 }
 
 boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
                                                 std::string &str,
                                                 boost::uint32_t pos )
 {
-  const boost::uint32_t minLength = sizeof( boost::uint32_t );
-  if ( !CheckBuffer( source, pos, minLength ) )
+  boost::uint32_t minLength;
+  if ( this->GetConvertFromHex( ) )
+    {
+    minLength = sizeof( boost::uint32_t ) * 2;
+    }
+  else
+    {
+    minLength = sizeof( boost::uint32_t );
+    }
+  if ( !this->CheckBuffer( source, pos, minLength ) )
     {
     return pos;
     }
   // read string length
-  boost::uint32_t lengthStr = *(reinterpret_cast<const boost::uint32_t*>(source.c_str( ) + pos));
+  boost::uint32_t lengthStr;
+  if ( this->GetConvertFromHex( ) )
+    {
+    if ( !GID::HexToBin( source.c_str( ) + pos, lengthStr ) )
+      {
+      return pos;
+      }
+    }
+  else
+    {
+    lengthStr = *(reinterpret_cast<const boost::uint32_t*>(source.c_str( ) + pos));
+    }
   const boost::uint32_t pos1 = pos + minLength;
-  if ( !CheckBuffer( source, pos1, lengthStr ) )
+  if ( !this->CheckBuffer( source, pos1, lengthStr ) )
     {
     return pos;
     }
@@ -360,16 +576,35 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
                                           boost::int16_t *values, boost::uint32_t n,
                                           boost::uint32_t pos )
 {
-  boost::uint32_t needed = sizeof( boost::int16_t ) * n;
+  const size_t sizeValue = sizeof( boost::int16_t );
+  boost::uint32_t needed = sizeValue * n;
 
-  if ( !CheckBuffer( source, pos, needed ) )
+  if ( this->GetConvertFromHex( ) )
+    {
+    needed <<= 1;
+    }
+  if ( !this->CheckBuffer( source, pos, needed ) )
     {
     return pos;
     }
-  const boost::int16_t *ptrValues = reinterpret_cast<const boost::int16_t*>( source.c_str( ) + pos );
-  for( boost::uint32_t i = 0; i < n; i++ )
+  if ( this->GetConvertFromHex( ) )
     {
-    values[ i ] = ptrValues[ i ];
+    const char *ptrHex = reinterpret_cast<const char*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i += sizeValue )
+      {
+      if ( !GID::HexToBin( ptrHex + i, values[ i ] ) )
+        {
+        return pos;
+        }
+      }
+    }
+  else
+    {
+    const boost::int16_t *ptrValues = reinterpret_cast<const boost::int16_t*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i++ )
+      {
+      values[ i ] = ptrValues[ i ];
+      }
     }
   return pos + needed;
 }
@@ -378,16 +613,35 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
                                           boost::int32_t *values, boost::uint32_t n,
                                           boost::uint32_t pos )
 {
-  boost::uint32_t needed = sizeof( boost::int32_t ) * n;
+  const size_t sizeValue = sizeof( boost::int32_t );
+  boost::uint32_t needed = sizeValue * n;
 
-  if ( !CheckBuffer( source, pos, needed ) )
+  if ( this->GetConvertFromHex( ) )
+    {
+    needed <<= 1;
+    }
+  if ( !this->CheckBuffer( source, pos, needed ) )
     {
     return pos;
     }
-  const boost::int32_t *ptrValues = reinterpret_cast<const boost::int32_t*>( source.c_str( ) + pos );
-  for( boost::uint32_t i = 0; i < n; i++ )
+  if ( this->GetConvertFromHex( ) )
     {
-    values[ i ] = ptrValues[ i ];
+    const char *ptrHex = reinterpret_cast<const char*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i += sizeValue )
+      {
+      if ( !GID::HexToBin( ptrHex + i, values[ i ] ) )
+        {
+        return pos;
+        }
+      }
+    }
+  else
+    {
+    const boost::int32_t *ptrValues = reinterpret_cast<const boost::int32_t*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i++ )
+      {
+      values[ i ] = ptrValues[ i ];
+      }
     }
   return pos + needed;
 }
@@ -396,16 +650,35 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
                                           boost::int64_t *values, boost::uint32_t n,
                                           boost::uint32_t pos )
 {
-  boost::uint32_t needed = sizeof( boost::int64_t ) * n;
+  const size_t sizeValue = sizeof( boost::int64_t );
+  boost::uint32_t needed = sizeValue * n;
 
-  if ( !CheckBuffer( source, pos, needed ) )
+  if ( this->GetConvertFromHex( ) )
+    {
+    needed <<= 1;
+    }
+  if ( !this->CheckBuffer( source, pos, needed ) )
     {
     return pos;
     }
-  const boost::int64_t *ptrValues = reinterpret_cast<const boost::int64_t*>( source.c_str( ) + pos );
-  for( boost::uint32_t i = 0; i < n; i++ )
+  if ( this->GetConvertFromHex( ) )
     {
-    values[ i ] = ptrValues[ i ];
+    const char *ptrHex = reinterpret_cast<const char*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i += sizeValue )
+      {
+      if ( !GID::HexToBin( ptrHex + i, values[ i ] ) )
+        {
+        return pos;
+        }
+      }
+    }
+  else
+    {
+    const boost::int64_t *ptrValues = reinterpret_cast<const boost::int64_t*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i++ )
+      {
+      values[ i ] = ptrValues[ i ];
+      }
     }
   return pos + needed;
 }
@@ -414,15 +687,35 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
                                                 double *values, boost::uint32_t n,
                                                 boost::uint32_t pos )
 {
-  boost::uint32_t needed = sizeof( double ) * n;
-  if ( !CheckBuffer( source, pos, needed ) )
+  const size_t sizeValue = sizeof( double );
+  boost::uint32_t needed = sizeValue * n;
+
+  if ( this->GetConvertFromHex( ) )
+    {
+    needed <<= 1;
+    }
+  if ( !this->CheckBuffer( source, pos, needed ) )
     {
     return pos;
     }
-  const double *ptrValues = reinterpret_cast<const double*>( source.c_str( ) + pos );
-  for( boost::uint32_t i = 0; i < n; i++ )
+  if ( this->GetConvertFromHex( ) )
     {
-    values[ i ] = ptrValues[ i ];
+    const char *ptrHex = reinterpret_cast<const char*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i += sizeValue )
+      {
+      if ( !GID::HexToBin( ptrHex + i, values[ i ] ) )
+        {
+        return pos;
+        }
+      }
+    }
+  else
+    {
+    const double *ptrValues = reinterpret_cast<const double*>( source.c_str( ) + pos );
+    for( boost::uint32_t i = 0; i < n; i++ )
+      {
+      values[ i ] = ptrValues[ i ];
+      }
     }
   return pos + needed;
 }
