@@ -5,6 +5,7 @@
 //using namespace  ::dli;
 
 #include "..\..\..\..\EDM_Interface\EDM_interface.h"
+#include "CLogger.h"
 #include "EDMmodelCache.h"
 #include "VELaSSCoHandler.h"
 #include "Matrix.h"
@@ -122,7 +123,7 @@ bool IsPointInsideTetrahedron(double p_in_x, double p_in_y, double p_in_z,
 *
 */
 VELaSSCoHandler::VELaSSCoHandler() {
-   // Your initialization goes here
+   thelog = NULL;
 }
 
 
@@ -666,37 +667,45 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
 {
    char *modelName, *repositoryName;
    SdaiBoolean userDefined;
-   SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 10, numberOfHits = 1;
+   SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 10, numberOfHits = 1, nModels = 0;
    SdaiInstance resultBuffer[1], repositoryID;
    VELaSSCoSM::FullyQualifiedModelName fqmn;
    std::vector<VELaSSCoSM::FullyQualifiedModelName>  infoList;
    char nameBuf[2048];
 
-   do {
-      edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
-         maxBufferSize, &index, &numberOfHits, resultBuffer);
-      index++;
-      if (numberOfHits > 0) {
-         void *sp = sdaiGetAttrBN(resultBuffer[0], "Repository", sdaiINSTANCE, &repositoryID);
-         if (sp) {
-            sp = sdaiGetAttrBN(repositoryID, "USER_DEFINED", sdaiBOOLEAN, &userDefined);
-            sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
+   try {
+      thelog->logg(3, "--GetListOfModelNames\nsessionID=%s\ngroupQualifier=%s\nmodelNamePattern=%s\n\n", sessionID.data(), groupQualifier.data(), modelNamePattern.data());
+      do {
+         edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
+            maxBufferSize, &index, &numberOfHits, resultBuffer);
+         index++;
+         if (numberOfHits > 0) {
+            void *sp = sdaiGetAttrBN(resultBuffer[0], "Repository", sdaiINSTANCE, &repositoryID);
             if (sp) {
-               if (strEQL(repositoryName, "DataRepository") || userDefined) {
-                  sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
-                  if (sp) {
-                     fqmn.__set_name(modelName);
-                     sprintf(nameBuf, "%s.%s", repositoryName, modelName); fqmn.__set_full_path(nameBuf);
-                     sprintf(nameBuf, "%llu", resultBuffer[0]); fqmn.__set_modelID(nameBuf);
-                     infoList.push_back(fqmn);
+               sp = sdaiGetAttrBN(repositoryID, "USER_DEFINED", sdaiBOOLEAN, &userDefined);
+               sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
+               if (sp) {
+                  if (strEQL(repositoryName, "DataRepository") || userDefined) {
+                     sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
+                     if (sp) {
+                        fqmn.__set_name(modelName); nModels++;
+                        sprintf(nameBuf, "%s.%s", repositoryName, modelName); fqmn.__set_full_path(nameBuf);
+                        sprintf(nameBuf, "%llu", resultBuffer[0]); fqmn.__set_modelID(nameBuf);
+                        infoList.push_back(fqmn);
+                     }
                   }
                }
             }
          }
-      }
-   } while (numberOfHits > 0);
-   _return.__set_status("OK");
-   _return.__set_models(infoList);
+      } while (numberOfHits > 0);
+      _return.__set_status("OK");
+      thelog->logg(1, "status=OK\nNumber of models=%llu\n\n\n", nModels);
+      _return.__set_models(infoList);
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
+   }
 }
 
 
@@ -903,4 +912,16 @@ void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::str
    } catch (int thrownRstat) {
       _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
    }
+}
+
+void VELaSSCoHandler::handleError(string &errMsg, CedmError *e)
+{
+   int rstat = e->rstat;
+   if (e->message) {
+      errMsg = e->message;
+   } else {
+      errMsg = edmiGetErrorText(rstat);
+   }
+   delete e;
+   thelog->logg(1, "status=Error\nError message=%s\n\n", errMsg.data());
 }

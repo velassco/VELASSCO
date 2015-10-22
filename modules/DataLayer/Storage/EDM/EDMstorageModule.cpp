@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "..\..\..\..\EDM_Interface\EDM_interface.h"
 #include "EDMmodelCache.h"
+#include "CLogger.h"
 #include "VELaSSCoHandler.h"
 
 
@@ -39,8 +40,11 @@ int main(int argc, char* argv[])
       ourVELaSSCoHandler->cDEMrep = &demRepository;
       ourVELaSSCoHandler->cFEMrep = &femRepository;
       //ourVELaSSCoHandler->InitQueryCaches();
+      FILE *logFile = fopen("EDMstorageModule.log", "w");
+      CLoggWriter    ourLogger(logFile, true, true);
 
-      printf("The EDM VELaSSCo Data.Layer is ready to execute queries.\n\n");
+      ourLogger.logg(0, "The EDM VELaSSCo Data.Layer is ready to execute queries.\n\n");
+      ourVELaSSCoHandler->defineLogger(&ourLogger);
 
       TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
 

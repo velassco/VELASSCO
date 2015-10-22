@@ -3,6 +3,7 @@ class VELaSSCoHandler : public VELaSSCoSMIf, public EDM_interface
    char                                         errmsg[2048];
    EDMmodelCache                                *setCurrentModelCache(SdaiModel modelID);
    std::map<SdaiModel, EDMmodelCache*>          caches;
+   CLoggWriter                                  *thelog;
 public:
    Repository                                   *cFEMrep;
    Repository                                   *cDEMrep;
@@ -10,6 +11,8 @@ public:
    VELaSSCoHandler();
    char *getErrorMsg(CedmError *e);
    char *getErrorMsg(int rstat);
+   void defineLogger(CLoggWriter *lw) { thelog = lw; }
+   void handleError(string &errMsg, CedmError *e);
 
    /**
    * Return the status of the different services

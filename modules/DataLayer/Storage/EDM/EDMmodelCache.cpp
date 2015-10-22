@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "..\..\..\..\EDM_Interface\EDM_interface.h"
+#include "CLogger.h"
 #include "EDMmodelCache.h"
 #include "VELaSSCoHandler.h"
 #include "Matrix.h"
