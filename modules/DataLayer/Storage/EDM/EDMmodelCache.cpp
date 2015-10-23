@@ -59,24 +59,8 @@ DEMmodelCache::DEMmodelCache(Repository *r, dbSchema *_schema)
 
 void DEMmodelCache::initCache()
 {
-   //defineObjectSet(dem::et_Particle, 0x4000, true);
-   //defineObjectSet(dem::et_Particle_Geometry_contact, 0x4000, true);
-   //defineObjectSet(dem::et_Particle_Particle_contact, 0x4000, true);
-   //readObjectClassesToMemory(FEMclassesToRead);
    defineObjectSet(dem::et_Simulation, 0x4000, true);
    readAllObjectsToMemory();
-   //Iterator<dem::Particle*, dem::entityType> pIter(getObjectSet(dem::et_Particle));
-   //for (dem::Particle *p = pIter.first(); p; p = pIter.next()) {
-   //   particles[p->get_id()] = p;
-   //}
-   //Iterator<dem::Particle_Geometry_contact*, dem::entityType> pgcIter(getObjectSet(dem::et_Particle_Geometry_contact));
-   //for (dem::Particle_Geometry_contact *pgc = pgcIter.first(); pgc; pgc = pgcIter.next()) {
-   //   pgContacts[pgc->get_id()] = pgc;
-   //}
-   //Iterator<dem::Particle_Particle_contact*, dem::entityType> ppcIter(getObjectSet(dem::et_Particle_Particle_contact));
-   //for (dem::Particle_Particle_contact *ppc = ppcIter.first(); ppc; ppc = ppcIter.next()) {
-   //   ppContacts[ppc->get_id()] = ppc;
-   //}
 }
 void FEMmodelCache::initCache()
 {
@@ -84,13 +68,11 @@ void FEMmodelCache::initCache()
    defineObjectSet(fem::et_Mesh, 0x4000, true);
    defineObjectSet(fem::et_Node, 0x4000, true);
    defineObjectSet(fem::et_ResultHeader, 0x4000, true);
-   //readObjectClassesToMemory(FEMclassesToRead);
    readAllObjectsToMemory();
 
    Iterator<fem::Element*, fem::entityType> elemIter(getObjectSet(fem::et_Element));
    Iterator<fem::Node*, fem::entityType> nodeIter(getObjectSet(fem::et_Node));
 
-   SetInMem<fem::Element *> *elemsInThisBox;
    ma.init(0x100000);
    // elemsInThisBox = new(&ma)SetInMem<fem::Element*>(&ma, sdaiINTEGER, 100);
 
@@ -188,7 +170,9 @@ void VELaSSCoHandler::InitQueryCaches()
    } while (numberOfHits > 0);
 }
 
+/*===============================================================================================*/
 EDMmodelCache *VELaSSCoHandler::setCurrentModelCache(SdaiModel sdaiModelID)
+/*===============================================================================================*/
 {
    EDMmodelCache *emc = caches[sdaiModelID];
    if (emc == NULL) {
@@ -196,7 +180,7 @@ EDMmodelCache *VELaSSCoHandler::setCurrentModelCache(SdaiModel sdaiModelID)
 
       char *schemaName, *modelName;
       SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 0, numberOfHits = 1;
-      SdaiInstance resultBuffer[2], schemaID, edmModelID;
+      SdaiInstance schemaID, edmModelID;
 
       void *sp = sdaiGetAttrBN(sdaiModelID, "edm_model", sdaiINSTANCE, &edmModelID);
       if (sp) {
@@ -205,7 +189,7 @@ EDMmodelCache *VELaSSCoHandler::setCurrentModelCache(SdaiModel sdaiModelID)
             sp = sdaiGetAttrBN(sdaiModelID, "name", sdaiSTRING, &modelName);
             if (sp) {
                sp = sdaiGetAttrBN(schemaID, "name", sdaiSTRING, &schemaName);
-               int rk = sdaiErrorQuery();
+               SdaiErrorCode rk = sdaiErrorQuery();
                if (sp && strEQL(schemaName, "DEM_SCHEMA_VELASSCO")) {
                   mType = mtDEM;
                } else if (sp && strEQL(schemaName, "FEM_SCHEMA_VELASSCO")) {

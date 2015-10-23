@@ -147,7 +147,7 @@ public:
    void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep);
 
    void CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle> &elements);
-   void ReportError(char *f) { printf(f); }
+   void ReportError(char *f);
    void InitQueryCaches();
    void GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, FEMmodelCache *fmc);
    void GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, DEMmodelCache *dmc);

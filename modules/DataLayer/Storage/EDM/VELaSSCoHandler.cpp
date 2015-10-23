@@ -141,7 +141,9 @@ void gen_random(char *s, const int len) {
 */
 void  VELaSSCoHandler::statusDL(std::string& _return)
 {
+   thelog->logg(0, "-->statusDL\n\n");
    _return = "OK";
+   thelog->logg(0, "status=OK\n\n");
 }
 
 /**
@@ -154,6 +156,7 @@ void  VELaSSCoHandler::statusDL(std::string& _return)
 void VELaSSCoHandler::UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password)
 {
    char sessionID[64];
+   thelog->logg(3, "-->UserLogin\nuser_name=%s\nrole=%s\npassword=%s\n\n", user_name.data(), role.data(), password.data());
    gen_random(sessionID, sizeof(sessionID)); _return = sessionID;
 }
 
@@ -164,6 +167,7 @@ void VELaSSCoHandler::UserLogin(std::string& _return, const std::string& user_na
 */
 void VELaSSCoHandler::UserLogout(std::string& _return, const std::string& sessionID)
 {
+   thelog->logg(1, "-->UserLogout\nsessionID=%s\n\n", sessionID.data());
 
 }
 
@@ -461,71 +465,83 @@ char *VELaSSCoHandler::getErrorMsg(int rstat)
    ReportError(errmsg);
    return errmsg;
 }
-
-void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelName, const std::string& meshID, const std::string& analysisID, const double time_step)
+/*===============================================================================================*/
+void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID,
+   const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
+/*===============================================================================================*/
 {
    try {
+      thelog->logg(5, "-->GetBoundaryOfLocalMesh\nsessionID=%s\nmodelID=%s\nmeshID=%s\nanalysisID=%s\ntime_step=%f\n\n",
+         sessionID.data(), modelID.data(), meshID.data(), analysisID.data(), time_step);
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelName.data()));
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
       if (emc) {
          FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
          std::vector<Triangle>  elements;
 
          CalculateBoundaryOfMesh(fmc, elements);
-         _return.__set_status("OK");
-         _return.__set_elements(elements);
+         _return.__set_status("OK"); _return.__set_elements(elements); thelog->logg(0, "status=OK\n\n");
       } else {
-      _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+         char *em = "Model does not exist.";
+         _return.__set_status("Error"); _return.__set_report(em); thelog->logg(1, "status=Error\nerror report=%s\n\n", em);
       }
    } catch (CedmError *e) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
-   } catch (int thrownRstat) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
    }
-
 }
 
-void VELaSSCoHandler::GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, FEMmodelCache *fmc)
+/*===============================================================================================*/
+void VELaSSCoHandler::GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes,
+   std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, FEMmodelCache *fmc)
+/*===============================================================================================*/
 {
    int nResultHeaderMatches = 0;
    std::vector<VertexResult> vResults;
 
-   Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
-   for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
-      if (strEQL(analysisID, rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID, rh->get_name())) {
-         fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
-         if (rb) {
-            nResultHeaderMatches++;
-            Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
-            fem::entityType resultType;
-            for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
-               VertexResult vr;
-               fem::Node *n = r->get_result_for();
-               if (allNodes || nodesInParameter[n->get_id()] == 1) {
-                  vector<double> values;
-                  vr.__set_vertexID(n->get_id());
-                  int size = sizeof(_return);
-                  if (resultType == fem::et_ScalarResult) {
-                     fem::ScalarResult *sr = static_cast<ScalarResult*>(r);
-                     values.push_back(sr->get_val());
-                  } else {
-                     fem::VectorResult *vr = static_cast<VectorResult*>(r);
-                     Iterator<double, fem::entityType> resultIter(vr->get_values());
-                     for (double val = resultIter.firstReal(); resultIter.moreElems(); val = resultIter.nextReal()) {
-                        values.push_back(val);
+   try {
+      Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+      for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+         if (strEQL(analysisID, rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID, rh->get_name())) {
+            fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
+            if (rb) {
+               nResultHeaderMatches++;
+               Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
+               fem::entityType resultType;
+               for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
+                  VertexResult vr;
+                  fem::Node *n = r->get_result_for();
+                  if (allNodes || nodesInParameter[n->get_id()] == 1) {
+                     vector<double> values;
+                     vr.__set_vertexID(n->get_id());
+                     int size = sizeof(_return);
+                     if (resultType == fem::et_ScalarResult) {
+                        fem::ScalarResult *sr = static_cast<ScalarResult*>(r);
+                        values.push_back(sr->get_val());
+                     } else {
+                        fem::VectorResult *vr = static_cast<VectorResult*>(r);
+                        Iterator<double, fem::entityType> resultIter(vr->get_values());
+                        for (double val = resultIter.firstReal(); resultIter.moreElems(); val = resultIter.nextReal()) {
+                           values.push_back(val);
+                        }
                      }
+                     vr.__set_resuls(values);
+                     vResults.push_back(vr);
                   }
-                  vr.__set_resuls(values);
-                  vResults.push_back(vr);
                }
             }
          }
       }
-   }
-   if (nResultHeaderMatches == 0) {
-      _return.__set_status("Error"); _return.__set_report("No set of results satisfy search criteria.");
-   } else {
-      _return.__set_status("OK"); _return.__set_vertexResults(vResults);
+      if (nResultHeaderMatches == 0) {
+         _return.__set_status("Error"); _return.__set_report("No set of results satisfy search criteria.");
+      } else {
+         _return.__set_status("OK"); _return.__set_vertexResults(vResults);
+      }
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
 
@@ -590,6 +606,7 @@ void VELaSSCoHandler::GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _r
 //void VELaSSCoHandler::GetResultFromVerticesID(rvGetResultFromVerticesID_B& _return, const std::string& sessionID, const std::string& modelID, const std::string& coordinatesSet, const std::vector<int64_t> & vertexIDs, const std::string& resultID, const double time_step, const std::string& analysisID)
 //{
 //   try {
+//thelog->logg(3, "-->GetListOfAnalyses\nsessionID=%s\nmodelName=%s\nanalysisID=%s\n\n", sessionID.data(), modelID.data(), analysisID.data());
 //      setCurrentSession(sessionID.data());
 //      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
 //      if (emc) {
@@ -674,7 +691,7 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
    char nameBuf[2048];
 
    try {
-      thelog->logg(3, "--GetListOfModelNames\nsessionID=%s\ngroupQualifier=%s\nmodelNamePattern=%s\n\n", sessionID.data(), groupQualifier.data(), modelNamePattern.data());
+      thelog->logg(3, "-->GetListOfModelNames\nsessionID=%s\ngroupQualifier=%s\nmodelNamePattern=%s\n\n", sessionID.data(), groupQualifier.data(), modelNamePattern.data());
       do {
          edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
             maxBufferSize, &index, &numberOfHits, resultBuffer);
@@ -726,27 +743,39 @@ void VELaSSCoHandler::FindModel(rvOpenModel& _return, const std::string& session
    int rstat;
    char condition[1024];
 
-   sprintf(condition, "name like '%s'", modelName.data());
-   if (rstat = edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", condition, 0,
-      maxBufferSize, &index, &numberOfHits, resultBuffer)) {
-      _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
-   } else if (numberOfHits == 0) {
-      _return.__set_modelID("0"); _return.__set_report("No model match the given model name pattern");
-   } else if (numberOfHits == 1) {
-      void *sp = sdaiGetAttrBN(resultBuffer[0], "Sdai_Model", sdaiINSTANCE, &sdaiModelID);
-      if (sp) {
-         if (sdaiOpenModel(sdaiModelID, strEQL(requestedAccess.data(), "read") ? sdaiRO : sdaiRW)) {
-            char smodelID[512];
-            sprintf(smodelID, "%llu", sdaiModelID);
-            _return.__set_modelID(smodelID); _return.__set_report("");
+   try {
+      thelog->logg(3, "-->FindModel\nsessionID=%s\nmodelName=%s\nrequestedAccess=%s\n\n", sessionID.data(), modelName.data(), requestedAccess.data());
+      sprintf(condition, "name like '%s'", modelName.data());
+      if (rstat = edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", condition, 0,
+         maxBufferSize, &index, &numberOfHits, resultBuffer)) {
+         _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
+      } else if (numberOfHits == 0) {
+         _return.__set_modelID("0"); _return.__set_report("No model match the given model name pattern");
+      } else if (numberOfHits == 1) {
+         void *sp = sdaiGetAttrBN(resultBuffer[0], "Sdai_Model", sdaiINSTANCE, &sdaiModelID);
+         if (sp) {
+            if (sdaiOpenModel(sdaiModelID, strEQL(requestedAccess.data(), "read") ? sdaiRO : sdaiRW)) {
+               char smodelID[512];
+               sprintf(smodelID, "%llu", sdaiModelID);
+               _return.__set_modelID(smodelID); _return.__set_report("");
+            } else {
+               _return.__set_modelID("0"); _return.__set_report(getErrorMsg(sdaiErrorQuery()));
+            }
          } else {
-            _return.__set_modelID("0"); _return.__set_report(getErrorMsg(sdaiErrorQuery()));
+            _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
          }
       } else {
-         _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
+         _return.__set_modelID("0"); _return.__set_report("Several models match the given model name pattern.");
       }
-   } else {
-      _return.__set_modelID("0"); _return.__set_report("Several models match the given model name pattern.");
+      if (strEQL(_return.modelID.data(), "0")) {
+         thelog->logg(1, "status=Error\nerror report=%s\n\n", _return.report.data());
+      } else {
+         thelog->logg(1, "status=OK\nmodelID=%s\n\n", _return.modelID.data());
+      }
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
 
@@ -760,6 +789,13 @@ void VELaSSCoHandler::FindModel(rvOpenModel& _return, const std::string& session
 void VELaSSCoHandler::CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName)
 {
 
+   try {
+      _return = "CloseModel" + string(" is not implemented");
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return = errMsg;
+   }
 }
 
 
@@ -772,6 +808,13 @@ void VELaSSCoHandler::CloseModel(std::string& _return, const std::string& sessio
 */
 void VELaSSCoHandler::SetThumbnailOfAModel(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& imageFile)
 {
+   try {
+      _return = "SetThumbnailOfAModel" + string(" is not implemented");
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return = errMsg;
+   }
 
 }
 
@@ -783,7 +826,13 @@ void VELaSSCoHandler::SetThumbnailOfAModel(std::string& _return, const std::stri
 */
 void VELaSSCoHandler::GetThumbnailOfAModel(rvGetThumbnailOfAModel& _return, const std::string& sessionID, const std::string& modelID)
 {
-
+   try {
+      _return.__set_status("Error"); _return.__set_report("GetThumbnailOfAModel" + string(" is not implemented"));
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
+   }
 }
 
 /**
@@ -795,6 +844,7 @@ void VELaSSCoHandler::GetThumbnailOfAModel(rvGetThumbnailOfAModel& _return, cons
 void VELaSSCoHandler::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID)
 {
    try {
+      thelog->logg(2, "-->GetListOfAnalyses\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
       EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
       if (emc) {
@@ -817,14 +867,16 @@ void VELaSSCoHandler::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std:
                }
             }
             _return.__set_status("OK"); _return.__set_analyses(analysisNames);
-         }
+            thelog->logg(0, "status=OK\n\n");
+        }
       } else {
-         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+         char *emsg = "Model does not exist.";
+         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
       }
    } catch (CedmError *e) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
-   } catch (int thrownRstat) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
 
@@ -838,6 +890,7 @@ void VELaSSCoHandler::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std:
 void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID)
 {
    try {
+      thelog->logg(3, "-->GetListOfTimeSteps\nsessionID=%s\nmodelID=%s\nanalysisID=%s\n\n", sessionID.data(), modelID.data(), analysisID.data());
       setCurrentSession(sessionID.data());
       EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
       if (emc) {
@@ -863,14 +916,16 @@ void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const st
                }
             }
             _return.__set_status("OK"); _return.__set_time_steps(timeSteps);
+            thelog->logg(0, "status=OK\n\n");
          }
       } else {
-         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+         char *emsg = "Model does not exist.";
+         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
       }
    } catch (CedmError *e) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
-   } catch (int thrownRstat) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
 
@@ -903,18 +958,22 @@ void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::str
                //}
             }
             _return.__set_status("OK"); _return.__set_meshInfos(meshInfos);
+            thelog->logg(0, "status=OK\n\n");
          }
       } else {
-         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+         char *emsg = "Model does not exist.";
+         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
       }
    } catch (CedmError *e) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(e));
-   } catch (int thrownRstat) {
-      _return.__set_status("Error"); _return.__set_report(getErrorMsg(thrownRstat));
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
 
+/*===============================================================================================*/
 void VELaSSCoHandler::handleError(string &errMsg, CedmError *e)
+/*===============================================================================================*/
 {
    int rstat = e->rstat;
    if (e->message) {
@@ -925,3 +984,15 @@ void VELaSSCoHandler::handleError(string &errMsg, CedmError *e)
    delete e;
    thelog->logg(1, "status=Error\nError message=%s\n\n", errMsg.data());
 }
+
+/*===============================================================================================*/
+void VELaSSCoHandler::ReportError(char *f)
+/*===============================================================================================*/
+{
+   if (thelog) {
+      thelog->logg(0, f);
+   } else {
+      printf("%s\n", f);
+   }
+}
+
