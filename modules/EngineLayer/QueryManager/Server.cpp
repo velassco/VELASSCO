@@ -29,7 +29,7 @@
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 
-#include "queryManagerModule.h"
+#include "DataLayerAccess.h"
 
 #include "Server.h"
 
@@ -221,7 +221,7 @@ void QueryManagerServer::GetStatusDB(StatusDB_Result& _return, const SessionID s
     }
 
   std::string status;
-  queryManagerModule::Instance()->getStatusDB( status);
+  DataLayerAccess::Instance()->getStatusDB( status);
   _return.__set_result( (Result::type)VAL_SUCCESS );
   _return.__set_status( status );
 
@@ -259,7 +259,7 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   //std::cout << "V " << vertexIDs  << std::endl;
   //std::cout << "T " << timeStep   << std::endl;
   
-  queryManagerModule::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+  DataLayerAccess::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
   
   std::vector<int64_t> resultVertexIDs;
   std::vector<double>  resultValues;
@@ -342,7 +342,7 @@ void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const Ses
   std::cout << "P " << name_pattern    << std::endl;
   
   rvGetListOfModels _return_;
-  queryManagerModule::Instance()->getListOfModels( _return_,
+  DataLayerAccess::Instance()->getListOfModels( _return_,
 						   sessionIDStr.str(), group_qualifier, name_pattern);
   		  
   std::cout << _return_ << std::endl;
@@ -403,7 +403,7 @@ void QueryManagerServer::ManageOpenModel( Query_Result &_return, const SessionID
   std::cout << "A " << requested_access << std::endl;
   
   rvOpenModel _return_;
-  queryManagerModule::Instance()->openModel( _return_,
+  DataLayerAccess::Instance()->openModel( _return_,
 					     sessionIDStr.str(), unique_name, requested_access);
   		  
   std::cout << _return_ << std::endl;

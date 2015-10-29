@@ -11,7 +11,7 @@
 #include <boost/thread.hpp>
 
 
-#include "queryManagerModule.h"
+#include "DataLayerAccess.h"
 #include "Server.h"
 #include "Helpers.h"
 
@@ -50,7 +50,7 @@ void parse(string cmd)
         string analysisID  = "DEM";
         double timeStep = 1;
         string resultID = "00001";
-        queryManagerModule::Instance()->getResultFromVerticesID(_return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+        DataLayerAccess::Instance()->getResultFromVerticesID(_return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
         cout<<"#### /Query ####"<<endl;
         
     }
@@ -58,14 +58,14 @@ void parse(string cmd)
     {
         cout<<"#### Ping ####"<<endl;
 	std::string status;
-        queryManagerModule::Instance()->getStatusDB( status);
+        DataLayerAccess::Instance()->getStatusDB( status);
 	cout<<"### " << status << endl;
         cout<<"#### /Ping ####"<<endl;
     }
     else if( cmd.find("stop")  == 0)
     {
         cout<<"#### stop ####"<<endl;
-        queryManagerModule::Instance()->stopAll();
+        DataLayerAccess::Instance()->stopAll();
         cout<<"#### /stop ####"<<endl;
     }
 }
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
     }
     else if (pid > 0)
     {
-      queryManagerModule::Instance()->startConnection( data_layer_hostname, data_layer_port);
+      DataLayerAccess::Instance()->startConnection( data_layer_hostname, data_layer_port);
 
 	DEBUG( "listening on port" << listen_port);
 	boost::thread serverThread(StartServer, listen_port);
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
             parse(cmd);
         }
         while (cmd.find("exit") != 0 && cmd.find("quit")  != 0);
-        queryManagerModule::Instance()->stopConnection();
+        DataLayerAccess::Instance()->stopConnection();
     }
     else
     {

@@ -2,26 +2,26 @@
 #include <stddef.h>  // defines NULL
 
 
-#include "queryManagerModule.h"
+#include "DataLayerAccess.h"
 #include "cJSON.h"
 #include "Helpers.h"
 
 // Global static pointer used to ensure a single instance of the class.
-queryManagerModule* queryManagerModule::m_pInstance = NULL;
+DataLayerAccess* DataLayerAccess::m_pInstance = NULL;
 
 
-queryManagerModule* queryManagerModule::Instance()
+DataLayerAccess* DataLayerAccess::Instance()
 {
     // Only allow one instance of class to be generated.
     if (!m_pInstance)
     {
-        m_pInstance = new queryManagerModule;
+        m_pInstance = new DataLayerAccess;
     }
     return m_pInstance;
 }
 
 
-bool queryManagerModule::startConnection( const char *data_layer_hostname, const int data_layer_port)
+bool DataLayerAccess::startConnection( const char *data_layer_hostname, const int data_layer_port)
 {
   DEBUG( "Connecting to Data Layer at " << data_layer_hostname << ":" << data_layer_port);
     socket= boost::shared_ptr<TTransport>(new TSocket( data_layer_hostname, data_layer_port));
@@ -46,7 +46,7 @@ bool queryManagerModule::startConnection( const char *data_layer_hostname, const
     return true;
 }
 
-bool queryManagerModule::stopConnection()
+bool DataLayerAccess::stopConnection()
 {
     try
     {
@@ -58,7 +58,7 @@ bool queryManagerModule::stopConnection()
     return true;
 }
 
-void queryManagerModule::getStatusDB( std::string& _return) {
+void DataLayerAccess::getStatusDB( std::string& _return) {
     try {
       cli->statusDL( _return);
     } catch (TException& tx) {
@@ -67,7 +67,7 @@ void queryManagerModule::getStatusDB( std::string& _return) {
 }
 
 
-void queryManagerModule::getListOfModels( rvGetListOfModels &_return,
+void DataLayerAccess::getListOfModels( rvGetListOfModels &_return,
 					  const std::string &sessionID, 
 					  const std::string &model_group_qualifier, const std::string &model_name_pattern) {
   try {
@@ -77,7 +77,7 @@ void queryManagerModule::getListOfModels( rvGetListOfModels &_return,
   }
 }
 
-void queryManagerModule::openModel( rvOpenModel &_return,
+void DataLayerAccess::openModel( rvOpenModel &_return,
 				    const std::string &sessionID, 
 				    const std::string &unique_name, const std::string &requested_access) {
   try {
@@ -87,7 +87,7 @@ void queryManagerModule::openModel( rvOpenModel &_return,
   }
 }
 
-void queryManagerModule::getResultFromVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
+void DataLayerAccess::getResultFromVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 {
     try
     {
@@ -102,7 +102,7 @@ void queryManagerModule::getResultFromVerticesID(std::string& _return,  std::str
 
 }
 
-void queryManagerModule::stopAll()
+void DataLayerAccess::stopAll()
 {
     try
     {

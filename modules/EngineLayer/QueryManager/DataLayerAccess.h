@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
-#ifndef queryManagerModule_H
-#define queryManagerModule_H
+#ifndef DataLayerAccess_H
+#define DataLayerAccess_H
 
 #include <iostream> // pour std::cout
 #include <string>   // pour std::string
@@ -23,10 +23,10 @@ using namespace std;
 using namespace VELaSSCoSM;
 
 // handles connection to Storage Module:
-class queryManagerModule
+class DataLayerAccess
 {
 public:
-    static queryManagerModule* Instance();
+    static DataLayerAccess* Instance();
     bool startConnection( const char *data_layer_hostname, const int data_layer_port);
     bool stopConnection();
     void getStatusDB( std::string& _return);
@@ -42,11 +42,11 @@ public:
     void stopAll();
     
 private:
-    queryManagerModule(){};
-    queryManagerModule(queryManagerModule const&){};
-    queryManagerModule& operator=(queryManagerModule const&){};
+    DataLayerAccess(){};
+    DataLayerAccess(DataLayerAccess const&){};
+    DataLayerAccess& operator=(DataLayerAccess const&){};
     
-    static queryManagerModule *m_pInstance;
+    static DataLayerAccess *m_pInstance;
     VELaSSCoSMClient *cli;
     
     
