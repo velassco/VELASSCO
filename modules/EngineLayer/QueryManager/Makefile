@@ -1,4 +1,4 @@
-CC=g++ -std=c++0x
+CC=g++ -std=c++0x -g
 EXEC=QueryManager
 BIN=bin
  
@@ -8,7 +8,7 @@ THRIFT_QUERY_MANAGER=../../thrift/QueryManager/gen-cpp
 
 all: $(BIN) $(EXEC)
 
-$(EXEC):  querymanager_QueryManager.o querymanager_velassco_types.o querymanager_velassco_constants.o storage_VELaSSCo.o storage_velassco_types.o storage_velassco_constants.o  cJSON.o DataLayerAccess.o Server.o main.o Helpers.o
+$(EXEC):  querymanager_QueryManager.o querymanager_velassco_types.o querymanager_velassco_constants.o storage_VELaSSCo.o storage_velassco_types.o storage_velassco_constants.o  cJSON.o DataLayerAccess.o Analytics.o Server.o main.o Helpers.o
 	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lboost_date_time -lboost_thread -o $(BIN)/$(EXEC)
 
 $(BIN):
@@ -55,6 +55,9 @@ Server.o:
 
 DataLayerAccess.o:
 	$(CC) -c DataLayerAccess.cpp -I$(THRIFT_STORAGE) -o $(BIN)/DataLayerAccess.o
+
+Analytics.o:
+	$(CC) -c Analytics.cpp -I$(THRIFT_STORAGE) -o $(BIN)/Analytics.o
 
 cJSON.o: cJSON.c
 	$(CC) -c cJSON.c -o $(BIN)/cJSON.o

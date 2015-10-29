@@ -26,7 +26,7 @@ using namespace VELaSSCoSM;
 class DataLayerAccess
 {
 public:
-    static DataLayerAccess* Instance();
+    static DataLayerAccess *Instance();
     bool startConnection( const char *data_layer_hostname, const int data_layer_port);
     bool stopConnection();
     void getStatusDB( std::string& _return);
@@ -39,6 +39,11 @@ public:
     void openModel( rvOpenModel &_return,
 		    const std::string &sessionID, 
 		    const std::string &unique_name, const std::string &requested_access);
+    void getListOfTimeSteps( std::string& _return,
+			     const std::string &sessionID,
+			     const std::string &analysisID,
+			     const std::string &stepOptions, const int numSteps, const double *lstSteps);
+			   
     void stopAll();
     
 private:

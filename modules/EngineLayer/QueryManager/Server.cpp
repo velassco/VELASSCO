@@ -30,6 +30,7 @@
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 
 #include "DataLayerAccess.h"
+#include "Analytics.h"
 
 #include "Server.h"
 
@@ -189,8 +190,10 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetListOfModels( _return, sessionID, query);
   } else if ( name == "OpenModel") {
     ManageOpenModel( _return, sessionID, query);
+  } else if ( name == "GetBoundingBox") {
+    ManageGetBoundingBox( _return, sessionID, query);
   } else {
-    _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS );
+    _return.__set_result( (Result::type)VAL_INVALID_QUERY );
     
     LOGGER                                    << std::endl;
     LOGGER << "Output:"                       << std::endl;
@@ -428,6 +431,79 @@ void QueryManagerServer::ManageOpenModel( Query_Result &_return, const SessionID
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   char hex_string[ 1024];
   LOGGER << "  data   : \n" << ModelID_DoHexStringConversionIfNecesary( _return.data, hex_string, 1024) << std::endl;
+}
+
+void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
+  // _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+  // _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string modelID            = pt.get<std::string>( "modelID");
+  std::string numVertexIDs       = pt.get<std::string>( "numVertexIDs");
+  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+  std::string lstVertexIDs       = pt.get<std::string>( "lstVertexIDs");
+  std::string analysisID         = pt.get<std::string>( "analysisID");
+  std::string stepOptions        = pt.get<std::string>( "stepOptions");
+  std::string numSteps           = pt.get<std::string>( "numSteps");
+  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+  std::string lstSteps           = pt.get<std::string>( "lstSteps");
+  
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "nV -" << numVertexIDs       << "-" << std::endl;
+  std::cout << "Vs -" << lstVertexIDs       << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "SO -" << stepOptions       << "-" << std::endl;
+  std::cout << "nS -" << numSteps       << "-" << std::endl;
+  std::cout << "Ss -" << lstSteps       << "-" << std::endl;
+
+  // in theory should check first if it has already been calculated by doing a
+  // DataLayerAccess::Instance()->getBoundingBox( sessionID, query);
+  // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
+  
+  // not implemented yet:
+  // std::string _return_; // status
+  // DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
+  // 						      sessionIDStr.str(), modelID,
+  // 						      analysisID,
+  // 						      stepOptions, numSteps, lstSteps);
+
+  double bbox[ 6];
+  std::string error_str;
+  try {
+    AnalyticsModule::getInstance()->calculateBoundingBox( sessionIDStr.str(), modelID,
+							  // analysisID, numSteps, lstSteps,
+							  "", 0, NULL,
+							  // numVertexIDs, lstVertexIDs,
+							  0, NULL,
+							  &bbox[ 0], &error_str);
+  } catch ( TException &e) {
+    std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+  } else {
+    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
 }
 
 

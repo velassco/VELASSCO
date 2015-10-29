@@ -1,7 +1,6 @@
 #include <sstream>
 #include <stddef.h>  // defines NULL
 
-
 #include "DataLayerAccess.h"
 #include "cJSON.h"
 #include "Helpers.h"
@@ -100,6 +99,13 @@ void DataLayerAccess::getResultFromVerticesID(std::string& _return,  std::string
         cout << "ERROR: " << tx.what() << endl;
     }
 
+}
+
+void DataLayerAccess::getListOfTimeSteps( std::string& _return,
+					  const std::string &sessionID,
+					  const std::string &analysisID,
+					  const std::string &stepOptions, const int numSteps, const double *lstSteps) {
+  cout << "ERROR: " << FUNCTION_NAME << " NOT IMPLEMENTED YET." << endl;
 }
 
 void DataLayerAccess::stopAll()

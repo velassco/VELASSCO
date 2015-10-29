@@ -19,20 +19,27 @@
 
 // ---------------------------------------------------------------------------
 
-#ifndef FUNCTION_NAME
-#   define FUNCTION_NAME ""
-#   ifdef __PRETTY_FUNCTION__
-#		undef FUNCTION_NAME
-#		define FUNCTION_NAME __PRETTY_FUNCTION__
-#	endif
-#	ifdef __FUNCTION__
-#		undef FUNCTION_NAME
-#		define FUNCTION_NAME __FUNCTION__
-#	endif
-#	ifdef __func__
-#		undef FUNCTION_NAME
-#		define FUNCTION_NAME __func__
-#	endif
+// seems that this is not working:
+// #ifndef FUNCTION_NAME
+// #   define FUNCTION_NAME ""
+// #   ifdef __PRETTY_FUNCTION__
+// #		undef FUNCTION_NAME
+// #		define FUNCTION_NAME __PRETTY_FUNCTION__
+// #	endif
+// #	ifdef __FUNCTION__
+// #		undef FUNCTION_NAME
+// #		define FUNCTION_NAME __FUNCTION__
+// #	endif
+// #	ifdef __func__
+// #		undef FUNCTION_NAME
+// #		define FUNCTION_NAME __func__
+// #	endif
+// #endif
+
+#ifdef WIN32
+#  define FUNCTION_NAME  __FUNCSIG__
+#else
+#  define FUNCTION_NAME  __PRETTY_FUNCTION__
 #endif
 
 #define ENABLE_LOGGING
@@ -47,9 +54,11 @@
 #define PING					\
   do						\
     {						\
-      LOGGER << FUNCTION_NAME << std::endl;	\
+      LOGGER << __FUNCTION__ << std::endl;	\
     }						\
   while (0)
+
+//      LOGGER << FUNCTION_NAME << std::endl;	\
 
 // ---------------------------------------------------------------------------
 
@@ -61,11 +70,15 @@
    * Converts a std::string containing binary to a hex dump ASCII string.
    */ 
 
-  inline std::string Hexdump(const std::string input)
+  inline std::string Hexdump(const std::string input, const size_t max_len = 0)
   {
     std::stringstream out;
 
-    for (size_t i=0; i<input.size(); i+=16)
+    size_t end = input.size();
+    if ( max_len && ( end > max_len)) {
+      end = max_len;
+    }
+    for (size_t i=0; i<max_len; i+=16)
       {
 	out << std::hex << std::setw(2*sizeof(size_t)) << std::setfill('0') << (size_t)i << ": ";
 	for (size_t j=0; j<16; j++) 
