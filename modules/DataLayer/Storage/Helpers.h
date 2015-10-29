@@ -53,9 +53,11 @@
 #define PING					\
   do						\
     {						\
-      LOGGER << FUNCTION_NAME << std::endl;	\
+      LOGGER << __FUNCTION__ << std::endl;	\
     }						\
   while (0)
+
+//      LOGGER << FUNCTION_NAME << std::endl;	\
 
 // ---------------------------------------------------------------------------
 
