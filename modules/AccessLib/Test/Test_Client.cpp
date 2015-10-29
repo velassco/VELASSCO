@@ -31,7 +31,7 @@
     }
   }
 
-void CheckVALResult(VAL_Result result)
+void CheckVALResult(VAL_Result result, const char *error_message = NULL)
 {
   if (result != VAL_SUCCESS)
   {
@@ -40,7 +40,9 @@ void CheckVALResult(VAL_Result result)
 
     std::cout << "VELaSSCo ERROR: " << std::endl;
     std::cout << "  " << message    << std::endl;
-
+    if ( error_message) {
+      std::cout << "  Query message: " << error_message    << std::endl;
+    }
     exit(EXIT_FAILURE);
   }
 }
@@ -173,6 +175,36 @@ int main(int argc, char* argv[])
   // Test UserLogout()
   //
 
+  const double *return_bbox = NULL;
+  const char *return_error_str = NULL;
+  std::cout << "doing valGetBoundingBox" << std::endl;
+  const char *model_id_fem = "fem";
+  const char *model_id_dem = "dem";
+  result = valGetBoundingBox( sessionID, model_id_fem,
+			      NULL, 0, // use all vertices ID
+			      "", // don't care about analysisID
+			      "ALL", NULL, 0, // use all steps / or don't care
+			      &return_bbox, &return_error_str);
+  CheckVALResult(result, return_error_str);
+  std::cout << "GetBoundingBox: " << model_id_fem << std::endl;
+  std::cout << "         bbox = ( " ;
+  if ( return_bbox) {
+    std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
+              << return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
+  }
+  result = valGetBoundingBox( sessionID, model_id_dem,
+			      NULL, 0, // use all vertices ID
+			      "", // don't care about analysisID
+			      "ALL", NULL, 0, // use all steps / or don't care
+			      &return_bbox, &return_error_str);
+  CheckVALResult(result, return_error_str);
+  std::cout << "GetBoundingBox: " << model_id_dem << std::endl;
+  std::cout << "         bbox = ( " ;
+  if ( return_bbox) {
+    std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
+              << return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
+  }
+  
   result = valUserLogout(sessionID);
   CheckVALResult(result);
 
