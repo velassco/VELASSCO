@@ -52,6 +52,7 @@ class QM_DemoServer : virtual public QueryManagerIf {
   void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
 };
 
 extern int StartServer( const int server_port);

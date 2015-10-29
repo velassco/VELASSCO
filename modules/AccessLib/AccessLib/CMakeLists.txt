@@ -16,13 +16,16 @@ set(THRIFT_GEN_SOURCES ${THRIFT_GEN_SOURCE_DIR}/QueryManager.cpp
 # List of access library sources
 set(ACCESS_LIB_SOURCE_DIR ${SOURCE_ROOT}/AccessLib)
 set(ACCESS_LIB_SOURCES ${ACCESS_LIB_SOURCE_DIR}/AccessLib.h
-                       ${ACCESS_LIB_SOURCE_DIR}/AccessLib.cpp 
-					   ${ACCESS_LIB_SOURCE_DIR}/Client.h 
-					   ${ACCESS_LIB_SOURCE_DIR}/Client.cpp
-					   ${ACCESS_LIB_SOURCE_DIR}/DemoServer.h
-					   ${ACCESS_LIB_SOURCE_DIR}/DemoServer.cpp
-					   ${ACCESS_LIB_SOURCE_DIR}/Helpers.h
-					   ${ACCESS_LIB_SOURCE_DIR}/Helpers.cpp)
+                       ${ACCESS_LIB_SOURCE_DIR}/AccessLibSQ.cpp 
+                       ${ACCESS_LIB_SOURCE_DIR}/AccessLibDRQ.cpp 
+                       ${ACCESS_LIB_SOURCE_DIR}/AccessLibRAQ.cpp 
+                       ${ACCESS_LIB_SOURCE_DIR}/AccessLibMQ.cpp
+		       ${ACCESS_LIB_SOURCE_DIR}/Client.h 
+		       ${ACCESS_LIB_SOURCE_DIR}/Client.cpp
+		       ${ACCESS_LIB_SOURCE_DIR}/DemoServer.h
+		       ${ACCESS_LIB_SOURCE_DIR}/DemoServer.cpp
+		       ${ACCESS_LIB_SOURCE_DIR}/Helpers.h
+		       ${ACCESS_LIB_SOURCE_DIR}/Helpers.cpp)
 
 # Group generated sources
 source_group(Generated FILES ${THRIFT_GEN_SOURCES})

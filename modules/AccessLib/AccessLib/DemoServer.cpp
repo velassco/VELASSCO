@@ -166,8 +166,10 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageGetListOfModels( _return, sessionID, query);
   } else if ( name == "OpenModel") {
     ManageOpenModel( _return, sessionID, query);
+  } else if ( name == "GetBoundingBox") {
+    ManageGetBoundingBox( _return, sessionID, query);
   } else {
-    _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS );
+    _return.__set_result( (Result::type)VAL_INVALID_QUERY );
     
     LOGGER                                    << std::endl;
     LOGGER << "Output:"                       << std::endl;
@@ -314,6 +316,18 @@ void QM_DemoServer::ManageOpenModel( Query_Result &_return, const SessionID sess
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   LOGGER << "  data   : \n" << _return.data << std::endl;
 }
+
+void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
+  _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+}
+
 
 int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;

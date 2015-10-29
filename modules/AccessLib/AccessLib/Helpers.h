@@ -18,20 +18,27 @@
 
 // ---------------------------------------------------------------------------
 
-#ifndef FUNCTION_NAME
-#   define FUNCTION_NAME ""
-#   ifdef __PRETTY_FUNCTION__
-#		undef FUNCTION_NAME
-#		define FUNCTION_NAME __PRETTY_FUNCTION__
-#	endif
-#	ifdef __FUNCTION__
-#		undef FUNCTION_NAME
-#		define FUNCTION_NAME __FUNCTION__
-#	endif
-#	ifdef __func__
-#		undef FUNCTION_NAME
-#		define FUNCTION_NAME __func__
-#	endif
+// seems that this is not working:
+// #ifndef FUNCTION_NAME
+// #   define FUNCTION_NAME ""
+// #   ifdef __PRETTY_FUNCTION__
+// #		undef FUNCTION_NAME
+// #		define FUNCTION_NAME __PRETTY_FUNCTION__
+// #	endif
+// #	ifdef __FUNCTION__
+// #		undef FUNCTION_NAME
+// #		define FUNCTION_NAME __FUNCTION__
+// #	endif
+// #	ifdef __func__
+// #		undef FUNCTION_NAME
+// #		define FUNCTION_NAME __func__
+// #	endif
+// #endif
+
+#ifdef WIN32
+#  define FUNCTION_NAME  __FUNCSIG__
+#else
+#  define FUNCTION_NAME  __PRETTY_FUNCTION__
 #endif
 
 #define ENABLE_LOGGING
@@ -46,9 +53,11 @@
 #define PING					\
   do						\
     {						\
-      LOGGER << FUNCTION_NAME << std::endl;	\
+      LOGGER << __FUNCTION__ << std::endl;	\
     }						\
   while (0)
+
+//      LOGGER << FUNCTION_NAME << std::endl;	\
 
 // ---------------------------------------------------------------------------
 

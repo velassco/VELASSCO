@@ -63,8 +63,8 @@ VAL_Result Client::UserLogin( /* in */
 	} 
 	catch (TException& tx)
 	{
-		LOGGER << "ERROR: " << tx.what() << std::endl;
-		return VAL_SYSTEM_NOT_AVAILABLE;
+	  LOGGER << FUNCTION_NAME << " ERROR: " << tx.what() << std::endl;
+	  return VAL_SYSTEM_NOT_AVAILABLE;
 	}
 	catch (...)
 	{
@@ -91,7 +91,7 @@ VAL_Result Client::UserLogout( /* in */
 	} 
 	catch (TException& tx)
 	{
-		LOGGER << "ERROR: " << tx.what() << std::endl;
+		LOGGER << FUNCTION_NAME << " ERROR: " << tx.what() << std::endl;
 		return VAL_SYSTEM_NOT_AVAILABLE;
 	}
 	catch (...)
@@ -111,13 +111,14 @@ VAL_Result Client::Query( /* in */
 
 	try
 	{
+	  // LOGGER << "Doing " << query << std::endl;
 		m_transport->open();
 		m_client->Query(m_queryResult, sessionID, query);
 		m_transport->close();
 
 		LOGGER << "Query_Result: "                                 << std::endl;
 		LOGGER << "    result : "   << m_queryResult.result        << std::endl;
-		LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 32) << std::endl;
+		LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 128) << std::endl;
 
 		// Return pointer to result string (Thrift uses std::string)
 		data = &(m_queryResult.data);
@@ -126,7 +127,7 @@ VAL_Result Client::Query( /* in */
 	}
 	catch (TException& tx)
 	{
-		LOGGER << "ERROR: " << tx.what() << std::endl;
+		LOGGER << FUNCTION_NAME << " ERROR: " << tx.what() << std::endl;
 		return VAL_SYSTEM_NOT_AVAILABLE;
 	}
 	catch (...)
@@ -162,7 +163,7 @@ VAL_Result Client::GetStatusDB( /* in */
     }
   catch (TException& tx)
     {
-      LOGGER << "ERROR: " << tx.what() << std::endl;
+      LOGGER << FUNCTION_NAME << " ERROR: " << tx.what() << std::endl;
       return VAL_SYSTEM_NOT_AVAILABLE;
     }
   catch (...)
