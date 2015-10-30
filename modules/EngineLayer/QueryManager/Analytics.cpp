@@ -2,6 +2,7 @@
 #include <stddef.h>  // defines NULL
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <string.h>
 
 #include "Helpers.h"
@@ -32,32 +33,72 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // *return_error_str = "Ok";
   // at the moment only CLI interface:
 
+  bool use_yarn = true;
   // running java:
-  char cmd_line[ 1024];
-  sprintf( cmd_line, "java -jar ../Analytics/GetBoundingBoxOfAModel.jar %s", modelID.c_str());
-  int ret = system( cmd_line);
-  // output in '../bbox/part-r-00000'
-  FILE *fi = fopen( "bbox/part-r-00000", "r");
-  if ( !fi) {
-    *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + std::string( " job.");
-    return;
-  }
-  char keyword[ 1024];
-  double value = 0.0;
-  int num_values = 0;
-  for ( int i = 0; i < 6; i++) {
-    int n = fscanf( fi, "%s %lf", keyword, &value);
-    if ( n == 2) {
-      if (      !strcasecmp( keyword, "min_x")) { return_bbox[ 0] = value; num_values++; }
-      else if ( !strcasecmp( keyword, "min_y")) { return_bbox[ 1] = value; num_values++; }
-      else if ( !strcasecmp( keyword, "min_z")) { return_bbox[ 2] = value; num_values++; }
-      else if ( !strcasecmp( keyword, "max_x")) { return_bbox[ 3] = value; num_values++; }
-      else if ( !strcasecmp( keyword, "max_y")) { return_bbox[ 4] = value; num_values++; }
-      else if ( !strcasecmp( keyword, "max_z")) { return_bbox[ 5] = value; num_values++; }
+  if ( !use_yarn) {
+    char cmd_line[ 1024];
+    sprintf( cmd_line, "java -jar ../Analytics/GetBoundingBoxOfAModel.jar %s", modelID.c_str());
+    int ret = system( cmd_line);
+    // output in '../bbox/part-r-00000'
+    FILE *fi = fopen( "bbox/part-r-00000", "r");
+    if ( !fi) {
+      *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + std::string( " job.");
+      return;
     }
-  }
-  fclose( fi);
-  if ( num_values != 6) {
-    *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + std::string( " results.");
+    char keyword[ 1024];
+    double value = 0.0;
+    int num_values = 0;
+    for ( int i = 0; i < 6; i++) {
+      int n = fscanf( fi, "%s %lf", keyword, &value);
+      if ( n == 2) {
+	if (      !strcasecmp( keyword, "min_x")) { return_bbox[ 0] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "min_y")) { return_bbox[ 1] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "min_z")) { return_bbox[ 2] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "max_x")) { return_bbox[ 3] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "max_y")) { return_bbox[ 4] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "max_z")) { return_bbox[ 5] = value; num_values++; }
+      }
+    }
+    fclose( fi);
+    if ( num_values != 6) {
+      *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + std::string( " results.");
+    }
+
+  } else {
+    // running Yarn:
+    std::string hadoop_home = "/localfs/home/velassco/common";
+    std::string hadoop_bin = hadoop_home + "/hadoop/bin";
+
+    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetBoundingBoxOfAModel.jar " + modelID;
+    int ret = 0;
+    ret = system( cmd_line.c_str());
+    // output in '../bbox/part-r-00000' but in hdfs
+    // copy it to local:
+    cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox/part-r-00000 .";
+    ret = system( cmd_line.c_str());
+    FILE *fi = fopen( "part-r-00000", "r");
+    if ( !fi) {
+      *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + std::string( " job.");
+      return;
+    }
+    char keyword[ 1024];
+    double value = 0.0;
+    int num_values = 0;
+    for ( int i = 0; i < 6; i++) {
+      int n = fscanf( fi, "%s %lf", keyword, &value);
+      if ( n == 2) {
+	if (      !strcasecmp( keyword, "min_x")) { return_bbox[ 0] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "min_y")) { return_bbox[ 1] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "min_z")) { return_bbox[ 2] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "max_x")) { return_bbox[ 3] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "max_y")) { return_bbox[ 4] = value; num_values++; }
+	else if ( !strcasecmp( keyword, "max_z")) { return_bbox[ 5] = value; num_values++; }
+      }
+    }
+    fclose( fi);
+    if ( num_values != 6) {
+      *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + std::string( " results.");
+    }
+    unlink( "part-r-00000");
   }
 }
