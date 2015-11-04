@@ -2,7 +2,7 @@ CCPP=g++
 CC=gcc
 EXEC=QueryManager
 BIN=bin
- 
+
 CPP_FLAGS = -std=c++0x
 C_FLAGS = 
 
