@@ -1,66 +1,65 @@
-CC=g++ -std=c++0x -g
+CCPP=g++
+CC=gcc
 EXEC=QueryManager
 BIN=bin
  
+CPP_FLAGS = -std=c++0x
+C_FLAGS = 
 
-THRIFT_STORAGE=../../thrift/Storage/gen-cpp
-THRIFT_QUERY_MANAGER=../../thrift/QueryManager/gen-cpp
+OPTS = -g
 
-all: $(BIN) $(EXEC)
+THRIFT_STORAGE_DIR=../../thrift/Storage/gen-cpp
+THRIFT_QUERY_MANAGER_DIR=../../thrift/QueryManager/gen-cpp
 
-$(EXEC):  querymanager_QueryManager.o querymanager_velassco_types.o querymanager_velassco_constants.o storage_VELaSSCo.o storage_velassco_types.o storage_velassco_constants.o  cJSON.o DataLayerAccess.o Analytics.o Server.o main.o Helpers.o
-	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lboost_date_time -lboost_thread -o $(BIN)/$(EXEC)
+OBJS_DIR = $(BIN)
+
+THRIFT_STORAGE_FILES = VELaSSCoSM_constants.cpp VELaSSCoSM_types.cpp VELaSSCoSM.cpp
+THRIFT_STORAGE_OBJS_TMP = ${THRIFT_STORAGE_FILES:.cpp=.o}
+THRIFT_STORAGE_OBJS = ${THRIFT_STORAGE_OBJS_TMP:%=$(OBJS_DIR)/%}
+THRIFT_STORAGE_DEPENDENCIES = $(wildcard $(THRIFT_STORAGE_DIR)/*.h)
+
+THRIFT_QUERY_FILES = QueryManager_constants.cpp QueryManager_types.cpp QueryManager.cpp
+THRIFT_QUERY_OBJS_TMP = ${THRIFT_QUERY_FILES:.cpp=.o}
+THRIFT_QUERY_OBJS = ${THRIFT_QUERY_OBJS_TMP:%=$(OBJS_DIR)/%}
+THRIFT_QUERY_DEPENDENCIES = $(wildcard $(THRIFT_QUERY_MANAGER_DIR)/*.h)
+
+ENGINE_CPP_FILES = Server.cpp DataLayerAccess.cpp Analytics.cpp Graphics.cpp Helpers.cpp main.cpp
+ENGINE_C_FILES = cJSON.c
+ENGINE_OBJS_TMP = ${ENGINE_CPP_FILES:.cpp=.o} ${ENGINE_C_FILES:.c=.o}
+ENGINE_OBJS = ${ENGINE_OBJS_TMP:%=$(OBJS_DIR)/%}
+
+# lazy way: make each source file depend on all include files
+ENGINE_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
+	$(THRIFT_STORAGE_DEPENDENCIES) $(THRIFT_QUERY_DEPENDENCIES)
+
+ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) \
+	-I/usr/local/include -I/opt/local/include
+ENGINE_LIBS = -L/usr/local/lib -L/opt/local/lib -lthrift -lboost_date_time -lboost_thread
+
+all: $(BIN) $(BIN)/$(EXEC)
+
+$(BIN)/$(EXEC):  $(THRIFT_STORAGE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS)
+	$(CCPP) $(THRIFT_STORAGE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) \
+		$(ENGINE_LIBS) -o $(BIN)/$(EXEC)
 
 $(BIN):
 	clear
-	clear
 	mkdir $(BIN)
 
-main.o: main.cpp
-	$(CC) -c main.cpp -I$(THRIFT_STORAGE) -I/usr/local/include -I/usr/local/include -I/opt/local/include/ -o $(BIN)/main.o
+# engine files
+$(OBJS_DIR)/%.o : %.cpp $(ENGINE_INCLUDE_DEPENDENCIES)
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $< -o $@
 
+$(OBJS_DIR)/%.o : %.c $(ENGINE_INCLUDE_DEPENDENCIES)
+	$(CCPP) -c $(C_FLAGS) $(OPTS) $< -o $@
 
-Helpers.o: Helpers.cpp
-	$(CC) -c Helpers.cpp -I$(THRIFT_STORAGE) -I/usr/local/include -I/usr/local/include -I/opt/local/include/ -o $(BIN)/Helpers.o
+# Storage Thirft API:
+$(OBJS_DIR)/%.o : $(THRIFT_STORAGE_DIR)/%.cpp $(THRIFT_STORAGE_DEPENDENCIES)
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_STORAGE_DIR) $< -o $@
 
-
-storage_velassco_constants.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_constants.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_constants.o
-
-
-storage_velassco_types.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_types.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_velassco_types.o
-
-
-storage_VELaSSCo.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM.cpp -I$(THRIFT_STORAGE)  -o $(BIN)/storage_VELaSSCo.o
-
-
-
-querymanager_velassco_constants.o: 
-	$(CC) -c $(THRIFT_QUERY_MANAGER)/QueryManager_constants.cpp -I$(THRIFT_QUERY_MANAGER)  -o $(BIN)/querymanager_velassco_constants.o
-
-
-querymanager_velassco_types.o: 
-	$(CC) -c $(THRIFT_QUERY_MANAGER)/QueryManager_types.cpp -I$(THRIFT_QUERY_MANAGER)  -o $(BIN)/querymanager_velassco_types.o
-
-
-querymanager_QueryManager.o: 
-	$(CC) -c $(THRIFT_QUERY_MANAGER)/QueryManager.cpp -I$(THRIFT_QUERY_MANAGER)  -o $(BIN)/querymanager_QueryManager.o
-
-
-
-Server.o:
-	$(CC) -c Server.cpp -I$(THRIFT_QUERY_MANAGER) -I$(THRIFT_STORAGE) -o $(BIN)/Server.o
-
-DataLayerAccess.o:
-	$(CC) -c DataLayerAccess.cpp -I$(THRIFT_STORAGE) -o $(BIN)/DataLayerAccess.o
-
-Analytics.o:
-	$(CC) -c Analytics.cpp -I$(THRIFT_STORAGE) -o $(BIN)/Analytics.o
-
-cJSON.o: cJSON.c
-	$(CC) -c cJSON.c -o $(BIN)/cJSON.o
+# Query Manager Thirft API:
+$(OBJS_DIR)/%.o : $(THRIFT_QUERY_MANAGER_DIR)/%.cpp $(THRIFT_QUERY_DEPENDENCIES)
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_QUERY_MANAGER_DIR) $< -o $@
 
 clean:
 	rm -rf $(BIN)
