@@ -31,6 +31,7 @@
 
 #include "DataLayerAccess.h"
 #include "Analytics.h"
+#include "Graphics.h"
 
 #include "Server.h"
 
@@ -486,6 +487,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
 							  // numVertexIDs, lstVertexIDs,
 							  0, NULL,
 							  &bbox[ 0], &error_str);
+    GraphicsModule *graphics = GraphicsModule::getInstance();
   } catch ( TException &e) {
     std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
   } catch ( exception &e) {
