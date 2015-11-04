@@ -106,15 +106,14 @@ extern "C" {
     CHECK_QUERY_POINTER( modelID );
     if ( numVertexIDs) {
       CHECK_QUERY_POINTER( lstVertexIDs );
-    }
+	}
     CHECK_QUERY_POINTER( analysisID );
     CHECK_QUERY_POINTER( stepOptions );
-    if ( strcasecmp( stepOptions, "all")) {
+	if ( !StrCmp(stepOptions, "all") ) {
       // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
       CHECK_NON_ZERO_VALUE( numSteps);
       CHECK_QUERY_POINTER( lstSteps);
-    }
-
+	}
     CHECK_QUERY_POINTER( resultBBox );
     CHECK_QUERY_POINTER( resultErrorStr );
 
@@ -142,7 +141,7 @@ extern "C" {
 	queryCommand << "  \"numSteps\" : \"" << numSteps     << "\",\n";
 	queryCommand << "  \"lstSteps\" : [";
 	// can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-	if ( strcasecmp( stepOptions, "all") && numSteps) {
+	if ( !StrCmp(stepOptions, "all") && numSteps) {
 	  for ( int i = 0; i < numSteps; i++) {
 	    if ( i) queryCommand << ",";
 	    queryCommand << lstSteps[ i];

@@ -1,11 +1,12 @@
-#include <stdio.h>
-#include <string.h>
 
 // CLib
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 // STL
 #include <iostream>
+#include <string>
 
 // VELaSSCo
 #include "AccessLib.h"

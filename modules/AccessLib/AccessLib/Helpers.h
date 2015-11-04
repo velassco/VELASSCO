@@ -149,6 +149,20 @@ namespace VELaSSCo
   }
 
   // ---------------------------------------------------------------------------
+
+  /**
+   * Compare two strings ignoring case (OS portable)
+   */
+
+  inline bool StrCmp(std::string a, std::string b)
+  {
+	std::transform(a.begin(), a.end(), a.begin(), std::tolower);
+    std::transform(b.begin(), b.end(), b.begin(), std::tolower);
+
+	return (a == b);
+  }
+
+  // ---------------------------------------------------------------------------
 	
   /**
    * Separates a URL string into substrings like host, port, etc.
