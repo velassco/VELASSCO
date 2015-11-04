@@ -194,10 +194,10 @@ int main(int argc, char* argv[])
               << return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
   }
   result = valGetBoundingBox( sessionID, model_id_dem,
-			      NULL, 0, // use all vertices ID
-			      "", // don't care about analysisID
-			      "ALL", NULL, 0, // use all steps / or don't care
-			      &return_bbox, &return_error_str);
+  			      NULL, 0, // use all vertices ID
+  			      "", // don't care about analysisID
+  			      "ALL", NULL, 0, // use all steps / or don't care
+  			      &return_bbox, &return_error_str);
   CheckVALResult(result, return_error_str);
   std::cout << "GetBoundingBox: " << model_id_dem << std::endl;
   std::cout << "         bbox = ( " ;
