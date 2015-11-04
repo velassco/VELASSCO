@@ -1,78 +1,68 @@
-CC=g++ -std=c++0x -g
+CCPP=g++
+CC=gcc
 EXEC=Storage
 BIN=bin
 
-THRIFT_STORAGE=../../thrift/Storage/gen-cpp
-THRIFT_HBASE=../../thrift/Storage/hbase/gen-cpp
+CPP_FLAGS = -std=c++0x
+C_FLAGS = 
 
-all: $(BIN) $(EXEC)
+OPTS = -g
 
-$(EXEC): base64.o cJSON.o                                                  \
-         Hbase_constants1.o Hbase_types1.o hbase1.o                        \
-         VELaSSCoSM.o velassco_types.o velassco_constants.o velasscoThrift.o \
-         storageModule.o HBase.o EDM.o Helpers.o main.o \
-	 HBase_status.o HBase_model_operations.o
-	$(CC) $(BIN)/*.o -L/usr/local/lib -lthrift -lcurl -o $(BIN)/$(EXEC)
+THRIFT_STORAGE_DIR=../../thrift/Storage/gen-cpp
+THRIFT_HBASE_DIR=../../thrift/Storage/hbase/gen-cpp
+
+OBJS_DIR = $(BIN)
+
+THRIFT_STORAGE_FILES = VELaSSCoSM_constants.cpp VELaSSCoSM_types.cpp VELaSSCoSM.cpp
+THRIFT_STORAGE_OBJS_TMP = ${THRIFT_STORAGE_FILES:.cpp=.o}
+THRIFT_STORAGE_OBJS = ${THRIFT_STORAGE_OBJS_TMP:%=$(OBJS_DIR)/%}
+THRIFT_STORAGE_DEPENDENCIES = $(wildcard $(THRIFT_STORAGE_DIR)/*.h)
+
+THRIFT_HBASE_FILES = Hbase_constants.cpp Hbase_types.cpp Hbase.cpp
+THRIFT_HBASE_OBJS_TMP = ${THRIFT_HBASE_FILES:.cpp=.o}
+THRIFT_HBASE_OBJS = ${THRIFT_HBASE_OBJS_TMP:%=$(OBJS_DIR)/%}
+THRIFT_HBASE_DEPENDENCIES = $(wildcard $(THRIFT_HBASE_DIR)/*.h)
+
+DATA_LAYER_CPP_FILES = HBase.cpp HBase_status.cpp HBase_model_operations.cpp EDM.cpp \
+	velasscoThrift.cpp storageModule.cpp Helpers.cpp main.cpp
+
+DATA_LAYER_C_FILES = cJSON.c base64.c
+DATA_LAYER_OBJS_TMP = ${DATA_LAYER_CPP_FILES:.cpp=.o} ${DATA_LAYER_C_FILES:.c=.o}
+DATA_LAYER_OBJS = ${DATA_LAYER_OBJS_TMP:%=$(OBJS_DIR)/%}
+
+# lazy way: make each source file depend on all include files
+DATA_LAYER_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
+	$(THRIFT_STORAGE_DEPENDENCIES) $(THRIFT_HBASE_DEPENDENCIES)
+
+DATA_LAYER_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_HBASE_DIR) \
+	-I/usr/local/include -I/opt/local/include
+DATA_LAYER_LIBS = -L/usr/local/lib -lthrift -lcurl
+
+all: $(BIN) $(BIN)/$(EXEC)
+
+$(BIN)/$(EXEC):  $(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(DATA_LAYER_OBJS)
+	$(CCPP) $(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(DATA_LAYER_OBJS) \
+		$(DATA_LAYER_LIBS) -o $(BIN)/$(EXEC)
 
 $(BIN):
-	clear
 	clear
 	mkdir $(BIN)
 
 
-main.o: main.cpp
-	$(CC) -c main.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/main.o
+# Storage files
+$(OBJS_DIR)/%.o : %.cpp $(DATA_LAYER_INCLUDE_DEPENDENCIES)
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(DATA_LAYER_INCS) $< -o $@
 
-Helpers.o: Helpers.cpp
-	$(CC) -c Helpers.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/Helpers.o
+$(OBJS_DIR)/%.o : %.c $(DATA_LAYER_INCLUDE_DEPENDENCIES)
+	$(CCPP) -c $(C_FLAGS) $(OPTS) $< -o $@
 
-HBase.o: HBase.cpp
-	$(CC) -c HBase.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/HBase.o
+# Storage Thirft API:
+$(OBJS_DIR)/%.o : $(THRIFT_STORAGE_DIR)/%.cpp $(THRIFT_STORAGE_DEPENDENCIES)
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_STORAGE_DIR) $< -o $@
 
-HBase_status.o: HBase_status.cpp
-	$(CC) -c HBase_status.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/HBase_status.o
-
-HBase_model_operations.o: HBase_model_operations.cpp
-	$(CC) -c HBase_model_operations.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/HBase_model_operations.o
-
-EDM.o: EDM.cpp
-	$(CC) -c EDM.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -I/usr/local/include -o $(BIN)/EDM.o
-
-
-velasscoThrift.o: 
-	$(CC) -c velasscoThrift.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE) -o $(BIN)/velasscoThrift.o
-
-
-velassco_constants.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_constants.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_constants.o
-
-
-velassco_types.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM_types.cpp -I$(THRIFT_STORAGE) -o $(BIN)/velassco_types.o
-
-
-VELaSSCoSM.o: 
-	$(CC) -c $(THRIFT_STORAGE)/VELaSSCoSM.cpp -I$(THRIFT_STORAGE) -o $(BIN)/VELaSSCoSM.o
-
-
-storageModule.o:
-	$(CC) -c storageModule.cpp -I$(THRIFT_STORAGE) -I$(THRIFT_HBASE)  -o $(BIN)/storageModule.o	
-
-cJSON.o: cJSON.c
-	$(CC) -c cJSON.c -o $(BIN)/cJSON.o
-
-
-Hbase_constants1.o: 
-	$(CC) -std=c++0x -c $(THRIFT_HBASE)/Hbase_constants.cpp  -I$(THRIFT_HBASE)  -o $(BIN)/Hbase_constants1.o
-
-Hbase_types1.o: 
-	$(CC) -std=c++0x -c $(THRIFT_HBASE)/Hbase_types.cpp  -I$(THRIFT_HBASE)  -o $(BIN)/Hbase_types1.o
-
-hbase1.o: 
-	$(CC) -std=c++0x -c $(THRIFT_HBASE)/Hbase.cpp  -I$(THRIFT_HBASE)  -o $(BIN)/hbase1.o
-
-base64.o:
-	$(CC) -std=c++0x -c base64.cpp  -I$(THRIFT_HBASE)  -o $(BIN)/base64.o
+# HBase Thirft API:
+$(OBJS_DIR)/%.o : $(THRIFT_HBASE_DIR)/%.cpp $(THRIFT_HBASE_DEPENDENCIES)
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_HBASE_DIR) $< -o $@
 
 clean:
 	rm -rf $(BIN)
