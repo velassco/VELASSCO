@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
   // Test GetListOfModels()
   //
   const char *return_list = NULL;
-  const char *group_qualifier = "";
+  const char *group_qualifier = ""; // loop over all available 4 tables
   const char *name_pattern = "*";
   result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
   CheckVALResult(result);
