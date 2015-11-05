@@ -410,8 +410,8 @@ typedef struct _VELaSSCoSM_GetListOfModelNames_result__isset {
 class VELaSSCoSM_GetListOfModelNames_result {
  public:
 
-  static const char* ascii_fingerprint; // = "9FF622309718E2479AE3E37AADE5C533";
-  static const uint8_t binary_fingerprint[16]; // = {0x9F,0xF6,0x22,0x30,0x97,0x18,0xE2,0x47,0x9A,0xE3,0xE3,0x7A,0xAD,0xE5,0xC5,0x33};
+  static const char* ascii_fingerprint; // = "426A7AF5989D683805F64F3AE9B8BCDC";
+  static const uint8_t binary_fingerprint[16]; // = {0x42,0x6A,0x7A,0xF5,0x98,0x9D,0x68,0x38,0x05,0xF6,0x4F,0x3A,0xE9,0xB8,0xBC,0xDC};
 
   VELaSSCoSM_GetListOfModelNames_result(const VELaSSCoSM_GetListOfModelNames_result&);
   VELaSSCoSM_GetListOfModelNames_result& operator=(const VELaSSCoSM_GetListOfModelNames_result&);
@@ -451,8 +451,8 @@ typedef struct _VELaSSCoSM_GetListOfModelNames_presult__isset {
 class VELaSSCoSM_GetListOfModelNames_presult {
  public:
 
-  static const char* ascii_fingerprint; // = "9FF622309718E2479AE3E37AADE5C533";
-  static const uint8_t binary_fingerprint[16]; // = {0x9F,0xF6,0x22,0x30,0x97,0x18,0xE2,0x47,0x9A,0xE3,0xE3,0x7A,0xAD,0xE5,0xC5,0x33};
+  static const char* ascii_fingerprint; // = "426A7AF5989D683805F64F3AE9B8BCDC";
+  static const uint8_t binary_fingerprint[16]; // = {0x42,0x6A,0x7A,0xF5,0x98,0x9D,0x68,0x38,0x05,0xF6,0x4F,0x3A,0xE9,0xB8,0xBC,0xDC};
 
 
   virtual ~VELaSSCoSM_GetListOfModelNames_presult() throw();

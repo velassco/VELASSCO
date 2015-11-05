@@ -377,6 +377,7 @@ void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const Ses
 	oss << "FullPath: " << it->full_path << std::endl;
 	// oss << "ModelID: " << ToHexString( hex_string, 1024, it->modelID.c_str(), it->modelID.size()) << std::endl;
 	oss << "ModelID: " << ModelID_DoHexStringConversionIfNecesary( it->modelID, hex_string, 1024) << std::endl;
+	oss << "Location: " << it->location << std::endl; // EDM or HBase:table_name
 
       }
       _return.__set_data( oss.str());

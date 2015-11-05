@@ -52,7 +52,7 @@ namespace VELaSSCo
     // returns true if there are models on the table to be parsed
     bool parseListOfModelNames( std::string &report,
 				std::vector< FullyQualifiedModelName> &listOfModelNames,
-				std::string buffer);
+				std::string buffer, const std::string &table_name);
 
 
   private:

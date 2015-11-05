@@ -34,7 +34,7 @@ using namespace VELaSSCo;
 // returns true if there are models on the table to be parsed
 bool HBase::parseListOfModelNames( std::string &report,
 				   std::vector< FullyQualifiedModelName> &listOfModelNames, 
-				   std::string buffer) {
+				   std::string buffer, const std::string &table_name) {
   bool there_are_models = false;
   std::stringstream result;
   cJSON *json = cJSON_Parse( buffer.c_str());
@@ -68,6 +68,7 @@ bool HBase::parseListOfModelNames( std::string &report,
 
       FullyQualifiedModelName model_info;
       model_info.__set_modelID( key);
+      model_info.__set_location( "Hbase:" + table_name);
       for (int k = 0; k < cJSON_GetArraySize(cellsJ); k++) {
 	// printf( "   cell # %d\n", k);
 	cJSON *contents = cJSON_GetArrayItem (cellsJ, k);
@@ -107,7 +108,8 @@ void printRow(const TRowResult &rowResult) {
   }
 }
 
-static bool getModelInfoFromRow( FullyQualifiedModelName &model_info, const TRowResult &rowResult) {
+static bool getModelInfoFromRow( FullyQualifiedModelName &model_info, const TRowResult &rowResult,
+				 const std::string &table_name) {
   model_info.__set_modelID( rowResult.row); // the key is the modelID;
 
   int num_filled = 1; // key has already been added
@@ -121,6 +123,7 @@ static bool getModelInfoFromRow( FullyQualifiedModelName &model_info, const TRow
       num_filled++; // another value
     }
   }
+  model_info.__set_location( "Hbase:" + table_name);
   return num_filled == 3;
 }
 
@@ -157,7 +160,7 @@ std::string HBase::getListOfModelNames_curl( std::string &report, std::vector< F
     std::cout << buffer << std::endl;
     std::cout << "**********\n";
     std::cout << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
-    bool there_are_models = parseListOfModelNames( report, listOfModelNames, buffer);
+    bool there_are_models = parseListOfModelNames( report, listOfModelNames, buffer, table_name);
     if ( there_are_models) {
       result = "Ok";
     } else {
@@ -212,7 +215,7 @@ std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector<
       for ( int i = 0; i < rowsResult.size(); i++) {
 	// convert to return type
 	FullyQualifiedModelName model_info;
-	bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
+	bool ok = getModelInfoFromRow( model_info, rowsResult[ i], table_name);
 	if ( ok) {
 	  listOfModelNames.push_back( model_info);
 	}
@@ -356,7 +359,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
       for ( int i = 0; i < rowsResult.size(); i++) {
 	// convert to return type
 	FullyQualifiedModelName model_info;
-	bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
+	bool ok = getModelInfoFromRow( model_info, rowsResult[ i], table_to_use);
 	if ( ok) {
 	  if ( use_first_model || ( model_info.full_path == path_to_search)) {
 	    modelID_to_return = model_info.modelID;
