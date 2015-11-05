@@ -31,7 +31,7 @@ namespace VELaSSCo
     std::string getListOfModelNames_thrift( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					    const std::string &sessionID, const std::string &model_group_qualifier, 
 					    const std::string &model_name_pattern);
-    std::string findModel( std::string &report, std::string &modelID, 
+    std::string findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
 			   const std::string &sessionID, const std::string &unique_model_name_pattern, 
 			   const std::string &requested_access);
 

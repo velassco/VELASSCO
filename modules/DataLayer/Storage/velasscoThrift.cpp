@@ -35,11 +35,13 @@ void VELaSSCoHandler::FindModel( rvOpenModel &_return, const std::string &sessio
 				 const std::string &unique_model_name_pattern, const std::string &requested_access) {
   std::string report;
   std::string modelID;
-  std::vector< FullyQualifiedModelName>listOfModelNames;
-  std::string status = storageModule::Instance()->findModel( report, modelID, sessionID, unique_model_name_pattern, requested_access);
+  FullyQualifiedModelName model_info;
+  std::string status = storageModule::Instance()->findModel( report, modelID, model_info,
+							     sessionID, unique_model_name_pattern, requested_access);
   _return.__set_status( status);
   _return.__set_report( report);
   _return.__set_modelID( modelID);
+  _return.__set_model_info( model_info);
 }
 
 void VELaSSCoHandler::GetResultFromVerticesID(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID, const std::string &listOfVertices)

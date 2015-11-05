@@ -57,7 +57,7 @@ namespace VELaSSCo
     virtual std::string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					     const std::string &sessionID, const std::string &model_group_qualifier, 
 					     const std::string &model_name_pattern) = 0;
-    virtual std::string findModel( std::string &report, std::string &modelID, 
+    virtual std::string findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
 				   const std::string &sessionID, const std::string &unique_model_name_pattern, 
 				   const std::string &requested_access) = 0;
 

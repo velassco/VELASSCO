@@ -34,20 +34,43 @@
 // actual QueryManagerServer ( exposed to the accesslibrary of the visualization client)
 using namespace  ::VELaSSCo;
 
+class QMS_FullyQualifiedModelName: public FullyQualifiedModelName {
+  QMS_FullyQualifiedModelName( const QMS_FullyQualifiedModelName &inf): FullyQualifiedModelName( ( FullyQualifiedModelName)inf) {};
+  QMS_FullyQualifiedModelName( const FullyQualifiedModelName &inf): FullyQualifiedModelName( inf) {};
+  std::string GetDBType () const;
+  std::string GetModelsTableName() const;
+  std::string GetDataTableName() const;
+  std::string GetMetaDataTableName() const;
+  void GetTableNames( std::string &model_Table, std::string &metadata_table, std::string &data_Table) const;
+};
+
 class QueryManagerServer : virtual public QueryManagerIf {
   struct User
   {
     std::string loginName;
     std::string loginTime;
   };
-  
-  typedef std::map<SessionID, User> UserMap;
+  typedef std::map< SessionID, User> UserMap;
   UserMap m_users;
   
-  bool ValidSessionID(SessionID sessionID)
-  {
-    const UserMap::iterator it = m_users.find(sessionID);
+  // to have information about the OpenedModels ...
+  typedef std::string ModelID;
+  typedef std::map< ModelID, FullyQualifiedModelName> ModelMap;
+  ModelMap m_models;
+
+  bool ValidSessionID( const SessionID &sessionID) const {
+    const UserMap::const_iterator it = m_users.find(sessionID);
     return (it != m_users.end());
+  }
+
+  bool GetModelInfo( const ModelID &model, FullyQualifiedModelName &ret) const {
+    const ModelMap::const_iterator it = m_models.find( model);
+    if ( it != m_models.end()) {
+      ret = it->second;
+      return true;
+    } else {
+      return false;
+    }
   }
   
   void UserLogin(UserLogin_Result& _return, const std::string& url, const std::string& name, const std::string& password);

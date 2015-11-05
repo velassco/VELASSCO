@@ -282,6 +282,9 @@ bool HBase::storeTableNames( const std::string &sessionID, const std::string &mo
   } else if ( model_table_name == "Test_VELaSSCo_Models") {
     metadata_table_name = "Test_Simulations_Metadata";
     data_table_name = "Test_Simulations_Data";
+  } else if ( model_table_name == "T_VELaSSCo_Models") {
+    metadata_table_name = "T_Simulations_Metadata";
+    data_table_name = "T_Simulations_Data";
   } else {
     known = false;
   }
@@ -294,6 +297,7 @@ bool HBase::storeTableNames( const std::string &sessionID, const std::string &mo
 
 
 std::string HBase::findModel( std::string &report, std::string &return_modelID, 
+			      FullyQualifiedModelName &return_model_info,
 			      const std::string &sessionID, const std::string &unique_model_name_pattern, 
 			      const std::string &requested_access) {
   // strip "unique_model_name_pattern" down to
@@ -326,6 +330,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
   }
 
   std::string modelID_to_return;
+  FullyQualifiedModelName model_info_to_return;
   std::cout << "findModel THRIFT: ====="       << std::endl;
   std::cout << "S " << sessionID                 << std::endl;
   std::cout << "U " << unique_model_name_pattern << std::endl;
@@ -363,6 +368,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
 	if ( ok) {
 	  if ( use_first_model || ( model_info.full_path == path_to_search)) {
 	    modelID_to_return = model_info.modelID;
+	    model_info_to_return = model_info;
 	    found = true;
 	    break;
 	  }
@@ -394,6 +400,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
       if ( known_table_name) {
 	result = "Ok";
 	return_modelID = modelID_to_return;
+	return_model_info = model_info_to_return;
       } else {
 	result = "Error";
 	report = "Unknown table name: " + std::string( table_to_use);

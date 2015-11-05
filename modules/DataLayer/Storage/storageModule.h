@@ -56,7 +56,7 @@ public:
   string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 			      const std::string &sessionID, const std::string &model_group_qualifier, 
 			      const std::string &model_name_pattern);
-  string findModel( std::string &report, std::string &modelID, 
+  string findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
 		    const std::string &sessionID, const std::string &unique_model_name_pattern, 
 		    const std::string &requested_access);
   string getResultOnVertices( std::string sessionID,
