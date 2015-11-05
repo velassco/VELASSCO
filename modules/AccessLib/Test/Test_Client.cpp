@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
   }
 
   //
-  // Test UserLogout()
+  // Test GetBoundingBox()
   //
 
   const double *return_bbox = NULL;
@@ -182,10 +182,10 @@ int main(int argc, char* argv[])
   const char *model_id_fem = "fem";
   const char *model_id_dem = "dem";
   result = valGetBoundingBox( sessionID, model_id_fem,
-			      NULL, 0, // use all vertices ID
-			      "", // don't care about analysisID
-			      "ALL", NULL, 0, // use all steps / or don't care
-			      &return_bbox, &return_error_str);
+  			      NULL, 0, // use all vertices ID
+  			      "", // don't care about analysisID
+  			      "ALL", NULL, 0, // use all steps / or don't care
+  			      &return_bbox, &return_error_str);
   CheckVALResult(result, return_error_str);
   std::cout << "GetBoundingBox: " << model_id_fem << std::endl;
   std::cout << "         bbox = ( " ;
@@ -205,6 +205,15 @@ int main(int argc, char* argv[])
     std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
               << return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
   }
+
+  //
+  // Test CloseModel() & UserLogout()
+  //
+
+  result = valCloseModel( sessionID, modelID, &status);
+  CheckVALResult(result);
+  std::cout << "CloseModel: " << std::endl;
+  std::cout << "   status = " << status << std::endl;
   
   result = valUserLogout(sessionID);
   CheckVALResult(result);
