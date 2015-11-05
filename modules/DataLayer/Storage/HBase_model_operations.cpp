@@ -177,21 +177,8 @@ std::string HBase::getListOfModelNames_curl( std::string &report, std::vector< F
   return result;
 }
 
-std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
-					       const std::string &sessionID, const std::string &model_group_qualifier, 
-					       const std::string &model_name_pattern) {
-  std::cout << "getListOfModelNames THRIFT: =====" << std::endl;
-  std::cout << "S " << sessionID              << std::endl;
-  std::cout << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
-  std::cout << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
-
-  string table_name;
-  if ( !model_group_qualifier.size() || ( model_group_qualifier == "*")) {
-    table_name = "VELaSSCo_Models";
-  } else {
-    table_name = model_group_qualifier;
-  }
-
+bool HBase::getListOfModelInfoFromTables( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+					  const std::string &table_name, const std::string &model_name_pattern) {
   vector< TRowResult> rowsResult;
   std::map<std::string,std::string> m;
   // TScan ts;
@@ -234,6 +221,34 @@ std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector<
   }
   _hbase_client->scannerClose( scan_id);
 
+  return scan_ok;
+
+}
+
+std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+					       const std::string &sessionID, const std::string &model_group_qualifier, 
+					       const std::string &model_name_pattern) {
+  std::cout << "getListOfModelNames THRIFT: =====" << std::endl;
+  std::cout << "S " << sessionID              << std::endl;
+  std::cout << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
+  std::cout << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
+
+  string table_name;
+  bool scan_ok = true;
+  if ( !model_group_qualifier.size() || ( model_group_qualifier == "*")) {
+    table_name = "VELaSSCo_Models";
+    // loop through all 4 tables:
+    std::vector< std::string> lst_tables = getModelListTables();
+    for ( std::vector< std::string>::const_iterator it = lst_tables.begin(); it != lst_tables.end(); it++) {
+      scan_ok = getListOfModelInfoFromTables( report, listOfModelNames, *it, model_name_pattern);
+      if ( !scan_ok)
+	break;
+    }
+  } else {
+    table_name = model_group_qualifier;
+    scan_ok = getListOfModelInfoFromTables( report, listOfModelNames, table_name, model_name_pattern);
+  }
+
   string result;
   if ( scan_ok) {
     std::cout << "**********\n";
@@ -262,6 +277,16 @@ std::string HBase::getListOfModelNames( std::string &report, std::vector< FullyQ
 					    sessionID, model_group_qualifier, model_name_pattern);
 }
 
+
+
+std::vector< std::string> HBase::getModelListTables() const {
+  std::vector< std::string> lst;
+  lst.push_back( "VELaSSCo_Models");
+  lst.push_back( "VELaSSCo_Models_V4CIMNE");
+  lst.push_back( "Test_VELaSSCo_Models");
+  lst.push_back( "T_VELaSSCo_Models");
+  return lst;
+}
 
 bool HBase::storeTableNames( const std::string &sessionID, const std::string &modelID, 
 			     const std::string &model_table_name) {
@@ -311,6 +336,13 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
   if ( unique_model_name_pattern.length() == 0) {
     use_first_model = true;
     table_to_use = strdup( "VELaSSCo_Models");
+    // may be look through all 4 tables: like in getListOfModels
+    // std::vector< std::string> lst_tables = getModelListTables();
+    // for ( std::vector< std::string>::const_iterator it = lst_tables.begin(); it != lst_tables.end(); it++) {
+    //   scan_ok = getListOfModelInfoFromTables( report, listOfModelNames, *it, model_name_pattern);
+    //   if ( !scan_ok)
+    // 	break;
+    // }
   } else {
     table_to_use = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
     path_to_search = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
