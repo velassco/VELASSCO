@@ -263,6 +263,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetListOfModels( _return, sessionID, query);
   } else if ( name == "OpenModel") {
     ManageOpenModel( _return, sessionID, query);
+  } else if ( name == "CloseModel") {
+    ManageCloseModel( _return, sessionID, query);
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
   } else {
@@ -497,6 +499,10 @@ void QueryManagerServer::ManageOpenModel( Query_Result &_return, const SessionID
   } else {
     _return.__set_result( (Result::type)VAL_SUCCESS );
     _return.__set_data( _return_.modelID);
+
+    // store OpenModel info
+    OpenModelKey key = { sessionID, _return_.modelID};
+    m_models[ key] = QMS_FullyQualifiedModelName( _return_.model_info);
   }
 		  
   LOGGER                                             << std::endl;
@@ -505,6 +511,32 @@ void QueryManagerServer::ManageOpenModel( Query_Result &_return, const SessionID
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   char hex_string[ 1024];
   LOGGER << "  data   : \n" << ModelID_DoHexStringConversionIfNecesary( _return.data, hex_string, 1024) << std::endl;
+}
+
+void QueryManagerServer::ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  std::string modelID    = pt.get<std::string>("modelID");
+  
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  // std::cout << "S " << sessionID        << std::endl;
+  // std::cout << "M " << modelID    << std::endl;
+  
+  // Nothing to do in the Data Layer ...
+  // rvOpenModel _return_;
+  // DataLayerAccess::Instance()->openModel( _return_,
+  // 					     sessionIDStr.str(), unique_name, requested_access);
+  // std::cout << _return_ << std::endl;
+
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  // delete OpenModel info
+  OpenModelKey key = { sessionID, modelID};
+  m_models.erase( key);
 }
 
 void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {

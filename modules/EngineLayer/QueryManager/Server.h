@@ -35,6 +35,8 @@
 using namespace  ::VELaSSCo;
 
 class QMS_FullyQualifiedModelName: public FullyQualifiedModelName {
+public:
+  QMS_FullyQualifiedModelName( ) {};
   QMS_FullyQualifiedModelName( const QMS_FullyQualifiedModelName &inf): FullyQualifiedModelName( ( FullyQualifiedModelName)inf) {};
   QMS_FullyQualifiedModelName( const FullyQualifiedModelName &inf): FullyQualifiedModelName( inf) {};
   std::string GetDBType () const;
@@ -44,27 +46,40 @@ class QMS_FullyQualifiedModelName: public FullyQualifiedModelName {
   void GetTableNames( std::string &model_Table, std::string &metadata_table, std::string &data_Table) const;
 };
 
+// to have information about sessions
+struct User
+{
+  std::string loginName;
+  std::string loginTime;
+};
+typedef std::map< SessionID, User> UserMap;
+
+// to have information about the OpenedModels ...
+typedef std::string ModelID;
+typedef struct OpenModelKey {
+  SessionID sessionID;
+  ModelID modelID;
+  friend bool operator<( const OpenModelKey &k1, const OpenModelKey &k2) {
+    if ( k1.sessionID != k2.sessionID) {
+      return k1.sessionID < k2.sessionID ;
+    } else {
+      return k1.modelID < k2.modelID ;
+    }
+  }
+} OpenModelKey;
+typedef std::map< OpenModelKey, QMS_FullyQualifiedModelName> ModelMap; // key = SessionID + ModelID
+
 class QueryManagerServer : virtual public QueryManagerIf {
-  struct User
-  {
-    std::string loginName;
-    std::string loginTime;
-  };
-  typedef std::map< SessionID, User> UserMap;
   UserMap m_users;
-  
-  // to have information about the OpenedModels ...
-  typedef std::string ModelID;
-  typedef std::map< ModelID, FullyQualifiedModelName> ModelMap;
   ModelMap m_models;
 
   bool ValidSessionID( const SessionID &sessionID) const {
     const UserMap::const_iterator it = m_users.find(sessionID);
     return (it != m_users.end());
   }
-
-  bool GetModelInfo( const ModelID &model, FullyQualifiedModelName &ret) const {
-    const ModelMap::const_iterator it = m_models.find( model);
+  bool GetModelInfo( const SessionID &sessionID, const ModelID &model, QMS_FullyQualifiedModelName &ret) const {
+    OpenModelKey key = { sessionID, model};
+    const ModelMap::const_iterator it = m_models.find( key);
     if ( it != m_models.end()) {
       ret = it->second;
       return true;
@@ -73,6 +88,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
     }
   }
   
+  // queries:
   void UserLogin(UserLogin_Result& _return, const std::string& url, const std::string& name, const std::string& password);
   
   void UserLogout(UserLogout_Result& _return, const SessionID sessionID);
@@ -84,6 +100,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
 };
 
