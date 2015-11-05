@@ -167,6 +167,22 @@ namespace VELaSSCo
     }
   }
 
+  /**
+   * Compare two strings ignoring case (OS portable)
+   */
+
+  inline bool AreEqualNoCase( const std::string &a, const std::string &b) {
+    if ( a.size() != b.size()) {
+      return false;
+    }
+    for ( std::string::const_iterator c1 = a.begin(), c2 = b.begin(); c1 != a.end(); ++c1, ++c2) {
+      if ( tolower( *c1) != tolower( *c2)) {
+	return false;
+      }
+    }
+    return true;
+  }
+
   // ---------------------------------------------------------------------------
 	
   /**
