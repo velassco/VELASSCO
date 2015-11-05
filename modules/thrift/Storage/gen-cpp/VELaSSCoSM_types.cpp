@@ -2300,8 +2300,12 @@ void rvOpenModel::__set_modelID(const std::string& val) {
   this->modelID = val;
 }
 
-const char* rvOpenModel::ascii_fingerprint = "AB879940BD15B6B25691265F7384B271";
-const uint8_t rvOpenModel::binary_fingerprint[16] = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
+void rvOpenModel::__set_model_info(const FullyQualifiedModelName& val) {
+  this->model_info = val;
+}
+
+const char* rvOpenModel::ascii_fingerprint = "EC01D39DC1B343EB339C70385728F51B";
+const uint8_t rvOpenModel::binary_fingerprint[16] = {0xEC,0x01,0xD3,0x9D,0xC1,0xB3,0x43,0xEB,0x33,0x9C,0x70,0x38,0x57,0x28,0xF5,0x1B};
 
 uint32_t rvOpenModel::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2347,6 +2351,14 @@ uint32_t rvOpenModel::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->model_info.read(iprot);
+          this->__isset.model_info = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2376,6 +2388,10 @@ uint32_t rvOpenModel::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeBinary(this->modelID);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("model_info", ::apache::thrift::protocol::T_STRUCT, 4);
+  xfer += this->model_info.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   oprot->decrementRecursionDepth();
@@ -2387,6 +2403,7 @@ void swap(rvOpenModel &a, rvOpenModel &b) {
   swap(a.status, b.status);
   swap(a.report, b.report);
   swap(a.modelID, b.modelID);
+  swap(a.model_info, b.model_info);
   swap(a.__isset, b.__isset);
 }
 
@@ -2394,12 +2411,14 @@ rvOpenModel::rvOpenModel(const rvOpenModel& other95) {
   status = other95.status;
   report = other95.report;
   modelID = other95.modelID;
+  model_info = other95.model_info;
   __isset = other95.__isset;
 }
 rvOpenModel& rvOpenModel::operator=(const rvOpenModel& other96) {
   status = other96.status;
   report = other96.report;
   modelID = other96.modelID;
+  model_info = other96.model_info;
   __isset = other96.__isset;
   return *this;
 }
@@ -2409,6 +2428,7 @@ std::ostream& operator<<(std::ostream& out, const rvOpenModel& obj) {
   out << "status=" << to_string(obj.status);
   out << ", " << "report=" << to_string(obj.report);
   out << ", " << "modelID=" << to_string(obj.modelID);
+  out << ", " << "model_info=" << to_string(obj.model_info);
   out << ")";
   return out;
 }

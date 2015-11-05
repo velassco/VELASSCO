@@ -167,6 +167,7 @@ struct rvOpenModel {
    1: string status // OK / Error
    2: string report // Error report
    3: binary modelID
+   4: FullyQualifiedModelName model_info
 }
 
 

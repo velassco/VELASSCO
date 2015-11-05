@@ -908,17 +908,18 @@ class rvGetThumbnailOfAModel {
 void swap(rvGetThumbnailOfAModel &a, rvGetThumbnailOfAModel &b);
 
 typedef struct _rvOpenModel__isset {
-  _rvOpenModel__isset() : status(false), report(false), modelID(false) {}
+  _rvOpenModel__isset() : status(false), report(false), modelID(false), model_info(false) {}
   bool status :1;
   bool report :1;
   bool modelID :1;
+  bool model_info :1;
 } _rvOpenModel__isset;
 
 class rvOpenModel {
  public:
 
-  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
-  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
+  static const char* ascii_fingerprint; // = "EC01D39DC1B343EB339C70385728F51B";
+  static const uint8_t binary_fingerprint[16]; // = {0xEC,0x01,0xD3,0x9D,0xC1,0xB3,0x43,0xEB,0x33,0x9C,0x70,0x38,0x57,0x28,0xF5,0x1B};
 
   rvOpenModel(const rvOpenModel&);
   rvOpenModel& operator=(const rvOpenModel&);
@@ -929,6 +930,7 @@ class rvOpenModel {
   std::string status;
   std::string report;
   std::string modelID;
+  FullyQualifiedModelName model_info;
 
   _rvOpenModel__isset __isset;
 
@@ -938,6 +940,8 @@ class rvOpenModel {
 
   void __set_modelID(const std::string& val);
 
+  void __set_model_info(const FullyQualifiedModelName& val);
+
   bool operator == (const rvOpenModel & rhs) const
   {
     if (!(status == rhs.status))
@@ -945,6 +949,8 @@ class rvOpenModel {
     if (!(report == rhs.report))
       return false;
     if (!(modelID == rhs.modelID))
+      return false;
+    if (!(model_info == rhs.model_info))
       return false;
     return true;
   }
