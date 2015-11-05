@@ -317,6 +317,13 @@ void QM_DemoServer::ManageOpenModel( Query_Result &_return, const SessionID sess
   LOGGER << "  data   : \n" << _return.data << std::endl;
 }
 
+void QM_DemoServer::ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+}
+
 void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
   _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));

@@ -44,6 +44,7 @@ typedef enum
 	VAL_NO_MODEL_MATCHES_PATTERN      = 0x0301,
 
 	/* OpenModel */
+	/* CloseModel */
 
 	/* GetResultFromVerticesID */
 	VAL_RESULT_ID_NOT_AVAILABLE       = 0x1000,
@@ -101,7 +102,12 @@ extern "C" {
 				  /* out */
 				  const char    **status,
 				  const char    **modelID  /* a 16-digit binary ID or a 32-digit hexadecimal */
-				   );					
+				   );
+  VAL_Result VAL_API valCloseModel( /* in */
+				  VAL_SessionID   sessionID,
+				  const char*     modelID,
+				  /* out */
+				  const char    **status);
 
   /*
    * 2xx RAQ - Result Analysis Queries
