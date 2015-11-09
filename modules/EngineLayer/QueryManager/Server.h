@@ -149,19 +149,19 @@ inline bool QueryManagerServer::GetTableNames( const SessionID &sessionID, const
 inline std::string QueryManagerServer::GetModelsTableName( const SessionID &sessionID, const ModelID &modelID) const {
   std::string model, metadata, data;
   bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
-  assert( found);
+  // assert( found);
   return model;
 }
 inline std::string QueryManagerServer::GetMetaDataTableName( const SessionID &sessionID, const ModelID &modelID) const {
   std::string model, metadata, data;
   bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
-  assert( found);
+  // assert( found);
   return metadata;
 }
 inline std::string QueryManagerServer::GetDataTableName( const SessionID &sessionID, const ModelID &modelID) const {
   std::string model, metadata, data;
   bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
-  assert( found);
+  // assert( found);
   return data;
 }
 
