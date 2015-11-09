@@ -20,7 +20,8 @@ AnalyticsModule *AnalyticsModule::getInstance() {
   return m_pInstance;
 }
 
-void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const std::string &modelID,
+void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const std::string &modelID, 
+					    const std::string &dataTableName,
 					    const std::string &analysisID, const int numSteps, const double *lstSteps,
 					    const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 					    double *return_bbox, std::string *return_error_str) {
@@ -37,7 +38,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // running java:
   if ( !use_yarn) {
     char cmd_line[ 1024];
-    sprintf( cmd_line, "java -jar ../Analytics/GetBoundingBoxOfAModel.jar %s", modelID.c_str());
+    sprintf( cmd_line, "java -jar ../Analytics/GetBoundingBoxOfAModel.jar %s %s", modelID.c_str(), dataTableName.c_str());
     int ret = system( cmd_line);
     // output in '../bbox/part-r-00000'
     FILE *fi = fopen( "bbox/part-r-00000", "r");
@@ -69,7 +70,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     std::string hadoop_home = "/localfs/home/velassco/common";
     std::string hadoop_bin = hadoop_home + "/hadoop/bin";
 
-    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetBoundingBoxOfAModel.jar " + modelID;
+    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetBoundingBoxOfAModel.jar " + modelID + " " + dataTableName;
     int ret = 0;
     ret = system( cmd_line.c_str());
     // output in '../bbox/part-r-00000' but in hdfs

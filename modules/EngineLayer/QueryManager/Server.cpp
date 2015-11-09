@@ -84,24 +84,6 @@ std::string QMS_FullyQualifiedModelName::GetDBType () const {
   return ret;
 }
 
-std::string QMS_FullyQualifiedModelName::GetModelsTableName() const {
-  std::string model, metadata, data;
-  GetTableNames( model, metadata, data);
-  return model;
-}
-
-std::string QMS_FullyQualifiedModelName::GetDataTableName() const {
-  std::string model, metadata, data;
-  GetTableNames( model, metadata, data);
-  return metadata;
-}
-
-std::string QMS_FullyQualifiedModelName::GetMetaDataTableName() const {
-  std::string model, metadata, data;
-  GetTableNames( model, metadata, data);
-  return data;
-}
-
 void QMS_FullyQualifiedModelName::GetTableNames( std::string &model_table, std::string &metadata_table, std::string &data_table) const {
   const std::string &location = this->location;
   std::size_t found = location.find_first_of( ":");
@@ -582,11 +564,12 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   // 						      sessionIDStr.str(), modelID,
   // 						      analysisID,
   // 						      stepOptions, numSteps, lstSteps);
-
+  std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
   double bbox[ 6];
   std::string error_str;
   try {
     AnalyticsModule::getInstance()->calculateBoundingBox( sessionIDStr.str(), modelID,
+							  simulation_data_table_name,
 							  // analysisID, numSteps, lstSteps,
 							  "", 0, NULL,
 							  // numVertexIDs, lstVertexIDs,

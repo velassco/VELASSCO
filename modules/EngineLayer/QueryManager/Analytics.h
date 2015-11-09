@@ -15,7 +15,7 @@ class AnalyticsModule
 public:
   static AnalyticsModule *getInstance();
 
-  void calculateBoundingBox( const std::string &sessionID, const std::string &modelID,
+  void calculateBoundingBox( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
 			     const std::string &analysisID, const int numSteps, const double *lstSteps,
 			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 			     double *return_bbox, std::string *return_error_str);
