@@ -24,6 +24,9 @@
     // if all chars converted, then return dst
     return ( isrc == src_len) ? dst : NULL;
   }
+  static bool ModelID_IsBinary( const std::string &modelID) {
+    return ( modelID.length() == 16);
+  }
   static std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
     if ( modelID.length() == 16) {
       return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
@@ -32,7 +35,7 @@
     }
   }
 
-void CheckVALResult(VAL_Result result, const char *error_message = NULL)
+void CheckVALResult(VAL_Result result, const std::string &error_message = "")
 {
   if (result != VAL_SUCCESS)
   {
@@ -41,7 +44,7 @@ void CheckVALResult(VAL_Result result, const char *error_message = NULL)
 
     std::cout << "VELaSSCo ERROR: " << std::endl;
     std::cout << "  " << message    << std::endl;
-    if ( error_message) {
+    if ( error_message.length() > 0) {
       std::cout << "  Query message: " << error_message    << std::endl;
     }
     exit(EXIT_FAILURE);
@@ -59,6 +62,9 @@ bool askForHelp( const char *txt) {
   return !strcasecmp( txt, "-h") || !strcasecmp( txt, "--h") || !strcasecmp( txt, "-help") || !strcasecmp( txt, "--help");
 }
 
+std::string getStringFromCharPointers( const char *str1, const char *str2) {
+  return std::string( str1 ? str1 : "") + std::string( str2 ? str2 : "");
+}
 
 int main(int argc, char* argv[])
 {
@@ -88,13 +94,13 @@ int main(int argc, char* argv[])
   printf( "Connecting to '%s' ...\n", hostname_port);
 
   result = valUserLogin( hostname_port, "andreas", "1234", &sessionID);
-  CheckVALResult(result);
+  CheckVALResult(result, "valUserLogin");
 
   // Test StatusDB
 
   const char *status = NULL;
   result = valGetStatusDB( sessionID, &status);
-  CheckVALResult(result);
+  CheckVALResult(result, getStringFromCharPointers( "valGetStatusDB ", status));
   std::cout << "status = " << status << std::endl;
 
   //
@@ -104,7 +110,7 @@ int main(int argc, char* argv[])
   const char *group_qualifier = ""; // loop over all available 4 tables
   const char *name_pattern = "*";
   result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
-  CheckVALResult(result);
+  CheckVALResult(result, getStringFromCharPointers( "valGetListOfModels ", status));
   std::cout << "in VELaSSCo_models:" << std::endl;
   std::cout << "   status = " << status << std::endl;
   std::cout << "   model_list = " << return_list << std::endl;
@@ -124,14 +130,32 @@ int main(int argc, char* argv[])
 
   // const char *unique_name = ""; // can be empty to get the first one
   // const char *unique_name = "Test_VELaSSCo_Models:"; // or using only the table's name and get the first one
-  const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+  // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+  // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+  const char *unique_name = "T_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/D2C/Data/Fluidized_Bed_Small"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+
+  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+  // const char *unique_name = "Test_VELaSSCo_Models:localfs/home/velassco/common/simulation_files/"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
   const char *access = "";
   const char *return_modelID = NULL;
   result = valOpenModel( sessionID, unique_name, access, &status, &return_modelID);
   std::cout << "OpenModel: " << std::endl;
   std::cout << "   status = " << status << std::endl;
   char hex_string[ 1024];
-  std::cout << "   model_modelID = " << ModelID_DoHexStringConversionIfNecesary( return_modelID, hex_string, 1024) << std::endl;
+  if ( return_modelID) {
+    std::cout << "   model_modelID = " << ModelID_DoHexStringConversionIfNecesary( return_modelID, hex_string, 1024) << std::endl;
+  } else {
+    // logout as it is not valid ...
+    std::cout << "   ERROR model could not be opened, login out ..." << std::endl;
+    result = valUserLogout(sessionID);
+    CheckVALResult(result);
+    
+    return EXIT_SUCCESS;
+  }
+
+ // need to store as return_modelID points to a temporary storage that will be reused in next query
+  std::string opened_modelID( return_modelID);
 
   //
   // Test GetResultFromVerticesID()
@@ -156,7 +180,7 @@ int main(int argc, char* argv[])
                                       &resultVertexIDs,
                                       &resultValues,
                                       &resultNumVertices);
-  CheckVALResult(result);
+  CheckVALResult(result, "valGetResultFromVerticesID");
   
   //
   // Print received data
@@ -179,31 +203,22 @@ int main(int argc, char* argv[])
   const double *return_bbox = NULL;
   const char *return_error_str = NULL;
   std::cout << "doing valGetBoundingBox" << std::endl;
-  const char *model_id_fem = "fem";
-  const char *model_id_dem = "dem";
-  result = valGetBoundingBox( sessionID, model_id_fem,
+
+  result = valGetBoundingBox( sessionID, opened_modelID.c_str(), // the already opened model
   			      NULL, 0, // use all vertices ID
   			      "", // don't care about analysisID
   			      "ALL", NULL, 0, // use all steps / or don't care
   			      &return_bbox, &return_error_str);
-  CheckVALResult(result, return_error_str);
-  std::cout << "GetBoundingBox: " << model_id_fem << std::endl;
-  std::cout << "         bbox = ( " ;
+  CheckVALResult(result, getStringFromCharPointers( "valGetBoundingBox ", return_error_str));
+  ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+  std::cout << "GetBoundingBox: " << opened_modelID << 
+    ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
   if ( return_bbox) {
+    std::cout << "         bbox = ( " ;
     std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
               << return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
-  }
-  result = valGetBoundingBox( sessionID, model_id_dem,
-  			      NULL, 0, // use all vertices ID
-  			      "", // don't care about analysisID
-  			      "ALL", NULL, 0, // use all steps / or don't care
-  			      &return_bbox, &return_error_str);
-  CheckVALResult(result, return_error_str);
-  std::cout << "GetBoundingBox: " << model_id_dem << std::endl;
-  std::cout << "         bbox = ( " ;
-  if ( return_bbox) {
-    std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
-              << return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
+  } else {
+    std::cout << "Error: " << return_error_str << std::endl;
   }
 
   //
