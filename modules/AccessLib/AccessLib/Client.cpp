@@ -111,7 +111,7 @@ VAL_Result Client::Query( /* in */
 
 	try
 	{
-	  // LOGGER << "Doing " << query << std::endl;
+	        // LOGGER << "Doing " << query << std::endl;
 		m_transport->open();
 		m_client->Query(m_queryResult, sessionID, query);
 		m_transport->close();
