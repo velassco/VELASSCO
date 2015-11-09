@@ -435,7 +435,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
 	return_model_info = model_info_to_return;
       } else {
 	result = "Error";
-	report = "Unknown table name: " + std::string( table_to_use);
+	report = "Unknown table name: " + std::string( table_to_use ? table_to_use : "N/A");
       }
     } else {
       result = "Error";
