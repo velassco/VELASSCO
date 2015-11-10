@@ -33,28 +33,32 @@ int main(int argc, char **argv)
 {
    int rstat;
    char errTxt[1024];
+   char *dbFolder = "", *dbName = "", *dbPassword = "";
    
-   if (argc < 5 || (strNEQ(argv[1], "Server") && strNEQ(argv[1], "Files"))) {
+   if (argc >= 5 && (strEQL(argv[1], "Server") || strEQL(argv[1], "Files"))) {
+      dbFolder = argv[2]; dbName = argv[3]; dbPassword = argv[4];
+   } else if (argc == 4 && strEQL(argv[1], "Client")) {
+   } else {
       printf("The VELaSSCo Data Injector for EDM has the command line parameters:\n   1. Command - can be either \"Server\", \"Files\", \"Help\", \n   2. Database folder\n   3. Database name\n   4. Database password\n");
       printf("\n   If Command is \"Server\", parameter no 5 is communication port number.\n");
       printf("   If Command is \"Files\", parameter no 5 is model name and the following\n   parameters are file names of the files that shall be injected into EDM.\n");
       exit(0);
    }
-
    try {
       int port = 9090;
 
       DEM_InjectorHandler demInjector(&dem_schema_velassco_SchemaObject);
-
-      Database VELaSSCo_db(argv[2], argv[3], argv[4]);
+      Database VELaSSCo_db(dbFolder, dbName, dbPassword);
       Repository demRepository(&VELaSSCo_db, "DEM_models");
-      demInjector.setCurrentSchemaName("dem_schema_velassco");
 
-      demInjector.setDatabase(&VELaSSCo_db);
-      VELaSSCo_db.open();
-      demRepository.open(sdaiRW);
-      demInjector.setCurrentRepository(&demRepository);
+      if (strEQL(argv[1], "Server") || strEQL(argv[1], "Files")) {
+         demInjector.setCurrentSchemaName("dem_schema_velassco");
 
+         demInjector.setDatabase(&VELaSSCo_db);
+         VELaSSCo_db.open();
+         demRepository.open(sdaiRW);
+         demInjector.setCurrentRepository(&demRepository);
+      }
       if (strEQL(argv[1], "Server")) {
          boost::shared_ptr<DEM_InjectorHandler> handler(&demInjector);
          boost::shared_ptr<TProcessor> processor(new DEM_InjectorProcessor(handler));
@@ -68,14 +72,20 @@ int main(int argc, char **argv)
  
          TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
          server.serve();
-      } else if (strEQL(argv[1], "Files")) {
+      } else if (strEQL(argv[1], "Files") || strEQL(argv[1], "Client")) {
          char commandline[2048], command[1024], param1[1024], param2[1024], param3[1024];
 
-         demInjector.setCurrentModel(argv[5]);
-         demInjector.DeleteCurrentModelContent();
+         FILE *paraMfile;
+         if (strEQL(argv[1], "Files")) {
+            demInjector.setCurrentModel(argv[5]);
+            demInjector.DeleteCurrentModelContent();
+            paraMfile = fopen(argv[6], "r");
+         } else {
+            demInjector.setRemoteModel(argv[2], "localhost", 9090);
+            paraMfile = fopen(argv[3], "r");
+         }
          demInjector.InitiateFileInjection();
 
-         FILE *paraMfile = fopen(argv[6], "r");
          if (paraMfile) {
             while (fgets(commandline, sizeof(commandline), paraMfile)){
                int nCoulmn = sscanf(commandline, "%s %s %s %s", command, param1, param2, param3);
@@ -99,7 +109,11 @@ int main(int argc, char **argv)
                demInjector.InjectFile(argv[i]);
             }
          }
+      }
+      if (strEQL(argv[1], "Files")) {
          demInjector.flushObjectsAndClose();
+      } else {
+         demInjector.sendObjectsToServer();
       }
    } catch (CedmError *e) {
       rstat = e->rstat;
