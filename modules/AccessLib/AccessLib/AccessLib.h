@@ -92,7 +92,7 @@ extern "C" {
 					/* out */
 					const char    **status,
 					const char    **list_of_models
-					/* will be: "NumberOfModels: 1234\nName: model_1\nFullPath: path_1\nName: model_2..." */
+					/* will be: "NumberOfModels: 1234\nName: model_1\nFullPath: path_1\nModelID: 12abc\nLocation: DB_type\nName: model_2..." */
 					 );					
   
   VAL_Result VAL_API valOpenModel( /* in */
