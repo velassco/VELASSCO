@@ -21,7 +21,9 @@ using namespace std;
 #include "EDM_interface.h"
 
 
+/*===============================================================================================*/
 void EDM_interface::setCurrentModel(const char *modelName)
+/*===============================================================================================*/
 {
    m = models[modelName];
    if (m == NULL) {
@@ -29,4 +31,22 @@ void EDM_interface::setCurrentModel(const char *modelName)
       SdaiModel modelID = sdaiCreateModelBN(currentRepository->getRepositoryId(), (char*)modelName, currentSchemaName);
       m->open((char*)modelName, sdaiRW);
    }
+}
+/*===============================================================================================*/
+void EDM_interface::setRemoteModel(char *modelName, char *_serverName, int _serverPort)
+/*===============================================================================================*/
+{
+   m = models[modelName];
+   if (m == NULL) {
+      sm = new SerializableModel(currentRepository, &model_ma, currentSchema, &extra_ma);
+      models[modelName] = m = sm;
+   }
+   serverName = _serverName;
+   serverPort = _serverPort;
+}
+/*===============================================================================================*/
+void EDM_interface::sendObjectsToServer()
+/*===============================================================================================*/
+{
+   sm->serializeObjectsInBuffer();
 }
