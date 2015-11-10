@@ -21,6 +21,7 @@
 
 #include "Curl_cmd.h"
 #include "Helpers.h"
+#include "Extras.h"
 
 using namespace std;
 using namespace VELaSSCo;
@@ -325,16 +326,21 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
 			      FullyQualifiedModelName &return_model_info,
 			      const std::string &sessionID, const std::string &unique_model_name_pattern, 
 			      const std::string &requested_access) {
+  /* unique_mode_name_pattern is of the form  (hbase = TableName:Properties-fp:Properties-nm) */
   // strip "unique_model_name_pattern" down to
-  // TableName:model_name_pattern
-  // model_name_pattern corresponds to Properties:fp
+  // TableName:model_path:model_name
+  // model_path corresponds to Properties:fp
+  // model_name corresponds to Properties:nm
 
-  bool use_first_model = false;
+  bool select_first_model = false;
+  bool select_first_path = false;
   char *table_to_use = NULL;
   char *path_to_search = NULL;
+  char *name_to_search = NULL;
   char *separator = NULL;
   if ( unique_model_name_pattern.length() == 0) {
-    use_first_model = true;
+    select_first_model = true;
+    select_first_path = true;
     table_to_use = strdup( "VELaSSCo_Models");
     // may be look through all 4 tables: like in getListOfModels
     // std::vector< std::string> lst_tables = getModelListTables();
@@ -343,22 +349,41 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
     //   if ( !scan_ok)
     // 	break;
     // }
-  } else {
+  } else { // process unique_model_name_pattern
     table_to_use = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
     path_to_search = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
+    name_to_search = strdup( unique_model_name_pattern.c_str()); // to have enough space ...
+
+    // options: ModelName, /Full/Path:ModelName or TableName:/Full/Path:ModelName
+
     separator = strchr( table_to_use, ':');
-    if ( separator) {
-      *separator = '\0';
-      separator++;
-      *path_to_search = '\0';
-      if ( *separator)
-	strcpy( path_to_search, separator);
-      else
-	use_first_model = true; // it only hash "Test_VELaSSCo_Models:"
+    if ( !separator) { // unique_model_name_pattern == ModelName
+      select_first_path = true;
     } else {
-      free( table_to_use);
-      table_to_use = strdup( "VELaSSCo_Models");
+      char *separator2 = strchr( separator + 1, ':');
+      if ( !separator2) { // unique_model_name_pattern == /Full/Path:ModelName
+	free( table_to_use);
+	table_to_use = strdup( "VELaSSCo_Models");
+	separator = strchr( path_to_search, ':');
+	*separator = '\0';
+	separator++;
+	strcpy( name_to_search, separator);
+      } else { // unique_model_name_pattern == TableName:/Full/Path:ModelName
+	*separator = '\0';
+	separator++;
+	strcpy( path_to_search, separator);
+	separator2 = strchr( path_to_search, ':');
+	*separator2 = '\0';
+	separator2++;
+	strcpy( name_to_search, separator2);
+      }
     }
+  } // end processing unique_model_name_pattern
+  if ( name_to_search && !strcasecmp( name_to_search, "*")) {
+    select_first_model = true;
+  }
+  if ( path_to_search && !strcasecmp( path_to_search, "*")) {
+    select_first_path = true;
   }
 
   std::string modelID_to_return;
@@ -369,6 +394,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
   std::cout << "A " << requested_access << std::endl;
   std::cout << "T " << table_to_use                << std::endl; // table name
   std::cout << "P " << path_to_search                << std::endl; // model path ( Properties:fp)
+  std::cout << "N " << name_to_search                << std::endl; // model name ( Properties:nm)
   std::cout << "WARNING: StorageModule::FindModel requested_access not used at the moment." << std::endl;
 
   vector< TRowResult> rowsResult;
@@ -398,11 +424,13 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
 	FullyQualifiedModelName model_info;
 	bool ok = getModelInfoFromRow( model_info, rowsResult[ i], table_to_use);
 	if ( ok) {
-	  if ( use_first_model || ( model_info.full_path == path_to_search)) {
-	    modelID_to_return = model_info.modelID;
-	    model_info_to_return = model_info;
-	    found = true;
-	    break;
+	  if ( select_first_path || ( model_info.full_path == path_to_search)) {
+	    if ( select_first_model || ( model_info.name == name_to_search)) {
+	      modelID_to_return = model_info.modelID;
+	      model_info_to_return = model_info;
+	      found = true;
+	      break;
+	    }
 	  }
 	  there_are_models = true;
 	}

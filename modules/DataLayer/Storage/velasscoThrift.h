@@ -28,6 +28,10 @@ public:
    * @param model_name_pattern
    */
   void GetListOfModelNames(rvGetListOfModels &_return, const std::string &sessionID, const std::string &model_group_qualifier, const std::string &model_name_pattern) ;
+  /* unique_mode_name_pattern is of the form 
+   * model name pattern (hbase = TableName:Properties-fp:Properties-nm) 
+   *     options: ModelName, /Full/Path:ModelName or TableName:/Full/Path:ModelName
+   */
   void FindModel(rvOpenModel &_return, const std::string &sessionID, const std::string &unique_model_name_pattern, const std::string &requested_access);
     
   /**
