@@ -128,15 +128,20 @@ int main(int argc, char* argv[])
   // 
   // Test OpenModel
 
+  // unique_name is of the form ModelName or /Full/Path:ModelName or TableName:/Full/Path:ModelName
+  // ModelName is Properties:fp
+  // /Full/Path is Properties:nm
   // const char *unique_name = ""; // can be empty to get the first one
-  // const char *unique_name = "Test_VELaSSCo_Models:"; // or using only the table's name and get the first one
-  // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
-  // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
-  const char *unique_name = "T_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/D2C/Data/Fluidized_Bed_Small"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+  // const char *unique_name = "*:*"; // can be empty to get the first one
+  // const char *unique_name = "Test_VELaSSCo_Models:*:*"; // or using only the table's name and get the first one
+  // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c:*";
+  // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c:FluidizedBed_small.p3c";
+  // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM/VELaSSCo_HbaseBasicTest-part-";
+  const char *unique_name = "T_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/D2C/Data/Fluidized_Bed_Small:FluidizedBed";
 
-  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
-  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
-  // const char *unique_name = "Test_VELaSSCo_Models:localfs/home/velassco/common/simulation_files/"; // at the moment, as Properties::nm are not unique we'll use Properties:fp
+  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizeBed_large"; 
+  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/:FluidizedBed_small";
+  // const char *unique_name = "Test_VELaSSCo_Models:localfs/home/velassco/common/simulation_files/:DEM_box";
   const char *access = "";
   const char *return_modelID = NULL;
   result = valOpenModel( sessionID, unique_name, access, &status, &return_modelID);
