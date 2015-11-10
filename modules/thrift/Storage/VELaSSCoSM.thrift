@@ -136,8 +136,8 @@ struct ModelInfo {
 
 // as of OP-22.055 GetListOfModelNames
 struct FullyQualifiedModelName {
-   1: string name
-   2: string full_path
+   1: string name        // HBase: Properties-nm
+   2: string full_path   // HBase: Properties-fp
    3: binary modelID
    4: string location   // EDM or HBase:TableName
 }
@@ -223,8 +223,10 @@ service VELaSSCoSM
     
   // as of OP-24.058 FindModelFS ( should be OpenModel !!!)
   rvOpenModel FindModel( 1: string sessionID, 
-    2: string unique_model_name_pattern,
-    3: string requested_access)      // model name pattern ( Properties:fp), can be TableName:ModelName
+    // model name pattern (hbase = TableName:Properties-fp:Properties-nm) 
+    //     options: ModelName, /Full/Path:ModelName or TableName:/Full/Path:ModelName
+    2: string unique_model_name_pattern,  
+    3: string requested_access)     
 
   /**
    Return the status of the different services 
