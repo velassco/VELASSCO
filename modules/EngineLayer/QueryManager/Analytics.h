@@ -20,6 +20,13 @@ public:
 			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 			     double *return_bbox, std::string *return_error_str);
 
+  /*void calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
+				const std::string &analysisName, const std::string &staticMeshID, 
+ 				const std::string &timestepOptions, const double *timesteps,
+				const std::string &CGMethod, const double width, const double cutoffFactor,
+			  	const bool processContacts, const bool doTemporalAverage, const std::string &TAOptions,
+			  	const std::string &prefixHBaseTableToUse, std:: *returnQueryOutcome, std::string *return_error_str);*/	
+
 private:
   AnalyticsModule() {};
   AnalyticsModule( AnalyticsModule const&) {};
