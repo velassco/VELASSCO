@@ -157,3 +157,67 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // delete local tmp files ...
   // recursive_rmdir( "bbox");
 }
+
+
+/*
+void calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
+								const std::string &analysisName, const std::string &staticMeshID, 
+								const std::string &timestepOptions, const double *timesteps,
+								const std::string &CGMethod, const double width, const double cutoffFactor,
+								const bool processContacts, const bool doTemporalAverage, const std::string &TAOptions,
+								const std::string &prefixHBaseTableToUse, std::string *returnQueryOutcome, std::string *return_error_str){
+
+ bool use_yarn = true;
+ 
+ if (use_yarn) {
+	std::string hadoop_home = "/localfs/home/velassco/common";
+	std::string hadoop_bin = hadoop_home + "/hadoop/bin";
+	std::string parameters = modelID + " " + analysisName + " " + staticMeshID + " " + timestepOptions + " ";
+
+	std::stringstream s;
+
+	size_timesteps = 1;
+
+	if (size_timesteps == 1)
+		s << " " << timesteps[0];	
+	else
+		s  << timesteps[0] << "," << timesteps[1] << " ";
+
+	parameters+= s.str();
+
+	std::stringstream s_width;
+	s_width << width;
+
+	std::stringstream s_cutoff;
+	s_cutoff << cutoffFactor;
+
+	std::string proc_cont;
+
+	if (processContacts)
+		proc_cont = "true";
+	else
+		proc_cont = "false";
+
+	std::string do_temp_avg;
+
+	if (doTemporalAverage)
+		do_temp_avg = "true";
+	else
+		do_temp_avg = "false";
+
+	std::stringstream s_deltaT;
+	s_deltaT << deltaT;
+
+	parameters+= CGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + TAOptions + " " + s_deltaT.str();
+
+	std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetDiscrete2ContinuumOfAModel.jar " + parameters;
+  
+	int ret = 0;
+	ret = system(cmd_line.c_str());
+	
+  //result stored in HBase and outcome in a file
+  //reading query outcome from file
+  *return_error_str = std::string( "NO ERROR")
+  *returnQueryOutcome = std::string( "NO ERROR")
+ }
+}*/
