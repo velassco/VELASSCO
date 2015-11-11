@@ -143,6 +143,24 @@ extern "C" {
 				       const double   **resultBBox, // ix doubles: min(x,y,z)-max(x,y,z)
 				       const char     **resultErrorStr); // in case of error
 
+
+  /*VAL_Result VAL_API valGetDiscrete2Continuum(
+				       VAL_SessionID   sessionID,
+				       const char     *modelID,
+					   const char     *analysisName,
+					   const char     *staticMeshID,
+					   const char     *stepOptions,
+					   const double   *lstSteps,
+					   const char     *cGMethod,
+					   const double     widht,
+					   const double     cutoffFactor,
+					   const bool     processContacts,
+					   const bool     doTemporalAVG,
+					   const char     *TAOptions,
+					   const char     *HBaseToUse,
+			           const char   **queryOutcome, 
+				       const char     **resultErrorStr); 
+*/
   /**
    * Translate a numerical result code into an error message string.
    * The memory for the string does not need to be released by the user.
