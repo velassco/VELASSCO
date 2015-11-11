@@ -42,6 +42,7 @@ extern "C" {
     CHECK_QUERY_POINTER( resultValues );
     CHECK_QUERY_POINTER( resultNumVertices );
 
+	API_TRACE;
     try
       {
 	std::stringstream  queryCommand;
@@ -119,6 +120,8 @@ extern "C" {
     
     *resultBBox = NULL;
     *resultErrorStr = NULL;
+
+	API_TRACE;
     try
       {
 	std::stringstream  queryCommand;

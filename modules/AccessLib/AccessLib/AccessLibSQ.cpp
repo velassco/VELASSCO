@@ -28,6 +28,7 @@ VAL_Result VAL_API valUserLogin( /* in */
 				/* out */
 				VAL_SessionID *sessionID )
 {
+	API_TRACE;
 	try
 	{
 		// Generate new client instance
@@ -52,6 +53,7 @@ VAL_Result VAL_API valUserLogout( /* in */
 {
 	CHECK_SESSION_ID( sessionID );
 
+	API_TRACE;
 	try
 	{
 		// Try to log out from VELaSSCo server
@@ -82,6 +84,7 @@ VAL_Result VAL_API valGetListOfModels( /* in */
   CHECK_QUERY_POINTER( result_status );
   CHECK_QUERY_POINTER( result_list_of_models );
   
+  API_TRACE;
   try
     {
       std::stringstream  queryCommand;
@@ -124,6 +127,7 @@ VAL_Result VAL_API valGetListOfModels( /* in */
     CHECK_QUERY_POINTER( unique_model_name );
     CHECK_QUERY_POINTER( requested_access );
   
+	API_TRACE;
     try
       {
 	std::stringstream  queryCommand;
@@ -162,6 +166,7 @@ VAL_Result VAL_API valGetListOfModels( /* in */
     CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
   
+	API_TRACE;
     try
       {
 	std::stringstream  queryCommand;

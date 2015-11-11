@@ -4,6 +4,7 @@
 
 // STL
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 
@@ -20,8 +21,16 @@ typedef std::map< VAL_SessionID, boost::shared_ptr<VELaSSCo::Client> > ClientMap
 
 }
 
-// declared in AccessLibMQ.cpp
+// declared in AccessLibCommon.cpp
 extern VELaSSCo::ClientMap g_clients;
+extern std::ofstream       g_apiTraceFile;
+
+// defines an AutoTimer object that times an API call and writes the result to the trace file
+#define API_TRACE                                                                                                                                                    \
+	VELaSSCo::AutoTimer autoTimer(                                                                                                                                   \
+		std::string(FUNCTION_NAME).substr(std::string(FUNCTION_NAME).find("val"), std::string(FUNCTION_NAME).find("(")-std::string(FUNCTION_NAME).find("val"))+"; ", \
+		g_apiTraceFile                                                                                                                                               \
+	)
 
 #define CHECK_SESSION_ID( id )                                       \
 	do                                                               \

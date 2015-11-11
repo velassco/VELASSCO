@@ -17,6 +17,7 @@ set(THRIFT_GEN_SOURCES ${THRIFT_GEN_SOURCE_DIR}/QueryManager.cpp
 set(ACCESS_LIB_SOURCE_DIR ${SOURCE_ROOT}/AccessLib)
 set(ACCESS_LIB_SOURCES ${ACCESS_LIB_SOURCE_DIR}/AccessLib.h
                        ${ACCESS_LIB_SOURCE_DIR}/AccessLibCommon.h
+                       ${ACCESS_LIB_SOURCE_DIR}/AccessLibCommon.cpp
                        ${ACCESS_LIB_SOURCE_DIR}/AccessLibSQ.cpp 
                        ${ACCESS_LIB_SOURCE_DIR}/AccessLibDRQ.cpp 
                        ${ACCESS_LIB_SOURCE_DIR}/AccessLibRAQ.cpp 

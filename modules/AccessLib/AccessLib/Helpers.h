@@ -16,6 +16,13 @@
 #include <malloc.h>
 #include <string.h>
 
+// Timer
+#if defined(_MSC_VER)
+#    include <windows.h>
+#else
+#    include <sys/time.h>
+#endif
+
 // ---------------------------------------------------------------------------
 
 // seems that this is not working:
@@ -216,4 +223,83 @@ namespace VELaSSCo
     std::string m_fragment;
   };
 
-} // namespace
+  // ---------------------------------------------------------------------------
+	
+	/**
+	 * High resolution timer.
+	 */
+
+	class Timer
+	{
+	public:
+
+		/// create and reset a timer
+		Timer()
+		{
+			reset();
+		}
+
+		/// record start time
+		void reset()
+		{
+			#if defined(_MSC_VER)
+				QueryPerformanceCounter(&m_depart);
+			#else
+				gettimeofday(&m_depart, 0);
+			#endif
+		}
+
+		/// return the elapsed time since reset() in seconds
+		float Timer::getSeconds() const
+		{
+			#if defined(_MSC_VER)
+				LARGE_INTEGER now;
+				LARGE_INTEGER freq;
+
+				QueryPerformanceCounter(&now);
+				QueryPerformanceFrequency(&freq);
+
+				return (now.QuadPart - m_depart.QuadPart) / static_cast<float>(freq.QuadPart);
+			#else
+				timeval now;
+				gettimeofday(&now, 0);
+
+				return now.tv_sec - m_depart.tv_sec + (now.tv_usec - m_depart.tv_usec) / 1000000.0f;
+			#endif
+		}
+
+	private:
+
+		#if defined(_MSC_VER)
+			LARGE_INTEGER m_depart;
+		#else
+			timeval m_depart;
+		#endif
+	};
+
+  // ---------------------------------------------------------------------------
+	
+	/**
+	 * Upon deletion prints a message and the time since creation.
+	 */
+
+	class AutoTimer : public Timer
+	{
+	public:
+		AutoTimer(const std::string &message="", std::ostream &out=std::cout)
+			: m_message(message)
+			, m_out(out)
+		{
+		}
+
+		~AutoTimer()
+		{
+			m_out << m_message << " " << getSeconds() << std::endl;
+		}
+
+	private:
+		std::string   m_message;
+		std::ostream &m_out;
+	};
+
+} // namespace VELaSSCo

@@ -16,8 +16,6 @@
  * 4xx MQ - Monitoring Queries
  */
 
-VELaSSCo::ClientMap g_clients;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,6 +27,7 @@ VAL_Result VAL_API valGetStatusDB( /* in */
 
   CHECK_SESSION_ID( sessionID );
   
+	API_TRACE;
 	try
 	{
 		// Try to log out from VELaSSCo server
@@ -46,6 +45,7 @@ VAL_Result VAL_API valErrorMessage( /* in */
 									/* out */
 									const char* *message )
 {
+	API_TRACE;
 	switch (error)
 	{
 		case VAL_SUCCESS:                       *message = "Success";                        break;
@@ -80,6 +80,7 @@ VAL_Result VAL_API valErrorMessage( /* in */
 
 VAL_Result VAL_API valStartTestServer( const int server_port)
 {
+	API_TRACE;
 	try
 	{
 	  DEBUG( "before StartServer");
