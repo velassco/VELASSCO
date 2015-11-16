@@ -301,7 +301,7 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   std::string modelID    = pt.get<std::string>("modelID");
   std::string resultID   = pt.get<std::string>("resultID");
   std::string analysisID = pt.get<std::string>("analysisID");
-  std::string vertexIDs  = as_string<size_t>(pt, "vertexIDs");
+  std::string vertexIDs  = as_string< size_t>( pt, "vertexIDs");
   double      timeStep   = pt.get<double>("timeStep");
   
   stringstream listOfVertices;
@@ -447,76 +447,6 @@ void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const Ses
   LOGGER << "  data   : \n" << _return.data << std::endl;
 }
 
-/*
-void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query) {
- 
-  // Parse query JSON
-  std::istringstream ss(query);
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_json(ss, pt);
-
-  // get parameters:
-  std::string modelID            = pt.get<std::string>( "modelID");
-  std::string analysisName       = pt.get<std::string>( "analysisName");
-  std::string staticMeshID       = pt.get<std::string>( "staticMeshID");
-  std::string timeStepOption     = pt.get<std::string>( "timeStepOption");
-  std::string timeSteps     	 = pt.get<std::string>( "timeSteps");
-  std::string CGMethod     		 = pt.get<std::string>( "method");
-  std::string cutoffFactor     	 = pt.get<std::string>( "cutoffFactor");
-  std::string processContacs     = pt.get<std::string>( "processContacts");
-  std::string doTemporalAverage  = pt.get<std::string>( "doTemporalAverage");
-  std::string tAOptions     	 = pt.get<std::string>( "tAOptions");
-  std::string HBaseTableToUse    = pt.get<std::string>( "tableToUse");
- 
-    
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
-  
-  std::cout << "S  -" << sessionID        << "-" << std::endl;
-  std::cout << "M  -" << modelID          << "-" << std::endl;
-  std::cout << "AN -" << analysisName     << "-" << std::endl;
-  std::cout << "SM -" << staticMeshID     << "-" << std::endl;
-  std::cout << "TS -" << timeStepOption   << "-" << std::endl;
-  std::cout << "TSt  -" << timeSteps      << "-" << std::endl;
-  std::cout << "CG  -" << CGMethod        << "-" << std::endl;
-  std::cout << "Co -" << cutoffFactor << "-" << std::endl;
-  std::cout << "Pc -" << processContacts  << "-" << std::endl;
-  std::cout << "DTA -" << doTemporalAverage   << "-" << std::endl;
-  std::cout << "TAO -" << tAOptions       << "-" << std::endl;
-  std::cout << "HB -" <<  HBaseTableToUse << "-" << std::endl;
-    
-  
-  std::string query_outcome;
-  
-  std::string error_str;
-  
-  try {
-    AnalyticsModule::getInstance()->calculateDiscrete2Continuum (sessionIDStr.str(), modelID,
-							  analysisName, staticMeshID, timeStepOption, timeSteps, CGMethods,
-							  cutoffFactor, processContacts, doTemporalAverage, tAOptions, HBaseTableToUse,
-							  &query_outcome,&error_str);
-							  
-    //GraphicsModule *graphics = GraphicsModule::getInstance();
-  } 
-	catch ( TException &e) {
-    std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
-  } catch ( exception &e) {
-    std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
-  }
-  if ( error_str.length() == 0) {
-    _return.__set_result( (Result::type)VAL_SUCCESS );
-    _return.__set_data( query_outcome);
-  } else {
-    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
-    _return.__set_data( error_str);
-  }
-		  
-  LOGGER                                             << std::endl;
-  LOGGER << "Output:"                                << std::endl;
-  LOGGER << "  result : "   << _return.result        << std::endl;
-  LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
-}*/
-
 void QueryManagerServer::ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON
   std::istringstream ss(query);
@@ -603,14 +533,15 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
 
   // get parameters:
   std::string modelID            = pt.get<std::string>( "modelID");
-  std::string numVertexIDs       = pt.get<std::string>( "numVertexIDs");
+  int64_t numVertexIDs           = pt.get< int64_t>( "numVertexIDs");
   // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-  std::string lstVertexIDs       = pt.get<std::string>( "lstVertexIDs");
+  std::string lstVertexIDs       = as_string< size_t>( pt, "lstVertexIDs");
   std::string analysisID         = pt.get<std::string>( "analysisID");
   std::string stepOptions        = pt.get<std::string>( "stepOptions");
-  std::string numSteps           = pt.get<std::string>( "numSteps");
+  int numSteps                   = pt.get< int>( "numSteps");
   // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-  std::string lstSteps           = pt.get<std::string>( "lstSteps");
+  std::string strSteps           = as_string< size_t>( pt, "lstSteps");
+  std::vector< double> lstSteps  = as_vector< double>( pt, "lstSteps");
   
   std::stringstream sessionIDStr;
   sessionIDStr << sessionID;
@@ -622,7 +553,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   std::cout << "An -" << analysisID       << "-" << std::endl;
   std::cout << "SO -" << stepOptions       << "-" << std::endl;
   std::cout << "nS -" << numSteps       << "-" << std::endl;
-  std::cout << "Ss -" << lstSteps       << "-" << std::endl;
+  std::cout << "Ss -" << strSteps       << "-" << std::endl;
 
   // in theory should check first if it has already been calculated by doing a
   // DataLayerAccess::Instance()->getBoundingBox( sessionID, query);
@@ -634,6 +565,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   // 						      sessionIDStr.str(), modelID,
   // 						      analysisID,
   // 						      stepOptions, numSteps, lstSteps);
+  // parse _return_ into a double *lstSteps
   std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
   double bbox[ 6];
   std::string error_str;
@@ -646,6 +578,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
 							  0, NULL,
 							  &bbox[ 0], &error_str);
     GraphicsModule *graphics = GraphicsModule::getInstance();
+    // just to link to the GraphicsModule;
   } catch ( TException &e) {
     std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
   } catch ( exception &e) {
@@ -666,6 +599,93 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
 }
 
+
+void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+ 
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  // get parameters: // as in AnalyticsRAQ.cpp
+  std::string modelID            = pt.get<std::string>( "modelID");
+
+  std::string analysisID         = pt.get<std::string>( "analysisID");
+  std::string stepOptions        = pt.get<std::string>( "stepOptions");
+  int numSteps                   = pt.get< int>( "numSteps");
+  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+  // std::string lstSteps           = pt.get<std::string>( "lstSteps");
+  std::vector< double> lstSteps = as_vector< double>( pt, "lstSteps");
+
+  assert( lstSteps.size() == ( size_t)numSteps);
+
+  std::string staticMeshID       = pt.get<std::string>( "staticMeshID");
+  std::string CoarseGrainingMethod = pt.get<std::string>( "CoarseGrainingMethod");
+  double width     	         = pt.get< double>( "width");
+  double cutoffFactor     	 = pt.get< double>( "cutoffFactor");
+  bool processContacts           = pt.get< bool>( "processContacts");
+  bool doTemporalAVG             = pt.get< bool>( "doTemporalAVG");
+  std::string TemporalAVGOptions = pt.get<std::string>( "TemporalAVGOptions");
+  std::string HBaseTableToUse    = pt.get<std::string>( "HBaseToUse");
+ 
+    
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "AN -" << analysisID     << "-" << std::endl;
+  std::cout << "SM -" << staticMeshID     << "-" << std::endl;
+  std::cout << "TS -" << stepOptions   << "-" << std::endl;
+  std::cout << "nTS  -" << numSteps      << "-" << std::endl;
+  std::cout << "TSt  -" << as_string< size_t>( pt, "lstSTeps")      << "-" << std::endl;
+  std::cout << "CG  -" << CoarseGrainingMethod        << "-" << std::endl;
+  std::cout << "Wd -" << width << "-" << std::endl;
+  std::cout << "Co -" << cutoffFactor << "-" << std::endl;
+  std::cout << "Pc -" << processContacts  << "-" << std::endl;
+  std::cout << "DTA -" << doTemporalAVG   << "-" << std::endl;
+  std::cout << "TAO -" << TemporalAVGOptions       << "-" << std::endl;
+  std::cout << "HB -" <<  HBaseTableToUse << "-" << std::endl;
+  
+  std::string query_outcome;
+  
+  std::string error_str;
+  
+  try {
+    // not implemented yet:
+    // std::string _return_; // status
+    // DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
+    // 						      sessionIDStr.str(), modelID,
+    // 						      analysisID,
+    // 						      stepOptions, numSteps, lstSteps);
+    // parse _return_ into a double *lstSteps
+    AnalyticsModule::getInstance()->calculateDiscrete2Continuum (sessionIDStr.str(), modelID,
+								 analysisID, staticMeshID, stepOptions, numSteps, lstSteps.data(),
+								 CoarseGrainingMethod, width, cutoffFactor, processContacts, 
+								 doTemporalAVG, TemporalAVGOptions,
+								 HBaseTableToUse,
+								 &query_outcome, &error_str);
+							  
+    //GraphicsModule *graphics = GraphicsModule::getInstance();
+  } 
+	catch ( TException &e) {
+    std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( query_outcome);
+  } else {
+    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+}
 
 int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;

@@ -58,7 +58,7 @@
     }						\
   while (0)
 
-//      LOGGER << FUNCTION_NAME << std::endl;	\
+//      LOGGER << FUNCTION_NAME << std::endl;
 
 // ---------------------------------------------------------------------------
 
@@ -81,19 +81,24 @@
     for (size_t i=0; i<max_len; i+=16)
       {
 	out << std::hex << std::setw(2*sizeof(size_t)) << std::setfill('0') << (size_t)i << ": ";
-	for (size_t j=0; j<16; j++) 
-	  if (i+j < input.size())
+	for (size_t j=0; j<16; j++) {
+	  if (i+j < input.size()) {
 	    out << std::setw(2) << (unsigned)(unsigned char)(input[i+j]) << " ";
-	  else
+	  } else {
 	    out << "   ";
+	  }
+	}
 
 	out << " ";
-	for (size_t j=0; j<16; j++) 
-	  if (i+j < input.size())
-	    if (isprint((unsigned char)input[i+j]))
+	for (size_t j=0; j<16; j++) {
+	  if (i+j < input.size()) {
+	    if (isprint((unsigned char)input[i+j])) {
 	      out << input[i+j];
-	    else
+	    } else {
 	      out << '.';
+	    }
+	  }
+	}
 
 	out << std::endl;
       }
@@ -104,6 +109,7 @@
   // returns NULL if dst_len is too short, otherwise return dst
   inline const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len) {
     if ( !dst) return NULL;
+    if ( dst_len <= 0) return NULL;
     size_t isrc = 0;
     for ( size_t idst = 0; 
 	  ( isrc < src_len) && ( idst < dst_len - 1); 

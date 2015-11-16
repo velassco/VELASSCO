@@ -20,7 +20,7 @@ public:
 private:
   GraphicsModule() {};
   GraphicsModule( GraphicsModule const&) {};
-  GraphicsModule &operator=( GraphicsModule const&) {};
+  GraphicsModule &operator=( GraphicsModule const&) { return *this;};
     
 private:
   static GraphicsModule *m_pInstance;

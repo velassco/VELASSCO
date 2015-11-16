@@ -15,8 +15,9 @@
   // returns NULL if dst_len is too short, otherwise return dst
   static const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len) {
     if ( !dst) return NULL;
-    int isrc = 0;
-    for ( int idst = 0; 
+    if ( dst_len <= 0) return NULL;
+    size_t isrc = 0;
+    for ( size_t idst = 0; 
 	  ( isrc < src_len) && ( idst < dst_len - 1); 
 	  isrc++, idst += 2) {
       sprintf( &dst[ idst], "%02x", ( unsigned char)src[ isrc]);

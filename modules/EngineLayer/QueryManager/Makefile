@@ -1,10 +1,16 @@
-CCPP=g++
+CCPP=g++ -std=c++0x
 CC=gcc
 EXEC=QueryManager
 BIN=bin
 
-CPP_FLAGS = -std=c++0x
-C_FLAGS = 
+EXTRA_FLAGS = -Wall -Wcast-align -Wcomment
+# other interesting warnings not included in Wall:
+#  -Wcast-align -Wcomment
+#   -Wconversion  --> warnings in boost
+#  -Wextra
+
+CPP_FLAGS = $(EXTRA_FLAGS)
+C_FLAGS = $(EXTRA_FLAGS)
 
 OPTS = -g
 
@@ -39,7 +45,8 @@ ENGINE_LIBS = -L/usr/local/lib -L/opt/local/lib -lthrift -lboost_date_time -lboo
 all: $(BIN) $(BIN)/$(EXEC)
 
 $(BIN)/$(EXEC):  $(THRIFT_STORAGE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS)
-	$(CCPP) $(THRIFT_STORAGE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) \
+	$(CCPP) $(OPTS) $(CPP_FLAGS) \
+		$(THRIFT_STORAGE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) \
 		$(ENGINE_LIBS) -o $(BIN)/$(EXEC)
 
 $(BIN):

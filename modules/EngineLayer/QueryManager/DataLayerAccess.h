@@ -49,7 +49,7 @@ public:
 private:
     DataLayerAccess(){};
     DataLayerAccess(DataLayerAccess const&){};
-    DataLayerAccess& operator=(DataLayerAccess const&){};
+  // DataLayerAccess& operator=(DataLayerAccess const&){};
     
     static DataLayerAccess *m_pInstance;
     VELaSSCoSMClient *cli;

@@ -53,6 +53,10 @@ typedef enum
 	/* GetBoundingBox */
 	// also uses VAL_SOME_VERTEX_IDS_NOT_AVAILABLE
 	VAL_MODEL_ID_INVALID              = 0x2000,
+
+	/* GetDiscrete2ContinuumOfAModel */
+	// also uses VAL_MODEL_ID_INVALID
+	
 } VAL_Result;
 
 typedef int64_t VAL_SessionID;
@@ -143,24 +147,25 @@ extern "C" {
 				       const double   **resultBBox, // ix doubles: min(x,y,z)-max(x,y,z)
 				       const char     **resultErrorStr); // in case of error
 
+  VAL_Result VAL_API valGetDiscrete2Continuum( /* in */
+					      VAL_SessionID   sessionID,
+					      const char     *modelID,
+					      const char     *analysisID,
+					      const char     *staticMeshID,
+					      const char     *stepOptions, 
+					      const double   *lstSteps,
+					      const int       numSteps,
+					      const char     *CoarseGrainingMethod,
+					      const double     width,
+					      const double     cutoffFactor,
+					      const bool     processContacts,
+					      const bool     doTemporalAVG,
+					      const char     *TemporalAVGOptions,
+					      const char     *HBaseToUse, /* Not in the VQ-213 form, need to specify table? to store results or get the static mesh? in the operation it's a prefix !!! */
+					      /* out */
+					      const char   **queryOutcome,  /* Not in the current VQ-213 form, in the previous one says that here comes the list of reslts for the vertices of the Input mesh */
+					      const char     **resultErrorStr); 
 
-  /*VAL_Result VAL_API valGetDiscrete2Continuum(
-				       VAL_SessionID   sessionID,
-				       const char     *modelID,
-					   const char     *analysisName,
-					   const char     *staticMeshID,
-					   const char     *stepOptions,
-					   const double   *lstSteps,
-					   const char     *cGMethod,
-					   const double     widht,
-					   const double     cutoffFactor,
-					   const bool     processContacts,
-					   const bool     doTemporalAVG,
-					   const char     *TAOptions,
-					   const char     *HBaseToUse,
-			           const char   **queryOutcome, 
-				       const char     **resultErrorStr); 
-*/
   /**
    * Translate a numerical result code into an error message string.
    * The memory for the string does not need to be released by the user.

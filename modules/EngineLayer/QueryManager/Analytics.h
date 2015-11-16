@@ -20,17 +20,19 @@ public:
 			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 			     double *return_bbox, std::string *return_error_str);
 
-  /*void calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
-				const std::string &analysisName, const std::string &staticMeshID, 
- 				const std::string &timestepOptions, const double *timesteps,
-				const std::string &CGMethod, const double width, const double cutoffFactor,
-			  	const bool processContacts, const bool doTemporalAverage, const std::string &TAOptions,
-			  	const std::string &prefixHBaseTableToUse, std:: *returnQueryOutcome, std::string *return_error_str);*/	
+  void calculateDiscrete2Continuum( const std::string &sessionID, const std::string &modelID,
+				    const std::string &analysisID, const std::string &staticMeshID, 
+				    const std::string &stepOptions, const int numSteps, const double *lstSteps, /* only lstSteps is in the operation form */
+				    const std::string &CoarseGrainingMethod, const double width, const double cutoffFactor,
+				    const bool processContacts, const bool doTemporalAVG, const std::string &TemporalAVGoptions,
+				    const std::string &prefixHBaseTableToUse, /* now it's a prefix, not a hbase table name !!! */
+				    std::string *returnQueryOutcome, /* also not in the form, as the prefixHBaseTableToUse */
+				    std::string *return_error_str);
 
 private:
   AnalyticsModule() {};
   AnalyticsModule( AnalyticsModule const&) {};
-  AnalyticsModule &operator=( AnalyticsModule const&) {};
+  AnalyticsModule &operator=( AnalyticsModule const&) { return *this;};
     
 private:
   static AnalyticsModule *m_pInstance;

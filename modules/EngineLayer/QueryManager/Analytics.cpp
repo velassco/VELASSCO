@@ -68,10 +68,11 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
 
   bool use_yarn = true;
   // running java:
+  int ret_cmd = 0;
   if ( !use_yarn) {
     std::string cmd_line = "java -jar ../Analytics/GetBoundingBoxOfAModel.jar " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
-    int ret = system( cmd_line.c_str());
+    ret_cmd = system( cmd_line.c_str());
   } else { 
     // Using yarn:
     // execute and copy to localdir the result's files
@@ -79,15 +80,16 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     std::string hadoop_home = "/localfs/home/velassco/common";
     std::string hadoop_bin = hadoop_home + "/hadoop/bin";
     std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetBoundingBoxOfAModel.jar " + cli_modelID + " " + dataTableName;
-    int ret = 0;
     DEBUG( cmd_line);
-    ret = system( cmd_line.c_str());
+    ret_cmd = system( cmd_line.c_str());
     // output in '../bbox/part-r-00000' but in hdfs
     // error in '../bbox/error.txt'
     // copy it to local:
     cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
-    ret = system( cmd_line.c_str());
+    ret_cmd = system( cmd_line.c_str());
   }
+
+  // ret_cmd is -1 on error
 
   // output in '../bbox/part-r-00000'
   // error in '../bbox/error.txt'
@@ -159,65 +161,68 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
 }
 
 
-/*
-void calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
-								const std::string &analysisName, const std::string &staticMeshID, 
-								const std::string &timestepOptions, const double *timesteps,
-								const std::string &CGMethod, const double width, const double cutoffFactor,
-								const bool processContacts, const bool doTemporalAverage, const std::string &TAOptions,
-								const std::string &prefixHBaseTableToUse, std::string *returnQueryOutcome, std::string *return_error_str){
-
- bool use_yarn = true;
- 
- if (use_yarn) {
-	std::string hadoop_home = "/localfs/home/velassco/common";
-	std::string hadoop_bin = hadoop_home + "/hadoop/bin";
-	std::string parameters = modelID + " " + analysisName + " " + staticMeshID + " " + timestepOptions + " ";
-
-	std::stringstream s;
-
-	size_timesteps = 1;
-
-	if (size_timesteps == 1)
-		s << " " << timesteps[0];	
-	else
-		s  << timesteps[0] << "," << timesteps[1] << " ";
-
-	parameters+= s.str();
-
-	std::stringstream s_width;
-	s_width << width;
-
-	std::stringstream s_cutoff;
-	s_cutoff << cutoffFactor;
-
-	std::string proc_cont;
-
-	if (processContacts)
-		proc_cont = "true";
-	else
-		proc_cont = "false";
-
-	std::string do_temp_avg;
-
-	if (doTemporalAverage)
-		do_temp_avg = "true";
-	else
-		do_temp_avg = "false";
-
-	std::stringstream s_deltaT;
-	s_deltaT << deltaT;
-
-	parameters+= CGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + TAOptions + " " + s_deltaT.str();
-
-	std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetDiscrete2ContinuumOfAModel.jar " + parameters;
+void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
+						  const std::string &analysisID, const std::string &staticMeshID, 
+						  const std::string &stepOptions, const int numSteps, const double *lstSteps,
+						  const std::string &CGMethod, const double width, const double cutoffFactor,
+						  const bool processContacts, 
+						  const bool doTemporalAVG, const std::string &TemporalAVGOptions,
+						  const std::string &prefixHBaseTableToUse, std::string *returnQueryOutcome, std::string *return_error_str) {
   
-	int ret = 0;
-	ret = system(cmd_line.c_str());
-	
-  //result stored in HBase and outcome in a file
-  //reading query outcome from file
-  *return_error_str = std::string( "NO ERROR")
-  *returnQueryOutcome = std::string( "NO ERROR")
- }
-}*/
+  bool use_yarn = true;
+  
+  if (use_yarn) {
+    std::string hadoop_home = "/localfs/home/velassco/common";
+    std::string hadoop_bin = hadoop_home + "/hadoop/bin";
+    std::string parameters = modelID + " " + analysisID + " " + staticMeshID + " " + stepOptions + " ";
+    
+    std::stringstream s;
+    
+    // numSteps can be 0 or n
+    if ( numSteps == 1)
+      s << " " << lstSteps[0];	
+    else 
+      s  << lstSteps[0] << "," << lstSteps[1] << " ";
+    
+    parameters+= s.str();
+    
+    std::stringstream s_width;
+    s_width << width;
+    
+    std::stringstream s_cutoff;
+    s_cutoff << cutoffFactor;
+    
+    std::string proc_cont;
+    
+    if (processContacts)
+      proc_cont = "true";
+    else
+      proc_cont = "false";
+    
+    std::string do_temp_avg;
+    
+    if (doTemporalAVG)
+      do_temp_avg = "true";
+    else
+      do_temp_avg = "false";
+    
+    // // maybe this is the width or the TemporalAVGOptions
+    std::stringstream s_deltaT;
+    // s_deltaT << deltaT;
+    s_deltaT << width;
+
+    parameters+= CGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + TemporalAVGOptions + " " + s_deltaT.str();
+    
+    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetDiscrete2ContinuumOfAModel.jar " + parameters;
+    
+    int ret = 0;
+    ret = system(cmd_line.c_str());
+    
+    //result stored in HBase and outcome in a file
+    //reading query outcome from file
+    *return_error_str = std::string( "NO ERROR");
+  } else {
+    // not using yarn ...
+    *returnQueryOutcome = std::string( "NOT IMPLEMENTED");
+  }
+}

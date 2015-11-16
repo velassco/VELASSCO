@@ -118,8 +118,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
- //void ManageGetDiscrete2Continuum (Query_Result &_return, const SessionID sessionID, const std::string& query);
-
+  void ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query);
 }; // class QueryManagerServer
 
 
@@ -152,18 +151,21 @@ inline std::string QueryManagerServer::GetModelsTableName( const SessionID &sess
   std::string model, metadata, data;
   bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
   // assert( found);
+  if ( !found) model = "";
   return model;
 }
 inline std::string QueryManagerServer::GetMetaDataTableName( const SessionID &sessionID, const ModelID &modelID) const {
   std::string model, metadata, data;
   bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
   // assert( found);
+  if ( !found) metadata = "";
   return metadata;
 }
 inline std::string QueryManagerServer::GetDataTableName( const SessionID &sessionID, const ModelID &modelID) const {
   std::string model, metadata, data;
   bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
   // assert( found);
+  if ( !found) data = "";
   return data;
 }
 

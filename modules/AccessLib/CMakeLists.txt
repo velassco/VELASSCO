@@ -5,7 +5,11 @@ project (VELaSSCo_AccessLib)
 set( SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}" )
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CXX_4_4_STD_COMPILE_FLAG "-std=c++0x -fPIC -g")
+  SET(CXX_4_4_STD_COMPILE_FLAG "-std=c++0x -fPIC -g -Wall -Wcast-align -Wcomment")
+# other interesting warnings not included in Wall:
+#  -Wcast-align -Wcomment
+#   -Wconversion  --> warnings in boost
+#  -Wextra
   SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CXX_4_4_STD_COMPILE_FLAG}" )
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 

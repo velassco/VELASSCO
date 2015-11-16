@@ -64,7 +64,7 @@
     }						\
   while (0)
 
-//      LOGGER << FUNCTION_NAME << std::endl;	\
+//      LOGGER << FUNCTION_NAME << std::endl; 
 
 // ---------------------------------------------------------------------------
 
@@ -94,12 +94,15 @@ namespace VELaSSCo
 	    out << "   ";
 
 	out << " ";
-	for (size_t j=0; j<16; j++) 
-	  if (i+j < input.size())
-	    if (isprint((unsigned char)input[i+j]))
+	for (size_t j=0; j<16; j++) {
+	  if (i+j < input.size()) {
+	    if (isprint((unsigned char)input[i+j])) {
 	      out << input[i+j];
-	    else
+	    } else {
 	      out << '.';
+	    }
+	  }
+	}
 
 	out << std::endl;
       }
