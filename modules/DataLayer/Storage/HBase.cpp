@@ -446,7 +446,7 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
    						if (vertexID >= 3000)
    						{
 							result << vertexID << " " << vertex[0] << " " << vertex[1] << " " << vertex[2] << "  0" << endl;
-							printf("\rReading vertex : %d ...", vertexID-3000);
+							printf("\rReading vertex : %lld ...", ( long long int)( vertexID-3000));
 						}
 						if (vertexID >= 4000)
 						{
