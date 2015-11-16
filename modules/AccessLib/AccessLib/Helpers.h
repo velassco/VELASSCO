@@ -250,7 +250,7 @@ namespace VELaSSCo
 		}
 
 		/// return the elapsed time since reset() in seconds
-		float Timer::getSeconds() const
+		float getSeconds() const
 		{
 			#if defined(_MSC_VER)
 				LARGE_INTEGER now;
