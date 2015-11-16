@@ -5,12 +5,18 @@
 #include "..\EDM_Interface\EDM_interface.h"
 #include "EDMmodelCache.h"
 #include "VELaSSCoHandler.h"
+#include "EDMclusterServices.h"
+#include "VELaSSCoMethods.h"
+
+extern void testCollectionImplementation();
 
 
 int main(int argc, char* argv[])
 {
    int rstat;
    char errTxt[1024];
+   
+   testCollectionImplementation();
 
    if (argc != 5) {
       printf("The VELaSSCo Data Layer server shall have four command line parameters:\n   1. Communcation port\n   2. Database folder\n   3. Database name\n   4. Database password");
@@ -38,7 +44,25 @@ int main(int argc, char* argv[])
       femRepository.open(sdaiRO);
       ourVELaSSCoHandler->cDEMrep = &demRepository;
       ourVELaSSCoHandler->cFEMrep = &femRepository;
-      ourVELaSSCoHandler->InitQueryCaches();
+
+      SdaiRepository repositoryId;
+      CMemoryAllocator ma(0x100000);
+      int rstat = edmiCreateRepository("Cluster", &repositoryId);
+      if (rstat == OK) {
+         rstat = edmiCreateModelBN(repositoryId, "Cluster", "EDMcluster", 0);
+      }
+      Repository clusterRepository(&VELaSSCo_db, "Cluster");
+      Model clusterModel(&clusterRepository, &ma, &EDMcluster_SchemaObject);
+      VELaSSCoCluster ourCluster(&clusterModel);
+      ourCluster.startServices("O:\\projects\\VELaSSCo\\SVN_src\\EDM_plug_in\\db_cluster\\VELaSSCo_cluster.txt");
+     
+      VELaSSCoMethods findAllModels(&ourCluster);
+      findAllModels.buildServerContexts("superuser", "", "VELaSSCo");
+      findAllModels.ListModels();
+
+      
+      
+      //ourVELaSSCoHandler->InitQueryCaches();
 
       printf("The EDM VELaSSCo Data.Layer is ready to execute queries.\n\n");
 

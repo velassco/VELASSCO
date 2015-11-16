@@ -43,14 +43,17 @@
 
 
 Aux>History>Start(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\temp\createDatabaseTemplate.log, "START_HISTORY_TO_FILE,FAILING_COMMANDS_ONLY")
-Database>Delete(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_template, VELaSSCo, VELaSSCo, $)
-Database>Create(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_template, VELaSSCo, VELaSSCo, VELaSSCo, "OPEN_SESSION,OPEN_DATABASE")
+Database>Delete(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_cluster, VELaSSCo, VELaSSCo, $)
+Database>Create(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_cluster, VELaSSCo, VELaSSCo, VELaSSCo, "OPEN_SESSION,OPEN_DATABASE")
 Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\dem_schema_velassco.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,EXPRESS_EDITION_2,TC2")
 Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\fem_schema_velassco.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,EXPRESS_EDITION_2,TC2")
+Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\EDMcluster.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,EXPRESS_EDITION_2,TC2")
 Schemata>GenerateInterface>Cpp2010(dem_schema_velassco, O:\projects\VELaSSCo\SVN_src\EDM_Interface, dem, $, $, $)
 Schemata>GenerateInterface>Cpp2010(fem_schema_velassco, O:\projects\VELaSSCo\SVN_src\EDM_Interface, fem, $, $, $)
+Schemata>GenerateInterface>Cpp2010(EDMcluster, O:\projects\VELaSSCo\SVN_src\EDM_Interface, ecl, $, $, $)
 Data>Create>Repository(DEM_models, OPEN_REPOSITORY)
 Data>Create>Repository(FEM_models, OPEN_REPOSITORY)
+Data>Create>Repository(EDMcluster, OPEN_REPOSITORY)
 Database>Close($, $)
 Aux>History>Stop(STOP_HISTORY_TO_FILE)
 

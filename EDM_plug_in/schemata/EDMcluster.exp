@@ -1,0 +1,59 @@
+SCHEMA EDMCLUSTER;
+
+  ENTITY ClusterModel;
+      consists_of : SET [1:?] OF EDMmodel;
+      name        : STRING;
+    INVERSE
+      belongs_to  : ClusterRepository FOR models;
+  END_ENTITY;
+
+  ENTITY EDMmodel;
+      repository : EDMrepository;
+      name       : STRING;
+  END_ENTITY;
+
+  ENTITY EDMrepository;
+      belongs_to : EDMdatabase;
+      name       : STRING;
+    INVERSE
+      models     : SET [1:?] OF EDMmodel FOR repository;
+  END_ENTITY;
+
+  ENTITY EDMdatabase;
+      path         : STRING;
+      name         : STRING;
+      password     : STRING;
+      server       : EDMServer;
+    INVERSE
+      belongs_to   : EDMcluster FOR databases;
+      repositories : SET [1:?] OF EDMrepository FOR belongs_to;
+  END_ENTITY;
+
+  ENTITY EDMcluster;
+      name         : STRING;
+      description  : OPTIONAL STRING;
+      servers      : SET [1:?] OF EDMServer;
+      repositories : SET [1:?] OF ClusterRepository;
+      databases    : SET [1:?] OF EDMdatabase;
+  END_ENTITY;
+
+  ENTITY EDMServer;
+      Name        : STRING;
+      Description : OPTIONAL STRING;
+      Host        : STRING;
+      Port        : STRING;
+      nAppservers : INTEGER;
+    INVERSE
+      cluster     : EDMcluster FOR servers;
+      runs        : EDMdatabase FOR server;
+  END_ENTITY;
+
+  ENTITY ClusterRepository;
+      consists_of : SET [1:?] OF EDMrepository;
+      name        : STRING;
+      models      : SET [1:?] OF ClusterModel;
+    INVERSE
+      platform    : EDMcluster FOR repositories;
+  END_ENTITY;
+
+END_SCHEMA;
