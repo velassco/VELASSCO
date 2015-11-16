@@ -1,47 +1,47 @@
 #include "stdafx.h"
 #include "EDMcluster_header.h"
 
-namespace EDMcluster {
+namespace ecl {
 
 EDMLONG dbInstance_AttributeLayout[] = {0};
-EDMLONG ClusterRepository_AttributeLayout[] = {9, 8, 4, 9, 0};
+EDMLONG ClusterRepository_AttributeLayout[] = {9, 4, 9, 9, 0};
 tEdmiAttribute ClusterRepository_Attributes[] = {
    {"consists_of", 9, 0},
-   {"platform", 8, 0},
    {"name", 4, 0},
    {"models", 9, 0},
+   {"platform", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG ClusterRepository_Subtypes[] = {0};
-EDMLONG EDMServer_AttributeLayout[] = {4, 4, 4, 4, 8, 0, 8, 0};
+EDMLONG EDMcluster_AttributeLayout[] = {4, 4, 9, 9, 9, 0};
+tEdmiAttribute EDMcluster_Attributes[] = {
+   {"name", 4, 0},
+   {"description", 4, 0},
+   {"servers", 9, 0},
+   {"repositories", 9, 0},
+   {"databases", 9, 0},
+   {NULL, 0, 0},
+};
+EDMLONG EDMcluster_Subtypes[] = {0};
+EDMLONG EDMServer_AttributeLayout[] = {4, 4, 4, 4, 0, 9, 9, 0};
 tEdmiAttribute EDMServer_Attributes[] = {
    {"Name", 4, 0},
    {"Description", 4, 0},
    {"Host", 4, 0},
    {"Port", 4, 0},
-   {"cluster", 8, 0},
    {"nAppservers", 0, 0},
-   {"runs", 8, 0},
+   {"cluster", 9, 0},
+   {"runs", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG EDMServer_Subtypes[] = {0};
-EDMLONG EDMcluster_AttributeLayout[] = {4, 4, 9, 9, 9, 0};
-tEdmiAttribute EDMcluster_Attributes[] = {
-   {"name", 4, 0},
-   {"description", 4, 0},
-   {"databases", 9, 0},
-   {"servers", 9, 0},
-   {"repositories", 9, 0},
-   {NULL, 0, 0},
-};
-EDMLONG EDMcluster_Subtypes[] = {0};
-EDMLONG EDMdatabase_AttributeLayout[] = {8, 4, 4, 4, 9, 9, 0};
+EDMLONG EDMdatabase_AttributeLayout[] = {4, 4, 4, 8, 9, 9, 0};
 tEdmiAttribute EDMdatabase_Attributes[] = {
-   {"belongs_to", 8, 0},
    {"path", 4, 0},
    {"name", 4, 0},
    {"password", 4, 0},
-   {"server", 9, 0},
+   {"server", 8, 0},
+   {"belongs_to", 9, 0},
    {"repositories", 9, 0},
    {NULL, 0, 0},
 };
@@ -61,11 +61,11 @@ tEdmiAttribute EDMmodel_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG EDMmodel_Subtypes[] = {0};
-EDMLONG ClusterModel_AttributeLayout[] = {9, 8, 4, 0};
+EDMLONG ClusterModel_AttributeLayout[] = {9, 4, 9, 0};
 tEdmiAttribute ClusterModel_Attributes[] = {
    {"consists_of", 9, 0},
-   {"belongs_to", 8, 0},
    {"name", 4, 0},
+   {"belongs_to", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG ClusterModel_Subtypes[] = {0};
@@ -75,8 +75,8 @@ NULL
 tEdmiEntityData EDMcluster_Entities[] = {
 {"indeterminate"},
 {"ClusterRepository", 4, 643, 8, 48, 6, et_ClusterRepository, ClusterRepository_AttributeLayout, ClusterRepository_Subtypes, NULL, ClusterRepository_Attributes},
-{"EDMServer", 7, 641, 8, 72, 5, et_EDMServer, EDMServer_AttributeLayout, EDMServer_Subtypes, NULL, EDMServer_Attributes},
 {"EDMcluster", 5, 639, 8, 56, 4, et_EDMcluster, EDMcluster_AttributeLayout, EDMcluster_Subtypes, NULL, EDMcluster_Attributes},
+{"EDMServer", 7, 641, 8, 72, 5, et_EDMServer, EDMServer_AttributeLayout, EDMServer_Subtypes, NULL, EDMServer_Attributes},
 {"EDMdatabase", 6, 637, 8, 64, 3, et_EDMdatabase, EDMdatabase_AttributeLayout, EDMdatabase_Subtypes, NULL, EDMdatabase_Attributes},
 {"EDMrepository", 3, 635, 8, 40, 2, et_EDMrepository, EDMrepository_AttributeLayout, EDMrepository_Subtypes, NULL, EDMrepository_Attributes},
 {"EDMmodel", 2, 633, 8, 32, 1, et_EDMmodel, EDMmodel_AttributeLayout, EDMmodel_Subtypes, NULL, EDMmodel_Attributes},
@@ -97,11 +97,56 @@ void ClusterRepository::put_consists_of_element(EDMrepository* element) {
    }
    aggregate->add(element, m->getMemoryAllocator());
 }
-EDMcluster* ClusterRepository::get_platform() { return getInstance(8, EDMcluster*, 1); }
-void ClusterRepository::put_platform(EDMcluster* v) { putInstance(8, EDMcluster*, v, platform, 1, 8); v->addToUsedIn(c); }
-char * ClusterRepository::get_name() { return getATTRIBUTE(16, char *, 2); }
-void ClusterRepository::put_name(char * v) { putATTRIBUTE(16, char *, v, name, 2, 4); }
-Set<ClusterModel*>* ClusterRepository::get_models() { return getAGGREGATE(24, Set<ClusterModel*>*, 3); }
+char * ClusterRepository::get_name() { return getATTRIBUTE(8, char *, 1); }
+void ClusterRepository::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
+Set<ClusterModel*>* ClusterRepository::get_models() { return getAGGREGATE(16, Set<ClusterModel*>*, 2); }
+void ClusterRepository::put_models(Set<ClusterModel*>* v) { putAGGREGATE(16, Set<ClusterModel*>*, v, models, 2, 9); }
+void ClusterRepository::put_models_element(ClusterModel* element) {
+   Set<ClusterModel*>* aggregate = get_models();
+   if (aggregate == NULL) {
+      aggregate = new(m->getMemoryAllocator())Set<ClusterModel*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
+      put_models(aggregate);
+   }
+   aggregate->add(element, m->getMemoryAllocator());
+}
+Set<EDMcluster*>* ClusterRepository::get_platform() { return getAGGREGATE(24, Set<EDMcluster*>*, 3); }
+/*====================================================================================================
+   EDMcluster
+====================================================================================================*/
+char * EDMcluster::get_name() { return getATTRIBUTE(0, char *, 0); }
+void EDMcluster::put_name(char * v) { putATTRIBUTE(0, char *, v, name, 0, 4); }
+char * EDMcluster::get_description() { return getATTRIBUTE(8, char *, 1); }
+void EDMcluster::put_description(char * v) { putATTRIBUTE(8, char *, v, description, 1, 4); }
+Set<EDMServer*>* EDMcluster::get_servers() { return getAGGREGATE(16, Set<EDMServer*>*, 2); }
+void EDMcluster::put_servers(Set<EDMServer*>* v) { putAGGREGATE(16, Set<EDMServer*>*, v, servers, 2, 9); }
+void EDMcluster::put_servers_element(EDMServer* element) {
+   Set<EDMServer*>* aggregate = get_servers();
+   if (aggregate == NULL) {
+      aggregate = new(m->getMemoryAllocator())Set<EDMServer*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
+      put_servers(aggregate);
+   }
+   aggregate->add(element, m->getMemoryAllocator());
+}
+Set<ClusterRepository*>* EDMcluster::get_repositories() { return getAGGREGATE(24, Set<ClusterRepository*>*, 3); }
+void EDMcluster::put_repositories(Set<ClusterRepository*>* v) { putAGGREGATE(24, Set<ClusterRepository*>*, v, repositories, 3, 9); }
+void EDMcluster::put_repositories_element(ClusterRepository* element) {
+   Set<ClusterRepository*>* aggregate = get_repositories();
+   if (aggregate == NULL) {
+      aggregate = new(m->getMemoryAllocator())Set<ClusterRepository*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
+      put_repositories(aggregate);
+   }
+   aggregate->add(element, m->getMemoryAllocator());
+}
+Set<EDMdatabase*>* EDMcluster::get_databases() { return getAGGREGATE(32, Set<EDMdatabase*>*, 4); }
+void EDMcluster::put_databases(Set<EDMdatabase*>* v) { putAGGREGATE(32, Set<EDMdatabase*>*, v, databases, 4, 9); }
+void EDMcluster::put_databases_element(EDMdatabase* element) {
+   Set<EDMdatabase*>* aggregate = get_databases();
+   if (aggregate == NULL) {
+      aggregate = new(m->getMemoryAllocator())Set<EDMdatabase*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
+      put_databases(aggregate);
+   }
+   aggregate->add(element, m->getMemoryAllocator());
+}
 /*====================================================================================================
    EDMServer
 ====================================================================================================*/
@@ -113,34 +158,22 @@ char * EDMServer::get_Host() { return getATTRIBUTE(16, char *, 2); }
 void EDMServer::put_Host(char * v) { putATTRIBUTE(16, char *, v, Host, 2, 4); }
 char * EDMServer::get_Port() { return getATTRIBUTE(24, char *, 3); }
 void EDMServer::put_Port(char * v) { putATTRIBUTE(24, char *, v, Port, 3, 4); }
-EDMcluster* EDMServer::get_cluster() { return getInstance(32, EDMcluster*, 4); }
-void EDMServer::put_cluster(EDMcluster* v) { putInstance(32, EDMcluster*, v, cluster, 4, 8); v->addToUsedIn(c); }
-int EDMServer::get_nAppservers() { return getATTRIBUTE(40, int, 5); }
-void EDMServer::put_nAppservers(int v) { putATTRIBUTE(40, int, v, nAppservers, 5, 0); }
-EDMdatabase* EDMServer::get_runs() { return getInstance(48, EDMdatabase*, 6); }
-void EDMServer::put_runs(EDMdatabase* v) { putInstance(48, EDMdatabase*, v, runs, 6, 8); v->addToUsedIn(c); }
-/*====================================================================================================
-   EDMcluster
-====================================================================================================*/
-char * EDMcluster::get_name() { return getATTRIBUTE(0, char *, 0); }
-void EDMcluster::put_name(char * v) { putATTRIBUTE(0, char *, v, name, 0, 4); }
-char * EDMcluster::get_description() { return getATTRIBUTE(8, char *, 1); }
-void EDMcluster::put_description(char * v) { putATTRIBUTE(8, char *, v, description, 1, 4); }
-Set<EDMdatabase*>* EDMcluster::get_databases() { return getAGGREGATE(16, Set<EDMdatabase*>*, 2); }
-Set<EDMServer*>* EDMcluster::get_servers() { return getAGGREGATE(24, Set<EDMServer*>*, 3); }
-Set<ClusterRepository*>* EDMcluster::get_repositories() { return getAGGREGATE(32, Set<ClusterRepository*>*, 4); }
+int EDMServer::get_nAppservers() { return getATTRIBUTE(32, int, 4); }
+void EDMServer::put_nAppservers(int v) { putATTRIBUTE(32, int, v, nAppservers, 4, 0); }
+Set<EDMcluster*>* EDMServer::get_cluster() { return getAGGREGATE(40, Set<EDMcluster*>*, 5); }
+Set<EDMdatabase*>* EDMServer::get_runs() { return getAGGREGATE(48, Set<EDMdatabase*>*, 6); }
 /*====================================================================================================
    EDMdatabase
 ====================================================================================================*/
-EDMcluster* EDMdatabase::get_belongs_to() { return getInstance(0, EDMcluster*, 0); }
-void EDMdatabase::put_belongs_to(EDMcluster* v) { putInstance(0, EDMcluster*, v, belongs_to, 0, 8); v->addToUsedIn(c); }
-char * EDMdatabase::get_path() { return getATTRIBUTE(8, char *, 1); }
-void EDMdatabase::put_path(char * v) { putATTRIBUTE(8, char *, v, path, 1, 4); }
-char * EDMdatabase::get_name() { return getATTRIBUTE(16, char *, 2); }
-void EDMdatabase::put_name(char * v) { putATTRIBUTE(16, char *, v, name, 2, 4); }
-char * EDMdatabase::get_password() { return getATTRIBUTE(24, char *, 3); }
-void EDMdatabase::put_password(char * v) { putATTRIBUTE(24, char *, v, password, 3, 4); }
-Set<EDMServer*>* EDMdatabase::get_server() { return getAGGREGATE(32, Set<EDMServer*>*, 4); }
+char * EDMdatabase::get_path() { return getATTRIBUTE(0, char *, 0); }
+void EDMdatabase::put_path(char * v) { putATTRIBUTE(0, char *, v, path, 0, 4); }
+char * EDMdatabase::get_name() { return getATTRIBUTE(8, char *, 1); }
+void EDMdatabase::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
+char * EDMdatabase::get_password() { return getATTRIBUTE(16, char *, 2); }
+void EDMdatabase::put_password(char * v) { putATTRIBUTE(16, char *, v, password, 2, 4); }
+EDMServer* EDMdatabase::get_server() { return getInstance(24, EDMServer*, 3); }
+void EDMdatabase::put_server(EDMServer* v) { putInstance(24, EDMServer*, v, server, 3, 8); v->addToUsedIn(c); }
+Set<EDMcluster*>* EDMdatabase::get_belongs_to() { return getAGGREGATE(32, Set<EDMcluster*>*, 4); }
 Set<EDMrepository*>* EDMdatabase::get_repositories() { return getAGGREGATE(40, Set<EDMrepository*>*, 5); }
 /*====================================================================================================
    EDMrepository
@@ -170,18 +203,17 @@ void ClusterModel::put_consists_of_element(EDMmodel* element) {
    }
    aggregate->add(element, m->getMemoryAllocator());
 }
-ClusterRepository* ClusterModel::get_belongs_to() { return getInstance(8, ClusterRepository*, 1); }
-void ClusterModel::put_belongs_to(ClusterRepository* v) { putInstance(8, ClusterRepository*, v, belongs_to, 1, 8); v->addToUsedIn(c); }
-char * ClusterModel::get_name() { return getATTRIBUTE(16, char *, 2); }
-void ClusterModel::put_name(char * v) { putATTRIBUTE(16, char *, v, name, 2, 4); }
+char * ClusterModel::get_name() { return getATTRIBUTE(8, char *, 1); }
+void ClusterModel::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
+Set<ClusterRepository*>* ClusterModel::get_belongs_to() { return getAGGREGATE(16, Set<ClusterRepository*>*, 2); }
 
-void* EDMcluster_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Model *ma)
+void* ecl_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Model *ma)
 {
    void* theObject = NULL;
 
    ClusterRepository* p_ClusterRepository;
-   EDMServer* p_EDMServer;
    EDMcluster* p_EDMcluster;
+   EDMServer* p_EDMServer;
    EDMdatabase* p_EDMdatabase;
    EDMrepository* p_EDMrepository;
    EDMmodel* p_EDMmodel;
@@ -194,13 +226,13 @@ void* EDMcluster_Schema::generateObject(tEdmiInstData *instData, int *entityType
             p_ClusterRepository = new(ma) ClusterRepository(ma, instData);
             theObject = (void*)p_ClusterRepository;
             break;
-         case et_EDMServer:
-            p_EDMServer = new(ma) EDMServer(ma, instData);
-            theObject = (void*)p_EDMServer;
-            break;
          case et_EDMcluster:
             p_EDMcluster = new(ma) EDMcluster(ma, instData);
             theObject = (void*)p_EDMcluster;
+            break;
+         case et_EDMServer:
+            p_EDMServer = new(ma) EDMServer(ma, instData);
+            theObject = (void*)p_EDMServer;
             break;
          case et_EDMdatabase:
             p_EDMdatabase = new(ma) EDMdatabase(ma, instData);
@@ -228,11 +260,11 @@ tEdmiDefinedTypeData EDMcluster_definedTypes[] = {
 {NULL}
 };
 
-EDMcluster_Schema EDMcluster_SchemaObject(EDMcluster_Entities, EDMcluster_definedTypes, EDMcluster_DefinedTypeNames);
+ecl_Schema EDMcluster_SchemaObject(EDMcluster_Entities, EDMcluster_definedTypes, EDMcluster_DefinedTypeNames);
 
 static bool supertypeOf_ClusterRepository(entityType wantedSuperType, void **p);
-static bool supertypeOf_EDMServer(entityType wantedSuperType, void **p);
 static bool supertypeOf_EDMcluster(entityType wantedSuperType, void **p);
+static bool supertypeOf_EDMServer(entityType wantedSuperType, void **p);
 static bool supertypeOf_EDMdatabase(entityType wantedSuperType, void **p);
 static bool supertypeOf_EDMrepository(entityType wantedSuperType, void **p);
 static bool supertypeOf_EDMmodel(entityType wantedSuperType, void **p);
@@ -244,18 +276,18 @@ static bool supertypeOf_ClusterRepository(entityType wantedSuperType, void **)
    return wantedSuperType == et_ClusterRepository;
 }
 
-static dbInstance *dbInstanceOf_EDMServer(void *obj) { EDMServer *p = (EDMServer*)obj; dbInstance *dbi = p; return dbi;}
-
-static bool supertypeOf_EDMServer(entityType wantedSuperType, void **)
-{
-   return wantedSuperType == et_EDMServer;
-}
-
 static dbInstance *dbInstanceOf_EDMcluster(void *obj) { EDMcluster *p = (EDMcluster*)obj; dbInstance *dbi = p; return dbi;}
 
 static bool supertypeOf_EDMcluster(entityType wantedSuperType, void **)
 {
    return wantedSuperType == et_EDMcluster;
+}
+
+static dbInstance *dbInstanceOf_EDMServer(void *obj) { EDMServer *p = (EDMServer*)obj; dbInstance *dbi = p; return dbi;}
+
+static bool supertypeOf_EDMServer(entityType wantedSuperType, void **)
+{
+   return wantedSuperType == et_EDMServer;
 }
 
 static dbInstance *dbInstanceOf_EDMdatabase(void *obj) { EDMdatabase *p = (EDMdatabase*)obj; dbInstance *dbi = p; return dbi;}
@@ -295,8 +327,8 @@ static bool supertypeOf_indeterminate(entityType, void **)
 static supertypeCastingFunc castingFunctions[] = {
 &supertypeOf_indeterminate,
    &supertypeOf_ClusterRepository,
-   &supertypeOf_EDMServer,
    &supertypeOf_EDMcluster,
+   &supertypeOf_EDMServer,
    &supertypeOf_EDMdatabase,
    &supertypeOf_EDMrepository,
    &supertypeOf_EDMmodel,
@@ -321,8 +353,8 @@ static dbInstance *dbInstanceOf_indeterminate(void *)
 static dbInstanceCastingFunc dbInstanceCastingFunctions[] = {
 &dbInstanceOf_indeterminate,
    &dbInstanceOf_ClusterRepository,
-   &dbInstanceOf_EDMServer,
    &dbInstanceOf_EDMcluster,
+   &dbInstanceOf_EDMServer,
    &dbInstanceOf_EDMdatabase,
    &dbInstanceOf_EDMrepository,
    &dbInstanceOf_EDMmodel,
