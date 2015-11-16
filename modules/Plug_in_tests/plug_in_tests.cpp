@@ -60,11 +60,11 @@ void testListAnalyses(StorageModuleClient &client, string sessionID, char *model
    for (vector<string>::iterator nameIter = rvAnalysisList.analyses.begin(); nameIter != rvAnalysisList.analyses.end(); nameIter++) {
       printf("Analysis name : %s\n", (char*)nameIter->data());
       client.GetListOfTimeSteps(rvTimesteps, sessionID, FluidizedbedModelID, *nameIter);
-      printf("   %s has the following time steps:\n", (char*)nameIter->data());
-      int i = 0;
-      for (vector<double>::iterator tsIter = rvTimesteps.time_steps.begin(); tsIter != rvTimesteps.time_steps.end(); tsIter++) {
-         printf((i++) % 4 == 0 ? "\n   %lf" : " %lf", *tsIter);
-      }
+      //printf("   %s has the following time steps:\n", (char*)nameIter->data());
+      //int i = 0;
+      //for (vector<double>::iterator tsIter = rvTimesteps.time_steps.begin(); tsIter != rvTimesteps.time_steps.end(); tsIter++) {
+      //   printf((i++) % 4 == 0 ? "\n   %lf" : " %lf", *tsIter);
+      //}
    }
 }
 
@@ -121,11 +121,11 @@ int main(int argc, char* argv[])
       printf("Comments: %s\n", rvOM.report.data());
       modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
 
-      if (strEQL(command, "all") || strEQL(command, "string_getResultOnVertices")) {
-         string vertices = getResultOnVertices(sessionID, "0", "analysis", 00.1, "resultID", "LOV");
-         printf("getResultOnVertices returns the following string\n");
-         printf(vertices.data());
-      }
+      //if (strEQL(command, "all") || strEQL(command, "string_getResultOnVertices")) {
+      //   string vertices = getResultOnVertices(sessionID, "0", "analysis", 00.1, "resultID", "LOV");
+      //   //printf("getResultOnVertices returns the following string\n");
+      //   //printf(vertices.data());
+      //}
 
       if (strEQL(command, "all") || strEQL(command, "GetElementOfPointsInSpace")) {
 
