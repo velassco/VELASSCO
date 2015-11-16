@@ -1,10 +1,16 @@
-CCPP=g++
+CCPP=g++ -std=c++0x
 CC=gcc
 EXEC=Storage
 BIN=bin
 
-CPP_FLAGS = -std=c++0x
-C_FLAGS = 
+EXTRA_FLAGS = -Wall -Wcast-align -Wcomment
+# other interesting warnings not included in Wall:
+#  -Wcast-align -Wcomment
+#   -Wconversion  --> warnings in boost
+#  -Wextra
+
+CPP_FLAGS = $(EXTRA_FLAGS)
+C_FLAGS = $(EXTRA_FLAGS)
 
 OPTS = -g
 
@@ -41,7 +47,8 @@ DATA_LAYER_LIBS = -L/usr/local/lib -lthrift -lcurl
 all: $(BIN) $(BIN)/$(EXEC)
 
 $(BIN)/$(EXEC):  $(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(DATA_LAYER_OBJS)
-	$(CCPP) $(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(DATA_LAYER_OBJS) \
+	$(CCPP) $(OPTS) $(CPP_FLAGS) \
+		$(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(DATA_LAYER_OBJS) \
 		$(DATA_LAYER_LIBS) -o $(BIN)/$(EXEC)
 
 $(BIN):

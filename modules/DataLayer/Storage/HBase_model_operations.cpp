@@ -63,7 +63,7 @@ bool HBase::parseListOfModelNames( std::string &report,
       // Row key:
       string key = base64_decode(keyJ->valuestring);
       cJSON *cellsJ = cJSON_GetArrayItem (keyC, 1);
-      cJSON * elem  = cJSON_CreateObject();
+      // cJSON * elem  = cJSON_CreateObject();
       // printf( "keyC = %s\n", keyC->valuestring);
       // printf( "keyJ(decod) = %s", Hexdump( key).c_str());
 
@@ -200,7 +200,7 @@ bool HBase::getListOfModelInfoFromTables( std::string &report, std::vector< Full
 	break;
       // process rowsResult
       // std::cout << "number of rows = " << rowsResult.size() << endl;
-      for ( int i = 0; i < rowsResult.size(); i++) {
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
 	// convert to return type
 	FullyQualifiedModelName model_info;
 	bool ok = getModelInfoFromRow( model_info, rowsResult[ i], table_name);
@@ -419,7 +419,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
 	break;
       // process rowsResult
       // std::cout << "number of rows = " << rowsResult.size() << endl;
-      for ( int i = 0; i < rowsResult.size(); i++) {
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
 	// convert to return type
 	FullyQualifiedModelName model_info;
 	bool ok = getModelInfoFromRow( model_info, rowsResult[ i], table_to_use);

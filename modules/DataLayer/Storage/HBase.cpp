@@ -107,7 +107,7 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
 			// cout << "key : "<< key << endl; 
 
             cJSON *cellsJ = cJSON_GetArrayItem (keyC, 1);
-            cJSON * elem  = cJSON_CreateObject();
+            // cJSON * elem  = cJSON_CreateObject();
             
             for (int k = 0; k < cJSON_GetArraySize(cellsJ); k++ )
             {
@@ -122,7 +122,7 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int id = 0;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -162,14 +162,14 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int _id = 0;
-                    int id = 0;
+                    size_t id = 0;
                     int N = 3;
                     double xyz[N];
                     for(int b = 0; b < N; b++)
                         xyz[b] = 0.0;
                     int coma = 0;
                     int sign = 1;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -223,8 +223,8 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int val = 0;
-                    int id = 0;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    size_t id = 0;
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -249,8 +249,8 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int val = 0;
-                    int id = 0;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    size_t id = 0;
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -275,8 +275,8 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int val = 0;
-                    int id = 0;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    size_t id = 0;
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -302,14 +302,14 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int _id = 0;
-                    int id = 0;
+                    size_t id = 0;
                     int N = 1;
                     double xyz[N] ;
                     for(int b = 0; b < N; b++)
                         xyz[b] = 0.0;
                     int coma = 0;
                     int sign = 1;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -364,8 +364,8 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int val = 0;
-                    int id = 0;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    size_t id = 0;
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -397,8 +397,8 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     tmp = base64_decode(elem->valuestring);
                     cout << "\t\t"<<tmp <<endl;
                     int val = 0;
-                    int id = 0;
-                    for (int n = 0; n < tmp.size() ; n ++)
+                    size_t id = 0;
+                    for (size_t n = 0; n < tmp.size() ; n ++)
                     {
                         if ((int)tmp[n] == 44 || (int)tmp[n] == 125 )
                         {
@@ -425,37 +425,37 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
                     
                     // cout << tmp << " " << base64_decode(elem->valuestring)<< endl;                    
                     
-					if (tmp.find("M:c") == 0) {
-						// result << vertexID++ << " " << base64_decode(elem->valuestring) << endl;
-						std::string value = base64_decode(elem->valuestring);
-                        // cout << tmp << " " << value.size() << " " << value << " " << endl << Hexdump(value);
-                        
-                        uint64_t v[3];
-                        double vertex[3];
-                        
-                        v[0] = *((uint64_t*)(&(value[ 0])));
-                        v[0] = __builtin_bswap64(v[0]);
-                        vertex[0] = *((double*)(&v[0]));
-                        v[1] = *((uint64_t*)(&(value[ 8])));
-                        v[1] = __builtin_bswap64(v[1]);
-                        vertex[1] = *((double*)(&v[1]));
-                        v[2] = *((uint64_t*)(&(value[16])));
-                        v[2] = __builtin_bswap64(v[2]);
-                        vertex[2] = *((double*)(&v[2]));
+		    if (tmp.find("M:c") == 0) {
+		      // result << vertexID++ << " " << base64_decode(elem->valuestring) << endl;
+		      std::string value = base64_decode(elem->valuestring);
+		      // cout << tmp << " " << value.size() << " " << value << " " << endl << Hexdump(value);
+                      
+		      uint64_t v[3];
+		      double vertex[3];
+                      
+		      v[0] = *((uint64_t*)(&(value[ 0])));
+		      v[0] = __builtin_bswap64(v[0]);
+		      vertex[0] = *((double*)(&v[0]));
+		      v[1] = *((uint64_t*)(&(value[ 8])));
+		      v[1] = __builtin_bswap64(v[1]);
+		      vertex[1] = *((double*)(&v[1]));
+		      v[2] = *((uint64_t*)(&(value[16])));
+		      v[2] = __builtin_bswap64(v[2]);
+		      vertex[2] = *((double*)(&v[2]));
                        
-   						if (vertexID >= 3000)
-   						{
-							result << vertexID << " " << vertex[0] << " " << vertex[1] << " " << vertex[2] << "  0" << endl;
-							printf("\rReading vertex : %lld ...", ( long long int)( vertexID-3000));
-						}
-						if (vertexID >= 4000)
-						{
-							printf("\n");
-							break;
-						}
-
-						vertexID++;
-					}
+		      if (vertexID >= 3000)
+			{
+			  result << vertexID << " " << vertex[0] << " " << vertex[1] << " " << vertex[2] << "  0" << endl;
+			  printf("\rReading vertex : %lld ...", ( long long int)( vertexID-3000));
+			}
+		      if (vertexID >= 4000)
+			{
+			  printf("\n");
+			  break;
+			}
+			
+		      vertexID++;
+		    }
                 }
                 
                 //cout << cJSON_Print(value) << endl;
@@ -466,7 +466,7 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
         // exit(0);
         break;
     }
-    for (int k = 0; k < velem.size(); k++)
+    for (size_t k = 0; k < velem.size(); k++)
     {
         if (enableVElem.at(k))
             cJSON_AddItemToArray( listOfVertices, velem.at(k));
@@ -538,23 +538,27 @@ std::string HBase::getResultOnVertices_curl( const std::string &sessionID,
     
   //
   string result( "");
-  if(analysisID.find("DEM") >= 0)
-    {
-      // buffer should be checked against "Not found"
-      std::size_t found = buffer.find( "Not found");
-      if ( ( found == string::npos) || ( found > 10)) {
-	// assume that the error message "Not found" should be at the begining of the returned buffer
-	result = parse1DEM(buffer, listOfVertices);
+  if ( ok) {
+    if(analysisID.find("DEM") >= 0)
+      {
+	// buffer should be checked against "Not found"
+	std::size_t found = buffer.find( "Not found");
+	if ( ( found == string::npos) || ( found > 10)) {
+	  // assume that the error message "Not found" should be at the begining of the returned buffer
+	  result = parse1DEM(buffer, listOfVertices);
+	}
+	if ( result == "") { // there has been some errors parsing the JSON tree or is "Not found"
+	  result = buffer;
+	}
       }
-      if ( result == "") { // there has been some errors parsing the JSON tree or is "Not found"
-	result = buffer;
+    else if(analysisID.find("FEM") >= 0)
+      {
+	cout << buffer << endl;
       }
-    }
-  else if(analysisID.find("FEM") >= 0)
-    {
-      cout << buffer << endl;
-    }
-
+  }  else {
+    // !ok
+    result = buffer;
+  }
   return result;
 }
 
@@ -595,7 +599,7 @@ std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
   for ( int i = 0; i < 16; i++) {
     std::cout << ( int)bin_row_key[ i] << ", ";
   }
-  std:cout << endl;
+  std::cout << endl;
   for ( int i = 0; i < 16; i++) {
     std::cout << ( int)start_row.data()[ i] << ", ";
   }
@@ -612,7 +616,7 @@ std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
 	break;
       // process rowsResult
       std::cout << "numberof rows = " << rowsResult.size() << endl;
-      for ( int i = 0; i < rowsResult.size(); i++) {
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
 	// convert to return type
 	// FullyQualifiedModelName model_info;
 	// bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);

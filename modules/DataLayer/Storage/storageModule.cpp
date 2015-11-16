@@ -29,15 +29,17 @@ storageModule* storageModule::Instance()
 bool storageModule::startConnection( DL_SM_DB_TYPE db_type, const char *DB_hostname, const int DB_port) {
   stopConnection(); // close any previous connections
   _db = ( db_type == DL_SM_DB_HBASE) ? ( AbstractDB *)new HBase() : ( AbstractDB *)new EDM();
-  _db->startConnection( DB_hostname, DB_port);
+  return _db->startConnection( DB_hostname, DB_port);
 }
 
 bool storageModule::stopConnection() {
+  bool ok = true;
   if ( _db) {
-    _db->stopConnection();
+    ok = _db->stopConnection();
     delete _db;
     _db = NULL;
   }
+  return ok;
 }
 
 string storageModule::getStatusDB() {

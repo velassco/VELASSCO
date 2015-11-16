@@ -104,7 +104,7 @@ inline bool CurlCommand::Evaluate( std::string &result, const std::string &cmd) 
   return curl_ok;
 }
   
-static char *until_comma( char *str) {
+inline char *until_comma( char *str) {
   for ( char *c = str; c && *c; c++) {
     if ( *c == ',') {
       *c = '\0';

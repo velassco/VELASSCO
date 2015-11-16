@@ -78,7 +78,7 @@ std::string EDM::getResultOnVertices( const std::string &sessionID,
                                       const std::string &listOfVertices )
 {
 
-#ifdef WIN32
+#ifdef _WIN32
    rvOpenModel rvOM;
    string modelID_of_VELaSSCo_HbaseBasicTest_part_1;
    dli::rvGetResultFromVerticesID_B results;
@@ -98,9 +98,10 @@ std::string EDM::getResultOnVertices( const std::string &sessionID,
       sprintf(np, "\n");
       resultString += cb;
    }
+ #else
+   std::string resultString( "Not implemented");
    return resultString;
  #endif
-
 }
 
 #ifdef WIN32
