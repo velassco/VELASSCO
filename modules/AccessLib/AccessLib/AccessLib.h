@@ -45,6 +45,8 @@ typedef enum
 
 	/* OpenModel */
 	/* CloseModel */
+	
+	/* GetListOfMeshes */
 
 	/* GetResultFromVerticesID */
 	VAL_RESULT_ID_NOT_AVAILABLE       = 0x1000,
@@ -113,6 +115,21 @@ extern "C" {
 				  /* out */
 				  const char    **status);
 
+  /*
+   * 1xx DRQ - Direct Result Queries
+   */
+  VAL_Result VAL_API valGetListOfMeshes(  /* in */
+					VAL_SessionID   sessionID,
+					const char     *modelID,
+					const char     *analysisID, /* if == "" then the static meshes are returned */
+					double          stepValue,  /* otherwise the meshes for analysisID+StepValue are returned */
+					/* out */
+					const char    **status,
+					const char    **list_of_meshes
+					/* will be: "NumberOfMeshes: 1234\nName: mesh_1\nElementType: Tetrahedra\n...\nName: model_2..." */
+					/* the information returned is ElementType, NumberOfVerticesPerElement, NumberOfVertices, NumberOfElements, Units, Color, ... */
+					  );
+  
   /*
    * 2xx RAQ - Result Analysis Queries
    */

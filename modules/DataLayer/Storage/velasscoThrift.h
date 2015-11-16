@@ -50,6 +50,11 @@ public:
    */
   void GetResultFromVerticesID(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID, const std::string &listOfVertices) ;
 
+  void GetListOfMeshes( rvGetListOfMeshes &_return, 
+			const std::string &sessionID, const std::string &modelID, 
+			const std::string &analysisID, const double stepValue);
+
+
   /**
    * Stop Data Layer
    */
@@ -65,8 +70,6 @@ public:
   void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh&, const std::string&, const std::string&, const std::string&, const std::string&, double) {};
   void GetListOfAnalyses(rvGetListOfAnalyses&, const std::string&, const std::string&) {};
   void GetListOfTimeSteps(rvGetListOfTimeSteps&, const std::string&, const std::string&, const std::string&) {};
-  void GetListOfMeshes(rvGetListOfMeshes&, const std::string&, const std::string&, const std::string&, double) {};
-
 
 };
 

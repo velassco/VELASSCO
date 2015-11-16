@@ -76,6 +76,23 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
   }
 
   /**
+   * as of OP-22.117
+   * Returns a list of meshes present for the given time-step of that analysis.
+   * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+   * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
+   * that are present on that step-values of that analysis.
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param stepValue
+   */
+  void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue) {
+    // Your implementation goes here
+    printf("GetListOfMeshes\n");
+  }
+
+  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name
@@ -182,22 +199,6 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
   void GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID) {
     // Your implementation goes here
     printf("GetListOfTimeSteps\n");
-  }
-
-  /**
-   * Returns a list of meshes present for the given time-step of that analysis.
-   * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
-   * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
-   * that are present on that step-values of that analysis.
-   * 
-   * @param sessionID
-   * @param modelID
-   * @param analysisID
-   * @param timeStep
-   */
-  void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep) {
-    // Your implementation goes here
-    printf("GetListOfMeshes\n");
   }
 
 };

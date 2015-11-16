@@ -166,6 +166,10 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageGetListOfModels( _return, sessionID, query);
   } else if ( name == "OpenModel") {
     ManageOpenModel( _return, sessionID, query);
+  } else if ( name == "CloseModel") {
+    ManageCloseModel( _return, sessionID, query);
+  } else if ( name == "GetListOfMeshes") {
+    ManageGetListOfMeshes( _return, sessionID, query);
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
   } else {
@@ -322,6 +326,35 @@ void QM_DemoServer::ManageCloseModel( Query_Result &_return, const SessionID ses
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
   LOGGER << "  result : "   << _return.result        << std::endl;
+}
+
+void QM_DemoServer::ManageGetListOfMeshes( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  /* will be: "NumberOfMeshes: 1234\nName: mesh_1\nElementType: Tetrahedra\n...\nName: model_2..." */
+  /* the information returned is ElementType, NumberOfVerticesPerElement, NumberOfVertices, NumberOfElements, Units, Color, ... */
+  std::ostringstream oss;
+  oss << "NumberOfMeshes: " << 2 << std::endl;
+  oss << "Name: " << "Body" << std::endl;
+  oss << "ElementType: " << "Triangle" << std::endl;
+  oss << "NumberOfVerticesPerElement: " << "3" << std::endl;
+  oss << "NumberOfVertices: " << "1234" << std::endl;
+  oss << "NumberOfElements: " << "2468" << std::endl;
+  oss << "Units: " << "m" << std::endl;
+  oss << "Color: " << "#bbbbbb" << std::endl;
+  oss << "Name: " << "Air" << std::endl;
+  oss << "ElementType: " << "Tetrahedra" << std::endl;
+  oss << "NumberOfVerticesPerElement: " << "4" << std::endl;
+  oss << "NumberOfVertices: " << "1234000" << std::endl;
+  oss << "NumberOfElements: " << "2468000" << std::endl;
+  oss << "Units: " << "m" << std::endl;
+  oss << "Color: " << "#2277ee" << std::endl;
+  _return.__set_data( oss.str());
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
 }
 
 void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {

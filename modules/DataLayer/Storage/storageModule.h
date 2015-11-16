@@ -65,6 +65,9 @@ public:
 			      double timeStep,
 			      std::string resultID,
 			      std::string listOfVertices);
+  string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
+			  const std::string &sessionID, const std::string &modelID,
+			  const std::string &analysisID, const double stepValue);
     
   string checkIfAllVerticesArePresent(std::string listOfVertices, string contentToCheck);
 

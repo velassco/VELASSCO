@@ -37,6 +37,13 @@ namespace VELaSSCo
 			   const std::string &sessionID, const std::string &unique_model_name_pattern, 
 			   const std::string &requested_access);
 
+    bool getListOfMeshInfoFromTables( std::string &report, std::vector< MeshInfo> &listOfMeshes,
+					     const std::string &metadata_table, const std::string &modelID,
+					     const std::string &analysisID, const double stepValue);
+    std::string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
+				 const std::string &sessionID, const std::string &modelID,
+				 const std::string &analysisID, const double stepValue);
+
     std::string getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
 				     const std::string &analysisID, const double       timeStep,  
 				     const std::string &resultID,   const std::string &listOfVertices );
@@ -84,7 +91,7 @@ namespace VELaSSCo
   inline bool HBase::getTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const {
     const DicTableModels::const_iterator it = _table_models.find( sessionID + modelID);
     if ( it != _table_models.end())
-      tables = it->second;;
+      tables = it->second;
     return ( it != _table_models.end());
   }
 

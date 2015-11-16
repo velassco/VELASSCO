@@ -45,6 +45,8 @@ class Point;
 
 class Element;
 
+class MeshInfo;
+
 class Mesh;
 
 class Triangle;
@@ -73,13 +75,11 @@ class rvGetListOfAnalyses;
 
 class rvGetListOfTimeSteps;
 
-class MeshInfo;
-
 class rvGetListOfMeshes;
 
 typedef struct _ElementType__isset {
-  _ElementType__isset() : type(false), num_nodes(false) {}
-  bool type :1;
+  _ElementType__isset() : shape(false), num_nodes(false) {}
+  bool shape :1;
   bool num_nodes :1;
 } _ElementType__isset;
 
@@ -91,22 +91,22 @@ class ElementType {
 
   ElementType(const ElementType&);
   ElementType& operator=(const ElementType&);
-  ElementType() : type((ElementShapeType::type)0), num_nodes(0) {
+  ElementType() : shape((ElementShapeType::type)0), num_nodes(0) {
   }
 
   virtual ~ElementType() throw();
-  ElementShapeType::type type;
+  ElementShapeType::type shape;
   int32_t num_nodes;
 
   _ElementType__isset __isset;
 
-  void __set_type(const ElementShapeType::type val);
+  void __set_shape(const ElementShapeType::type val);
 
   void __set_num_nodes(const int32_t val);
 
   bool operator == (const ElementType & rhs) const
   {
-    if (!(type == rhs.type))
+    if (!(shape == rhs.shape))
       return false;
     if (!(num_nodes == rhs.num_nodes))
       return false;
@@ -230,10 +230,83 @@ class Element {
 
 void swap(Element &a, Element &b);
 
-typedef struct _Mesh__isset {
-  _Mesh__isset() : name(false), numberOfNodes(false), dimension(false), type(false), nodes(false), elements(false) {}
+typedef struct _MeshInfo__isset {
+  _MeshInfo__isset() : name(false), elementType(false), nVertices(false), nElements(false), meshUnits(false), meshColor(false) {}
   bool name :1;
-  bool numberOfNodes :1;
+  bool elementType :1;
+  bool nVertices :1;
+  bool nElements :1;
+  bool meshUnits :1;
+  bool meshColor :1;
+} _MeshInfo__isset;
+
+class MeshInfo {
+ public:
+
+  static const char* ascii_fingerprint; // = "42A6281E1E82974CAC4974DC708DEB77";
+  static const uint8_t binary_fingerprint[16]; // = {0x42,0xA6,0x28,0x1E,0x1E,0x82,0x97,0x4C,0xAC,0x49,0x74,0xDC,0x70,0x8D,0xEB,0x77};
+
+  MeshInfo(const MeshInfo&);
+  MeshInfo& operator=(const MeshInfo&);
+  MeshInfo() : name(), nVertices(0), nElements(0), meshUnits(), meshColor() {
+  }
+
+  virtual ~MeshInfo() throw();
+  std::string name;
+  ElementType elementType;
+  int64_t nVertices;
+  int64_t nElements;
+  std::string meshUnits;
+  std::string meshColor;
+
+  _MeshInfo__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_elementType(const ElementType& val);
+
+  void __set_nVertices(const int64_t val);
+
+  void __set_nElements(const int64_t val);
+
+  void __set_meshUnits(const std::string& val);
+
+  void __set_meshColor(const std::string& val);
+
+  bool operator == (const MeshInfo & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(elementType == rhs.elementType))
+      return false;
+    if (!(nVertices == rhs.nVertices))
+      return false;
+    if (!(nElements == rhs.nElements))
+      return false;
+    if (!(meshUnits == rhs.meshUnits))
+      return false;
+    if (!(meshColor == rhs.meshColor))
+      return false;
+    return true;
+  }
+  bool operator != (const MeshInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MeshInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const MeshInfo& obj);
+};
+
+void swap(MeshInfo &a, MeshInfo &b);
+
+typedef struct _Mesh__isset {
+  _Mesh__isset() : name(false), numberOfVertices(false), dimension(false), type(false), nodes(false), elements(false) {}
+  bool name :1;
+  bool numberOfVertices :1;
   bool dimension :1;
   bool type :1;
   bool nodes :1;
@@ -248,12 +321,12 @@ class Mesh {
 
   Mesh(const Mesh&);
   Mesh& operator=(const Mesh&);
-  Mesh() : name(), numberOfNodes(0), dimension(0) {
+  Mesh() : name(), numberOfVertices(0), dimension(0) {
   }
 
   virtual ~Mesh() throw();
   std::string name;
-  int64_t numberOfNodes;
+  int64_t numberOfVertices;
   int64_t dimension;
   ElementType type;
   std::vector<Node>  nodes;
@@ -263,7 +336,7 @@ class Mesh {
 
   void __set_name(const std::string& val);
 
-  void __set_numberOfNodes(const int64_t val);
+  void __set_numberOfVertices(const int64_t val);
 
   void __set_dimension(const int64_t val);
 
@@ -277,7 +350,7 @@ class Mesh {
   {
     if (!(name == rhs.name))
       return false;
-    if (!(numberOfNodes == rhs.numberOfNodes))
+    if (!(numberOfVertices == rhs.numberOfVertices))
       return false;
     if (!(dimension == rhs.dimension))
       return false;
@@ -1077,79 +1150,6 @@ class rvGetListOfTimeSteps {
 };
 
 void swap(rvGetListOfTimeSteps &a, rvGetListOfTimeSteps &b);
-
-typedef struct _MeshInfo__isset {
-  _MeshInfo__isset() : name(false), type(false), nVertices(false), nElements(false), meshUnits(false), meshColor(false) {}
-  bool name :1;
-  bool type :1;
-  bool nVertices :1;
-  bool nElements :1;
-  bool meshUnits :1;
-  bool meshColor :1;
-} _MeshInfo__isset;
-
-class MeshInfo {
- public:
-
-  static const char* ascii_fingerprint; // = "42A6281E1E82974CAC4974DC708DEB77";
-  static const uint8_t binary_fingerprint[16]; // = {0x42,0xA6,0x28,0x1E,0x1E,0x82,0x97,0x4C,0xAC,0x49,0x74,0xDC,0x70,0x8D,0xEB,0x77};
-
-  MeshInfo(const MeshInfo&);
-  MeshInfo& operator=(const MeshInfo&);
-  MeshInfo() : name(), nVertices(0), nElements(0), meshUnits(), meshColor() {
-  }
-
-  virtual ~MeshInfo() throw();
-  std::string name;
-  ElementType type;
-  int64_t nVertices;
-  int64_t nElements;
-  std::string meshUnits;
-  std::string meshColor;
-
-  _MeshInfo__isset __isset;
-
-  void __set_name(const std::string& val);
-
-  void __set_type(const ElementType& val);
-
-  void __set_nVertices(const int64_t val);
-
-  void __set_nElements(const int64_t val);
-
-  void __set_meshUnits(const std::string& val);
-
-  void __set_meshColor(const std::string& val);
-
-  bool operator == (const MeshInfo & rhs) const
-  {
-    if (!(name == rhs.name))
-      return false;
-    if (!(type == rhs.type))
-      return false;
-    if (!(nVertices == rhs.nVertices))
-      return false;
-    if (!(nElements == rhs.nElements))
-      return false;
-    if (!(meshUnits == rhs.meshUnits))
-      return false;
-    if (!(meshColor == rhs.meshColor))
-      return false;
-    return true;
-  }
-  bool operator != (const MeshInfo &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const MeshInfo & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  friend std::ostream& operator<<(std::ostream& out, const MeshInfo& obj);
-};
-
-void swap(MeshInfo &a, MeshInfo &b);
 
 typedef struct _rvGetListOfMeshes__isset {
   _rvGetListOfMeshes__isset() : status(false), report(false), meshInfos(false) {}

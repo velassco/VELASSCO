@@ -51,6 +51,18 @@ void VELaSSCoHandler::GetResultFromVerticesID(std::string &_return, const std::s
     // _return = storageModule::Instance()->checkIfAllVerticesArePresent(listOfVertices, _return);
 }
 
+void VELaSSCoHandler::GetListOfMeshes( rvGetListOfMeshes &_return, 
+				       const std::string &sessionID, const std::string &modelID, 
+				       const std::string &analysisID, const double stepValue) {
+  std::string report;
+  std::vector< MeshInfo>listOfMeshes;
+  std::string status = storageModule::Instance()->getListOfMeshes( report, listOfMeshes,
+								   sessionID, modelID, analysisID, stepValue);
+  _return.__set_status( status);
+  _return.__set_report( report);
+  _return.__set_meshInfos( listOfMeshes);
+}
+
 void VELaSSCoHandler::stopAll() {
   storageModule *sm = storageModule::Instance();
   sm->stopConnection();

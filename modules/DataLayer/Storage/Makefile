@@ -29,7 +29,10 @@ THRIFT_HBASE_OBJS_TMP = ${THRIFT_HBASE_FILES:.cpp=.o}
 THRIFT_HBASE_OBJS = ${THRIFT_HBASE_OBJS_TMP:%=$(OBJS_DIR)/%}
 THRIFT_HBASE_DEPENDENCIES = $(wildcard $(THRIFT_HBASE_DIR)/*.h)
 
-DATA_LAYER_CPP_FILES = HBase.cpp HBase_status.cpp HBase_model_operations.cpp EDM.cpp \
+DATA_LAYER_CPP_FILES = \
+	HBase.cpp HBase_status.cpp HBase_model_operations.cpp \
+	HBase_result_queries.cpp \
+	EDM.cpp \
 	velasscoThrift.cpp storageModule.cpp Helpers.cpp main.cpp
 
 DATA_LAYER_C_FILES = cJSON.c base64.c

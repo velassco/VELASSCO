@@ -54,6 +54,20 @@ class VELaSSCoSMIf {
   virtual void stopAll() = 0;
 
   /**
+   * as of OP-22.117
+   * Returns a list of meshes present for the given time-step of that analysis.
+   * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+   * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
+   * that are present on that step-values of that analysis.
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param stepValue
+   */
+  virtual void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue) = 0;
+
+  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name
@@ -134,19 +148,6 @@ class VELaSSCoSMIf {
    * @param analysisID
    */
   virtual void GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID) = 0;
-
-  /**
-   * Returns a list of meshes present for the given time-step of that analysis.
-   * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
-   * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
-   * that are present on that step-values of that analysis.
-   * 
-   * @param sessionID
-   * @param modelID
-   * @param analysisID
-   * @param timeStep
-   */
-  virtual void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep) = 0;
 };
 
 class VELaSSCoSMIfFactory {
@@ -191,6 +192,9 @@ class VELaSSCoSMNull : virtual public VELaSSCoSMIf {
   void stopAll() {
     return;
   }
+  void GetListOfMeshes(rvGetListOfMeshes& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* stepValue */) {
+    return;
+  }
   void UserLogin(std::string& /* _return */, const std::string& /* user_name */, const std::string& /* role */, const std::string& /* password */) {
     return;
   }
@@ -216,9 +220,6 @@ class VELaSSCoSMNull : virtual public VELaSSCoSMIf {
     return;
   }
   void GetListOfTimeSteps(rvGetListOfTimeSteps& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */) {
-    return;
-  }
-  void GetListOfMeshes(rvGetListOfMeshes& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */) {
     return;
   }
 };
@@ -842,6 +843,147 @@ class VELaSSCoSM_stopAll_presult {
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_stopAll_presult& obj);
+};
+
+typedef struct _VELaSSCoSM_GetListOfMeshes_args__isset {
+  _VELaSSCoSM_GetListOfMeshes_args__isset() : sessionID(false), modelID(false), analysisID(false), stepValue(false) {}
+  bool sessionID :1;
+  bool modelID :1;
+  bool analysisID :1;
+  bool stepValue :1;
+} _VELaSSCoSM_GetListOfMeshes_args__isset;
+
+class VELaSSCoSM_GetListOfMeshes_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "E0F6687719566C4EF140BB1122BC7D86";
+  static const uint8_t binary_fingerprint[16]; // = {0xE0,0xF6,0x68,0x77,0x19,0x56,0x6C,0x4E,0xF1,0x40,0xBB,0x11,0x22,0xBC,0x7D,0x86};
+
+  VELaSSCoSM_GetListOfMeshes_args(const VELaSSCoSM_GetListOfMeshes_args&);
+  VELaSSCoSM_GetListOfMeshes_args& operator=(const VELaSSCoSM_GetListOfMeshes_args&);
+  VELaSSCoSM_GetListOfMeshes_args() : sessionID(), modelID(), analysisID(), stepValue(0) {
+  }
+
+  virtual ~VELaSSCoSM_GetListOfMeshes_args() throw();
+  std::string sessionID;
+  std::string modelID;
+  std::string analysisID;
+  double stepValue;
+
+  _VELaSSCoSM_GetListOfMeshes_args__isset __isset;
+
+  void __set_sessionID(const std::string& val);
+
+  void __set_modelID(const std::string& val);
+
+  void __set_analysisID(const std::string& val);
+
+  void __set_stepValue(const double val);
+
+  bool operator == (const VELaSSCoSM_GetListOfMeshes_args & rhs) const
+  {
+    if (!(sessionID == rhs.sessionID))
+      return false;
+    if (!(modelID == rhs.modelID))
+      return false;
+    if (!(analysisID == rhs.analysisID))
+      return false;
+    if (!(stepValue == rhs.stepValue))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCoSM_GetListOfMeshes_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCoSM_GetListOfMeshes_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_args& obj);
+};
+
+
+class VELaSSCoSM_GetListOfMeshes_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "E0F6687719566C4EF140BB1122BC7D86";
+  static const uint8_t binary_fingerprint[16]; // = {0xE0,0xF6,0x68,0x77,0x19,0x56,0x6C,0x4E,0xF1,0x40,0xBB,0x11,0x22,0xBC,0x7D,0x86};
+
+
+  virtual ~VELaSSCoSM_GetListOfMeshes_pargs() throw();
+  const std::string* sessionID;
+  const std::string* modelID;
+  const std::string* analysisID;
+  const double* stepValue;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_pargs& obj);
+};
+
+typedef struct _VELaSSCoSM_GetListOfMeshes_result__isset {
+  _VELaSSCoSM_GetListOfMeshes_result__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCoSM_GetListOfMeshes_result__isset;
+
+class VELaSSCoSM_GetListOfMeshes_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "1935017465099FFD31841CDD6FD70F70";
+  static const uint8_t binary_fingerprint[16]; // = {0x19,0x35,0x01,0x74,0x65,0x09,0x9F,0xFD,0x31,0x84,0x1C,0xDD,0x6F,0xD7,0x0F,0x70};
+
+  VELaSSCoSM_GetListOfMeshes_result(const VELaSSCoSM_GetListOfMeshes_result&);
+  VELaSSCoSM_GetListOfMeshes_result& operator=(const VELaSSCoSM_GetListOfMeshes_result&);
+  VELaSSCoSM_GetListOfMeshes_result() {
+  }
+
+  virtual ~VELaSSCoSM_GetListOfMeshes_result() throw();
+  rvGetListOfMeshes success;
+
+  _VELaSSCoSM_GetListOfMeshes_result__isset __isset;
+
+  void __set_success(const rvGetListOfMeshes& val);
+
+  bool operator == (const VELaSSCoSM_GetListOfMeshes_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const VELaSSCoSM_GetListOfMeshes_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VELaSSCoSM_GetListOfMeshes_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_result& obj);
+};
+
+typedef struct _VELaSSCoSM_GetListOfMeshes_presult__isset {
+  _VELaSSCoSM_GetListOfMeshes_presult__isset() : success(false) {}
+  bool success :1;
+} _VELaSSCoSM_GetListOfMeshes_presult__isset;
+
+class VELaSSCoSM_GetListOfMeshes_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "1935017465099FFD31841CDD6FD70F70";
+  static const uint8_t binary_fingerprint[16]; // = {0x19,0x35,0x01,0x74,0x65,0x09,0x9F,0xFD,0x31,0x84,0x1C,0xDD,0x6F,0xD7,0x0F,0x70};
+
+
+  virtual ~VELaSSCoSM_GetListOfMeshes_presult() throw();
+  rvGetListOfMeshes* success;
+
+  _VELaSSCoSM_GetListOfMeshes_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_presult& obj);
 };
 
 typedef struct _VELaSSCoSM_UserLogin_args__isset {
@@ -2029,147 +2171,6 @@ class VELaSSCoSM_GetListOfTimeSteps_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfTimeSteps_presult& obj);
 };
 
-typedef struct _VELaSSCoSM_GetListOfMeshes_args__isset {
-  _VELaSSCoSM_GetListOfMeshes_args__isset() : sessionID(false), modelID(false), analysisID(false), timeStep(false) {}
-  bool sessionID :1;
-  bool modelID :1;
-  bool analysisID :1;
-  bool timeStep :1;
-} _VELaSSCoSM_GetListOfMeshes_args__isset;
-
-class VELaSSCoSM_GetListOfMeshes_args {
- public:
-
-  static const char* ascii_fingerprint; // = "E0F6687719566C4EF140BB1122BC7D86";
-  static const uint8_t binary_fingerprint[16]; // = {0xE0,0xF6,0x68,0x77,0x19,0x56,0x6C,0x4E,0xF1,0x40,0xBB,0x11,0x22,0xBC,0x7D,0x86};
-
-  VELaSSCoSM_GetListOfMeshes_args(const VELaSSCoSM_GetListOfMeshes_args&);
-  VELaSSCoSM_GetListOfMeshes_args& operator=(const VELaSSCoSM_GetListOfMeshes_args&);
-  VELaSSCoSM_GetListOfMeshes_args() : sessionID(), modelID(), analysisID(), timeStep(0) {
-  }
-
-  virtual ~VELaSSCoSM_GetListOfMeshes_args() throw();
-  std::string sessionID;
-  std::string modelID;
-  std::string analysisID;
-  double timeStep;
-
-  _VELaSSCoSM_GetListOfMeshes_args__isset __isset;
-
-  void __set_sessionID(const std::string& val);
-
-  void __set_modelID(const std::string& val);
-
-  void __set_analysisID(const std::string& val);
-
-  void __set_timeStep(const double val);
-
-  bool operator == (const VELaSSCoSM_GetListOfMeshes_args & rhs) const
-  {
-    if (!(sessionID == rhs.sessionID))
-      return false;
-    if (!(modelID == rhs.modelID))
-      return false;
-    if (!(analysisID == rhs.analysisID))
-      return false;
-    if (!(timeStep == rhs.timeStep))
-      return false;
-    return true;
-  }
-  bool operator != (const VELaSSCoSM_GetListOfMeshes_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const VELaSSCoSM_GetListOfMeshes_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_args& obj);
-};
-
-
-class VELaSSCoSM_GetListOfMeshes_pargs {
- public:
-
-  static const char* ascii_fingerprint; // = "E0F6687719566C4EF140BB1122BC7D86";
-  static const uint8_t binary_fingerprint[16]; // = {0xE0,0xF6,0x68,0x77,0x19,0x56,0x6C,0x4E,0xF1,0x40,0xBB,0x11,0x22,0xBC,0x7D,0x86};
-
-
-  virtual ~VELaSSCoSM_GetListOfMeshes_pargs() throw();
-  const std::string* sessionID;
-  const std::string* modelID;
-  const std::string* analysisID;
-  const double* timeStep;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_pargs& obj);
-};
-
-typedef struct _VELaSSCoSM_GetListOfMeshes_result__isset {
-  _VELaSSCoSM_GetListOfMeshes_result__isset() : success(false) {}
-  bool success :1;
-} _VELaSSCoSM_GetListOfMeshes_result__isset;
-
-class VELaSSCoSM_GetListOfMeshes_result {
- public:
-
-  static const char* ascii_fingerprint; // = "1935017465099FFD31841CDD6FD70F70";
-  static const uint8_t binary_fingerprint[16]; // = {0x19,0x35,0x01,0x74,0x65,0x09,0x9F,0xFD,0x31,0x84,0x1C,0xDD,0x6F,0xD7,0x0F,0x70};
-
-  VELaSSCoSM_GetListOfMeshes_result(const VELaSSCoSM_GetListOfMeshes_result&);
-  VELaSSCoSM_GetListOfMeshes_result& operator=(const VELaSSCoSM_GetListOfMeshes_result&);
-  VELaSSCoSM_GetListOfMeshes_result() {
-  }
-
-  virtual ~VELaSSCoSM_GetListOfMeshes_result() throw();
-  rvGetListOfMeshes success;
-
-  _VELaSSCoSM_GetListOfMeshes_result__isset __isset;
-
-  void __set_success(const rvGetListOfMeshes& val);
-
-  bool operator == (const VELaSSCoSM_GetListOfMeshes_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const VELaSSCoSM_GetListOfMeshes_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const VELaSSCoSM_GetListOfMeshes_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_result& obj);
-};
-
-typedef struct _VELaSSCoSM_GetListOfMeshes_presult__isset {
-  _VELaSSCoSM_GetListOfMeshes_presult__isset() : success(false) {}
-  bool success :1;
-} _VELaSSCoSM_GetListOfMeshes_presult__isset;
-
-class VELaSSCoSM_GetListOfMeshes_presult {
- public:
-
-  static const char* ascii_fingerprint; // = "1935017465099FFD31841CDD6FD70F70";
-  static const uint8_t binary_fingerprint[16]; // = {0x19,0x35,0x01,0x74,0x65,0x09,0x9F,0xFD,0x31,0x84,0x1C,0xDD,0x6F,0xD7,0x0F,0x70};
-
-
-  virtual ~VELaSSCoSM_GetListOfMeshes_presult() throw();
-  rvGetListOfMeshes* success;
-
-  _VELaSSCoSM_GetListOfMeshes_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-  friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetListOfMeshes_presult& obj);
-};
-
 class VELaSSCoSMClient : virtual public VELaSSCoSMIf {
  public:
   VELaSSCoSMClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -2210,6 +2211,9 @@ class VELaSSCoSMClient : virtual public VELaSSCoSMIf {
   void stopAll();
   void send_stopAll();
   void recv_stopAll();
+  void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue);
+  void send_GetListOfMeshes(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue);
+  void recv_GetListOfMeshes(rvGetListOfMeshes& _return);
   void UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password);
   void send_UserLogin(const std::string& user_name, const std::string& role, const std::string& password);
   void recv_UserLogin(std::string& _return);
@@ -2237,9 +2241,6 @@ class VELaSSCoSMClient : virtual public VELaSSCoSMIf {
   void GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID);
   void send_GetListOfTimeSteps(const std::string& sessionID, const std::string& modelID, const std::string& analysisID);
   void recv_GetListOfTimeSteps(rvGetListOfTimeSteps& _return);
-  void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep);
-  void send_GetListOfMeshes(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep);
-  void recv_GetListOfMeshes(rvGetListOfMeshes& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -2260,6 +2261,7 @@ class VELaSSCoSMProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_FindModel(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetResultFromVerticesID(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_stopAll(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetListOfMeshes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_UserLogin(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_UserLogout(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_CloseModel(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -2269,7 +2271,6 @@ class VELaSSCoSMProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_GetBoundaryOfLocalMesh(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetListOfAnalyses(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetListOfTimeSteps(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_GetListOfMeshes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VELaSSCoSMProcessor(boost::shared_ptr<VELaSSCoSMIf> iface) :
     iface_(iface) {
@@ -2278,6 +2279,7 @@ class VELaSSCoSMProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["FindModel"] = &VELaSSCoSMProcessor::process_FindModel;
     processMap_["GetResultFromVerticesID"] = &VELaSSCoSMProcessor::process_GetResultFromVerticesID;
     processMap_["stopAll"] = &VELaSSCoSMProcessor::process_stopAll;
+    processMap_["GetListOfMeshes"] = &VELaSSCoSMProcessor::process_GetListOfMeshes;
     processMap_["UserLogin"] = &VELaSSCoSMProcessor::process_UserLogin;
     processMap_["UserLogout"] = &VELaSSCoSMProcessor::process_UserLogout;
     processMap_["CloseModel"] = &VELaSSCoSMProcessor::process_CloseModel;
@@ -2287,7 +2289,6 @@ class VELaSSCoSMProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["GetBoundaryOfLocalMesh"] = &VELaSSCoSMProcessor::process_GetBoundaryOfLocalMesh;
     processMap_["GetListOfAnalyses"] = &VELaSSCoSMProcessor::process_GetListOfAnalyses;
     processMap_["GetListOfTimeSteps"] = &VELaSSCoSMProcessor::process_GetListOfTimeSteps;
-    processMap_["GetListOfMeshes"] = &VELaSSCoSMProcessor::process_GetListOfMeshes;
   }
 
   virtual ~VELaSSCoSMProcessor() {}
@@ -2363,6 +2364,16 @@ class VELaSSCoSMMultiface : virtual public VELaSSCoSMIf {
       ifaces_[i]->stopAll();
     }
     ifaces_[i]->stopAll();
+  }
+
+  void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetListOfMeshes(_return, sessionID, modelID, analysisID, stepValue);
+    }
+    ifaces_[i]->GetListOfMeshes(_return, sessionID, modelID, analysisID, stepValue);
+    return;
   }
 
   void UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password) {
@@ -2452,16 +2463,6 @@ class VELaSSCoSMMultiface : virtual public VELaSSCoSMIf {
       ifaces_[i]->GetListOfTimeSteps(_return, sessionID, modelID, analysisID);
     }
     ifaces_[i]->GetListOfTimeSteps(_return, sessionID, modelID, analysisID);
-    return;
-  }
-
-  void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->GetListOfMeshes(_return, sessionID, modelID, analysisID, timeStep);
-    }
-    ifaces_[i]->GetListOfMeshes(_return, sessionID, modelID, analysisID, timeStep);
     return;
   }
 

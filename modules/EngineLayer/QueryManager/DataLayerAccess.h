@@ -33,14 +33,22 @@ public:
     void getResultFromVerticesID( std::string& _return, 
 				  std::string sessionID, std::string modelID, std::string analysisID, 
 				  double timeStep, std::string resultID,  std::string listOfVertices) ;
+  // session queries
     void getListOfModels( rvGetListOfModels &_return,
 			  const std::string &sessionID, 
 			  const std::string &group_qualifier, const std::string &name_pattern);
     void openModel( rvOpenModel &_return,
 		    const std::string &sessionID, 
 		    const std::string &unique_name, const std::string &requested_access);
+  // direct result queries
+    void getListOfMeshes( rvGetListOfMeshes &_return,
+			  const std::string &sessionID,
+			  const std::string &modelID,
+			  const std::string &analysisID,
+			  const double stepValue);
     void getListOfTimeSteps( std::string& _return,
 			     const std::string &sessionID,
+			     const std::string &modelID,
 			     const std::string &analysisID,
 			     const std::string &stepOptions, const int numSteps, const double *lstSteps);
 			   

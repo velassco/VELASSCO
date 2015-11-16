@@ -25,7 +25,7 @@ enum ElementShapeType {
 }
 
 struct ElementType {
-  1: ElementShapeType   type,
+  1: ElementShapeType   shape, // to avoid ambiguity meshinfo.type.type
   2: i32                num_nodes
 }
 
@@ -49,9 +49,19 @@ struct Element {
    // 2: list<i64>                           nodes_ids
 }
 
+struct MeshInfo {
+   1: string                              name
+   2: ElementType                         elementType // to avoid ambiguity meshinfo.type.type
+   3: i64                                 nVertices
+   4: i64                                 nElements
+   5: string                              meshUnits
+   6: string                              meshColor
+}
+
 struct Mesh {
+  // eventually MeshInfo
    1: string                              name     
-   2: i64                                 numberOfNodes
+   2: i64                                 numberOfVertices
    3: i64                                 dimension
    4: ElementType                         type
    5: list<Node>                          nodes
@@ -185,16 +195,6 @@ struct rvGetListOfTimeSteps {
 }
 
 
-struct MeshInfo {
-   1: string                              name
-   2: ElementType                         type
-   3: i64                                 nVertices
-   4: i64                                 nElements
-   5: string                              meshUnits
-   6: string                              meshColor
-}
-
-
 struct rvGetListOfMeshes {
    1: string                              status
    2: string                              report
@@ -246,10 +246,20 @@ service VELaSSCoSM
      */							 	
     void stopAll()
 
-
-
-
-
+    
+    /**
+     as of OP-22.117
+     Returns a list of meshes present for the given time-step of that analysis.
+     If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+     If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
+     that are present on that step-values of that analysis.
+     */
+    rvGetListOfMeshes GetListOfMeshes(
+      1: string                           sessionID
+      2: string                           modelID
+      3: string                           analysisID
+      4: double                           stepValue ),
+      
 
 
 
@@ -397,17 +407,5 @@ service VELaSSCoSM
 			    3: string                           analysisID ),
 
 
-
-			    /**
-			     Returns a list of meshes present for the given time-step of that analysis.
-			     If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
-			     If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
-			     that are present on that step-values of that analysis.
-			     */
-			    rvGetListOfMeshes GetListOfMeshes(
-			      1: string                           sessionID
-			      2: string                           modelID
-			      3: string                           analysisID
-			      4: double                           timeStep ),
 
 }

@@ -1010,6 +1010,240 @@ uint32_t VELaSSCoSM_stopAll_presult::read(::apache::thrift::protocol::TProtocol*
 }
 
 
+VELaSSCoSM_GetListOfMeshes_args::~VELaSSCoSM_GetListOfMeshes_args() throw() {
+}
+
+
+uint32_t VELaSSCoSM_GetListOfMeshes_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sessionID);
+          this->__isset.sessionID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->modelID);
+          this->__isset.modelID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->analysisID);
+          this->__isset.analysisID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->stepValue);
+          this->__isset.stepValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCoSM_GetListOfMeshes_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCoSM_GetListOfMeshes_args");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->sessionID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->modelID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->analysisID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("stepValue", ::apache::thrift::protocol::T_DOUBLE, 4);
+  xfer += oprot->writeDouble(this->stepValue);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCoSM_GetListOfMeshes_pargs::~VELaSSCoSM_GetListOfMeshes_pargs() throw() {
+}
+
+
+uint32_t VELaSSCoSM_GetListOfMeshes_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("VELaSSCoSM_GetListOfMeshes_pargs");
+
+  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->sessionID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->modelID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString((*(this->analysisID)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("stepValue", ::apache::thrift::protocol::T_DOUBLE, 4);
+  xfer += oprot->writeDouble((*(this->stepValue)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+
+VELaSSCoSM_GetListOfMeshes_result::~VELaSSCoSM_GetListOfMeshes_result() throw() {
+}
+
+
+uint32_t VELaSSCoSM_GetListOfMeshes_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t VELaSSCoSM_GetListOfMeshes_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("VELaSSCoSM_GetListOfMeshes_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+VELaSSCoSM_GetListOfMeshes_presult::~VELaSSCoSM_GetListOfMeshes_presult() throw() {
+}
+
+
+uint32_t VELaSSCoSM_GetListOfMeshes_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 VELaSSCoSM_UserLogin_args::~VELaSSCoSM_UserLogin_args() throw() {
 }
 
@@ -2951,240 +3185,6 @@ uint32_t VELaSSCoSM_GetListOfTimeSteps_presult::read(::apache::thrift::protocol:
   return xfer;
 }
 
-
-VELaSSCoSM_GetListOfMeshes_args::~VELaSSCoSM_GetListOfMeshes_args() throw() {
-}
-
-
-uint32_t VELaSSCoSM_GetListOfMeshes_args::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->sessionID);
-          this->__isset.sessionID = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->modelID);
-          this->__isset.modelID = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->analysisID);
-          this->__isset.analysisID = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
-          xfer += iprot->readDouble(this->timeStep);
-          this->__isset.timeStep = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t VELaSSCoSM_GetListOfMeshes_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  oprot->incrementRecursionDepth();
-  xfer += oprot->writeStructBegin("VELaSSCoSM_GetListOfMeshes_args");
-
-  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->sessionID);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->modelID);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->analysisID);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("timeStep", ::apache::thrift::protocol::T_DOUBLE, 4);
-  xfer += oprot->writeDouble(this->timeStep);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  oprot->decrementRecursionDepth();
-  return xfer;
-}
-
-
-VELaSSCoSM_GetListOfMeshes_pargs::~VELaSSCoSM_GetListOfMeshes_pargs() throw() {
-}
-
-
-uint32_t VELaSSCoSM_GetListOfMeshes_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  oprot->incrementRecursionDepth();
-  xfer += oprot->writeStructBegin("VELaSSCoSM_GetListOfMeshes_pargs");
-
-  xfer += oprot->writeFieldBegin("sessionID", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString((*(this->sessionID)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString((*(this->modelID)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("analysisID", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString((*(this->analysisID)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("timeStep", ::apache::thrift::protocol::T_DOUBLE, 4);
-  xfer += oprot->writeDouble((*(this->timeStep)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  oprot->decrementRecursionDepth();
-  return xfer;
-}
-
-
-VELaSSCoSM_GetListOfMeshes_result::~VELaSSCoSM_GetListOfMeshes_result() throw() {
-}
-
-
-uint32_t VELaSSCoSM_GetListOfMeshes_result::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->success.read(iprot);
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t VELaSSCoSM_GetListOfMeshes_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
-
-  uint32_t xfer = 0;
-
-  xfer += oprot->writeStructBegin("VELaSSCoSM_GetListOfMeshes_result");
-
-  if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
-    xfer += this->success.write(oprot);
-    xfer += oprot->writeFieldEnd();
-  }
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-
-VELaSSCoSM_GetListOfMeshes_presult::~VELaSSCoSM_GetListOfMeshes_presult() throw() {
-}
-
-
-uint32_t VELaSSCoSM_GetListOfMeshes_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += (*(this->success)).read(iprot);
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
 void VELaSSCoSMClient::statusDL(std::string& _return)
 {
   send_statusDL();
@@ -3475,6 +3475,67 @@ void VELaSSCoSMClient::recv_stopAll()
   iprot_->getTransport()->readEnd();
 
   return;
+}
+
+void VELaSSCoSMClient::GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue)
+{
+  send_GetListOfMeshes(sessionID, modelID, analysisID, stepValue);
+  recv_GetListOfMeshes(_return);
+}
+
+void VELaSSCoSMClient::send_GetListOfMeshes(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("GetListOfMeshes", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  VELaSSCoSM_GetListOfMeshes_pargs args;
+  args.sessionID = &sessionID;
+  args.modelID = &modelID;
+  args.analysisID = &analysisID;
+  args.stepValue = &stepValue;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void VELaSSCoSMClient::recv_GetListOfMeshes(rvGetListOfMeshes& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("GetListOfMeshes") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  VELaSSCoSM_GetListOfMeshes_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetListOfMeshes failed: unknown result");
 }
 
 void VELaSSCoSMClient::UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password)
@@ -4014,67 +4075,6 @@ void VELaSSCoSMClient::recv_GetListOfTimeSteps(rvGetListOfTimeSteps& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetListOfTimeSteps failed: unknown result");
 }
 
-void VELaSSCoSMClient::GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep)
-{
-  send_GetListOfMeshes(sessionID, modelID, analysisID, timeStep);
-  recv_GetListOfMeshes(_return);
-}
-
-void VELaSSCoSMClient::send_GetListOfMeshes(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep)
-{
-  int32_t cseqid = 0;
-  oprot_->writeMessageBegin("GetListOfMeshes", ::apache::thrift::protocol::T_CALL, cseqid);
-
-  VELaSSCoSM_GetListOfMeshes_pargs args;
-  args.sessionID = &sessionID;
-  args.modelID = &modelID;
-  args.analysisID = &analysisID;
-  args.timeStep = &timeStep;
-  args.write(oprot_);
-
-  oprot_->writeMessageEnd();
-  oprot_->getTransport()->writeEnd();
-  oprot_->getTransport()->flush();
-}
-
-void VELaSSCoSMClient::recv_GetListOfMeshes(rvGetListOfMeshes& _return)
-{
-
-  int32_t rseqid = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TMessageType mtype;
-
-  iprot_->readMessageBegin(fname, mtype, rseqid);
-  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
-    ::apache::thrift::TApplicationException x;
-    x.read(iprot_);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-    throw x;
-  }
-  if (mtype != ::apache::thrift::protocol::T_REPLY) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-  }
-  if (fname.compare("GetListOfMeshes") != 0) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-  }
-  VELaSSCoSM_GetListOfMeshes_presult result;
-  result.success = &_return;
-  result.read(iprot_);
-  iprot_->readMessageEnd();
-  iprot_->getTransport()->readEnd();
-
-  if (result.__isset.success) {
-    // _return pointer has now been filled
-    return;
-  }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetListOfMeshes failed: unknown result");
-}
-
 bool VELaSSCoSMProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
   ProcessMap::iterator pfn;
   pfn = processMap_.find(fname);
@@ -4360,6 +4360,60 @@ void VELaSSCoSMProcessor::process_stopAll(int32_t seqid, ::apache::thrift::proto
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "VELaSSCoSM.stopAll", bytes);
+  }
+}
+
+void VELaSSCoSMProcessor::process_GetListOfMeshes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("VELaSSCoSM.GetListOfMeshes", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCoSM.GetListOfMeshes");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "VELaSSCoSM.GetListOfMeshes");
+  }
+
+  VELaSSCoSM_GetListOfMeshes_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "VELaSSCoSM.GetListOfMeshes", bytes);
+  }
+
+  VELaSSCoSM_GetListOfMeshes_result result;
+  try {
+    iface_->GetListOfMeshes(result.success, args.sessionID, args.modelID, args.analysisID, args.stepValue);
+    result.__isset.success = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "VELaSSCoSM.GetListOfMeshes");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("GetListOfMeshes", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "VELaSSCoSM.GetListOfMeshes");
+  }
+
+  oprot->writeMessageBegin("GetListOfMeshes", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "VELaSSCoSM.GetListOfMeshes", bytes);
   }
 }
 
@@ -4846,60 +4900,6 @@ void VELaSSCoSMProcessor::process_GetListOfTimeSteps(int32_t seqid, ::apache::th
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "VELaSSCoSM.GetListOfTimeSteps", bytes);
-  }
-}
-
-void VELaSSCoSMProcessor::process_GetListOfMeshes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
-{
-  void* ctx = NULL;
-  if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("VELaSSCoSM.GetListOfMeshes", callContext);
-  }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VELaSSCoSM.GetListOfMeshes");
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "VELaSSCoSM.GetListOfMeshes");
-  }
-
-  VELaSSCoSM_GetListOfMeshes_args args;
-  args.read(iprot);
-  iprot->readMessageEnd();
-  uint32_t bytes = iprot->getTransport()->readEnd();
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "VELaSSCoSM.GetListOfMeshes", bytes);
-  }
-
-  VELaSSCoSM_GetListOfMeshes_result result;
-  try {
-    iface_->GetListOfMeshes(result.success, args.sessionID, args.modelID, args.analysisID, args.timeStep);
-    result.__isset.success = true;
-  } catch (const std::exception& e) {
-    if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "VELaSSCoSM.GetListOfMeshes");
-    }
-
-    ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("GetListOfMeshes", ::apache::thrift::protocol::T_EXCEPTION, seqid);
-    x.write(oprot);
-    oprot->writeMessageEnd();
-    oprot->getTransport()->writeEnd();
-    oprot->getTransport()->flush();
-    return;
-  }
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "VELaSSCoSM.GetListOfMeshes");
-  }
-
-  oprot->writeMessageBegin("GetListOfMeshes", ::apache::thrift::protocol::T_REPLY, seqid);
-  result.write(oprot);
-  oprot->writeMessageEnd();
-  bytes = oprot->getTransport()->writeEnd();
-  oprot->getTransport()->flush();
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "VELaSSCoSM.GetListOfMeshes", bytes);
   }
 }
 

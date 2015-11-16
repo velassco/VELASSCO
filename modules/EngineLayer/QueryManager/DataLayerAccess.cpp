@@ -101,8 +101,21 @@ void DataLayerAccess::getResultFromVerticesID(std::string& _return,  std::string
 
 }
 
+void DataLayerAccess::getListOfMeshes( rvGetListOfMeshes &_return,
+				       const std::string &sessionID,
+				       const std::string &modelID,
+				       const std::string &analysisID,
+				       const double stepValue) {
+  try {
+    cli->GetListOfMeshes( _return, sessionID, modelID, analysisID, stepValue);
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
+
 void DataLayerAccess::getListOfTimeSteps( std::string& _return,
 					  const std::string &sessionID,
+					  const std::string &modelID,
 					  const std::string &analysisID,
 					  const std::string &stepOptions, const int numSteps, const double *lstSteps) {
   cout << "ERROR: " << FUNCTION_NAME << " NOT IMPLEMENTED YET." << endl;

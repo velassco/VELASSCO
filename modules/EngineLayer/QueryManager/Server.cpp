@@ -239,14 +239,20 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
   boost::property_tree::read_json(ss, pt);
   std::string name       = pt.get<std::string>("name");
 
+  /* The first query */
   if ( name == "GetResultFromVerticesID") {
     ManageGetResultFromVerticesID( _return, sessionID, query);
+    /* Session Queries */
   } else if ( name == "GetListOfModels") {
     ManageGetListOfModels( _return, sessionID, query);
   } else if ( name == "OpenModel") {
     ManageOpenModel( _return, sessionID, query);
   } else if ( name == "CloseModel") {
     ManageCloseModel( _return, sessionID, query);
+    /* Direct Result Queries */
+  } else if ( name == "GetListOfMeshes") {
+    ManageGetListOfMeshes( _return, sessionID, query);
+    /* Result Analysis Queries */
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
   } else {
@@ -290,6 +296,8 @@ void QueryManagerServer::GetStatusDB(StatusDB_Result& _return, const SessionID s
   LOGGER << "  result    : " << _return.result    << std::endl;
   LOGGER << "  status    : " << _return.status << std::endl;
 }
+
+/* first queries */
 
 void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON
@@ -383,6 +391,8 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   LOGGER << "  result : "   << _return.result        << std::endl;
   LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
+
+/* 0xx Session queries */
 
 void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON
@@ -520,6 +530,77 @@ void QueryManagerServer::ManageCloseModel( Query_Result &_return, const SessionI
   OpenModelKey key = { sessionID, modelID};
   m_models.erase( key);
 }
+
+/* 1xx - Direct Result Queries */
+
+void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  std::string name       = pt.get<std::string>("name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue       << "-" << std::endl;
+
+  rvGetListOfMeshes _return_;
+  DataLayerAccess::Instance()->getListOfMeshes( _return_,
+						sessionIDStr.str(), modelID, analysisID, stepValue);
+  
+  std::cout << _return_ << std::endl;
+
+  if ( _return_.status == "Error") {
+    if ( _return_.report == "No models") {
+      _return.__set_result( (Result::type)VAL_NO_MODELS_IN_PLATFORM);
+    } else {
+      _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    }
+    _return.__set_data( _return_.report);
+  } else { // status == "Ok"
+    if ( _return_.meshInfos.size() == 0) {
+      _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
+    } else {
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      // process data:
+      // foreach model in _return_.meshInfos
+      //   return { model.name, model.fullpath}
+      // _return.__set_data( _return_.meshInfos.srt());
+      std::ostringstream oss;
+      oss << "NumberOfModels: " << _return_.meshInfos.size() << std::endl;
+      // C++11 : for ( auto &it : _return_.meshInfos)
+      char hex_string[ 1024];
+      for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+	oss << "Name: " << it->name << std::endl;
+	oss << "ElementType" << it->elementType.shape << std::endl;
+	oss << "NumberOfVerticesPerElement: " <<  it->elementType.num_nodes << std::endl;
+	oss << "NumberOfVertices: " << it->nVertices << std::endl;
+	oss << "NumberOfElements: " << it->nElements << std::endl;
+	oss << "Units: " << it->meshUnits << std::endl;
+	oss << "Color: " << it->meshColor << std::endl;
+
+      }
+      _return.__set_data( oss.str());
+    }
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+}
+
+/* 2xx - Result Analysis Queries */
 
 void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};

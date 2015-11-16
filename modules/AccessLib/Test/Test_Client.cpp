@@ -137,8 +137,8 @@ int main(int argc, char* argv[])
   // const char *unique_name = "Test_VELaSSCo_Models:*:*"; // or using only the table's name and get the first one
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c:*";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c:FluidizedBed_small.p3c";
-  // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM/VELaSSCo_HbaseBasicTest-part-";
-  const char *unique_name = "T_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/D2C/Data/Fluidized_Bed_Small:FluidizedBed";
+  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part-";
+  // const char *unique_name = "T_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/D2C/Data/Fluidized_Bed_Small:FluidizedBed";
 
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizeBed_large"; 
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/:FluidizedBed_small";
@@ -203,28 +203,54 @@ int main(int argc, char* argv[])
   }
 
   //
+  // Test GetListOfMeshes
+  //
+  bool do_get_list_of_meshes = true;
+  if ( do_get_list_of_meshes) {
+    const char *return_list = NULL;
+    const char *return_error_str = NULL;
+    std::cout << "doing valGetListOfMeshes" << std::endl;
+    result = valGetListOfMeshes( sessionID, opened_modelID.c_str(),
+				 "", -1, // static mesh
+				 &return_error_str, &return_list);
+    CheckVALResult(result, getStringFromCharPointers( "valGetListOfMeshes ", return_error_str));
+    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+    std::cout << "GetListOfMeshes: " << opened_modelID << 
+      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+    if ( return_list) {
+      std::cout << "   mesh_list = " << return_list << std::endl;
+    } else {
+      std::cout << "Error: " << return_error_str << std::endl;
+    }
+  }
+
+
+  //
   // Test GetBoundingBox()
   //
 
-  const double *return_bbox = NULL;
-  const char *return_error_str = NULL;
-  std::cout << "doing valGetBoundingBox" << std::endl;
-
-  result = valGetBoundingBox( sessionID, opened_modelID.c_str(), // the already opened model
-  			      NULL, 0, // use all vertices ID
-  			      "", // don't care about analysisID
-  			      "ALL", NULL, 0, // use all steps / or don't care
-  			      &return_bbox, &return_error_str);
-  CheckVALResult(result, getStringFromCharPointers( "valGetBoundingBox ", return_error_str));
-  ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
-  std::cout << "GetBoundingBox: " << opened_modelID << 
-    ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
-  if ( return_bbox) {
-    std::cout << "         bbox = ( " ;
-    std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
-              << return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
-  } else {
-    std::cout << "Error: " << return_error_str << std::endl;
+  bool do_bbox = false;
+  if ( do_bbox) {
+    const double *return_bbox = NULL;
+    const char *return_error_str = NULL;
+    std::cout << "doing valGetBoundingBox" << std::endl;
+    
+    result = valGetBoundingBox( sessionID, opened_modelID.c_str(), // the already opened model
+				NULL, 0, // use all vertices ID
+				"", // don't care about analysisID
+				"ALL", NULL, 0, // use all steps / or don't care
+				&return_bbox, &return_error_str);
+    CheckVALResult(result, getStringFromCharPointers( "valGetBoundingBox ", return_error_str));
+    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+    std::cout << "GetBoundingBox: " << opened_modelID << 
+      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+    if ( return_bbox) {
+      std::cout << "         bbox = ( " ;
+      std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
+		<< return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
+    } else {
+      std::cout << "Error: " << return_error_str << std::endl;
+    }
   }
 
   //

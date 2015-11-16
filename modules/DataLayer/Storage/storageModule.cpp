@@ -67,6 +67,12 @@ string storageModule::getResultOnVertices( std::string sessionID,  std::string m
   return _db->getResultOnVertices(sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
 }
 
+string storageModule::getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
+				       const std::string &sessionID, const std::string &modelID,
+				       const std::string &analysisID, const double stepValue) {
+  return _db->getListOfMeshes( report, listOfMeshes, sessionID, modelID, analysisID, stepValue);
+}
+
 string storageModule::checkIfAllVerticesArePresent(string listOfVertices, string out)
 {
     

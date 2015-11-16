@@ -60,6 +60,9 @@ namespace VELaSSCo
     virtual std::string findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
 				   const std::string &sessionID, const std::string &unique_model_name_pattern, 
 				   const std::string &requested_access) = 0;
+    virtual std::string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
+					 const std::string &sessionID, const std::string &modelID,
+					 const std::string &analysisID, const double stepValue) = 0;
 
     /*
      * Access the database and return a list o vertices with attributes.
