@@ -885,6 +885,52 @@ void VELaSSCoHandler::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std:
 *
 * @param sessionID
 * @param modelID
+*/
+void VELaSSCoHandler::CalculateBoundingBox(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID)
+{
+   try {
+      thelog->logg(2, "-->CalculateBoundingBox\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
+      setCurrentSession(sessionID.data());
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
+      if (emc) {
+         vector<string> analysisNames;
+        if (emc->type == mtDEM) {
+            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
+            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation));
+
+
+            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
+         } else if (emc->type == mtFEM) {
+            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh));
+            fem::Mesh *mesh = meshIter.first();
+            while (mesh) {
+               Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
+               for (fem::Node *n = nodeIter.first(); n; )
+            }
+
+
+
+
+            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
+            thelog->logg(0, "status=OK\n\n");
+        }
+      } else {
+         char *emsg = "Model does not exist.";
+         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+      }
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
+   }
+}
+
+/**
+* Retrieves the list of time steps for a given model and analysis.
+*
+* @param sessionID
+* @param modelID
 * @param analysisID
 */
 void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID)

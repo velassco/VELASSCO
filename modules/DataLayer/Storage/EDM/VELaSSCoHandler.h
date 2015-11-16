@@ -123,6 +123,7 @@ public:
    * @param modelID
    */
    void GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID);
+   void CalculateBoundingBox(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID);
 
    /**
    * Retrieves the list of time steps for a given model and analysis.
