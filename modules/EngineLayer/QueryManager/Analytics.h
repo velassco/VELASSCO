@@ -21,11 +21,10 @@ public:
 			     double *return_bbox, std::string *return_error_str);
 
   void calculateDiscrete2Continuum( const std::string &sessionID, const std::string &modelID,
-				    const std::string &analysisID, const std::string &staticMeshID, 
+				    const std::string &analysisName, const std::string &staticMeshID, 
 				    const std::string &stepOptions, const int numSteps, const double *lstSteps, /* only lstSteps is in the operation form */
 				    const std::string &CoarseGrainingMethod, const double width, const double cutoffFactor,
-				    const bool processContacts, const bool doTemporalAVG, const std::string &TemporalAVGoptions,
-				    const std::string &prefixHBaseTableToUse, /* now it's a prefix, not a hbase table name !!! */
+				    const bool processContacts, const bool doTemporalAVG, const std::string &TemporalAVGoptions, const double deltaT,
 				    std::string *returnQueryOutcome, /* also not in the form, as the prefixHBaseTableToUse */
 				    std::string *return_error_str);
 
