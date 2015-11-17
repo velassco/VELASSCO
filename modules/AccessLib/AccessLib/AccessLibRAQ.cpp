@@ -224,8 +224,9 @@ extern "C" {
 		     << "  \"name\"         : \"" << "GetDiscrete2Continuum" << "\",\n"
 		     << "  \"modelID\"      : \"" <<  modelID          << "\",\n";
 	queryCommand << "  \"analysisName\" : \"" << analysisName       << "\",\n";
-	queryCommand << "  \"staticMeshID\" : \"" <<       staticMeshID << "\",\n";       
-	queryCommand << "  \"stepOptions\" : \"" <<        stepOptions << "\",\n";        
+	queryCommand << "  \"staticMeshID\" : \"" <<  staticMeshID << "\",\n";       
+	queryCommand << "  \"stepOptions\" : \"" <<   stepOptions << "\",\n";    
+	queryCommand << "  \"numSteps\" : \"" << numSteps     << "\",\n";    
 	queryCommand << "  \"lstSteps\" : [";
 	// can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
 	//if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
@@ -234,16 +235,16 @@ extern "C" {
 	    queryCommand << lstSteps[i];
 	  }
 	}
-	queryCommand << "],\n";
+	queryCommand << "]\n";
 	/* D2C parameters: */
 
-	queryCommand << "  \"CoarseGrainingMethod\" : \"" << 	   CoarseGrainingMethod << "\",\n";	       
+	queryCommand << "  \"coarseGrainingMethod\" : \"" << 	   CoarseGrainingMethod << "\",\n";	       
 	queryCommand << "  \"width\" : \"" << 	           width << "\",\n";	       
 	queryCommand << "  \"cutoffFactor\" : \"" <<       cutoffFactor << "\",\n";       
 	queryCommand << "  \"processContacts\" : \"" <<    processContacts << "\",\n";    
 	queryCommand << "  \"doTemporalAVG\" : \"" <<      doTemporalAVG << "\",\n";      
-	queryCommand << "  \"TemporalAVGOptions\" : \"" << TemporalAVGOptions << "\",\n"; 
-	queryCommand << "  \"DeltaT\" : \"" << deltaT << "\",\n"; 
+	queryCommand << "  \"temporalAVGOptions\" : \"" << TemporalAVGOptions << "\",\n"; 
+	queryCommand << "  \"deltaT\" : \"" << deltaT << "\",\n"; 
 	queryCommand << "}\n";
 
 	// Send command string and get back result data
@@ -252,7 +253,7 @@ extern "C" {
 	// Give back pointers to actual binary data
 	if (result == VAL_SUCCESS) {
 	  // *queryOutcome = queryData->data();
-	  *queryOutcome = queryData->c_str();
+	  queryOutcome = queryData->c_str();
 	} else {
 	  *resultErrorStr = queryData->c_str();
 	}
