@@ -22,11 +22,9 @@ public:
 
   void calculateDiscrete2Continuum( const std::string &sessionID, const std::string &modelID,
 				    const std::string &analysisName, const std::string &staticMeshID, 
-				    const std::string &stepOptions, const int numSteps, const double *lstSteps, /* only lstSteps is in the operation form */
-				    const std::string &CoarseGrainingMethod, const double width, const double cutoffFactor,
-				    const bool processContacts, const bool doTemporalAVG, const std::string &TemporalAVGoptions, const double deltaT,
-				    std::string *returnQueryOutcome, /* also not in the form, as the prefixHBaseTableToUse */
-				    std::string *return_error_str);
+				    const std::string &coarseGrainingMethod, const double width, const double cutoffFactor,
+				    const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGoptions, const double deltaT,
+				    std::string *returnQueryOutcome, std::string *return_error_str);
 
 private:
   AnalyticsModule() {};
