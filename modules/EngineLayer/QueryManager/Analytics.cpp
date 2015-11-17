@@ -94,11 +94,12 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // output in '../bbox/part-r-00000'
   // error in '../bbox/error.txt'
   FILE *fi = fopen( "bbox/part-r-00000", "r");
-  if ( !fi) {
+  
+  if (!fi) {
     // try reading error file
     bool errorfile_read = false;
     fi = fopen( "bbox/error.txt", "r");
-    if ( fi) {
+    if (fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
       char *ok = fgets( buffer, size_buffer, fi);
@@ -114,6 +115,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     }
     return;
   }
+  
   // read output
   char keyword[ 1024];
   double value = 0.0;
@@ -164,16 +166,16 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
 void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
 						  const std::string &analysisID, const std::string &staticMeshID, 
 						  const std::string &stepOptions, const int numSteps, const double *lstSteps,
-						  const std::string &CGMethod, const double width, const double cutoffFactor,
-						  const bool processContacts, 
-						  const bool doTemporalAVG, const std::string &TemporalAVGOptions,
-						  const std::string &prefixHBaseTableToUse, std::string *returnQueryOutcome, std::string *return_error_str) {
+						  const std::string &cGMethod, const double width, const double cutoffFactor,
+						  const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGOptions,
+						  const double deltaT, std::string *returnQueryOutcome, std::string *return_error_str) {
   
   bool use_yarn = true;
   
   if (use_yarn) {
     std::string hadoop_home = "/localfs/home/velassco/common";
     std::string hadoop_bin = hadoop_home + "/hadoop/bin";
+	
     std::string parameters = modelID + " " + analysisID + " " + staticMeshID + " " + stepOptions + " ";
     
     std::stringstream s;
@@ -209,20 +211,50 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
     // // maybe this is the width or the TemporalAVGOptions
     std::stringstream s_deltaT;
     // s_deltaT << deltaT;
-    s_deltaT << width;
+    s_deltaT << deltaT;
 
-    parameters+= CGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + TemporalAVGOptions + " " + s_deltaT.str();
+    parameters+= cGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + temporalAVGOptions + " " + s_deltaT.str();
     
     std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetDiscrete2ContinuumOfAModel.jar " + parameters;
     
-    int ret = 0;
+	int ret = 0;
     ret = system(cmd_line.c_str());
     
-    //result stored in HBase and outcome in a file
-    //reading query outcome from file
-    *return_error_str = std::string( "NO ERROR");
-  } else {
-    // not using yarn ...
-    *returnQueryOutcome = std::string( "NOT IMPLEMENTED");
+	//result stored in HBase and outcome in a file
+    FILE *fi = fopen( "D2C/queryOutcome", "r");
+  
+  if (!fi) {
+    // try reading error file
+    bool errorfile_read = false;
+    fi = fopen( "D2C/queryError", "r");
+    if (fi) {
+      const size_t size_buffer = 1024 * 1024;
+      char buffer[ size_buffer + 1];
+      char *ok = fgets( buffer, size_buffer, fi);
+      fclose( fi);
+      if ( ok) {
+	*return_error_str = std::string( buffer);
+	errorfile_read = true;
+      }
+    }
+    if ( !errorfile_read) {
+      *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
+	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+    }
+    return;
   }
+	//reading query outcome from file
+    //*return_error_str = std::string( "NO ERROR");
+	
+	 else {
+		//QUERY OK
+		// not using yarn ...
+		const size_t size_buffer = 1024;
+		char buffer[ size_buffer + 1];
+		char *ok = fgets( buffer, size_buffer, fi);
+		fclose( fi);
+		
+		if ( ok)
+			*returnQueryOutcome = std::string( buffer);
+   }
 }
