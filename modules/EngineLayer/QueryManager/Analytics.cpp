@@ -245,16 +245,18 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
   }
 	//reading query outcome from file
     //*return_error_str = std::string( "NO ERROR");
-	
-	 else {
+	else {
 		//QUERY OK
 		// not using yarn ...
 		const size_t size_buffer = 1024;
 		char buffer[ size_buffer + 1];
 		char *ok = fgets( buffer, size_buffer, fi);
 		fclose( fi);
-		
+
 		if ( ok)
 			*returnQueryOutcome = std::string( buffer);
    }
+   
+   //remove recursevely folder D2C
+   
 }
