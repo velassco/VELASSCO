@@ -167,21 +167,21 @@ extern "C" {
   VAL_Result VAL_API valGetDiscrete2Continuum( /* in */
 					      VAL_SessionID   sessionID,
 					      const char     *modelID,
-					      const char     *analysisID,
+					      const char     *analysisName,
 					      const char     *staticMeshID,
-					      const char     *stepOptions, 
-					      const double   *lstSteps,
-					      const int       numSteps,
+					      const char     *stepOptions,  // ALL, SINGLE, INTERVAL
+					      const double   *lstSteps, //ALL (Ignored), SINGLE (1 double), INTERVAL (2 doubles)
+					    //const int       numSteps, // the size of lstSteps SINGLE(1)
 					      const char     *CoarseGrainingMethod,
-					      const double     width,
-					      const double     cutoffFactor,
+					      const double   width,
+					      const double   cutoffFactor,
 					      const bool     processContacts,
 					      const bool     doTemporalAVG,
-					      const char     *TemporalAVGOptions,
-					      const char     *HBaseToUse, /* Not in the VQ-213 form, need to specify table? to store results or get the static mesh? in the operation it's a prefix !!! */
+					      const char     *TemporalAVGOptions, //ALL, TEMPORALWINDOW
+						  const double   deltaT,
 					      /* out */
-					      const char   **queryOutcome,  /* Not in the current VQ-213 form, in the previous one says that here comes the list of reslts for the vertices of the Input mesh */
-					      const char     **resultErrorStr); 
+					      const char   	*queryOutcome,  
+					      const char     **resultErrorStr); // in case of error
 
   /**
    * Translate a numerical result code into an error message string.
