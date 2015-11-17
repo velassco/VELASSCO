@@ -648,7 +648,8 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   // 						      stepOptions, numSteps, lstSteps);
   // parse _return_ into a double *lstSteps
   std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
-  double bbox[ 6];
+ 
+ double bbox[6];
   std::string error_str;
   try {
     AnalyticsModule::getInstance()->calculateBoundingBox( sessionIDStr.str(), modelID,
@@ -690,15 +691,17 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   
   // get parameters: // as in AnalyticsRAQ.cpp
   std::string modelID            = pt.get<std::string>( "modelID");
-
-  std::string analysisID         = pt.get<std::string>( "analysisID");
+  std::string analysisID         = pt.get<std::string>( "analysisName");
   std::string stepOptions        = pt.get<std::string>( "stepOptions");
-  int numSteps                   = pt.get< int>( "numSteps");
+  
+  //int numSteps                   = pt.get< int>( "numSteps");
+  
+  
   // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
   // std::string lstSteps           = pt.get<std::string>( "lstSteps");
   std::vector< double> lstSteps = as_vector< double>( pt, "lstSteps");
-
-  assert( lstSteps.size() == ( size_t)numSteps);
+  
+  //assert( lstSteps.size() == ( size_t)numSteps);
 
   std::string staticMeshID       = pt.get<std::string>( "staticMeshID");
   std::string CoarseGrainingMethod = pt.get<std::string>( "CoarseGrainingMethod");
@@ -707,29 +710,29 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   bool processContacts           = pt.get< bool>( "processContacts");
   bool doTemporalAVG             = pt.get< bool>( "doTemporalAVG");
   std::string TemporalAVGOptions = pt.get<std::string>( "TemporalAVGOptions");
-  std::string HBaseTableToUse    = pt.get<std::string>( "HBaseToUse");
+  //std::string HBaseTableToUse    = pt.get<std::string>( "HBaseToUse");
+  double deltaT    =	pt.get< double>( "DeltaT");
  
-    
+ 
   std::stringstream sessionIDStr;
   sessionIDStr << sessionID;
   
   std::cout << "S  -" << sessionID        << "-" << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
-  std::cout << "AN -" << analysisID     << "-" << std::endl;
+  std::cout << "AN -" << analysisName     << "-" << std::endl;
   std::cout << "SM -" << staticMeshID     << "-" << std::endl;
   std::cout << "TS -" << stepOptions   << "-" << std::endl;
-  std::cout << "nTS  -" << numSteps      << "-" << std::endl;
-  std::cout << "TSt  -" << as_string< size_t>( pt, "lstSTeps")      << "-" << std::endl;
+  //std::cout << "nTS  -" << numSteps      << "-" << std::endl;
+  std::cout << "TSt  -" << as_string<size_t>( pt, "lstSTeps")      << "-" << std::endl;
   std::cout << "CG  -" << CoarseGrainingMethod        << "-" << std::endl;
   std::cout << "Wd -" << width << "-" << std::endl;
   std::cout << "Co -" << cutoffFactor << "-" << std::endl;
   std::cout << "Pc -" << processContacts  << "-" << std::endl;
   std::cout << "DTA -" << doTemporalAVG   << "-" << std::endl;
   std::cout << "TAO -" << TemporalAVGOptions       << "-" << std::endl;
-  std::cout << "HB -" <<  HBaseTableToUse << "-" << std::endl;
+  std::cout << "DT -" <<  deltaT << "-" << std::endl;
   
   std::string query_outcome;
-  
   std::string error_str;
   
   try {
@@ -744,7 +747,7 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
 								 analysisID, staticMeshID, stepOptions, numSteps, lstSteps.data(),
 								 CoarseGrainingMethod, width, cutoffFactor, processContacts, 
 								 doTemporalAVG, TemporalAVGOptions,
-								 HBaseTableToUse,
+								 deltaT,
 								 &query_outcome, &error_str);
 							  
     //GraphicsModule *graphics = GraphicsModule::getInstance();
