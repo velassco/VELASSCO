@@ -693,25 +693,19 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   std::string modelID            = pt.get<std::string>( "modelID");
   std::string analysisID         = pt.get<std::string>( "analysisName");
   std::string stepOptions        = pt.get<std::string>( "stepOptions");
+  int numSteps                   = pt.get<int>( "numSteps");
   
-  //int numSteps                   = pt.get< int>( "numSteps");
-  
-  
-  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-  // std::string lstSteps           = pt.get<std::string>( "lstSteps");
-  std::vector< double> lstSteps = as_vector< double>( pt, "lstSteps");
-  
-  //assert( lstSteps.size() == ( size_t)numSteps);
+  std::vector<double> lstSteps = as_vector<double>(pt, "lstSteps");
+  assert(lstSteps.size() == (size_t)numSteps);
 
-  std::string staticMeshID       = pt.get<std::string>( "staticMeshID");
-  std::string CoarseGrainingMethod = pt.get<std::string>( "CoarseGrainingMethod");
-  double width     	         = pt.get< double>( "width");
-  double cutoffFactor     	 = pt.get< double>( "cutoffFactor");
-  bool processContacts           = pt.get< bool>( "processContacts");
-  bool doTemporalAVG             = pt.get< bool>( "doTemporalAVG");
-  std::string TemporalAVGOptions = pt.get<std::string>( "TemporalAVGOptions");
-  //std::string HBaseTableToUse    = pt.get<std::string>( "HBaseToUse");
-  double deltaT    =	pt.get< double>( "DeltaT");
+  std::string staticMeshID       = pt.get<std::string>("staticMeshID");
+  std::string coarseGrainingMethod = pt.get<std::string>("coarseGrainingMethod");
+  double width     	         = pt.get< double>("width");
+  double cutoffFactor     	 = pt.get< double>("cutoffFactor");
+  bool processContacts           = pt.get< bool>("processContacts");
+  bool doTemporalAVG             = pt.get< bool>("doTemporalAVG");
+  std::string temporalAVGOptions = pt.get<std::string>("temporalAVGOptions");
+  double deltaT    =	pt.get< double>("deltaT");
  
  
   std::stringstream sessionIDStr;
@@ -722,14 +716,14 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   std::cout << "AN -" << analysisName     << "-" << std::endl;
   std::cout << "SM -" << staticMeshID     << "-" << std::endl;
   std::cout << "TS -" << stepOptions   << "-" << std::endl;
-  //std::cout << "nTS  -" << numSteps      << "-" << std::endl;
+  std::cout << "nTS  -" << numSteps      << "-" << std::endl;
   std::cout << "TSt  -" << as_string<size_t>( pt, "lstSTeps")      << "-" << std::endl;
-  std::cout << "CG  -" << CoarseGrainingMethod        << "-" << std::endl;
+  std::cout << "CG  -" << coarseGrainingMethod        << "-" << std::endl;
   std::cout << "Wd -" << width << "-" << std::endl;
   std::cout << "Co -" << cutoffFactor << "-" << std::endl;
   std::cout << "Pc -" << processContacts  << "-" << std::endl;
   std::cout << "DTA -" << doTemporalAVG   << "-" << std::endl;
-  std::cout << "TAO -" << TemporalAVGOptions       << "-" << std::endl;
+  std::cout << "TAO -" << temporalAVGOptions  << "-" << std::endl;
   std::cout << "DT -" <<  deltaT << "-" << std::endl;
   
   std::string query_outcome;
@@ -743,14 +737,13 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
     // 						      analysisID,
     // 						      stepOptions, numSteps, lstSteps);
     // parse _return_ into a double *lstSteps
-    AnalyticsModule::getInstance()->calculateDiscrete2Continuum (sessionIDStr.str(), modelID,
-								 analysisID, staticMeshID, stepOptions, numSteps, lstSteps.data(),
-								 CoarseGrainingMethod, width, cutoffFactor, processContacts, 
-								 doTemporalAVG, TemporalAVGOptions,
-								 deltaT,
-								 &query_outcome, &error_str);
+    
+	AnalyticsModule::getInstance()->calculateDiscrete2Continuum (sessionIDStr.str(), modelID,
+								 analysisName, staticMeshID, stepOptions, numSteps, lstSteps.data(),
+								 coarseGrainingMethod, width, cutoffFactor, processContacts, 
+								 doTemporalAVG, temporalAVGOptions, deltaT, &query_outcome, &error_str);
 							  
-    //GraphicsModule *graphics = GraphicsModule::getInstance();
+    GraphicsModule *graphics = GraphicsModule::getInstance();
   } 
 	catch ( TException &e) {
     std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
@@ -759,16 +752,16 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   }
   if ( error_str.length() == 0) {
     _return.__set_result( (Result::type)VAL_SUCCESS );
-    _return.__set_data( query_outcome);
+    _return.__set_data(query_outcome);
   } else {
     _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
-    _return.__set_data( error_str);
+    _return.__set_data(error_str);
   }
 		  
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
   LOGGER << "  result : "   << _return.result        << std::endl;
-  LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  //LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
 
 int StartServer( const int server_port) {
