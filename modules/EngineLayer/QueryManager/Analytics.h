@@ -21,8 +21,8 @@ public:
 			     double *return_bbox, std::string *return_error_str);
 
   void calculateDiscrete2Continuum( const std::string &sessionID, const std::string &modelID,
-				    const std::string &analysisName, const std::string &staticMeshID, 
-				    const std::string &coarseGrainingMethod, const double width, const double cutoffFactor,
+				    const std::string &analysisName, const std::string &staticMeshID, const std::string &tSOptions, 
+				    const int numSteps, const double *lstSteps, const std::string &coarseGrainingMethod, const double width, const double cutoffFactor,
 				    const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGoptions, const double deltaT,
 				    std::string *returnQueryOutcome, std::string *return_error_str);
 

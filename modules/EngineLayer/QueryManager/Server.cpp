@@ -694,7 +694,6 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   std::string analysisName         = pt.get<std::string>( "analysisName");
   std::string stepOptions        = pt.get<std::string>( "stepOptions");
   int numSteps                   = pt.get<int>( "numSteps");
-  
   std::vector<double> lstSteps = as_vector<double>(pt, "lstSteps");
   assert(lstSteps.size() == (size_t)numSteps);
 

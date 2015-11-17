@@ -260,3 +260,5 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
    //remove recursevely folder D2C
    
 }
+
+}
