@@ -171,37 +171,41 @@ extern "C" {
   VAL_Result VAL_API valGetDiscrete2Continuum( /* in */
 					      VAL_SessionID   sessionID,
 					      const char     *modelID,
-					      const char     *analysisID,
+					      const char     *analysisName,
 					      const char     *staticMeshID,
-					      const char     *stepOptions, 
-					      const double   *lstSteps,
-					      const int       numSteps,
+					      const char     *stepOptions,  // ALL, SINGLE, INTERVAL
+					      const double   *lstSteps, //ALL (Ignored), SINGLE (1 double), INTERVAL (2 doubles)
+						  const int       numSteps, // the size of lstSteps SINGLE(1)
 					      const char     *CoarseGrainingMethod,
-					      const double     width,
-					      const double     cutoffFactor,
+					      const double   width,
+					      const double   cutoffFactor,
 					      const bool     processContacts,
 					      const bool     doTemporalAVG,
-					      const char     *TemporalAVGOptions,
-					      const char     *HBaseToUse, /* Not in the VQ-213 form, need to specify table? to store results or get the static mesh?*/
+					      const char     *TemporalAVGOptions, //ALL, TEMPORALWINDOW
+						  const double   deltaT,
 					      /* out */
-					      const char   **queryOutcome,  /* Not in the current VQ-213 form, in the previous one says that here comes the list of reslts for the vertices of the Input mesh */
+					      const char   	*queryOutcome,  
 					      const char     **resultErrorStr) { // in case of error
-    CHECK_SESSION_ID( sessionID );
+    
+	CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
-    CHECK_QUERY_POINTER( analysisID );
-    CHECK_QUERY_POINTER( stepOptions );
-    if ( !AreEqualNoCase(stepOptions, "all") ) {
+    CHECK_QUERY_POINTER( analysisName );
+	CHECK_QUERY_POINTER( staticMeshID );
+	CHECK_QUERY_POINTER( stepOptions );
+    CHECK_QUERY_POINTER( lstSteps );
+	CHECK_NON_ZERO_VALUE(numSteps);
+	/*
+	if ( !AreEqualNoCase(stepOptions, "ALL") ) {
       // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
       CHECK_NON_ZERO_VALUE( numSteps);
       CHECK_QUERY_POINTER( lstSteps);
     }
-
+*/
     /* D2C parameter pointers */
-    CHECK_QUERY_POINTER( staticMeshID );
+    //CHECK_QUERY_POINTER( staticMeshID );
     CHECK_QUERY_POINTER( CoarseGrainingMethod );
     CHECK_QUERY_POINTER( TemporalAVGOptions );
-    CHECK_QUERY_POINTER( HBaseToUse );
-
+  
     CHECK_QUERY_POINTER( queryOutcome );
     CHECK_QUERY_POINTER( resultErrorStr );
     
@@ -211,37 +215,35 @@ extern "C" {
     API_TRACE;
     try
       {
+	
 	std::stringstream  queryCommand;
 	const std::string *queryData = NULL;
 
 	// Build JSON command string
 	queryCommand << "{\n"
-		     << "  \"name\"         : \"" << "GetBoundingBox" << "\",\n"
-		     << "  \"modelID\"      : \"" << modelID          << "\",\n";
-	queryCommand << "  \"analysisID\" : \"" << analysisID       << "\",\n";
-	queryCommand << "  \"stepOptions\" : \"" << stepOptions     << "\",\n";
-	queryCommand << "  \"numSteps\" : \"" << numSteps     << "\",\n";
+		     << "  \"name\"         : \"" << "GetDiscrete2Continuum" << "\",\n"
+		     << "  \"modelID\"      : \"" <<  modelID          << "\",\n";
+	queryCommand << "  \"analysisName\" : \"" << analysisName       << "\",\n";
+	queryCommand << "  \"staticMeshID\" : \"" <<       staticMeshID << "\",\n";       
+	queryCommand << "  \"stepOptions\" : \"" <<        stepOptions << "\",\n";        
 	queryCommand << "  \"lstSteps\" : [";
 	// can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-	if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
+	//if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
 	  for ( int i = 0; i < numSteps; i++) {
-	    if ( i) queryCommand << ",";
-	    queryCommand << lstSteps[ i];
+	    if (i) queryCommand << ",";
+	    queryCommand << lstSteps[i];
 	  }
 	}
 	queryCommand << "],\n";
 	/* D2C parameters: */
-	queryCommand << "  \"staticMeshID\" : \"" <<       staticMeshID << "\",\n";       
-	queryCommand << "  \"stepOptions\" : \"" <<        stepOptions << "\",\n";        
-	queryCommand << "  \"lstSteps\" : \"" << 	   lstSteps << "\",\n";	       
-	queryCommand << "  \"numSteps\" : \"" << 	   numSteps << "\",\n";	       
+
 	queryCommand << "  \"CoarseGrainingMethod\" : \"" << 	   CoarseGrainingMethod << "\",\n";	       
 	queryCommand << "  \"width\" : \"" << 	           width << "\",\n";	       
 	queryCommand << "  \"cutoffFactor\" : \"" <<       cutoffFactor << "\",\n";       
 	queryCommand << "  \"processContacts\" : \"" <<    processContacts << "\",\n";    
 	queryCommand << "  \"doTemporalAVG\" : \"" <<      doTemporalAVG << "\",\n";      
 	queryCommand << "  \"TemporalAVGOptions\" : \"" << TemporalAVGOptions << "\",\n"; 
-	queryCommand << "  \"HBaseToUse\" : \"" <<         HBaseToUse << "\"\n";         
+	queryCommand << "  \"DeltaT\" : \"" << deltaT << "\",\n"; 
 	queryCommand << "}\n";
 
 	// Send command string and get back result data
