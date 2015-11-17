@@ -691,7 +691,7 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   
   // get parameters: // as in AnalyticsRAQ.cpp
   std::string modelID            = pt.get<std::string>( "modelID");
-  std::string analysisID         = pt.get<std::string>( "analysisName");
+  std::string analysisName         = pt.get<std::string>( "analysisName");
   std::string stepOptions        = pt.get<std::string>( "stepOptions");
   int numSteps                   = pt.get<int>( "numSteps");
   
