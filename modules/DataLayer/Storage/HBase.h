@@ -6,6 +6,7 @@
 
 //VELaSSCo
 #include "AbstractDB.h"
+#include "Helpers.h"
 
 namespace VELaSSCo
 {
@@ -84,6 +85,8 @@ namespace VELaSSCo
     // return true if velassco_model_table_name is known and could be inserted
     bool storeTableNames( const std::string &sessionID, const std::string &modelID, const std::string &velassco_model_table_name);
     std::vector< std::string> getModelListTables() const;
+
+    std::string createRowKey( const std::string modelID, const std::string &analysysID, const double stepValue);
   };
 
   typedef std::vector<std::string> StrVec;
@@ -94,6 +97,18 @@ namespace VELaSSCo
       tables = it->second;
     return ( it != _table_models.end());
   }
+
+  inline std::string HBase::createRowKey( const std::string modelID, const std::string &analysisID, const double stepValue) {
+    const size_t tmp_buf_size = 256;
+    char tmp_buf[ tmp_buf_size];
+    std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
+    size_t analysis_length = analysisID.length();
+    // needs to be swapped !!!!!!!!
+    std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
+    std::string step_hex( toHexStringSwap< double>( stepValue));
+    return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex) : ( modelID_hex + length_hex + step_hex));
+  }
+
 
 } // namespace VELaSSCo
 

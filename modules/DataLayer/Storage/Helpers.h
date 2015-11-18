@@ -120,12 +120,19 @@ namespace VELaSSCo
 	}
 
 	template<typename T>
-	inline std::string toHexString(T value, const char *format="%02x")
-	{
-		char buffer[2*sizeof(value)];
-		ToHexString(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
+	inline std::string toHexString(T value, const char *format="%02x") {
+	  char buffer[2*sizeof(value) + 1]; // the '\0' and avoid memory corruption
+	  ToHexString(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
+	  
+	  return std::string(buffer, 2*sizeof(value));
+	}
 
-		return std::string(buffer, sizeof(buffer));
+	template<typename T>
+	inline std::string toHexStringSwap(T value, const char *format="%02x") {
+	  char buffer[2*sizeof(value) + 1]; // the '\0' and avoid memory corruption
+	  ToHexStringSwap(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
+	  
+	  return std::string(buffer, 2*sizeof(value));
 	}
 
 
@@ -142,6 +149,20 @@ namespace VELaSSCo
     // if all chars converted, then return dst
     return ( isrc == src_len) ? dst : NULL;
   }
+  // returns NULL if dst_len is too short, otherwise return dst
+  inline const char *ToHexStringSwap( char *dst, size_t dst_len, const char *src, const size_t src_len, const char *format="%02x") {
+    if ( !dst) return NULL;
+    if ( dst_len <= 0) return NULL;
+    size_t isrc = 0;
+    for ( size_t idst = 0; 
+	  ( isrc < src_len) && ( idst < dst_len - 1); 
+	  isrc++, idst += 2) {
+      sprintf( &dst[ idst], format, ( unsigned char)src[ src_len - isrc - 1]);
+    }
+    // if all chars converted, then return dst
+    return ( isrc == src_len) ? dst : NULL;
+  }
+
   // returns NULL if dst_len is too short or error in conversion, otherwise return dst
   inline const char *FromHexString( char *dst, size_t dst_len, const char *src, const size_t src_len) {
     if ( !dst) return NULL;
@@ -165,7 +186,7 @@ namespace VELaSSCo
     return ( ( isrc == src_len) && !error) ? dst : NULL;
   }
 
-  inline std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
+  inline std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, const size_t size_tmp_buf) {
     if ( modelID.length() == 16) {
       return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
     } else {
