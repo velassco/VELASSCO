@@ -24,6 +24,7 @@
 #include "Curl_cmd.h"
 #include "Helpers.h"
 #include "Extras.h"
+#include "Crono.h"
 
 using namespace std;
 using namespace VELaSSCo;
@@ -311,7 +312,9 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
   // filter.str("");
   // ts.__set_filterString(filter.str());
   StrVec cols;
-  cols.push_back( "R"); // Mesh column family with
+  // cols.push_back( "R"); // Mesh column family with, 
+  // theoretially all Metadata should start with "R:r000001nm", i.e. at least 1 result defined!
+  cols.push_back( "R:r000001nm"); // this halves the time wrt "R", which is 4x faster than no cols.
   // we only need the analyses names which are in the rowKeys
   // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
   // has to build the rowkey.... 
@@ -326,6 +329,7 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
   bool scan_ok = true;
   int num_rows = 0;
   try {
+    // Crono clk( CRONO_WALL_TIME);
     // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
     while ( true) {
       _hbase_client->scannerGet( rowsResult, scan_id);
@@ -349,7 +353,7 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
       }
     } // while ( true)
 
-    // std::cout << "Number of scanned rows = " << num_rows << std::endl;
+    // std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
     if ( analysisNames.size() != 0) {
       listOfAnalyses = std::vector< std::string>( analysisNames.begin(), analysisNames.end());
     } else {
