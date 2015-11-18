@@ -114,6 +114,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID);
 
   void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetMeshDrawData( Query_Result& _return, const SessionID sessionID, const std::string& query );
   void ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query);

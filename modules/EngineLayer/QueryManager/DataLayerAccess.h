@@ -34,6 +34,9 @@ public:
 				  std::string sessionID, std::string modelID, std::string analysisID, 
 				  double timeStep, std::string resultID,  std::string listOfVertices) ;
   // session queries
+    void getMeshDrawData( std::string& _return, 
+                  std::string sessionID, std::string modelID, std::string analysisID, 
+                  double timeStep, std::string resultID ) ;
     void getListOfModels( rvGetListOfModels &_return,
 			  const std::string &sessionID, 
 			  const std::string &group_qualifier, const std::string &name_pattern);

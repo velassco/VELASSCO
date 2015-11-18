@@ -101,6 +101,19 @@ void DataLayerAccess::getResultFromVerticesID(std::string& _return,  std::string
 
 }
 
+void DataLayerAccess::getMeshDrawData( std::string& _return, std::string sessionID, std::string modelID, std::string analysisID, double timeStep, std::string resultID )
+{
+    try
+    {
+        //cli->GetMeshDrawData(_return, sessionID, modelID, analysisID, timeStep, resultID );
+        cout << "########## getStatus - " << _return << endl;
+    }
+    catch(TException& tx)
+    {
+        cout << "ERROR: " << tx.what() << endl;
+    }
+}
+
 void DataLayerAccess::getListOfMeshes( rvGetListOfMeshes &_return,
 				       const std::string &sessionID,
 				       const std::string &modelID,
