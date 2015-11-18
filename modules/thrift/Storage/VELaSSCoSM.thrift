@@ -10,18 +10,21 @@
 namespace cpp VELaSSCoSM
 namespace java VELaSSCoSM
 
+// the names will also be used as String identifiers
+// take care of that in DataLayer/Storage/HBase_result_queries.cpp
 enum ElementShapeType {
-   PointElement = 1,
-   LineElement = 2,
-   TriangleElement = 3,
-   QuadrilateralElement = 4,
-   TetrahedraElement = 5,
-   HexahedraElement = 6,
-   PrismElement = 7,
-   PyramidElement = 8,
-   SphereElement = 9,
-   CircleElement = 10,
-   ComplexParticleElement = 11
+  UnknownElement = 0,
+  PointElement = 1,
+  LineElement = 2,
+  TriangleElement = 3,
+  QuadrilateralElement = 4,
+  TetrahedraElement = 5,
+  HexahedraElement = 6,
+  PrismElement = 7,
+  PyramidElement = 8,
+  SphereElement = 9,
+  CircleElement = 10,
+  ComplexParticleElement = 11
 }
 
 struct ElementType {
@@ -56,6 +59,7 @@ struct MeshInfo {
    4: i64                                 nElements
    5: string                              meshUnits
    6: string                              meshColor
+   7: i32                                 meshNumber // as of M:mXXXXXXnm
 }
 
 struct Mesh {
