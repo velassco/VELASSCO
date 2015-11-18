@@ -90,6 +90,36 @@ extern "C" {
     CATCH_ERROR;
   } // valGetResultFromVerticesID
   
+  VAL_Result VAL_API valGetBoundingBox( /* in */
+				       VAL_SessionID   sessionID,
+				       const char     *modelID,
+				       const int64_t  *lstVertexIDs,
+				       const int64_t   numVertexIDs,
+				       const char     *analysisID,
+				       const char     *stepOptions,
+				       const double   *lstSteps,
+				       const int       numSteps,
+				       /* out */
+				       const double   **resultBBox, // ix doubles: min(x,y,z)-max(x,y,z)
+				       const char     **resultErrorStr) { // in case of error
+    
+    CHECK_SESSION_ID( sessionID );
+    CHECK_QUERY_POINTER( modelID );
+    if ( numVertexIDs) {
+      CHECK_QUERY_POINTER( lstVertexIDs );
+    }
+    CHECK_QUERY_POINTER( analysisID );
+    CHECK_QUERY_POINTER( stepOptions );
+    if ( !AreEqualNoCase(stepOptions, "all") ) {
+      // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
+      CHECK_NON_ZERO_VALUE( numSteps);
+      CHECK_QUERY_POINTER( lstSteps);
+    }
+    CHECK_QUERY_POINTER( resultBBox );
+    CHECK_QUERY_POINTER( resultErrorStr );
+    
+    *resultBBox = NULL;
+    *resultErrorStr = NULL;
 
     API_TRACE;
     try
