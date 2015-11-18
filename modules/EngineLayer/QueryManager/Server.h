@@ -170,4 +170,28 @@ inline std::string QueryManagerServer::GetDataTableName( const SessionID &sessio
   return data;
 }
 
+template <typename T>
+std::vector<T> as_vector(boost::property_tree::ptree const& pt, boost::property_tree::ptree::key_type const& key)
+{
+    std::vector<T> result;
+    
+    BOOST_FOREACH(boost::property_tree::ptree::value_type it, pt.get_child(key)) {
+        result.push_back(it.second.get_value<T>());
+    }
+    
+    return result;
+}
+
+template <typename T>
+std::string as_string(boost::property_tree::ptree const& pt, boost::property_tree::ptree::key_type const& key)
+{
+    std::stringstream ss;
+
+    BOOST_FOREACH(boost::property_tree::ptree::value_type it, pt.get_child(key)) {
+		ss << (ss.str().size()?",":"") << it.second.get_value<T>();
+    }
+    
+    return std::string("[") + ss.str() + "]";
+}
+
 extern int StartServer( const int server_port);

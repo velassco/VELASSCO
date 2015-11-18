@@ -29,7 +29,13 @@ THRIFT_QUERY_OBJS_TMP = ${THRIFT_QUERY_FILES:.cpp=.o}
 THRIFT_QUERY_OBJS = ${THRIFT_QUERY_OBJS_TMP:%=$(OBJS_DIR)/%}
 THRIFT_QUERY_DEPENDENCIES = $(wildcard $(THRIFT_QUERY_MANAGER_DIR)/*.h)
 
-ENGINE_CPP_FILES = Server.cpp DataLayerAccess.cpp Analytics.cpp Graphics.cpp Helpers.cpp main.cpp
+ENGINE_CPP_FILES = DataLayerAccess.cpp Analytics.cpp Graphics.cpp Helpers.cpp main.cpp \
+	Server.cpp                         \
+	Server_direct_result_queries.cpp   \
+	Server_monitoring_queries.cpp      \
+	Server_result_analysis_queries.cpp \
+	Server_session_queries.cpp
+
 ENGINE_C_FILES = cJSON.c
 ENGINE_OBJS_TMP = ${ENGINE_CPP_FILES:.cpp=.o} ${ENGINE_C_FILES:.c=.o}
 ENGINE_OBJS = ${ENGINE_OBJS_TMP:%=$(OBJS_DIR)/%}
@@ -69,6 +75,7 @@ $(OBJS_DIR)/%.o : $(THRIFT_QUERY_MANAGER_DIR)/%.cpp $(THRIFT_QUERY_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_QUERY_MANAGER_DIR) $< -o $@
 
 clean:
+	rm -f $(BIN)/*.o $(BIN)/$(EXEC)
 	rm -rf $(BIN)
 
 .PHONY: clean
