@@ -137,12 +137,12 @@ int main(int argc, char* argv[])
   // const char *unique_name = "Test_VELaSSCo_Models:*:*"; // or using only the table's name and get the first one
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c:*";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/FluidizedBed_small.p3c:FluidizedBed_small.p3c";
-  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part-";
+  //const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part-";
   // const char *unique_name = "T_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/D2C/Data/Fluidized_Bed_Small:FluidizedBed";
 
-  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizeBed_large"; 
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/:FluidizedBed_small";
   // const char *unique_name = "Test_VELaSSCo_Models:localfs/home/velassco/common/simulation_files/:DEM_box";
+  const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large_1timestep";
   const char *access = "";
   const char *return_modelID = NULL;
   result = valOpenModel( sessionID, unique_name, access, &status, &return_modelID);
@@ -210,8 +210,12 @@ int main(int argc, char* argv[])
     const char *return_list = NULL;
     const char *return_error_str = NULL;
     std::cout << "doing valGetListOfMeshes" << std::endl;
+    const char *analysisID = ""; // for static meshes
+    double stepValue = 0.0; // for static meshes
+    // const char *analysisID = "DEM"; // for dynamic meshes
+    // double stepValue = 0.0; // for dynamic meshes
     result = valGetListOfMeshes( sessionID, opened_modelID.c_str(),
-				 "", -1, // static mesh
+				 analysisID, stepValue,
 				 &return_error_str, &return_list);
     CheckVALResult(result, getStringFromCharPointers( "valGetListOfMeshes ", return_error_str));
     ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
