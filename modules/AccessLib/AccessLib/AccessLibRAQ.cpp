@@ -175,7 +175,7 @@ extern "C" {
 					      const char     *staticMeshID,
 					      const char     *stepOptions,  // ALL, SINGLE, INTERVAL
 					      const double   *lstSteps, //ALL (Ignored), SINGLE (1 double), INTERVAL (2 doubles)
-						  const int       numSteps, // the size of lstSteps SINGLE(1)
+					      // const int       numSteps, // the size of lstSteps SINGLE(1)
 					      const char     *CoarseGrainingMethod,
 					      const double   width,
 					      const double   cutoffFactor,
@@ -184,7 +184,7 @@ extern "C" {
 					      const char     *TemporalAVGOptions, //ALL, TEMPORALWINDOW
 						  const double   deltaT,
 					      /* out */
-					      const char   	*queryOutcome,  
+					      const char   	**queryOutcome,  
 					      const char     **resultErrorStr) { // in case of error
     
 	CHECK_SESSION_ID( sessionID );
@@ -192,15 +192,21 @@ extern "C" {
     CHECK_QUERY_POINTER( analysisName );
 	CHECK_QUERY_POINTER( staticMeshID );
 	CHECK_QUERY_POINTER( stepOptions );
-    CHECK_QUERY_POINTER( lstSteps );
-	CHECK_NON_ZERO_VALUE(numSteps);
-	/*
+	// CHECK_QUERY_POINTER( lstSteps );
+    // CHECK_NON_ZERO_VALUE(numSteps);
+	
 	if ( !AreEqualNoCase(stepOptions, "ALL") ) {
       // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
-      CHECK_NON_ZERO_VALUE( numSteps);
+      // CHECK_NON_ZERO_VALUE( numSteps);
       CHECK_QUERY_POINTER( lstSteps);
     }
-*/
+	int numSteps = 0;
+	if ( AreEqualNoCase( stepOptions, "SINGLE")) {
+	  numSteps = 1;
+	} else if ( AreEqualNoCase( stepOptions, "INTERVAL")) {
+	  numSteps = 2;
+	}
+
     /* D2C parameter pointers */
     //CHECK_QUERY_POINTER( staticMeshID );
     CHECK_QUERY_POINTER( CoarseGrainingMethod );
@@ -229,7 +235,7 @@ extern "C" {
 	queryCommand << "  \"numSteps\" : \"" << numSteps     << "\",\n";    
 	queryCommand << "  \"lstSteps\" : [";
 	// can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-	//if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
+	if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
 	  for ( int i = 0; i < numSteps; i++) {
 	    if (i) queryCommand << ",";
 	    queryCommand << lstSteps[i];
@@ -253,7 +259,7 @@ extern "C" {
 	// Give back pointers to actual binary data
 	if (result == VAL_SUCCESS) {
 	  // *queryOutcome = queryData->data();
-	  queryOutcome = queryData->c_str();
+	  *queryOutcome = queryData->c_str();
 	} else {
 	  *resultErrorStr = queryData->c_str();
 	}

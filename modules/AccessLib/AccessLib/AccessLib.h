@@ -171,7 +171,7 @@ extern "C" {
 					      const char     *staticMeshID,
 					      const char     *stepOptions,  // ALL, SINGLE, INTERVAL
 					      const double   *lstSteps, //ALL (Ignored), SINGLE (1 double), INTERVAL (2 doubles)
-					    //const int       numSteps, // the size of lstSteps SINGLE(1)
+					      // const int       numSteps, // the size of lstSteps SINGLE(1)
 					      const char     *CoarseGrainingMethod,
 					      const double   width,
 					      const double   cutoffFactor,
@@ -180,7 +180,7 @@ extern "C" {
 					      const char     *TemporalAVGOptions, //ALL, TEMPORALWINDOW
 						  const double   deltaT,
 					      /* out */
-					      const char   	*queryOutcome,  
+					      const char   	**queryOutcome,  
 					      const char     **resultErrorStr); // in case of error
 
   /**
