@@ -142,7 +142,8 @@ int main(int argc, char* argv[])
 
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/:FluidizedBed_small";
   // const char *unique_name = "Test_VELaSSCo_Models:localfs/home/velassco/common/simulation_files/:DEM_box";
-  const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large_1timestep";
+  // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large_1timestep";
+  const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   const char *access = "";
   const char *return_modelID = NULL;
   result = valOpenModel( sessionID, unique_name, access, &status, &return_modelID);
@@ -205,7 +206,7 @@ int main(int argc, char* argv[])
   //
   // Test GetListOfMeshes
   //
-  bool do_get_list_of_meshes = true;
+  bool do_get_list_of_meshes = false;
   if ( do_get_list_of_meshes) {
     const char *return_list = NULL;
     const char *return_error_str = NULL;
@@ -220,6 +221,27 @@ int main(int argc, char* argv[])
     CheckVALResult(result, getStringFromCharPointers( "valGetListOfMeshes ", return_error_str));
     ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
     std::cout << "GetListOfMeshes: " << opened_modelID << 
+      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+    if ( return_list) {
+      std::cout << "   analyses_list = " << return_list << std::endl;
+    } else {
+      std::cout << "Error: " << return_error_str << std::endl;
+    }
+  }
+
+  //
+  // Test GetListOfAnalyses
+  //
+  bool do_get_list_of_analyses = true;
+  if ( do_get_list_of_analyses) {
+    const char *return_list = NULL;
+    const char *return_error_str = NULL;
+    std::cout << "doing valGetListOfAnalyses" << std::endl;
+    result = valGetListOfAnalyses( sessionID, opened_modelID.c_str(),
+				   &return_error_str, &return_list);
+    CheckVALResult(result, getStringFromCharPointers( "valGetListOfAnalyses ", return_error_str));
+    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+    std::cout << "GetListOfAnalyses: " << opened_modelID << 
       ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
     if ( return_list) {
       std::cout << "   mesh_list = " << return_list << std::endl;

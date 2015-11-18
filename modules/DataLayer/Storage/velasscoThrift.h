@@ -54,6 +54,9 @@ public:
 			const std::string &sessionID, const std::string &modelID, 
 			const std::string &analysisID, const double stepValue);
 
+  void GetListOfAnalyses( rvGetListOfAnalyses &_return, 
+			  const std::string &sessionID, const std::string &modelID);
+
 
   /**
    * Stop Data Layer
@@ -68,7 +71,6 @@ public:
   void GetThumbnailOfAModel(rvGetThumbnailOfAModel&, const std::string&, const std::string&) {};
   void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace&, const std::string&, const std::string&, const std::vector<Point, std::allocator<Point> >&) {};
   void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh&, const std::string&, const std::string&, const std::string&, const std::string&, double) {};
-  void GetListOfAnalyses(rvGetListOfAnalyses&, const std::string&, const std::string&) {};
   void GetListOfTimeSteps(rvGetListOfTimeSteps&, const std::string&, const std::string&, const std::string&) {};
 
 };

@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include <unordered_set>
+
 // Curl
 #include <curl/curl.h>
 
@@ -32,6 +34,7 @@ using namespace VELaSSCo;
 #include <curl/curl.h>
 #include "cJSON.h"
 
+/* getListOfMeshes */
 // remember also to actualize the QueryManager/Server_direct_result_queries.cpp
 static ElementShapeType::type getElementTypeFromStr( const std::string &str) {
   const char *str_elem = str.c_str();
@@ -146,12 +149,11 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
   }
   return num_meshes;
 }
-// b8a687f0c9dcdc1f12317e52ca9afc2900000003DEM0000000000000000--------
-// b8a687f0c9dcdc1f12317e52ca9afc2900000003DEM000000000000000000000000
+
 bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 					 const std::string &metadata_table, const std::string &modelID,
 					 const std::string &analysisID, const double stepValue) {
-  // do the can on the metadata table ...
+  // do the scan on the metadata table ...
 
   vector< TRowResult> rowsResult;
   std::map<std::string,std::string> m;
@@ -266,6 +268,142 @@ std::string HBase::getListOfMeshes( std::string &report, std::vector< MeshInfo> 
     std::cout << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfMeshes THRIFT could not scan.";
+  }
+
+  return result;
+}
+/* end of getListOfMeshes */
+
+/* getListOfAnalyses */
+static bool getAnalysisNameFromMetadataRowKey( std::unordered_set< std::string> &analysisNames, const std::string &rowkey) {
+  // only need to get AnalysisName from RowKey
+  bool ok = true;
+  // rowKeys in Metadata tables have
+  // 32 chars = modelID in hexadecimal string
+  // 8 chars = N = length of analysisName in hexadecimal string
+  // N chars = AnalysisName
+  // 16 chars = step value (double) in hexadecimal string
+  if ( rowkey.length() < 56)
+    return false; // at least 56 bytes for static meshes !!!
+  int analysis_length = 0;
+  size_t offset = 32; // length modelID in hexadecimal
+  const std::string &hexa_length = rowkey.substr( offset, 2 * sizeof( int));
+  FromHexStringSwap( ( char *)&analysis_length, sizeof( int), hexa_length.c_str(), 2 * sizeof( int));
+  if ( ( analysis_length > 0) && ( analysis_length < 1024 * 1024)) { // some sanity check ...
+    offset += 2 * sizeof( int);
+    // analysisNames.insert( rowkey.substr( offset, end));
+    std::string name( rowkey.substr( offset, analysis_length));
+    analysisNames.insert( name);
+    ok = true;
+  } else {
+    ok = false;
+  }
+  return ok;
+}
+
+bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< std::string> &listOfAnalyses,
+					      const std::string &metadata_table, const std::string &modelID) {
+  // do the scan on the metadata table ...
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  // TScan ts;
+  // std::stringstream filter;
+  // filter.str("");
+  // ts.__set_filterString(filter.str());
+  StrVec cols;
+  cols.push_back( "R"); // Mesh column family with
+  // we only need the analyses names which are in the rowKeys
+  // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
+  // has to build the rowkey.... 
+  // Metadata rowkeys = modelId + AnalysisID + StepNumber
+  const size_t tmp_buf_size = 256;
+  char tmp_buf[ tmp_buf_size];
+  std::string rowKeyPrefix( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
+  const size_t len_prefix = rowKeyPrefix.length();
+  ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKeyPrefix, cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+  std::unordered_set< std::string> analysisNames;
+  bool scan_ok = true;
+  int num_rows = 0;
+  try {
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+  	break;
+      // process rowsResult
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
+  	// get only rows with the same rowKeyPrefix ( modelID)
+	// if ( strncasecmp( rowsResult[ i].row.c_str(), rowKeyPrefix.c_str(), rowKeyPrefix.length())) {
+	if ( rowsResult[ i].row.compare( 0, len_prefix, rowKeyPrefix) != 0) {
+	  // we'll start with the correct ones, 
+	  // once they are different, then there are no more...
+	  break;
+	}
+  	bool ok = getAnalysisNameFromMetadataRowKey( analysisNames, rowsResult[ i].row);
+	if ( !ok) {
+	  // something wrong with the rowkey ...
+	  break;
+	}
+	num_rows++;
+      }
+    } // while ( true)
+
+    // std::cout << "Number of scanned rows = " << num_rows << std::endl;
+    if ( analysisNames.size() != 0) {
+      listOfAnalyses = std::vector< std::string>( analysisNames.begin(), analysisNames.end());
+    } else {
+      // nothing found
+      // scan_ok = false; // scan was ok but nothing found ...
+      report = "No Analyses could be found.";
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    report = tmp.str();
+  }
+  _hbase_client->scannerClose( scan_id);
+  
+  return scan_ok;
+}
+
+std::string HBase::getListOfAnalyses( std::string &report, std::vector< std::string> &listOfAnalyses,
+				      const std::string &sessionID, const std::string &modelID) {
+
+  std::cout << "getListOfAnalyses THRIFT: =====" << std::endl;
+  std::cout << "S  - " << sessionID              << std::endl;
+  std::cout << "M  - " << modelID                << std::endl;
+
+  string table_name;
+  bool scan_ok = true;
+
+  // look into the modelInfo table to get the correct table name
+  TableModelEntry table_set;
+  bool found = getTableNames( sessionID, modelID, table_set);
+  if ( found) {
+    scan_ok = getListOfAnalysesNamesFromTables( report, listOfAnalyses, table_set._metadata, modelID);
+  } else {
+    scan_ok = false;
+  }
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    bool there_are_analyses = listOfAnalyses.size();
+    if ( there_are_analyses) {
+      result = "Ok";
+    } else {
+      result = "Error";
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::getListOfAnalyses THRIFT could not scan.";
   }
 
   return result;

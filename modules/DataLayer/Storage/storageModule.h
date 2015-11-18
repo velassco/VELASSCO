@@ -52,11 +52,11 @@ public:
   bool startConnection( DL_SM_DB_TYPE db_type, const char *DB_hostname, const int DB_port);
   bool stopConnection();
 
-  string getStatusDB();
-  string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+  std::string getStatusDB();
+  std::string getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 			      const std::string &sessionID, const std::string &model_group_qualifier, 
 			      const std::string &model_name_pattern);
-  string findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
+  std::string findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
 		    const std::string &sessionID, const std::string &unique_model_name_pattern, 
 		    const std::string &requested_access);
   string getResultOnVertices( std::string sessionID,
@@ -65,11 +65,13 @@ public:
 			      double timeStep,
 			      std::string resultID,
 			      std::string listOfVertices);
-  string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
+  std::string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 			  const std::string &sessionID, const std::string &modelID,
 			  const std::string &analysisID, const double stepValue);
+  std::string getListOfAnalyses( std::string &report, std::vector< std::string> &listOfAnalyses,
+				 const std::string &sessionID, const std::string &modelID);
     
-  string checkIfAllVerticesArePresent(std::string listOfVertices, string contentToCheck);
+  std::string checkIfAllVerticesArePresent(std::string listOfVertices, string contentToCheck);
 
 private:
   storageModule(): _db( NULL) {};

@@ -46,6 +46,9 @@ public:
 			  const std::string &modelID,
 			  const std::string &analysisID,
 			  const double stepValue);
+    void getListOfAnalyses( rvGetListOfAnalyses &_return,
+			    const std::string &sessionID,
+			    const std::string &modelID);
     void getListOfTimeSteps( std::string& _return,
 			     const std::string &sessionID,
 			     const std::string &modelID,

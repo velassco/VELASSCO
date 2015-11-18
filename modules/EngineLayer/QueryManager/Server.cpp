@@ -98,6 +98,67 @@ void QMS_FullyQualifiedModelName::GetTableNames( std::string &model_table, std::
   }
 }
 
+/*
+ * function offered by the QueryManager 
+ */
+void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID, const std::string& query)
+{
+  LOGGER                          << std::endl;
+  LOGGER << "----- Query() -----" << std::endl;
+
+  LOGGER                                    << std::endl;
+  LOGGER << "Input:"                        << std::endl;
+  LOGGER << "  sessionID : "   << sessionID << std::endl;
+  LOGGER << "  query     : \n" << query     << std::endl;
+
+  // Check session ID
+  if (!ValidSessionID(sessionID))
+    {
+      _return.__set_result( (Result::type)VAL_INVALID_SESSION_ID );
+
+      LOGGER                                    << std::endl;
+      LOGGER << "Output:"                       << std::endl;
+      LOGGER << "  result : " << _return.result << std::endl;
+
+      return;
+    }
+
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  std::string name       = pt.get<std::string>("name");
+
+  /* The first query */
+  if ( name == "GetResultFromVerticesID") {
+    ManageGetResultFromVerticesID( _return, sessionID, query);
+    /* Session Queries */
+  } else if ( name == "GetListOfModels") {
+    ManageGetListOfModels( _return, sessionID, query);
+  } else if ( name == "OpenModel") {
+    ManageOpenModel( _return, sessionID, query);
+  } else if ( name == "CloseModel") {
+    ManageCloseModel( _return, sessionID, query);
+    /* Direct Result Queries */
+  } else if ( name == "GetListOfMeshes") {
+    ManageGetListOfMeshes( _return, sessionID, query);
+    /* Result Analysis Queries */
+  } else if ( name == "GetListOfAnalyses") {
+    ManageGetListOfAnalyses( _return, sessionID, query);
+    /* Result Analysis Queries */
+  } else if ( name == "GetBoundingBox") {
+    ManageGetBoundingBox( _return, sessionID, query);
+  } else {
+    _return.__set_result( (Result::type)VAL_INVALID_QUERY );
+    
+    LOGGER                                    << std::endl;
+    LOGGER << "Output:"                       << std::endl;
+    LOGGER << "  result : " << _return.result << std::endl;
+    
+    return;
+  }
+}
+
 int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;
 

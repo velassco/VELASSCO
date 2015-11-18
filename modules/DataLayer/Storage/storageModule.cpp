@@ -42,11 +42,11 @@ bool storageModule::stopConnection() {
   return ok;
 }
 
-string storageModule::getStatusDB() {
+std::string storageModule::getStatusDB() {
   return _db->getStatusDB();
 }
 
-string storageModule::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
+std::string storageModule::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					   const std::string &sessionID, const std::string &model_group_qualifier, 
 					   const std::string &model_name_pattern) { 
   // VELaSSCo::HBase hbasedb;   // HBase
@@ -56,24 +56,28 @@ string storageModule::getListOfModelNames( std::string &report, std::vector< Ful
 				 sessionID, model_group_qualifier, model_name_pattern);
 }
 
-string storageModule::findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
+std::string storageModule::findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
 				 const std::string &sessionID, 
 				 const std::string &unique_model_name_pattern, const std::string &requested_access) {
   return _db->findModel( report, modelID, model_info, sessionID, unique_model_name_pattern, requested_access);
 }
 
-string storageModule::getResultOnVertices( std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
+std::string storageModule::getResultOnVertices( std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
 { 	
   return _db->getResultOnVertices(sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
 }
 
-string storageModule::getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
+std::string storageModule::getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 				       const std::string &sessionID, const std::string &modelID,
 				       const std::string &analysisID, const double stepValue) {
   return _db->getListOfMeshes( report, listOfMeshes, sessionID, modelID, analysisID, stepValue);
 }
+std::string storageModule::getListOfAnalyses( std::string &report, std::vector< std::string> &listOfAnalyses,
+					      const std::string &sessionID, const std::string &modelID) {
+  return _db->getListOfAnalyses( report, listOfAnalyses, sessionID, modelID);
+}
 
-string storageModule::checkIfAllVerticesArePresent(string listOfVertices, string out)
+std::string storageModule::checkIfAllVerticesArePresent(string listOfVertices, string out)
 {
     
     ///* To debug

@@ -93,6 +93,18 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
   }
 
   /**
+   * as of OP-22.112
+   * Retrieves the list of time steps for a given model and analysis.
+   * 
+   * @param sessionID
+   * @param modelID
+   */
+  void GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID) {
+    // Your implementation goes here
+    printf("GetListOfAnalyses\n");
+  }
+
+  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name
@@ -176,17 +188,6 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
   void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step) {
     // Your implementation goes here
     printf("GetBoundaryOfLocalMesh\n");
-  }
-
-  /**
-   * Retrieves the list of time steps for a given model and analysis.
-   * 
-   * @param sessionID
-   * @param modelID
-   */
-  void GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID) {
-    // Your implementation goes here
-    printf("GetListOfAnalyses\n");
   }
 
   /**

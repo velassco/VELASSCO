@@ -170,6 +170,8 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageCloseModel( _return, sessionID, query);
   } else if ( name == "GetListOfMeshes") {
     ManageGetListOfMeshes( _return, sessionID, query);
+  } else if ( name == "GetListOfAnalyses") {
+    ManageGetListOfAnalyses( _return, sessionID, query);
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
   } else {
@@ -347,6 +349,22 @@ void QM_DemoServer::ManageGetListOfMeshes( Query_Result &_return, const SessionI
   oss << "NumberOfElements: " << "2468000" << std::endl;
   oss << "Units: " << "m" << std::endl;
   oss << "Color: " << "#2277ee" << std::endl;
+  _return.__set_data( oss.str());
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+}
+
+void QM_DemoServer::ManageGetListOfAnalyses( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  /* will be: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
+  std::ostringstream oss;
+  oss << "DEM" << std::endl;
+  oss << "Geometry" << std::endl;
+  oss << "Time analysis" << std::endl;
   _return.__set_data( oss.str());
   _return.__set_result( (Result::type)VAL_SUCCESS );
 		  

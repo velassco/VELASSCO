@@ -63,6 +63,16 @@ void VELaSSCoHandler::GetListOfMeshes( rvGetListOfMeshes &_return,
   _return.__set_meshInfos( listOfMeshes);
 }
 
+void VELaSSCoHandler::GetListOfAnalyses( rvGetListOfAnalyses &_return, 
+					 const std::string &sessionID, const std::string &modelID) {
+  std::string report;
+  std::vector< std::string>listOfAnalyses;
+  std::string status = storageModule::Instance()->getListOfAnalyses( report, listOfAnalyses, sessionID, modelID);
+  _return.__set_status( status);
+  _return.__set_report( report);
+  _return.__set_analyses( listOfAnalyses);
+}
+
 void VELaSSCoHandler::stopAll() {
   storageModule *sm = storageModule::Instance();
   sm->stopConnection();

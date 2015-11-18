@@ -129,6 +129,14 @@ extern "C" {
 					/* will be: "NumberOfMeshes: 1234\nName: mesh_1\nElementType: Tetrahedra\n...\nName: model_2..." */
 					/* the information returned is ElementType, NumberOfVerticesPerElement, NumberOfVertices, NumberOfElements, Units, Color, ... */
 					  );
+  VAL_Result VAL_API valGetListOfAnalyses(  /* in */
+					  VAL_SessionID   sessionID,
+					  const char     *modelID,
+					  /* out */
+					  const char    **status,
+					  const char    **list_of_analyses
+					  /* will be: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
+					    );
   
   /*
    * 2xx RAQ - Result Analysis Queries

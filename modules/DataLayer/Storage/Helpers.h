@@ -185,6 +185,27 @@ namespace VELaSSCo
     // if all chars converted and no error in conversion then return dst
     return ( ( isrc == src_len) && !error) ? dst : NULL;
   }
+  inline const char *FromHexStringSwap( char *dst, size_t dst_len, const char *src, const size_t src_len) {
+    if ( !dst) return NULL;
+    bool error = false;
+    size_t isrc = 0;
+    for ( size_t idst = 0; 
+	  ( isrc < src_len) && ( idst < dst_len); 
+	  isrc += 2, idst++) {
+      int hi4 = tolower( src[ isrc]);
+      int lo4 = tolower( src[ isrc + 1]);
+      if ( isxdigit( hi4) && isxdigit( lo4)) {
+	hi4 -= isdigit( hi4) ? '0' : ( 'a' - 10);
+	lo4 -= isdigit( lo4) ? '0' : ( 'a' - 10);
+	dst[ dst_len - idst - 1] = ( char)( unsigned char)( ( ( hi4 << 4) + lo4) & 0xff);
+      } else {
+	error = true;
+	break;
+      }
+    }
+    // if all chars converted and no error in conversion then return dst
+    return ( ( isrc == src_len) && !error) ? dst : NULL;
+  }
 
   inline std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, const size_t size_tmp_buf) {
     if ( modelID.length() == 16) {

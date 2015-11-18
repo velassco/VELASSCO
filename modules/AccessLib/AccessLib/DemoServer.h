@@ -55,6 +55,7 @@ class QM_DemoServer : virtual public QueryManagerIf {
   void ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfMeshes( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetListOfAnalyses( Query_Result &_return, const SessionID sessionID, const std::string& query);
 };
 
 extern int StartServer( const int server_port);

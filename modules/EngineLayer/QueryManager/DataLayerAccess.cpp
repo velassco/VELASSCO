@@ -113,6 +113,16 @@ void DataLayerAccess::getListOfMeshes( rvGetListOfMeshes &_return,
   }
 }
 
+void DataLayerAccess::getListOfAnalyses( rvGetListOfAnalyses &_return,
+					 const std::string &sessionID,
+					 const std::string &modelID) {
+  try {
+    cli->GetListOfAnalyses( _return, sessionID, modelID);
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
+
 void DataLayerAccess::getListOfTimeSteps( std::string& _return,
 					  const std::string &sessionID,
 					  const std::string &modelID,

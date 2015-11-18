@@ -55,6 +55,8 @@ using namespace  ::VELaSSCo;
 //
 // ***************************************************************************
 
+/* 0xx Session queries */
+
 void QueryManagerServer::UserLogin(UserLogin_Result& _return, const std::string& url, const std::string& name, const std::string& password)
 {
   LOGGER                              << std::endl;
@@ -134,63 +136,6 @@ void QueryManagerServer::UserLogout(UserLogout_Result& _return, const SessionID 
   LOGGER << "Output:"                       << std::endl;
   LOGGER << "  result : " << _return.result << std::endl;
 }
-
-void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID, const std::string& query)
-{
-  LOGGER                          << std::endl;
-  LOGGER << "----- Query() -----" << std::endl;
-
-  LOGGER                                    << std::endl;
-  LOGGER << "Input:"                        << std::endl;
-  LOGGER << "  sessionID : "   << sessionID << std::endl;
-  LOGGER << "  query     : \n" << query     << std::endl;
-
-  // Check session ID
-  if (!ValidSessionID(sessionID))
-    {
-      _return.__set_result( (Result::type)VAL_INVALID_SESSION_ID );
-
-      LOGGER                                    << std::endl;
-      LOGGER << "Output:"                       << std::endl;
-      LOGGER << "  result : " << _return.result << std::endl;
-
-      return;
-    }
-
-  // Parse query JSON
-  std::istringstream ss(query);
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_json(ss, pt);
-  std::string name       = pt.get<std::string>("name");
-
-  /* The first query */
-  if ( name == "GetResultFromVerticesID") {
-    ManageGetResultFromVerticesID( _return, sessionID, query);
-    /* Session Queries */
-  } else if ( name == "GetListOfModels") {
-    ManageGetListOfModels( _return, sessionID, query);
-  } else if ( name == "OpenModel") {
-    ManageOpenModel( _return, sessionID, query);
-  } else if ( name == "CloseModel") {
-    ManageCloseModel( _return, sessionID, query);
-    /* Direct Result Queries */
-  } else if ( name == "GetListOfMeshes") {
-    ManageGetListOfMeshes( _return, sessionID, query);
-    /* Result Analysis Queries */
-  } else if ( name == "GetBoundingBox") {
-    ManageGetBoundingBox( _return, sessionID, query);
-  } else {
-    _return.__set_result( (Result::type)VAL_INVALID_QUERY );
-    
-    LOGGER                                    << std::endl;
-    LOGGER << "Output:"                       << std::endl;
-    LOGGER << "  result : " << _return.result << std::endl;
-    
-    return;
-  }
-}
-
-/* 0xx Session queries */
 
 void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON

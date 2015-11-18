@@ -44,6 +44,10 @@ namespace VELaSSCo
     std::string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 				 const std::string &sessionID, const std::string &modelID,
 				 const std::string &analysisID, const double stepValue);
+    bool getListOfAnalysesNamesFromTables( std::string &report, std::vector< std::string> &listOfAnalyses,
+					     const std::string &metadata_table, const std::string &modelID);
+    std::string getListOfAnalyses( std::string &report, std::vector< std::string> &listOfAnalyses,
+				   const std::string &sessionID, const std::string &modelID);
 
     std::string getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
 				     const std::string &analysisID, const double       timeStep,  

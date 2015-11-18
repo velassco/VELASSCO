@@ -226,4 +226,56 @@ void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const Ses
   LOGGER << "  result : "   << _return.result        << std::endl;
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   LOGGER << "  data   : \n" << _return.data << std::endl;
-}
+} // ManageGetListOfMeshes
+
+void QueryManagerServer::ManageGetListOfAnalyses( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  std::string name       = pt.get<std::string>("name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+
+  rvGetListOfAnalyses _return_;
+  DataLayerAccess::Instance()->getListOfAnalyses( _return_,
+						  sessionIDStr.str(), modelID);
+  
+  std::cout << _return_ << std::endl;
+  
+  if ( _return_.status == "Error") {
+    if ( _return_.report == "No models") {
+      _return.__set_result( (Result::type)VAL_NO_MODELS_IN_PLATFORM);
+    } else {
+      _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    }
+    _return.__set_data( _return_.report);
+  } else { // status == "Ok"
+    if ( _return_.analyses.size() == 0) {
+      _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
+    } else {
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      // process data:
+      std::ostringstream oss;
+      for ( std::vector< std::string>::iterator it = _return_.analyses.begin();
+          it != _return_.analyses.end(); it++) {
+	oss << *it << std::endl;
+      }
+      _return.__set_data( oss.str());
+    }
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+
+} // ManageGetListOfAnalyses
+
