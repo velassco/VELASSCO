@@ -14,6 +14,7 @@
 namespace VELaSSCoSM {
 
 int _kElementShapeTypeValues[] = {
+  ElementShapeType::UnknownElement,
   ElementShapeType::PointElement,
   ElementShapeType::LineElement,
   ElementShapeType::TriangleElement,
@@ -27,6 +28,7 @@ int _kElementShapeTypeValues[] = {
   ElementShapeType::ComplexParticleElement
 };
 const char* _kElementShapeTypeNames[] = {
+  "UnknownElement",
   "PointElement",
   "LineElement",
   "TriangleElement",
@@ -39,7 +41,7 @@ const char* _kElementShapeTypeNames[] = {
   "CircleElement",
   "ComplexParticleElement"
 };
-const std::map<int, const char*> _ElementShapeType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(11, _kElementShapeTypeValues, _kElementShapeTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _ElementShapeType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(12, _kElementShapeTypeValues, _kElementShapeTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 
 ElementType::~ElementType() throw() {
@@ -442,8 +444,12 @@ void MeshInfo::__set_meshColor(const std::string& val) {
   this->meshColor = val;
 }
 
-const char* MeshInfo::ascii_fingerprint = "42A6281E1E82974CAC4974DC708DEB77";
-const uint8_t MeshInfo::binary_fingerprint[16] = {0x42,0xA6,0x28,0x1E,0x1E,0x82,0x97,0x4C,0xAC,0x49,0x74,0xDC,0x70,0x8D,0xEB,0x77};
+void MeshInfo::__set_meshNumber(const int32_t val) {
+  this->meshNumber = val;
+}
+
+const char* MeshInfo::ascii_fingerprint = "883D2504C06A2E71D93C0A5D97A7C4AE";
+const uint8_t MeshInfo::binary_fingerprint[16] = {0x88,0x3D,0x25,0x04,0xC0,0x6A,0x2E,0x71,0xD9,0x3C,0x0A,0x5D,0x97,0xA7,0xC4,0xAE};
 
 uint32_t MeshInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -513,6 +519,14 @@ uint32_t MeshInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->meshNumber);
+          this->__isset.meshNumber = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -554,6 +568,10 @@ uint32_t MeshInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeString(this->meshColor);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("meshNumber", ::apache::thrift::protocol::T_I32, 7);
+  xfer += oprot->writeI32(this->meshNumber);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   oprot->decrementRecursionDepth();
@@ -568,6 +586,7 @@ void swap(MeshInfo &a, MeshInfo &b) {
   swap(a.nElements, b.nElements);
   swap(a.meshUnits, b.meshUnits);
   swap(a.meshColor, b.meshColor);
+  swap(a.meshNumber, b.meshNumber);
   swap(a.__isset, b.__isset);
 }
 
@@ -578,6 +597,7 @@ MeshInfo::MeshInfo(const MeshInfo& other13) {
   nElements = other13.nElements;
   meshUnits = other13.meshUnits;
   meshColor = other13.meshColor;
+  meshNumber = other13.meshNumber;
   __isset = other13.__isset;
 }
 MeshInfo& MeshInfo::operator=(const MeshInfo& other14) {
@@ -587,6 +607,7 @@ MeshInfo& MeshInfo::operator=(const MeshInfo& other14) {
   nElements = other14.nElements;
   meshUnits = other14.meshUnits;
   meshColor = other14.meshColor;
+  meshNumber = other14.meshNumber;
   __isset = other14.__isset;
   return *this;
 }
@@ -599,6 +620,7 @@ std::ostream& operator<<(std::ostream& out, const MeshInfo& obj) {
   out << ", " << "nElements=" << to_string(obj.nElements);
   out << ", " << "meshUnits=" << to_string(obj.meshUnits);
   out << ", " << "meshColor=" << to_string(obj.meshColor);
+  out << ", " << "meshNumber=" << to_string(obj.meshNumber);
   out << ")";
   return out;
 }
@@ -2940,8 +2962,8 @@ void rvGetListOfMeshes::__set_meshInfos(const std::vector<MeshInfo> & val) {
   this->meshInfos = val;
 }
 
-const char* rvGetListOfMeshes::ascii_fingerprint = "A1934922CB3DC7165DA62972B4D48BDB";
-const uint8_t rvGetListOfMeshes::binary_fingerprint[16] = {0xA1,0x93,0x49,0x22,0xCB,0x3D,0xC7,0x16,0x5D,0xA6,0x29,0x72,0xB4,0xD4,0x8B,0xDB};
+const char* rvGetListOfMeshes::ascii_fingerprint = "5FD86D68036BB6375BE8459471F23F69";
+const uint8_t rvGetListOfMeshes::binary_fingerprint[16] = {0x5F,0xD8,0x6D,0x68,0x03,0x6B,0xB6,0x37,0x5B,0xE8,0x45,0x94,0x71,0xF2,0x3F,0x69};
 
 uint32_t rvGetListOfMeshes::read(::apache::thrift::protocol::TProtocol* iprot) {
 

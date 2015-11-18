@@ -931,8 +931,8 @@ typedef struct _VELaSSCoSM_GetListOfMeshes_result__isset {
 class VELaSSCoSM_GetListOfMeshes_result {
  public:
 
-  static const char* ascii_fingerprint; // = "1935017465099FFD31841CDD6FD70F70";
-  static const uint8_t binary_fingerprint[16]; // = {0x19,0x35,0x01,0x74,0x65,0x09,0x9F,0xFD,0x31,0x84,0x1C,0xDD,0x6F,0xD7,0x0F,0x70};
+  static const char* ascii_fingerprint; // = "D0B51AA8082DDA4097BE3F66624F46C4";
+  static const uint8_t binary_fingerprint[16]; // = {0xD0,0xB5,0x1A,0xA8,0x08,0x2D,0xDA,0x40,0x97,0xBE,0x3F,0x66,0x62,0x4F,0x46,0xC4};
 
   VELaSSCoSM_GetListOfMeshes_result(const VELaSSCoSM_GetListOfMeshes_result&);
   VELaSSCoSM_GetListOfMeshes_result& operator=(const VELaSSCoSM_GetListOfMeshes_result&);
@@ -972,8 +972,8 @@ typedef struct _VELaSSCoSM_GetListOfMeshes_presult__isset {
 class VELaSSCoSM_GetListOfMeshes_presult {
  public:
 
-  static const char* ascii_fingerprint; // = "1935017465099FFD31841CDD6FD70F70";
-  static const uint8_t binary_fingerprint[16]; // = {0x19,0x35,0x01,0x74,0x65,0x09,0x9F,0xFD,0x31,0x84,0x1C,0xDD,0x6F,0xD7,0x0F,0x70};
+  static const char* ascii_fingerprint; // = "D0B51AA8082DDA4097BE3F66624F46C4";
+  static const uint8_t binary_fingerprint[16]; // = {0xD0,0xB5,0x1A,0xA8,0x08,0x2D,0xDA,0x40,0x97,0xBE,0x3F,0x66,0x62,0x4F,0x46,0xC4};
 
 
   virtual ~VELaSSCoSM_GetListOfMeshes_presult() throw();

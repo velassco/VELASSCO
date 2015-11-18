@@ -21,6 +21,7 @@ namespace VELaSSCoSM {
 
 struct ElementShapeType {
   enum type {
+    UnknownElement = 0,
     PointElement = 1,
     LineElement = 2,
     TriangleElement = 3,
@@ -231,24 +232,25 @@ class Element {
 void swap(Element &a, Element &b);
 
 typedef struct _MeshInfo__isset {
-  _MeshInfo__isset() : name(false), elementType(false), nVertices(false), nElements(false), meshUnits(false), meshColor(false) {}
+  _MeshInfo__isset() : name(false), elementType(false), nVertices(false), nElements(false), meshUnits(false), meshColor(false), meshNumber(false) {}
   bool name :1;
   bool elementType :1;
   bool nVertices :1;
   bool nElements :1;
   bool meshUnits :1;
   bool meshColor :1;
+  bool meshNumber :1;
 } _MeshInfo__isset;
 
 class MeshInfo {
  public:
 
-  static const char* ascii_fingerprint; // = "42A6281E1E82974CAC4974DC708DEB77";
-  static const uint8_t binary_fingerprint[16]; // = {0x42,0xA6,0x28,0x1E,0x1E,0x82,0x97,0x4C,0xAC,0x49,0x74,0xDC,0x70,0x8D,0xEB,0x77};
+  static const char* ascii_fingerprint; // = "883D2504C06A2E71D93C0A5D97A7C4AE";
+  static const uint8_t binary_fingerprint[16]; // = {0x88,0x3D,0x25,0x04,0xC0,0x6A,0x2E,0x71,0xD9,0x3C,0x0A,0x5D,0x97,0xA7,0xC4,0xAE};
 
   MeshInfo(const MeshInfo&);
   MeshInfo& operator=(const MeshInfo&);
-  MeshInfo() : name(), nVertices(0), nElements(0), meshUnits(), meshColor() {
+  MeshInfo() : name(), nVertices(0), nElements(0), meshUnits(), meshColor(), meshNumber(0) {
   }
 
   virtual ~MeshInfo() throw();
@@ -258,6 +260,7 @@ class MeshInfo {
   int64_t nElements;
   std::string meshUnits;
   std::string meshColor;
+  int32_t meshNumber;
 
   _MeshInfo__isset __isset;
 
@@ -273,6 +276,8 @@ class MeshInfo {
 
   void __set_meshColor(const std::string& val);
 
+  void __set_meshNumber(const int32_t val);
+
   bool operator == (const MeshInfo & rhs) const
   {
     if (!(name == rhs.name))
@@ -286,6 +291,8 @@ class MeshInfo {
     if (!(meshUnits == rhs.meshUnits))
       return false;
     if (!(meshColor == rhs.meshColor))
+      return false;
+    if (!(meshNumber == rhs.meshNumber))
       return false;
     return true;
   }
@@ -1161,8 +1168,8 @@ typedef struct _rvGetListOfMeshes__isset {
 class rvGetListOfMeshes {
  public:
 
-  static const char* ascii_fingerprint; // = "A1934922CB3DC7165DA62972B4D48BDB";
-  static const uint8_t binary_fingerprint[16]; // = {0xA1,0x93,0x49,0x22,0xCB,0x3D,0xC7,0x16,0x5D,0xA6,0x29,0x72,0xB4,0xD4,0x8B,0xDB};
+  static const char* ascii_fingerprint; // = "5FD86D68036BB6375BE8459471F23F69";
+  static const uint8_t binary_fingerprint[16]; // = {0x5F,0xD8,0x6D,0x68,0x03,0x6B,0xB6,0x37,0x5B,0xE8,0x45,0x94,0x71,0xF2,0x3F,0x69};
 
   rvGetListOfMeshes(const rvGetListOfMeshes&);
   rvGetListOfMeshes& operator=(const rvGetListOfMeshes&);
