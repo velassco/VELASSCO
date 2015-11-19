@@ -137,6 +137,16 @@ extern "C" {
 					  const char    **list_of_analyses
 					  /* will be: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
 					    );
+
+  VAL_Result VAL_API valGetMeshDrawData( /* in */
+						VAL_SessionID   sessionID,
+						const char*     modelID,
+						const char*     resultID,
+						const char*     analysisID,
+						double          timeStep
+
+						/* out */
+            );
   
   /*
    * 2xx RAQ - Result Analysis Queries
