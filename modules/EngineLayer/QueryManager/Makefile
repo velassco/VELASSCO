@@ -45,7 +45,7 @@ ENGINE_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
 	$(THRIFT_STORAGE_DEPENDENCIES) $(THRIFT_QUERY_DEPENDENCIES)
 
 ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) \
-	-I/usr/local/include -I/opt/local/include
+	-I/usr/local/include -I/opt/local/include -I.
 ENGINE_LIBS = -L/usr/local/lib -L/opt/local/lib -lthrift -lboost_date_time -lboost_thread
 
 all: $(BIN) $(BIN)/$(EXEC)

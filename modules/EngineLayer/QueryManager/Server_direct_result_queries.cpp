@@ -143,7 +143,7 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
 
-void ManageGetMeshDrawData( Query_Result& _return, const SessionID sessionID, const std::string& query ) {
+void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const SessionID sessionID, const std::string& query ) {
   // Parse query JSON
   std::istringstream ss(query);
   boost::property_tree::ptree pt;
