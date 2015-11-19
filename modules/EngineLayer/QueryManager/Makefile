@@ -34,7 +34,7 @@ ENGINE_CPP_FILES = DataLayerAccess.cpp Analytics.cpp Graphics.cpp Helpers.cpp ma
 	Server_direct_result_queries.cpp   \
 	Server_monitoring_queries.cpp      \
 	Server_result_analysis_queries.cpp \
-	Server_session_queries.cpp
+	Server_session_queries.cpp         \
 
 ENGINE_C_FILES = cJSON.c
 ENGINE_OBJS_TMP = ${ENGINE_CPP_FILES:.cpp=.o} ${ENGINE_C_FILES:.c=.o}

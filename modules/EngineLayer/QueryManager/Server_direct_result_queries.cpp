@@ -38,7 +38,6 @@
 #include "Server.h"
 
 // Testing includes
-#include "test/plydatareader.h"
 #include "test/RealTimeFormat.h"
 
 using namespace ::apache::thrift;
@@ -177,15 +176,18 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   
   bool test = true;
   if(test){
-    PlyDataReader::getSingletonPtr()->readDataInfo("cow.ply", nullptr, 0);
-    int nFaces = PlyDataReader::getSingletonPtr()->getNumFaces();
-    int nVertices = PlyDataReader::getSingletonPtr()->getNumVertices();
+//    PlyDataReader::getSingletonPtr()->readDataInfo("cow.ply", 0, 0);
+//    int nFaces = PlyDataReader::getSingletonPtr()->getNumFaces();
+//    int nVertices = PlyDataReader::getSingletonPtr()->getNumVertices();
+
+    int nFaces = 12;
+    int nVertices = 8;
 
     float* vertices = new float[6 * nVertices]; // position, normal.
     int* faces = new int[4 * nFaces];
     int* indices = new int[3 * nFaces];
 
-    PlyDataReader::getSingletonPtr()->readData(vertices, indices);
+//    PlyDataReader::getSingletonPtr()->readData(vertices, indices);
 
     // every strip.
     for (int i = 0; i < nFaces; i++){

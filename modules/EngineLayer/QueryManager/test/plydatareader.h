@@ -9,7 +9,7 @@ class PlyDataReaderDestructor;				//!< Forward Decleration
 
 class PlyDataReader
 {
-  friend PlyDataReaderDestructor;
+  friend class PlyDataReaderDestructor;
 private:
   static PlyDataReader* m_SingletonPtr;
   static PlyDataReaderDestructor m_DestructorObject;
@@ -63,3 +63,4 @@ public:
     delete m_SingletonPtr;
   }
 };
+
