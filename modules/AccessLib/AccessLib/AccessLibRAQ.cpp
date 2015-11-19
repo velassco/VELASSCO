@@ -113,6 +113,11 @@ extern "C" {
     if ( !AreEqualNoCase(stepOptions, "all") ) {
       // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
       CHECK_NON_ZERO_VALUE( numSteps);
+      if ( AreEqualNoCase( stepOptions, "SINGLE")) {
+	CHECK_VALUE( numSteps, 1);
+      } else if ( AreEqualNoCase( stepOptions, "INTERVAL")) {
+	CHECK_VALUE( numSteps, 2);
+      }
       CHECK_QUERY_POINTER( lstSteps);
     }
     CHECK_QUERY_POINTER( resultBBox );
@@ -175,7 +180,7 @@ extern "C" {
 					      const char     *staticMeshID,
 					      const char     *stepOptions,  // ALL, SINGLE, INTERVAL
 					      const double   *lstSteps, //ALL (Ignored), SINGLE (1 double), INTERVAL (2 doubles)
-					      // const int       numSteps, // the size of lstSteps SINGLE(1)
+					      const int       numSteps, // the size of lstSteps SINGLE(1)
 					      const char     *CoarseGrainingMethod,
 					      const double   width,
 					      const double   cutoffFactor,
@@ -187,37 +192,39 @@ extern "C" {
 					      const char   	**queryOutcome,  
 					      const char     **resultErrorStr) { // in case of error
     
-	CHECK_SESSION_ID( sessionID );
+    CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
     CHECK_QUERY_POINTER( analysisName );
-	CHECK_QUERY_POINTER( staticMeshID );
-	CHECK_QUERY_POINTER( stepOptions );
-	// CHECK_QUERY_POINTER( lstSteps );
+    CHECK_QUERY_POINTER( staticMeshID );
+    CHECK_QUERY_POINTER( stepOptions );
+    // CHECK_QUERY_POINTER( lstSteps );
     // CHECK_NON_ZERO_VALUE(numSteps);
-	
-	if ( !AreEqualNoCase(stepOptions, "ALL") ) {
+    
+    if ( !AreEqualNoCase(stepOptions, "ALL") ) {
       // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
-      // CHECK_NON_ZERO_VALUE( numSteps);
+      CHECK_NON_ZERO_VALUE( numSteps);
       CHECK_QUERY_POINTER( lstSteps);
     }
-	int numSteps = 0;
-	if ( AreEqualNoCase( stepOptions, "SINGLE")) {
-	  numSteps = 1;
-	} else if ( AreEqualNoCase( stepOptions, "INTERVAL")) {
-	  numSteps = 2;
-	}
-
+    // int numSteps = 0;
+    if ( AreEqualNoCase( stepOptions, "SINGLE")) {
+      // numSteps = 1;
+      CHECK_VALUE( numSteps, 1);
+    } else if ( AreEqualNoCase( stepOptions, "INTERVAL")) {
+      // numSteps = 2;
+      CHECK_VALUE( numSteps, 2);
+    }
+    
     /* D2C parameter pointers */
     //CHECK_QUERY_POINTER( staticMeshID );
     CHECK_QUERY_POINTER( CoarseGrainingMethod );
     CHECK_QUERY_POINTER( TemporalAVGOptions );
-  
+    
     CHECK_QUERY_POINTER( queryOutcome );
     CHECK_QUERY_POINTER( resultErrorStr );
     
     *queryOutcome = NULL;
     *resultErrorStr = NULL;
-
+    
     API_TRACE;
     try
       {
