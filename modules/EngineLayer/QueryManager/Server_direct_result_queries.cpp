@@ -38,7 +38,7 @@
 #include "Server.h"
 
 // Testing includes
-#include "test/RealTimeFormat.h"
+#include "RealTimeFormat.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -63,11 +63,11 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   std::string modelID    = pt.get<std::string>("modelID");
   std::string resultID   = pt.get<std::string>("resultID");
   std::string analysisID = pt.get<std::string>("analysisID");
-  //std::string vertexIDs  = as_string< size_t>( pt, "vertexIDs");
+  std::string vertexIDs  = as_string< size_t>( pt, "vertexIDs");
   double      timeStep   = pt.get<double>("timeStep");
   
-  //stringstream listOfVertices;
-  //listOfVertices << "{\"id\":" << "[]" /*vertexIDs*/ << "}";
+  stringstream listOfVertices;
+  listOfVertices << "{\"id\":" << "[]" /*vertexIDs*/ << "}";
   
   std::stringstream sessionIDStr;
   sessionIDStr << sessionID;
@@ -81,62 +81,62 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   //std::cout << "V " << vertexIDs  << std::endl;
   //std::cout << "T " << timeStep   << std::endl;
   
-  //DataLayerAccess::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+  DataLayerAccess::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
   
   std::vector<int64_t> resultVertexIDs;
   std::vector<double>  resultValues;
 		  
   std::cout << _return_ << std::endl;
 		  
-//  std::istringstream iss(_return_);
-//  while (iss)
-//    {
-//      int64_t id;
-//      double  value[3];
-//		      
-//      std::string line;
-//      std::getline(iss, line);
-//      std::istringstream(line) >> id >> value[0] >> value[1] >> value[2];
-//		      
-//      resultVertexIDs.push_back(id);
-//      resultValues.push_back(value[0]);
-//      resultValues.push_back(value[1]);
-//      resultValues.push_back(value[2]);
-//    }
+  std::istringstream iss(_return_);
+  while (iss)
+    {
+      int64_t id;
+      double  value[3];
+		      
+      std::string line;
+      std::getline(iss, line);
+      std::istringstream(line) >> id >> value[0] >> value[1] >> value[2];
+		      
+      resultVertexIDs.push_back(id);
+      resultValues.push_back(value[0]);
+      resultValues.push_back(value[1]);
+      resultValues.push_back(value[2]);
+    }
 		  
   // Pack into string
-//  std::string result;
-//  std::ostringstream oss;
-//  oss << (resultValues.size() / 3) << " 3" << "\n";
-//  result += oss.str();
-//  result += std::string((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
-//  result += std::string((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
-//  _return.__set_data(result); 
-//		  
-//  // Generate example result data
-//  if (0)
-//    {
-//      std::vector<int64_t> resultVertexIDs;
-//      std::vector<double>  resultValues;
-//		      
-//      // vertex #1
-//      resultVertexIDs.push_back(6);
-//      resultValues.push_back(-0.105564);
-//      resultValues.push_back(-0.287896);
-//      resultValues.push_back(-0.377642);
-//      // vertex #2
-//      resultVertexIDs.push_back(7);
-//      resultValues.push_back( 0.259839);
-//      resultValues.push_back(-0.366375);
-//      resultValues.push_back(-0.377652);
-//		      
-//      // Pack into string
-//      std::string result;
-//      result += "2 3\n";
-//      result += std::string((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
-//      result += std::string((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
-//      _return.__set_data(result); 
-//    }
+  std::string result;
+  std::ostringstream oss;
+  oss << (resultValues.size() / 3) << " 3" << "\n";
+  result += oss.str();
+  result += std::string((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
+  result += std::string((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
+  _return.__set_data(result); 
+		  
+  // Generate example result data
+  if (0)
+    {
+      std::vector<int64_t> resultVertexIDs;
+      std::vector<double>  resultValues;
+		      
+      // vertex #1
+      resultVertexIDs.push_back(6);
+      resultValues.push_back(-0.105564);
+      resultValues.push_back(-0.287896);
+      resultValues.push_back(-0.377642);
+      // vertex #2
+      resultVertexIDs.push_back(7);
+      resultValues.push_back( 0.259839);
+      resultValues.push_back(-0.366375);
+      resultValues.push_back(-0.377652);
+		      
+      // Pack into string
+      std::string result;
+      result += "2 3\n";
+      result += std::string((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
+      result += std::string((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
+      _return.__set_data(result); 
+    }
 		  
   _return.__set_result( (Result::type)VAL_SUCCESS );
 		  
@@ -157,7 +157,7 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   std::string resultID   = pt.get<std::string>("resultID");
   std::string analysisID = pt.get<std::string>("analysisID");
   std::string vertexIDs  = as_string< size_t>( pt, "vertexIDs");
-  double      timeStep   = pt.get<double>("timeStep");
+//  double      timeStep   = pt.get<double>("timeStep");
   
   stringstream listOfVertices;
   listOfVertices << "{\"id\":" << "[]" /*vertexIDs*/ << "}";

@@ -6,4 +6,4 @@ LD_LIBRARY_PATH=${PWD}/lib
 export LD_LIBRARY_PATH
 
 cd ./bin
-./QueryManager -dl_port 26266
+./QueryManager
