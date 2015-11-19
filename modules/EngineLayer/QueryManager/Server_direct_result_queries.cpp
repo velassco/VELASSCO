@@ -407,3 +407,65 @@ void QueryManagerServer::ManageGetListOfAnalyses( Query_Result &_return, const S
 
 } // ManageGetListOfAnalyses
 
+void QueryManagerServer::ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  std::string name       = pt.get<std::string>( "name");
+  std::string modelID    = pt.get<std::string>( "modelID"); 
+  std::string analysisID = pt.get<std::string>( "analysisID");
+ 
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+
+  rvGetListOfTimeSteps _return_;
+  DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
+						   sessionIDStr.str(), modelID, analysisID,
+						   "ALL", 0, NULL);
+  
+  // std::cout << _return_ << std::endl;
+  
+  if ( _return_.status == "Error") {
+    if ( _return_.report == "No models") {
+      _return.__set_result( (Result::type)VAL_NO_MODELS_IN_PLATFORM);
+    } else {
+      _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    }
+    _return.__set_data( _return_.report);
+  } else { // status == "Ok"
+    if ( _return_.time_steps.size() == 0) {
+      _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
+    } else {
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      // process data:
+      // std::ostringstream oss;
+      // // has to be passed as binary !!!!
+      // for ( std::vector< double>::iterator it = _return_.time_steps.begin();
+      //     it != _return_.time_steps.end(); it++) {
+      // 	oss << *it << std::endl;
+      // }
+      // _return.__set_data( oss.str());
+      _return.__set_data( std::string( ( char *)_return_.time_steps.data(), _return_.time_steps.size() * sizeof( double)));
+    }
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << Hexdump( _return.data) << std::endl;
+  if ( _return_.time_steps.size() > 0)
+    LOGGER << "  step 0 : " << _return_.time_steps[ 0] << std::endl;
+  if ( _return_.time_steps.size() > 1)
+    LOGGER << "  step 1 : " << _return_.time_steps[ 1] << std::endl;
+  if ( _return_.time_steps.size() > 2)
+    LOGGER << "  step 2 : " << _return_.time_steps[ 2] << std::endl;
+
+} // ManageGetListOfTimeSteps
+

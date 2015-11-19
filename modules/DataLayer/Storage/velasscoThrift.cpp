@@ -73,6 +73,17 @@ void VELaSSCoHandler::GetListOfAnalyses( rvGetListOfAnalyses &_return,
   _return.__set_analyses( listOfAnalyses);
 }
 
+void VELaSSCoHandler::GetListOfTimeSteps( rvGetListOfTimeSteps &_return, 
+					  const std::string &sessionID, const std::string &modelID, 
+					  const std::string &analysisID) {
+  std::string report;
+  std::vector< double>listOfSteps;
+  std::string status = storageModule::Instance()->getListOfSteps( report, listOfSteps, sessionID, modelID, analysisID);
+  _return.__set_status( status);
+  _return.__set_report( report);
+  _return.__set_time_steps( listOfSteps);
+}
+
 void VELaSSCoHandler::stopAll() {
   storageModule *sm = storageModule::Instance();
   sm->stopConnection();

@@ -70,7 +70,10 @@ public:
 			  const std::string &analysisID, const double stepValue);
   std::string getListOfAnalyses( std::string &report, std::vector< std::string> &listOfAnalyses,
 				 const std::string &sessionID, const std::string &modelID);
-    
+  std::string getListOfSteps( std::string &report, std::vector< double> &listOfSteps,
+			      const std::string &sessionID, const std::string &modelID,
+			      const std::string &analysisID);
+
   std::string checkIfAllVerticesArePresent(std::string listOfVertices, string contentToCheck);
 
 private:

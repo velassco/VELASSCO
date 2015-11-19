@@ -42,6 +42,12 @@ namespace VELaSSCo
       std::string resultString( "Not implemented");
       return resultString;
     }
+    std::string getListOfSteps( std::string &report, std::vector< double> &listOfSteps,
+				const std::string &sessionID, const std::string &modelID,
+				const std::string &analysisID) {
+      std::string resultString( "Not implemented");
+      return resultString;
+    }
     
     std::string getResultOnVertices( const std::string &sessionID,
                                      const std::string &modelID,

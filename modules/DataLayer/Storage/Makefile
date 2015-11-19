@@ -76,6 +76,6 @@ $(OBJS_DIR)/%.o : $(THRIFT_HBASE_DIR)/%.cpp $(THRIFT_HBASE_DEPENDENCIES)
 
 clean:
 	rm -f $(BIN)/*.o $(BIN)/$(EXEC)
-	rm -rf $(BIN)
+#	rm -rf $(BIN)
 
 .PHONY: clean

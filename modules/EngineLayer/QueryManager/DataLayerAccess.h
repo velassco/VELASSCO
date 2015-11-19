@@ -52,7 +52,8 @@ public:
     void getListOfAnalyses( rvGetListOfAnalyses &_return,
 			    const std::string &sessionID,
 			    const std::string &modelID);
-    void getListOfTimeSteps( std::string& _return,
+  /* as of OP-22.113 */
+    void getListOfTimeSteps( rvGetListOfTimeSteps &_return,
 			     const std::string &sessionID,
 			     const std::string &modelID,
 			     const std::string &analysisID,

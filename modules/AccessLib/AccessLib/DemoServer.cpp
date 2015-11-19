@@ -172,6 +172,8 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageGetListOfMeshes( _return, sessionID, query);
   } else if ( name == "GetListOfAnalyses") {
     ManageGetListOfAnalyses( _return, sessionID, query);
+  } else if ( name == "GetListOfTimeSteps") {
+    ManageGetListOfTimeSteps( _return, sessionID, query);
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
   } else {
@@ -365,6 +367,23 @@ void QM_DemoServer::ManageGetListOfAnalyses( Query_Result &_return, const Sessio
   oss << "DEM" << std::endl;
   oss << "Geometry" << std::endl;
   oss << "Time analysis" << std::endl;
+  _return.__set_data( oss.str());
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+}
+
+void QM_DemoServer::ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  /* will be: "TimeStep 1\nTimeStep 2\n...\nTimeStep N" */
+  std::ostringstream oss;
+  oss << "0.0" << std::endl;
+  oss << "10000" << std::endl;
+  oss << "20000" << std::endl;
+  oss << "30000" << std::endl;
   _return.__set_data( oss.str());
   _return.__set_result( (Result::type)VAL_SUCCESS );
 		  

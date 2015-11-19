@@ -145,6 +145,8 @@ VAL_Result VAL_API valGetListOfAnalyses(  /* in */
 					  ) {
   CHECK_SESSION_ID( sessionID );
   CHECK_QUERY_POINTER( modelID );
+  CHECK_QUERY_POINTER( result_status );
+  CHECK_QUERY_POINTER( result_list_of_analyses );
   
   API_TRACE;
   try
@@ -174,6 +176,52 @@ VAL_Result VAL_API valGetListOfAnalyses(  /* in */
     }
   CATCH_ERROR;
 } // valGetListOfAnalyses
+
+VAL_Result VAL_API valGetListOfTimeSteps(  /* in */
+					 VAL_SessionID   sessionID,
+					 const char     *modelID,
+					 const char     *analysisID,
+					 /* out */
+					 const char    **result_status,
+					 size_t         *result_num_steps,
+					 const double  **result_list_of_steps
+					   ) {
+  CHECK_SESSION_ID( sessionID );
+  CHECK_QUERY_POINTER( modelID );
+  CHECK_QUERY_POINTER( analysisID );
+  CHECK_QUERY_POINTER( result_status );
+  CHECK_QUERY_POINTER( result_list_of_steps );
+  
+  API_TRACE;
+  try
+    {
+      std::stringstream  queryCommand;
+      const std::string* queryData;
+      
+      // Build JSON command string
+      queryCommand << "{\n"
+		   << "  \"name\"       : \"" << "GetListOfTimeSteps" << "\",\n"
+		   << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+		   << "  \"analysisID\" : \"" << analysisID                << "\"\n";
+      queryCommand << "}\n";
+      
+      // Send command string and get back result data
+      VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+      
+      // Give back pointers to actual binary data
+      if (result == VAL_SUCCESS) {
+	/* will be: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
+	*result_num_steps = queryData->size();
+	*result_list_of_steps = ( const double *)queryData->data();
+	*result_status = "Ok";
+      } else {
+	// in case of error queryData has the error message from the data layer
+	*result_status = queryData->c_str();
+      }
+      return result;
+    }
+  CATCH_ERROR;
+} // valGetListOfTimeSteps
 
 #ifdef __cplusplus
 }

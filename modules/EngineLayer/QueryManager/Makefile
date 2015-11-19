@@ -76,6 +76,7 @@ $(OBJS_DIR)/%.o : $(THRIFT_QUERY_MANAGER_DIR)/%.cpp $(THRIFT_QUERY_DEPENDENCIES)
 
 clean:
 	rm -f $(BIN)/*.o $(BIN)/$(EXEC)
-	rm -rf $(BIN)
+
+#	rm -rf $(BIN)
 
 .PHONY: clean

@@ -49,6 +49,13 @@ namespace VELaSSCo
     std::string getListOfAnalyses( std::string &report, std::vector< std::string> &listOfAnalyses,
 				   const std::string &sessionID, const std::string &modelID);
 
+    bool getListOfStepsFromTables( std::string &report, std::vector< double> &listOfSteps,
+				   const std::string &metadata_table, const std::string &modelID,
+				   const std::string &analysisID);
+    std::string getListOfSteps( std::string &report, std::vector< double> &listOfSteps,
+				const std::string &sessionID, const std::string &modelID,
+				const std::string &analysisID);
+
     std::string getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
 				     const std::string &analysisID, const double       timeStep,  
 				     const std::string &resultID,   const std::string &listOfVertices );
@@ -91,6 +98,7 @@ namespace VELaSSCo
     std::vector< std::string> getModelListTables() const;
 
     std::string createRowKey( const std::string modelID, const std::string &analysysID, const double stepValue);
+    std::string createRowKeyPrefix( const std::string modelID, const std::string &analysysID);
   };
 
   typedef std::vector<std::string> StrVec;
@@ -111,6 +119,15 @@ namespace VELaSSCo
     std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
     std::string step_hex( toHexStringSwap< double>( stepValue));
     return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex) : ( modelID_hex + length_hex + step_hex));
+  }
+  inline std::string HBase::createRowKeyPrefix( const std::string modelID, const std::string &analysisID) {
+    const size_t tmp_buf_size = 256;
+    char tmp_buf[ tmp_buf_size];
+    std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
+    size_t analysis_length = analysisID.length();
+    // needs to be swapped !!!!!!!!
+    std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
+    return ( analysis_length ? ( modelID_hex + length_hex + analysisID) : ( modelID_hex + length_hex));
   }
 
 

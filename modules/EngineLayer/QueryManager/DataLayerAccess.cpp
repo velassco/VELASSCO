@@ -136,12 +136,54 @@ void DataLayerAccess::getListOfAnalyses( rvGetListOfAnalyses &_return,
   }
 }
 
-void DataLayerAccess::getListOfTimeSteps( std::string& _return,
+/* as of OP-22.113 */
+void DataLayerAccess::getListOfTimeSteps( rvGetListOfTimeSteps &_return,
 					  const std::string &sessionID,
 					  const std::string &modelID,
 					  const std::string &analysisID,
 					  const std::string &stepOptions, const int numSteps, const double *lstSteps) {
-  cout << "ERROR: " << FUNCTION_NAME << " NOT IMPLEMENTED YET." << endl;
+  // step_list if step_options == SINGLE( 1), INTERVAL( 2), SET( N_steps)
+  // cout << "ERROR: " << FUNCTION_NAME << " NOT IMPLEMENTED YET." << endl;
+  try {
+    cli->GetListOfTimeSteps( _return, sessionID, modelID, analysisID);
+    if ( _return.time_steps.size() > 0) {
+      // now process the output according to stepOptions, numSteps and lstSteps
+      if ( !strcasecmp( stepOptions.c_str(), "all")) {
+	// all of them are ok
+      } else if ( !strcasecmp( stepOptions.c_str(), "interval") && lstSteps && ( numSteps >= 2)) {
+	// loop through _return.time_steps and get the interval
+	std::vector< double> tmp;
+	double min = lstSteps[ 0];
+	double max = lstSteps[ 1];
+	if ( max < min) { double tmp = min; min = max; max = tmp;}
+	for ( std::vector< double>::iterator it = _return.time_steps.begin();
+	      it != _return.time_steps.end(); it++) {
+	  if ( ( min < *it) && ( *it < max)) {
+	    tmp.push_back( *it);
+	  }
+	}
+	_return.__set_time_steps( tmp);
+      } else if ( ( !strcasecmp( stepOptions.c_str(), "single") || 
+		    !strcasecmp( stepOptions.c_str(), "set"))
+		  && lstSteps && numSteps) {
+	// loop through _return.time_steps and see if all are present.
+	std::vector< double> tmp;
+	for ( std::vector< double>::iterator it = _return.time_steps.begin();
+	      it != _return.time_steps.end(); it++) {
+	  for ( int i = 0; i < numSteps; i++) {
+	    if ( *it == lstSteps[ i]) {
+	      tmp.push_back( *it);
+	    }
+	  }
+	}
+	_return.__set_time_steps( tmp);
+      } else {
+	// not possible, returning the findings
+      }
+    }
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
 }
 
 void DataLayerAccess::stopAll()

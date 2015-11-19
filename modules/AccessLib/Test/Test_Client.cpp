@@ -12,6 +12,51 @@
 #include "AccessLib.h"
 
 // from Helpers.h
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <sstream>
+
+  static std::string Hexdump(const std::string input, const size_t max_len = 80)
+  {
+    std::stringstream out;
+
+    size_t end = input.size();
+    if ( max_len && ( end > max_len)) {
+      end = max_len;
+    }
+    size_t i = 0;
+    for (i=0; i<end; i+=16)
+      {
+	out << std::hex << std::setw(2*sizeof(size_t)) << std::setfill('0') << (size_t)i << ": ";
+	for (size_t j=0; j<16; j++) 
+	  if (i+j < input.size())
+	    out << std::setw(2) << (unsigned)(unsigned char)(input[i+j]) << " ";
+	  else
+	    out << "   ";
+
+	out << " ";
+	for (size_t j=0; j<16; j++) {
+	  if (i+j < input.size()) {
+	    if (isprint((unsigned char)input[i+j])) {
+	      out << input[i+j];
+	    } else {
+	      out << '.';
+	    }
+	  }
+	}
+
+	out << std::endl;
+      }
+
+    if ( input.size() > end) {
+      out << std::hex << std::setw(2*sizeof(size_t)) << std::setfill('0') << (size_t)( i + 16) << ": ";
+      out << " . . ." << std::endl;
+    }
+
+    return out.str();
+  }
+
   // returns NULL if dst_len is too short, otherwise return dst
   static const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len) {
     if ( !dst) return NULL;
@@ -244,7 +289,38 @@ int main(int argc, char* argv[])
     std::cout << "GetListOfAnalyses: " << opened_modelID << 
       ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
     if ( return_list) {
-      std::cout << "   mesh_list = " << return_list << std::endl;
+      std::cout << "   Analyses_list = " << return_list << std::endl;
+    } else {
+      std::cout << "Error: " << return_error_str << std::endl;
+    }
+  }
+
+  //
+  // Test GetListOfTimeSteps
+  //
+  bool do_get_list_of_steps = true;
+  if ( do_get_list_of_steps) {
+    const double *return_list = NULL;
+    size_t        return_num_steps = 0;
+    const char *return_error_str = NULL;
+    std::cout << "doing valGetListOfTimeSteps" << std::endl;
+    result = valGetListOfTimeSteps( sessionID, opened_modelID.c_str(),
+				    analysisID, 
+				    &return_error_str, 
+				    &return_num_steps, &return_list);
+    CheckVALResult(result, getStringFromCharPointers( "valGetListOfTimeSteps ", return_error_str));
+    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+    std::cout << "GetListOfTimeSteps: " << opened_modelID << 
+      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+    if ( return_list) {
+      std::cout << "   List_size = " << return_num_steps << std::endl;
+      std::cout << "   Step_list = " << Hexdump( std::string( ( char *)return_list, return_num_steps)) << std::endl;
+      if ( return_num_steps > 0)
+	std::cout << "      Step 0 = " << return_list[ 0] << std::endl;
+      if ( return_num_steps > 1)
+	std::cout << "      Step 1 = " << return_list[ 1] << std::endl;
+      if ( return_num_steps > 2)
+	std::cout << "      Step 2 = " << return_list[ 2] << std::endl;
     } else {
       std::cout << "Error: " << return_error_str << std::endl;
     }

@@ -144,9 +144,10 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     /* Direct Result Queries */
   } else if ( name == "GetListOfMeshes") {
     ManageGetListOfMeshes( _return, sessionID, query);
-    /* Result Analysis Queries */
   } else if ( name == "GetListOfAnalyses") {
     ManageGetListOfAnalyses( _return, sessionID, query);
+  } else if ( name == "GetListOfTimeSteps") {
+    ManageGetListOfTimeSteps( _return, sessionID, query);
     /* Result Analysis Queries */
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);

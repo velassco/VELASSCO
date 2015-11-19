@@ -75,7 +75,7 @@ namespace VELaSSCo
    * Converts a std::string containing binary to a hex dump ASCII string.
    */ 
 
-  inline std::string Hexdump(const std::string input, const size_t max_len = 0)
+  inline std::string Hexdump(const std::string input, const size_t max_len = 80)
   {
     std::stringstream out;
 

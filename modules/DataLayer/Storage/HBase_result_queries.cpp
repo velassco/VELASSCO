@@ -412,3 +412,132 @@ std::string HBase::getListOfAnalyses( std::string &report, std::vector< std::str
 
   return result;
 }
+
+static bool getStepValueFromMetadataRowKey( std::unordered_set< double> &stepValues_set, const std::string &rowkey,
+					    const size_t rowPrefix_len) {
+  // rowPrefix already has modelID + length + Analysisname
+  // only need to get StepValue from RowKey
+  // rowKeys in Metadata tables have
+  // 32 chars = modelID in hexadecimal string
+  // 8 chars = N = length of analysisName in hexadecimal string
+  // N chars = AnalysisName
+  // 16 chars = step value (double) in hexadecimal string
+  if ( rowkey.length() < 56)
+    return false; // at least 56 bytes for static meshes !!!
+  const size_t offset = rowPrefix_len; // length modelID + length + analysis
+  const std::string &hexa_length = rowkey.substr( offset, 2 * sizeof( double));
+  double stepValue = 0.0;
+  FromHexStringSwap( ( char *)&stepValue, sizeof( double), hexa_length.c_str(), 2 * sizeof( double));
+  stepValues_set.insert( stepValue);
+  return true;
+}
+
+bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> &listOfSteps,
+				      const std::string &metadata_table, const std::string &modelID,
+				      const std::string &analysisID) {
+  // do the scan on the metadata table ...
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  StrVec cols;
+  // cols.push_back( "R"); // Mesh column family with, 
+  // theoretially all Metadata should start with "R:r000001nm", i.e. at least 1 result defined!
+  cols.push_back( "R:r000001nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  // we only need the step_values which are in the rowKeys
+  // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
+  // has to build the rowkey.... 
+  // Metadata rowkeys = modelId + AnalysisID + StepNumber
+  std::string rowKeyPrefix = createRowKeyPrefix( modelID, analysisID);
+  const size_t len_prefix = rowKeyPrefix.length();
+  ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKeyPrefix, cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+  std::unordered_set< double> stepValues_set;
+  bool scan_ok = true;
+  int num_rows = 0;
+  try {
+    // Crono clk( CRONO_WALL_TIME);
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+  	break;
+      // process rowsResult
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
+  	// get only rows with the same rowKeyPrefix ( modelID)
+	// if ( strncasecmp( rowsResult[ i].row.c_str(), rowKeyPrefix.c_str(), rowKeyPrefix.length())) {
+	if ( rowsResult[ i].row.compare( 0, len_prefix, rowKeyPrefix) != 0) {
+	  // we'll start with the correct ones, 
+	  // once they are different, then there are no more...
+	  break;
+	}
+  	bool ok = getStepValueFromMetadataRowKey( stepValues_set, rowsResult[ i].row, len_prefix);
+	if ( !ok) {
+	  // something wrong with the rowkey ...
+	  break;
+	}
+	num_rows++;
+      }
+    } // while ( true)
+
+    // std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
+    if ( stepValues_set.size() != 0) {
+      listOfSteps = std::vector< double>( stepValues_set.begin(), stepValues_set.end());
+    } else {
+      // nothing found
+      // scan_ok = false; // scan was ok but nothing found ...
+      report = "No Steps values could be found.";
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    report = tmp.str();
+  }
+  _hbase_client->scannerClose( scan_id);
+  
+  return scan_ok;
+}
+
+std::string HBase::getListOfSteps( std::string &report, std::vector< double> &listOfSteps,
+				   const std::string &sessionID, const std::string &modelID,
+				   const std::string &analysisID) {
+
+  std::cout << "getListOfAnalyses THRIFT: =====" << std::endl;
+  std::cout << "S  - " << sessionID              << std::endl;
+  std::cout << "M  - " << modelID                << std::endl;
+  std::cout << "An - " << analysisID              << std::endl;
+
+  string table_name;
+  bool scan_ok = true;
+
+  // look into the modelInfo table to get the correct table name
+  TableModelEntry table_set;
+  bool found = getTableNames( sessionID, modelID, table_set);
+  if ( found) {
+    scan_ok = getListOfStepsFromTables( report, listOfSteps, table_set._metadata, modelID, analysisID);
+  } else {
+    scan_ok = false;
+  }
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    bool there_are_steps = listOfSteps.size();
+    if ( there_are_steps) {
+      result = "Ok";
+    } else {
+      result = "Error";
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::getListOfSteps THRIFT could not scan.";
+  }
+
+  return result;
+}
+
+

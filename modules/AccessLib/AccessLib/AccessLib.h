@@ -137,7 +137,16 @@ extern "C" {
 					  const char    **list_of_analyses
 					  /* will be: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
 					    );
-
+  VAL_Result VAL_API valGetListOfTimeSteps(  /* in */
+					   VAL_SessionID   sessionID,
+					   const char     *modelID,
+					   const char     *analysisID,
+					   /* out */
+					   const char    **result_status,
+					   size_t         *num_steps,
+					   const double  **lst_steps
+					     );
+  
   VAL_Result VAL_API valGetMeshDrawData( /* in */
 						VAL_SessionID   sessionID,
 						const char*     modelID,

@@ -272,6 +272,14 @@ service VELaSSCoSM
 	1: string                           sessionID
 	2: string                           modelID ),
 
+	/**
+	 Retrieves the list of time steps for a given model and analysis.
+	 */
+	rvGetListOfTimeSteps GetListOfTimeSteps(
+	  1: string                           sessionID
+	  2: string                           modelID
+	  3: string                           analysisID ),
+	  
 
 
 
@@ -399,17 +407,6 @@ service VELaSSCoSM
 		// 	5: string                           resultID
 		// 	6: double                           time_step
 		// 	7: string                           analysisID ),
-
-
-
-
-			  /**
-			   Retrieves the list of time steps for a given model and analysis.
-			   */
-			  rvGetListOfTimeSteps GetListOfTimeSteps(
-			    1: string                           sessionID
-			    2: string                           modelID
-			    3: string                           analysisID ),
 
 
 

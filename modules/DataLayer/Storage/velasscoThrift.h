@@ -48,7 +48,10 @@ public:
    * 					with the attached list of double
    * 					if errors occur the contect is also returned here?
    */
-  void GetResultFromVerticesID(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID, const std::string &listOfVertices) ;
+  void GetResultFromVerticesID(std::string &_return, 
+			       const std::string &sessionID, const std::string &modelID, 
+			       const std::string &analysisID, const double timeStep, 
+			       const std::string &resultID, const std::string &listOfVertices) ;
 
   void GetListOfMeshes( rvGetListOfMeshes &_return, 
 			const std::string &sessionID, const std::string &modelID, 
@@ -56,6 +59,9 @@ public:
 
   void GetListOfAnalyses( rvGetListOfAnalyses &_return, 
 			  const std::string &sessionID, const std::string &modelID);
+  void GetListOfTimeSteps( rvGetListOfTimeSteps &_return, 
+			   const std::string &sessionID, const std::string &modelID, 
+			   const std::string &analysisID);
 
 
   /**
@@ -71,7 +77,6 @@ public:
   void GetThumbnailOfAModel(rvGetThumbnailOfAModel&, const std::string&, const std::string&) {};
   void GetElementOfPointsInSpace(rvGetElementOfPointsInSpace&, const std::string&, const std::string&, const std::vector<Point, std::allocator<Point> >&) {};
   void GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh&, const std::string&, const std::string&, const std::string&, const std::string&, double) {};
-  void GetListOfTimeSteps(rvGetListOfTimeSteps&, const std::string&, const std::string&, const std::string&) {};
 
 };
 
