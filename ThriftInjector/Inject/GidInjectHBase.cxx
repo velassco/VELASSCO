@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include <vector>
@@ -237,6 +238,14 @@ namespace po = boost::program_options;
 static std::string strTableModels("VELaSSCo_Models");
 static std::string strTableMetaData("Simulations_Metadata");
 static std::string strTableData("Simulations_Data");
+
+inline
+std::string formatIndex( boost::uint32_t idx )
+{
+  std::ostringstream ss;
+  ss << std::setfill( '0' ) << std::setw(  6) << idx;
+  return ss.str( );
+}
 
 // TODO: use boost::lexical_cast
 bool is_number(const path::string_type& s)
@@ -597,17 +606,20 @@ int InsertResult_MetaData( const std::string &host, int port,
             mutations.push_back( Mutation() );
             mutations.back( ).column = "M:c000001nm";
             mutations.back( ).value = it->first;
+            mutations.push_back( Mutation() );
             mutations.back( ).column = "M:c000001nc";
             binWriter.Write( mutations.back( ).value, it->second.numberOfNodes );
             csetFound = true;
             }
           }
         std::string pm( "M:m" );
-        pm += boost::lexical_cast<std::string>( it->second.indexElementSet );
+        //pm += boost::lexical_cast<std::string>( it->second.indexElementSet );
+        pm += formatIndex( it->second.indexElementSet );
         mutations.push_back( Mutation() );
         mutations.back( ).column = pm;
         mutations.back( ).column += "nm";
         mutations.back( ).value = it->first;
+
         mutations.push_back( Mutation() );
         mutations.back( ).column = pm;
         mutations.back( ).column += "cn";
@@ -621,10 +633,12 @@ int InsertResult_MetaData( const std::string &host, int port,
         mutations.back( ).column = pm;
         mutations.back( ).column += "ne";
         binWriter.Write( mutations.back( ).value, it->second.numberOfElements );
+
         mutations.push_back( Mutation() );
         mutations.back( ).column = pm;
         mutations.back( ).column += "nn";
         binWriter.Write( mutations.back( ).value, it->second.sizeElement );
+
         mutations.push_back( Mutation() );
         mutations.back( ).column = pm;
         mutations.back( ).column += "cl";
@@ -650,7 +664,8 @@ int InsertResult_MetaData( const std::string &host, int port,
                  itR != itS->second.end( ); ++itR )
               {
               std::string pr( "R:r" );
-              pr += boost::lexical_cast<std::string>( itR->second.indexMData );
+              //pr += boost::lexical_cast<std::string>( itR->second.indexMData );
+              pr += formatIndex( itR->second.indexMData );
 
               // nm
               mutations.push_back( Mutation() );
