@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
-#include <unordered_set>
+// #include <unordered_set>
+// needs an ordered set:
+#include <set>
 
 // Curl
 #include <curl/curl.h>
@@ -102,8 +104,8 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
 	    if ( !strcmp( pinfo, "nc")) {
 	      // data is in binary format ...
 	      int64_t num = *( int64_t *)it->second.value.data();
-	      // needs to be swapped !!!!!!!!
-	      current_mesh.__set_nVertices( byteSwap< int64_t>( num));
+	      // current_mesh.__set_nVertices( byteSwap< int64_t>( num));
+	      current_mesh.__set_nVertices( byteSwapIfNeedPositive< int64_t>( num, MAXIMUM_ALLOWED_I64_NUMBER));
 	      current_mesh.__set_meshNumber( mesh_number);
 	      // }
 	    }
@@ -120,13 +122,14 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
 	      // data is in binary format ...
 	      int64_t num = *( int64_t *)it->second.value.data();
 	      // needs to be swapped !!!!!!!!
-	      current_mesh.__set_nElements( byteSwap< int64_t>( num));
+	      current_mesh.__set_nElements( byteSwapIfNeedPositive< int64_t>( num, MAXIMUM_ALLOWED_I64_NUMBER));
 	      current_mesh.__set_meshNumber( mesh_number);
 	    } else if ( !strcmp( pinfo, "nn")) {
 	      // data is in binary format ...
 	      int num = *( int *)it->second.value.data();
 	      // needs to be swapped !!!!!!!!
-	      current_mesh.elementType.__set_num_nodes( byteSwap< int>( num));
+	      // maximum number of nodes per element ( around 27 for quadratic hexaedrons, but for the future...)
+	      current_mesh.elementType.__set_num_nodes( byteSwapIfNeedPositive< int>( num, 1000));
 	      current_mesh.__set_meshNumber( mesh_number);
 	    } else if ( !strcmp( pinfo, "cl")) {
 	      current_mesh.__set_meshColor( it->second.value);
@@ -276,7 +279,7 @@ std::string HBase::getListOfMeshes( std::string &report, std::vector< MeshInfo> 
 /* end of getListOfMeshes */
 
 /* getListOfAnalyses */
-static bool getAnalysisNameFromMetadataRowKey( std::unordered_set< std::string> &analysisNames, const std::string &rowkey) {
+static bool getAnalysisNameFromMetadataRowKey( std::set< std::string> &analysisNames, const std::string &rowkey) {
   // only need to get AnalysisName from RowKey
   bool ok = true;
   // rowKeys in Metadata tables have
@@ -325,7 +328,7 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
   const size_t len_prefix = rowKeyPrefix.length();
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKeyPrefix, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
-  std::unordered_set< std::string> analysisNames;
+  std::set< std::string> analysisNames;
   bool scan_ok = true;
   int num_rows = 0;
   try {
@@ -413,7 +416,7 @@ std::string HBase::getListOfAnalyses( std::string &report, std::vector< std::str
   return result;
 }
 
-static bool getStepValueFromMetadataRowKey( std::unordered_set< double> &stepValues_set, const std::string &rowkey,
+static bool getStepValueFromMetadataRowKey( std::set< double> &stepValues_set, const std::string &rowkey,
 					    const size_t rowPrefix_len) {
   // rowPrefix already has modelID + length + Analysisname
   // only need to get StepValue from RowKey
@@ -450,7 +453,7 @@ bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> 
   const size_t len_prefix = rowKeyPrefix.length();
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKeyPrefix, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
-  std::unordered_set< double> stepValues_set;
+  std::set< double> stepValues_set;
   bool scan_ok = true;
   int num_rows = 0;
   try {

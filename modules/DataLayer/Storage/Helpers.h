@@ -118,6 +118,21 @@ namespace VELaSSCo
 			return reinterpret_cast<T&>(dst);
 		}
 	}
+  template< typename T>
+  inline T byteSwapIfNeed( T value, T saneLimit) {
+    // swapping depends if value has been injected as big (from java) or little (from c++) endian ...
+    return ( value > saneLimit) ? byteSwap< T>( value) : value;
+  }
+  template< typename T>
+  inline T byteSwapIfNeedPositive( T value, T saneLimit) {
+    // swapping depends if value has been injected as big (from java) or little (from c++) endian ...
+    return ( ( value < 0) || ( value > saneLimit)) ? byteSwap< T>( value) : value;
+  }
+
+// this limits the highest ID to 1.000.000 billion
+#define MAXIMUM_ALLOWED_I64_NUMBER ( ( int64_t)1024 * 1024 * 1024 * 1024 * 1024 * 1024)
+// this limits the highest ID to 1 billion
+#define MAXIMUM_ALLOWED_I32_NUMBER ( ( int)1024 * 1024 * 1024)
 
 	template<typename T>
 	inline std::string toHexString(T value, const char *format="%02x") {
