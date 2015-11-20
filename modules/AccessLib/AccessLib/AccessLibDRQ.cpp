@@ -58,7 +58,7 @@ extern "C" {
 	//  if (*ip != 0)
 	//    queryCommand << ",";
 	//}
-	queryCommand << "],\n";
+	//queryCommand << "],\n";
 	queryCommand << "  \"timeStep\"   : "  << timeStep << "\n";
 	queryCommand << "}\n";
 
