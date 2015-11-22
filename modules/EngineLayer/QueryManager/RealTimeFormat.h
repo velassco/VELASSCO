@@ -1,9 +1,10 @@
-
 //
 // VELaSSCo real-time file format draft
 //
 
 // ----------------------------------------------------------------------------
+
+#pragma once
 
 #include <stdint.h>
 
@@ -79,4 +80,36 @@ namespace VELaSSCo
 
   }
 
+}
+
+static std::istream& operator>>(std::istream& is, VELaSSCo::RTFormat::File& file){
+  is.read((char*)(&file.header),                  sizeof(VELaSSCo::RTFormat::Header));
+
+  if( file.header.descriptionBytes       > 0 )  {  file.data.description        = new uint8_t[file.header.descriptionBytes];        is.read((char*)(file.data.description),        file.header.descriptionBytes);        }
+  if( file.header.vertexDefinitionsBytes > 0 )  {  file.data.vertexDefinitions  = new uint8_t[file.header.vertexDefinitionsBytes];  is.read((char*)(file.data.vertexDefinitions),  file.header.vertexDefinitionsBytes);  }
+  if( file.header.vertexAttributesBytes  > 0 )  {  file.data.vertexAttributes   = new uint8_t[file.header.vertexAttributesBytes];   is.read((char*)(file.data.vertexAttributes),   file.header.vertexAttributesBytes);   } 
+  if( file.header.edgeDefinitionsBytes   > 0 )  {  file.data.edgeDefinitions    = new uint8_t[file.header.edgeDefinitionsBytes];    is.read((char*)(file.data.edgeDefinitions),    file.header.edgeDefinitionsBytes);    }
+  if( file.header.edgeAttributesBytes    > 0 )  {  file.data.edgeAttributes     = new uint8_t[file.header.edgeAttributesBytes];     is.read((char*)(file.data.edgeAttributes),     file.header.edgeAttributesBytes);     }
+  if( file.header.faceDefinitionsBytes   > 0 )  {  file.data.faceDefinitions    = new uint8_t[file.header.faceDefinitionsBytes];    is.read((char*)(file.data.faceDefinitions),    file.header.faceDefinitionsBytes);    }
+  if( file.header.faceAttributesBytes    > 0 )  {  file.data.faceAttributes     = new uint8_t[file.header.faceAttributesBytes];     is.read((char*)(file.data.faceAttributes),     file.header.faceAttributesBytes);     } 
+  if( file.header.cellDefinitionsBytes   > 0 )  {  file.data.cellDefinitions    = new uint8_t[file.header.cellDefinitionsBytes];    is.read((char*)(file.data.cellDefinitions),    file.header.cellDefinitionsBytes);    }
+  if( file.header.cellAttributesBytes    > 0 )  {  file.data.cellAttributes     = new uint8_t[file.header.cellAttributesBytes];     is.read((char*)(file.data.cellAttributes),     file.header.cellAttributesBytes);     }
+
+  return is;
+}
+
+static std::ostream& operator<<(std::ostream& os, const VELaSSCo::RTFormat::File& file){
+  os.write((char*)(&file.header),                  sizeof(VELaSSCo::RTFormat::Header));
+
+  if( file.header.descriptionBytes       > 0 )    os.write((char*)(file.data.description),        file.header.descriptionBytes);
+  if( file.header.vertexDefinitionsBytes > 0 )    os.write((char*)(file.data.vertexDefinitions),  file.header.vertexDefinitionsBytes);
+  if( file.header.vertexAttributesBytes  > 0 )    os.write((char*)(file.data.vertexAttributes),   file.header.vertexAttributesBytes);
+  if( file.header.edgeDefinitionsBytes   > 0 )    os.write((char*)(file.data.edgeDefinitions),    file.header.edgeDefinitionsBytes);
+  if( file.header.edgeAttributesBytes    > 0 )    os.write((char*)(file.data.edgeAttributes),     file.header.edgeAttributesBytes);
+  if( file.header.faceDefinitionsBytes   > 0 )    os.write((char*)(file.data.faceDefinitions),    file.header.faceDefinitionsBytes);
+  if( file.header.faceAttributesBytes    > 0 )    os.write((char*)(file.data.faceAttributes),     file.header.faceAttributesBytes);
+  if( file.header.cellDefinitionsBytes   > 0 )    os.write((char*)(file.data.cellDefinitions),    file.header.cellDefinitionsBytes);
+  if( file.header.cellAttributesBytes    > 0 )    os.write((char*)(file.data.cellAttributes),     file.header.cellAttributesBytes);
+
+  return os;
 }

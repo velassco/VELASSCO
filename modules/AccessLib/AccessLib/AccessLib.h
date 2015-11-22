@@ -18,6 +18,8 @@
 #  endif
 #endif
 
+#include "../../EngineLayer/QueryManager/RealTimeFormat.h"
+
 /**
  * List of function result codes. Non-zero codes indicate an error.
  */
@@ -152,9 +154,11 @@ extern "C" {
 						const char*     modelID,
 						const char*     resultID,
 						const char*     analysisID,
-						double          timeStep
+						double          timeStep,
 
 						/* out */
+            const char                      **result_status,
+            const VELaSSCo::RTFormat::File  **result_mesh_draw_data
             );
   
   /*

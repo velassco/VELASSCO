@@ -28,6 +28,7 @@
 
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
+#include "../../EngineLayer/QueryManager/RealTimeFormat.h"
 
 
 
@@ -41,7 +42,6 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
-
 
 // ***************************************************************************
 //
@@ -164,6 +164,8 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageGetResultFromVerticesID( _return, sessionID, query);
   } else if ( name == "GetListOfModels") {
     ManageGetListOfModels( _return, sessionID, query);
+  } else if ( name == "GetMeshDrawData") {
+    ManageGetMeshDrawData( _return, sessionID, query );
   } else if ( name == "OpenModel") {
     ManageOpenModel( _return, sessionID, query);
   } else if ( name == "CloseModel") {
@@ -352,6 +354,118 @@ void QM_DemoServer::ManageGetListOfMeshes( Query_Result &_return, const SessionI
   oss << "Units: " << "m" << std::endl;
   oss << "Color: " << "#2277ee" << std::endl;
   _return.__set_data( oss.str());
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+}
+
+void QM_DemoServer::ManageGetMeshDrawData( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  /* will be: a structure call RealTimeFormat */
+  std::ostringstream oss;
+
+  int nFaces = 12;
+  int nVertices = 8;
+
+  float vertices[] = 
+  {
+
+    // # Vertex 0
+    -1.0f,  -1.0f,  -1.0f,
+    -0.57f, -0.57f, -0.57f,
+
+    // # Vertex 1
+     1.0f,  -1.0f,  -1.0f,
+     0.57f, -0.57f, -0.57f,
+
+    // # Vertex 2
+     1.0f,  -1.0f,   1.0f,
+     0.57f, -0.57f,  0.57f,
+
+    // # Vertex 3
+    -1.0f,  -1.0f,   1.0f,
+    -0.57f, -0.57f,  0.57f,
+
+    // # Vertex 4
+    -1.0f,   1.0f,  -1.0f,
+    -0.57f,  0.57f, -0.57f,
+
+    // # Vertex 5
+     1.0f,   1.0f,  -1.0f,
+     0.57f,  0.57f, -0.57f,
+
+    // # Vertex 6
+     1.0f,   1.0f,   1.0f,
+     0.57f,  0.57f,  0.57f,
+
+    // # Vertex 7
+    -1.0f,   1.0f,   1.0f,
+    -0.57f,  0.57f,  0.57f,
+
+  };
+  int faces [] = 
+  {
+    // # Strip 0
+    0, 4, 1, 5, 2, 6, 3, 7, 0, 4, -1,
+
+    // # Strip 1
+    0, 1, 3, 2, -1,
+
+    // # Strip 2
+    4, 5, 7, 6, -1,
+  };
+
+  char description[] =
+    "# TEST PLY DATA                    \n"
+    "VertexDefinition = position, normal\n"
+    "vertexDefinitionType = float       \n"
+
+    "OgLPrimitiveRestartIndex = -1      \n";
+
+  VELaSSCo::RTFormat::File file;
+
+  file.header.magic[0] = 'V';
+  file.header.magic[1] = 'E';
+  file.header.magic[2] = 'L';
+  file.header.magic[3] = 'a';
+  file.header.magic[4] = 'S';
+  file.header.magic[5] = 'S';
+  file.header.magic[6] = 'C';
+  file.header.magic[7] = 'o';
+
+  file.header.version = 100;
+  file.header.descriptionBytes = sizeof(description);
+
+  file.header.metaBytes = 0;
+
+  file.header.vertexDefinitionsBytes  = sizeof(vertices);
+  file.header.vertexAttributesBytes   = 0;
+  file.header.edgeDefinitionsBytes    = 0;
+  file.header.edgeAttributesBytes     = 0;
+  file.header.faceDefinitionsBytes    = sizeof(faces);
+  file.header.faceAttributesBytes     = 0;
+  file.header.cellDefinitionsBytes    = 0;
+  file.header.cellAttributesBytes     = 0;
+
+  file.data.description       = (uint8_t*) description;
+  file.data.meta              = 0;
+
+  file.data.vertexDefinitions = (uint8_t*)vertices;
+  file.data.vertexAttributes  = 0;
+  file.data.edgeDefinitions   = 0;
+  file.data.edgeAttributes    = 0;
+  file.data.faceDefinitions   = (uint8_t*)faces;
+  file.data.faceAttributes    = 0;
+  file.data.cellDefinitions   = 0;
+  file.data.cellAttributes    = 0;
+
+  // Pack into string
+  oss << file;  
+
+  _return.__set_data( oss.str() ); 
   _return.__set_result( (Result::type)VAL_SUCCESS );
 		  
   LOGGER                                             << std::endl;

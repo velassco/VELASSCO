@@ -25,19 +25,19 @@ extern "C" {
 						const char*     modelID,
 						const char*     resultID,
 						const char*     analysisID,
-						double          timeStep
+						double          timeStep,
 
 						/* out */
+            const char                        **result_status,
+            const VELaSSCo::RTFormat::File    **result_mesh_draw_data
             )
   {
     CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
     CHECK_QUERY_POINTER( resultID );
     CHECK_QUERY_POINTER( analysisID );
-    //CHECK_QUERY_POINTER( vertexIDs );
-    //CHECK_QUERY_POINTER( resultVertexIDs );
-    //CHECK_QUERY_POINTER( resultValues );
-    //CHECK_QUERY_POINTER( resultNumVertices );
+    CHECK_QUERY_POINTER( result_status );
+    CHECK_QUERY_POINTER( result_mesh_draw_data );
 
 	API_TRACE;
     try
@@ -67,20 +67,20 @@ extern "C" {
 
 	// Give back pointers to actual binary data
 	if (result == VAL_SUCCESS)
-	  {
-	    size_t numVertices;
-	    size_t numElements;
+	{
+    std::istringstream in(*queryData);
 
-	    std::istringstream in(*queryData);
-	    in >> numVertices >> numElements >> std::ws;
+    VELaSSCo::RTFormat::File* file = new VELaSSCo::RTFormat::File;
+    in >> *file;
 
-	    const size_t offsetVertexIDs = (size_t)in.tellg();
-	    const size_t offsetValues    = offsetVertexIDs + numVertices*sizeof(int64_t);
-
-	    /**resultVertexIDs   = (const int64_t*)(&((*queryData)[offsetVertexIDs]));
-	    *resultValues      = (const double*) (&((*queryData)[offsetValues]));
-	    *resultNumVertices = numVertices;*/
-	  }
+    *result_mesh_draw_data = file;
+    *result_status = "Ok";
+	}
+  else
+  {
+    // in case of error queryData has the error message from the data layer
+	  *result_status = queryData->c_str();
+  }
 
 	return result;
       }
