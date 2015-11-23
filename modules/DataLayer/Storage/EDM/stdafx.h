@@ -46,16 +46,22 @@ extern "C" {
 #include "cpp10_EDM_interface.h"
 }
 
+
+
 #include "..\..\..\..\EDM_Interface\dem_schema_velassco_entityTypes.h"
 #include "..\..\..\..\EDM_Interface\fem_schema_velassco_entityTypes.h"
+#include "..\..\..\..\EDM_Interface\EDMcluster_entityTypes.h"
 #include "container.h"
 #include "..\..\..\..\EDM_Interface\dem_schema_velassco.hpp"
 #include "..\..\..\..\EDM_Interface\fem_schema_velassco.hpp"
+#include "..\..\..\..\EDM_Interface\EDMcluster.hpp"
 
 using namespace dem;
 using namespace fem;
 using namespace std;
+using namespace ecl;
 
+#include "EDMclusterServices.h"
 
 
 

@@ -6,6 +6,7 @@
 #include "EDMmodelCache.h"
 #include "CLogger.h"
 #include "VELaSSCoHandler.h"
+#include "VELaSSCoMethods.h"
 
 
 int main(int argc, char* argv[])
@@ -13,8 +14,9 @@ int main(int argc, char* argv[])
    int rstat;
    char errTxt[1024];
 
-   if (argc != 5) {
+   if (argc != 5 && argc != 6) {
       printf("The VELaSSCo Data Layer server shall have four command line parameters:\n   1. Communcation port\n   2. Database folder\n   3. Database name\n   4. Database password");
+      printf("\nOptional prameter: 5. File name for Cluster database init file");
       exit(0);
    }
    int port = atol(argv[1]);
@@ -24,7 +26,6 @@ int main(int argc, char* argv[])
    boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
    boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
    boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
-
 
    try {
       WSADATA wsaData = {};
@@ -39,6 +40,31 @@ int main(int argc, char* argv[])
       femRepository.open(sdaiRO);
       ourVELaSSCoHandler->cDEMrep = &demRepository;
       ourVELaSSCoHandler->cFEMrep = &femRepository;
+
+
+      SdaiRepository repositoryId;
+      CMemoryAllocator ma(0x100000);
+      int rstat = edmiCreateRepository("EDMcluster", &repositoryId);
+      if (rstat == OK) {
+         rstat = edmiCreateModelBN(repositoryId, "EDMcluster", "EDMcluster", 0);
+      }
+      Repository clusterRepository(&VELaSSCo_db, "EDMcluster");
+      Model clusterModel(&clusterRepository, &ma, &edmcluster_SchemaObject);
+      //clusterModel.open("EDMcluster", sdaiRW);
+      VELaSSCoCluster ourCluster(&clusterModel);
+      if (argc == 6) {
+         ourCluster.initClusterModel(argv[5]);
+      }
+      ourCluster.startServices();
+
+      VELaSSCoMethods findAllModels(&ourCluster);
+      findAllModels.buildServerContexts("superuser", "", "VELaSSCo");
+      //findAllModels.ListModels();
+      //findAllModels.ValidateModels();
+      findAllModels.getBoundingBox();
+
+      ourVELaSSCoHandler->defineCluster(&ourCluster);
+
       //ourVELaSSCoHandler->InitQueryCaches();
       FILE *logFile = fopen("EDMstorageModule.log", "w");
       CLoggWriter    ourLogger(logFile, true, true);

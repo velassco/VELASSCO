@@ -4,6 +4,7 @@ class VELaSSCoHandler : public VELaSSCoSMIf, public EDM_interface
    EDMmodelCache                                *setCurrentModelCache(SdaiModel modelID);
    std::map<SdaiModel, EDMmodelCache*>          caches;
    CLoggWriter                                  *thelog;
+   EDMclusterServices                           *theCluster;
 public:
    Repository                                   *cFEMrep;
    Repository                                   *cDEMrep;
@@ -146,12 +147,45 @@ public:
    * @param timeStep
    */
    void GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep);
+   /**
+   * Description: Given a session id, model id and a list of vertices ID, compute the axis
+   * aligned Bounding Box (BBox) of the model. For dynamic meshes, a time-step option and
+   * a list of time-steps need also to be provided as input parameters. Based on the values
+   * of these two input parameters, the BBox is calculated considering a single time-step,
+   * all time-steps, an interval of time-step or a set of time-steps. If list of vertices
+   * I'ds are empty, then all vertices from the model are considered.
+   *
+   * @param sessionID
+   * @param modelID
+   * @param verticesID
+   * @param analysisID
+   * @param timeStepOption
+   * @param timeSteps
+   */
+   void GetBoundingBox(rvGetBoundingBox& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & verticesID, const std::string& analysisID, const std::string& timeStepOption, const std::vector<double> & timeSteps);
+   /**
+   * Create cluster model creates, as the name says, a cluster model. The specified schema must exist
+   * in all the EDM databases in the clulster.
+   * The physical models are created in the databases in the cluster in a repository named
+   * clusterRepositoryName. If number of physical models are equal to the number of databases in the
+   * cluster, there will be created one model in each database.
+   * If the physical models already exist, this method will only create metadata about the cluster model
+   * in the cluster database.
+   *
+   * @param sessionID
+   * @param clusterRepositoryName
+   * @param clusterModelName
+   * @param schemaName
+   * @param physicalModelNames
+   */
+   void CreateClusterModel(rvCreateClusterModel& _return, const std::string& sessionID, const std::string& clusterRepositoryName, const std::string& clusterModelName, const std::string& schemaName, const std::vector<std::string> & physicalModelNames);
 
    void CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle> &elements);
    void ReportError(char *f);
    void InitQueryCaches();
    void GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, FEMmodelCache *fmc);
    void GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, DEMmodelCache *dmc);
+   void defineCluster(EDMclusterServices *cs) { theCluster = cs; }
 };
 
 
