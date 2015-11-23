@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "random_points.h"
 #include "elementID_of_random_points.h"
+#include "..\..\..\EngineLayer\QueryManager\analytics.h"
+#include "EDManalytics.h"
 
 
 VELaSSCoSMClient *clp = NULL;
@@ -100,6 +102,7 @@ Command can eiter be "all" or any of the querynames.
    int err = WSAStartup(wVersionRequested, &wsaData);
 #endif
 
+   AnalyticsModule *theAnalyst = new EDManalytics(&client);
    try {
       transport->open();
 
@@ -120,6 +123,21 @@ Command can eiter be "all" or any of the querynames.
       printf("Returned modelID: %s\n", rvOM.modelID.data());
       printf("Comments: %s\n", rvOM.report.data());
       modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
+      
+      if (strEQL(command, "all") || strEQL(command, "CreateClusterModel")) {
+         rvCreateClusterModel rvccm;
+         vector<string> physicalModelNames;
+
+         physicalModelNames.push_back("myModel_0");
+         physicalModelNames.push_back("myModel_1");
+         printf("\n--->CreateClusterModel:\n");
+         client.CreateClusterModel(rvccm, sessionID, "FEM_models", "myModel", "fem_schema_velassco", physicalModelNames);
+         printf("Return status: %s\n", rvccm.status.data());
+         printf("Comments: %s\n", rvccm.report.data());
+      }
+      //double theBoundingBox[6];
+      //string returnMsg;
+      //theAnalyst->calculateBoundingBox(sessionID, modelID_of_VELaSSCo_HbaseBasicTest_part_1, "", "", 0, NULL, 0, NULL, theBoundingBox, &returnMsg);
 
       //if (strEQL(command, "all") || strEQL(command, "string_getResultOnVertices")) {
       //   string vertices = getResultOnVertices(sessionID, "0", "analysis", 00.1, "resultID", "LOV");
