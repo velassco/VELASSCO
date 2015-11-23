@@ -156,11 +156,7 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   std::string modelID    = pt.get<std::string>("modelID");
   std::string resultID   = pt.get<std::string>("resultID");
   std::string analysisID = pt.get<std::string>("analysisID");
-  std::string vertexIDs  = as_string< size_t>( pt, "vertexIDs");
-//  double      timeStep   = pt.get<double>("timeStep");
-  
-  stringstream listOfVertices;
-  listOfVertices << "{\"id\":" << "[]" /*vertexIDs*/ << "}";
+  double      timeStep   = pt.get<double>("timeStep");
   
   std::stringstream sessionIDStr;
   sessionIDStr << sessionID;
@@ -174,96 +170,110 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   //std::cout << "V " << vertexIDs  << std::endl;
   //std::cout << "T " << timeStep   << std::endl;
   
-  bool test = true;
+  const bool test = true;
   if(test){
-//    PlyDataReader::getSingletonPtr()->readDataInfo("cow.ply", 0, 0);
-//    int nFaces = PlyDataReader::getSingletonPtr()->getNumFaces();
-//    int nVertices = PlyDataReader::getSingletonPtr()->getNumVertices();
+	  int nFaces = 12;
+	  int nVertices = 8;
 
-    int nFaces = 12;
-    int nVertices = 8;
+	  float vertices[] = 
+	  {
 
-    float* vertices = new float[6 * nVertices]; // position, normal.
-    int* faces = new int[4 * nFaces];
-    int* indices = new int[3 * nFaces];
+		// # Vertex 0
+		-1.0f,  -1.0f,  -1.0f,
+		-0.57f, -0.57f, -0.57f,
 
-//    PlyDataReader::getSingletonPtr()->readData(vertices, indices);
+		// # Vertex 1
+		 1.0f,  -1.0f,  -1.0f,
+		 0.57f, -0.57f, -0.57f,
 
-    // every strip.
-    for (int i = 0; i < nFaces; i++){
-      faces[4 * i + 0] = indices[3 * i + 0];
-      faces[4 * i + 1] = indices[3 * i + 1];
-      faces[4 * i + 2] = indices[3 * i + 2];
-      faces[4 * i + 3] = -1;
-    }
+		// # Vertex 2
+		 1.0f,  -1.0f,   1.0f,
+		 0.57f, -0.57f,  0.57f,
 
-    char description[] =
-      "# TEST PLY DATA                    \n"
-      "VertexDefinition = position, normal\n"
-      "vertexDefinitionType = float       \n"
+		// # Vertex 3
+		-1.0f,  -1.0f,   1.0f,
+		-0.57f, -0.57f,  0.57f,
 
-      "OgLPrimitiveRestartIndex = -1      \n";
+		// # Vertex 4
+		-1.0f,   1.0f,  -1.0f,
+		-0.57f,  0.57f, -0.57f,
 
-    VELaSSCo::RTFormat::File file;
+		// # Vertex 5
+		 1.0f,   1.0f,  -1.0f,
+		 0.57f,  0.57f, -0.57f,
 
-    file.header.magic[0] = 'V';
-    file.header.magic[1] = 'E';
-    file.header.magic[2] = 'L';
-    file.header.magic[3] = 'a';
-    file.header.magic[4] = 'S';
-    file.header.magic[5] = 'S';
-    file.header.magic[6] = 'C';
-    file.header.magic[7] = 'o';
+		// # Vertex 6
+		 1.0f,   1.0f,   1.0f,
+		 0.57f,  0.57f,  0.57f,
 
-    file.header.version = 100;
-    file.header.descriptionBytes = sizeof(description);
+		// # Vertex 7
+		-1.0f,   1.0f,   1.0f,
+		-0.57f,  0.57f,  0.57f,
 
-    file.header.metaBytes = 0;
+	  };
+	  int faces [] = 
+	  {
+		// # Strip 0
+		0, 4, 1, 5, 2, 6, 3, 7, 0, 4, -1,
 
-    file.header.vertexDefinitionsBytes = sizeof(vertices);
-    file.header.vertexAttributesBytes = 0;
-    file.header.edgeDefinitionsBytes = 0;
-    file.header.edgeDefinitionsBytes = 0;
-    file.header.faceDefinitionsBytes = sizeof(faces);
-    file.header.faceDefinitionsBytes = 0;
-    file.header.cellDefinitionsBytes = 0;
-    file.header.cellDefinitionsBytes = 0;
+		// # Strip 1
+		0, 1, 3, 2, -1,
 
-    file.data.description       = (uint8_t*) description;
-    file.data.meta              = 0;
+		// # Strip 2
+		4, 5, 7, 6, -1,
+	  };
 
-    file.data.vertexDefinitions = (uint8_t*)vertices;
-    file.data.vertexAttributes  = 0;
-    file.data.edgeDefinitions   = 0;
-    file.data.edgeAttributes    = 0;
-    file.data.faceDefinitions   = (uint8_t*)faces;
-    file.data.faceAttributes    = 0;
-    file.data.cellDefinitions   = 0;
-    file.data.cellAttributes    = 0;
+	  char description[] =
+		"# TEST PLY DATA                    \n"
+		"VertexDefinition = position, normal\n"
+		"vertexDefinitionType = float       \n"
 
-    // Pack into string
-    std::string result;
-    std::ostringstream oss;
-    result += std::string((char*)(&file.header),                  sizeof(VELaSSCo::RTFormat::Header));
-    result += std::string((char*)(&file.data.description),        file.header.descriptionBytes);
-    result += std::string((char*)(&file.data.vertexDefinitions),  file.header.vertexDefinitionsBytes);
-    result += std::string((char*)(&file.data.vertexAttributes),   file.header.vertexAttributesBytes);
-    result += std::string((char*)(&file.data.edgeDefinitions),    file.header.edgeDefinitionsBytes);
-    result += std::string((char*)(&file.data.edgeAttributes),     file.header.edgeAttributesBytes);
-    result += std::string((char*)(&file.data.faceDefinitions),    file.header.faceDefinitionsBytes);
-    result += std::string((char*)(&file.data.faceAttributes),     file.header.faceAttributesBytes);
-    result += std::string((char*)(&file.data.cellDefinitions),    file.header.cellDefinitionsBytes);
-    result += std::string((char*)(&file.data.cellAttributes),     file.header.cellAttributesBytes);
+		"OgLPrimitiveRestartIndex = -1      \n";
 
-    _return.__set_data(result); 
+	  VELaSSCo::RTFormat::File file;
 
-    // clean up the data
-    delete[] faces;
-    delete[] vertices;
-    delete[] indices;
+	  file.header.magic[0] = 'V';
+	  file.header.magic[1] = 'E';
+	  file.header.magic[2] = 'L';
+	  file.header.magic[3] = 'a';
+	  file.header.magic[4] = 'S';
+	  file.header.magic[5] = 'S';
+	  file.header.magic[6] = 'C';
+	  file.header.magic[7] = 'o';
+
+	  file.header.version = 100;
+	  file.header.descriptionBytes = sizeof(description);
+
+	  file.header.metaBytes = 0;
+
+	  file.header.vertexDefinitionsBytes  = sizeof(vertices);
+	  file.header.vertexAttributesBytes   = 0;
+	  file.header.edgeDefinitionsBytes    = 0;
+	  file.header.edgeAttributesBytes     = 0;
+	  file.header.faceDefinitionsBytes    = sizeof(faces);
+	  file.header.faceAttributesBytes     = 0;
+	  file.header.cellDefinitionsBytes    = 0;
+	  file.header.cellAttributesBytes     = 0;
+
+	  file.data.description       = (uint8_t*) description;
+	  file.data.meta              = 0;
+
+	  file.data.vertexDefinitions = (uint8_t*)vertices;
+	  file.data.vertexAttributes  = 0;
+	  file.data.edgeDefinitions   = 0;
+	  file.data.edgeAttributes    = 0;
+	  file.data.faceDefinitions   = (uint8_t*)faces;
+	  file.data.faceAttributes    = 0;
+	  file.data.cellDefinitions   = 0;
+	  file.data.cellAttributes    = 0;
+
+	  // Pack into string
+	  std::ostringstream oss;
+	  oss << file;  
+
+	  _return.__set_data( oss.str() ); 
+	  _return.__set_result( (Result::type)VAL_SUCCESS );
   }
-		  
-  _return.__set_result( (Result::type)VAL_SUCCESS );
 		  
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
