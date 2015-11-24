@@ -3,8 +3,8 @@
 
 #include "stdafx.h"
 #include "..\EDM_Interface\EDM_interface.h"
-#include "EDMmodelCache.h"
-#include "VELaSSCoHandler.h"
+#include "..\modules\DataLayer\Storage\EDM\EDMmodelCache.h"
+#include "..\modules\DataLayer\Storage\EDM\VELaSSCoHandler.h"
 #include "EDMclusterServices.h"
 #include "VELaSSCoMethods.h"
 
@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
       VELaSSCoMethods findAllModels(&ourCluster);
       findAllModels.buildServerContexts("superuser", "", "VELaSSCo");
       findAllModels.ListModels();
+      findAllModels.ValidateModels();
 
       
       

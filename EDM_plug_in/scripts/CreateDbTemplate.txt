@@ -54,6 +54,7 @@ Schemata>GenerateInterface>Cpp2010(EDMcluster, O:\projects\VELaSSCo\SVN_src\EDM_
 Data>Create>Repository(DEM_models, OPEN_REPOSITORY)
 Data>Create>Repository(FEM_models, OPEN_REPOSITORY)
 Data>Create>Repository(EDMcluster, OPEN_REPOSITORY)
+Data>Create>Model(EDMcluster, edmcluster, EDMcluster, "OPEN_MODEL,CHAR_ENCODING_ISO_8859_1")
 Database>Close($, $)
 Aux>History>Stop(STOP_HISTORY_TO_FILE)
 

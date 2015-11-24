@@ -11,7 +11,7 @@
 #include <tchar.h>
 
 
-#include "..\modules\thrift\VELaSSCo\gen-cpp\StorageModule.h"
+#include "..\modules\DataLayer\Storage\EDM\gen-cpp\VELaSSCoSM.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
@@ -33,8 +33,6 @@ using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
-
-using namespace  ::dli;
 
 using namespace  std;
 

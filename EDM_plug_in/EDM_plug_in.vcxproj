@@ -97,12 +97,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);CPU_64B;_WINDOWS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src;..\gen-cpp</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\boost\boost_1_58_0\lib64-msvc-12.0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\x64\Debug;O:\edm\v6.0.xxx\output\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libthrift.lib;cpp10.lib;edmikit600.lib</AdditionalDependencies>
+      <AdditionalDependencies>libthrift.lib;cpp10.lib;edmikit600_multi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -147,11 +148,9 @@
     <ClInclude Include="..\EDM_Interface\EDMcluster.hpp" />
     <ClInclude Include="..\EDM_Interface\EDM_Interface.h" />
     <ClInclude Include="EDMclusterServices.h" />
-    <ClInclude Include="EDMmodelCache.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="VELaSSCoHandler.h" />
     <ClInclude Include="VELaSSCoMethods.h" />
   </ItemGroup>
   <ItemGroup>
@@ -161,19 +160,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\EDM_Interface\fem_schema_velassco.cpp" />
-    <ClCompile Include="..\modules\thrift\VELaSSCo\gen-cpp\StorageModule.cpp">
+    <ClCompile Include="..\modules\DataLayer\Storage\EDM\gen-cpp\VELaSSCoSM.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\modules\thrift\VELaSSCo\gen-cpp\storage_module_constants.cpp">
+    <ClCompile Include="..\modules\DataLayer\Storage\EDM\gen-cpp\VELaSSCoSM_constants.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\modules\thrift\VELaSSCo\gen-cpp\storage_module_types.cpp">
+    <ClCompile Include="..\modules\DataLayer\Storage\EDM\gen-cpp\VELaSSCoSM_types.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\modules\DataLayer\Storage\EDM\VELaSSCoHandler.cpp" />
     <ClCompile Include="EDMclusterServices.cpp" />
-    <ClCompile Include="EDMmodelCache.cpp" />
     <ClCompile Include="EDM_plug_in.cpp" />
-    <ClCompile Include="VELaSSCoHandler.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
