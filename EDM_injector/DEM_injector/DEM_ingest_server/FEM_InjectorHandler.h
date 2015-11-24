@@ -3,7 +3,6 @@
 
 class FEM_InjectorHandler : public EDM_interface
 {
-   map<int, dem::Particle*>               particles;
    map<int, dem::FEM_mesh*>               meshes;
    int                                    cContactID;
 
@@ -37,16 +36,10 @@ public:
    FEM_InjectorHandler(dbSchema *s)  {
       currentSchema = s; cContactID = 0;
    }
-   void UserLogin(std::string& _return, const std::string& user_name, const std::string& role, const std::string& password);
-   void UserLogout(std::string& _return, const std::string& sessionID);
-   void StoreDEM_Simulation(std::string& _return, const std::string& sessionID, const std::string& model_name, const DEM_Inject::Simulation& theSimulation);
-   void DeleteModelContent(std::string& _return, const std::string& sessionID, const std::string& model_name);
    
    void InjectFile(char *file_name);
    void InjectMesh(char *MeshFileFolder, char *MeshName, char *MeshVersion);
    char *readNextLine();
-   void store_TIMESTEP_PARTICLES();
-   void store_TIMESTEP_CONTACTS();
    void flushObjectsAndClose();
    void DeleteCurrentModelContent();
    void InitiateFileInjection();
