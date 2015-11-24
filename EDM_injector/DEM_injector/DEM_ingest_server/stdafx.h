@@ -37,9 +37,12 @@ extern "C" {
 }
 
 #include "..\..\..\EDM_Interface\dem_schema_velassco_entityTypes.h"
+#include "..\..\..\EDM_Interface\fem_schema_velassco_entityTypes.h"
 #include "container.h"
 #include "..\..\..\EDM_Interface\dem_schema_velassco.hpp"
+#include "..\..\..\EDM_Interface\fem_schema_velassco.hpp"
 using namespace dem;
+using namespace fem;
 using namespace std;
 
 

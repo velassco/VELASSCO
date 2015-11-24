@@ -46,18 +46,24 @@ int main(int argc, char **argv)
    }
    try {
       int port = 9090;
+      char *repositoryName;
 
+      if (strEQL(argv[1], "FEMfiles")) {
+         repositoryName = "FEM_models";
+      } else {
+         repositoryName = "DEM_models";
+      }
       DEM_InjectorHandler demInjector(&dem_schema_velassco_SchemaObject);
       Database VELaSSCo_db(dbFolder, dbName, dbPassword);
-      Repository demRepository(&VELaSSCo_db, "DEM_models");
+      Repository demRepository(&VELaSSCo_db, repositoryName);
 
       if (strEQL(argv[1], "Server") || strEQL(argv[1], "Files")) {
          demInjector.setCurrentSchemaName("dem_schema_velassco");
-
          demInjector.setDatabase(&VELaSSCo_db);
          VELaSSCo_db.open();
          demRepository.open(sdaiRW);
          demInjector.setCurrentRepository(&demRepository);
+      } else if (strEQL(argv[1], "FEMfiles")) {
       }
       if (strEQL(argv[1], "Server")) {
          boost::shared_ptr<DEM_InjectorHandler> handler(&demInjector);
