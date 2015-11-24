@@ -1,8 +1,8 @@
-#ifndef EDMcluster_HPP
-#define EDMcluster_HPP
+#ifndef edmcluster_HPP
+#define edmcluster_HPP
 #pragma warning( disable : 4091 )
 
-extern tEdmiEntityData EDMcluster_Entities[];
+extern tEdmiEntityData edmcluster_Entities[];
 
 namespace ecl {
 
@@ -220,8 +220,8 @@ extern void *supertype_cast(entityType wantedSuperType, void *p, entityType subT
 
 extern dbInstance *dbInstance_cast(void *p, entityType subType);
 
-extern const char *EDMcluster_DefinedTypeNames[];
+extern const char *edmcluster_DefinedTypeNames[];
 
-extern ecl_Schema EDMcluster_SchemaObject;
+extern ecl_Schema edmcluster_SchemaObject;
 }
 #endif
