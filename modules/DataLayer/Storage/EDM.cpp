@@ -104,6 +104,22 @@ std::string EDM::getResultOnVertices( const std::string &sessionID,
  #endif
 }
 
+std::string EDM::getCoordinatesAndElementsFromMesh( const std::string &sessionID,
+                                     const std::string &modelID,
+                                     const std::string &analysisID,
+                                     const double       timeStep,
+                                     const std::string &resultID 	   )
+{
+
+#ifdef _WIN32
+   std::string resultString( "Not implemented");
+   return resultString;
+ #else
+   std::string resultString( "Not implemented");
+   return resultString;
+ #endif
+}
+
 #ifdef WIN32
 
 // #define EDM_TEST_SERVER

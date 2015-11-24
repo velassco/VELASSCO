@@ -65,6 +65,20 @@ namespace VELaSSCo
     std::string getResultOnVertices_thrift( const std::string &sessionID,  const std::string &modelID, 
 					    const std::string &analysisID, const double       timeStep,  
 					    const std::string &resultID,   const std::string &listOfVertices );
+					    
+	// GetCoordinatesAndElementsFromMesh
+	std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID,
+                                             const std::string &analysisID,
+                                             const double       timeStep,
+                                             const std::string &resultID);
+	std::string getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID,
+                                             const std::string &analysisID,
+                                             const double       timeStep,
+                                             const std::string &resultID);
+	std::string getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID,
+                                             const std::string &analysisID,
+                                             const double       timeStep,
+                                             const std::string &resultID);
   private:
 
     double fRand(double fMin, double fMax);

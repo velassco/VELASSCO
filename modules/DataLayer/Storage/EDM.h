@@ -55,6 +55,13 @@ namespace VELaSSCo
                                      const double       timeStep,
                                      const std::string &resultID,
                                      const std::string &listOfVertices );
+                                     
+    std::string getCoordinatesAndElementsFromMesh( const std::string &sessionID,
+                                     const std::string &modelID,
+                                     const std::string &analysisID,
+                                     const double       timeStep,
+                                     const std::string &resultID 	   );
+                                         
   private:
     EDMClient *_edm_client;
     boost::shared_ptr<TTransport> _socket;

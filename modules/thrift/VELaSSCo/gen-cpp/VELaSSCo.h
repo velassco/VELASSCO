@@ -49,6 +49,20 @@ class VELaSSCoIf {
   virtual void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) = 0;
 
   /**
+   * Return the coordinate and elements of a model's mesh.
+   * @return string - returns a structured list of vertices and elements together. 
+   * if errors occur the contect is also returned here?
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param timeStep
+   * @param resultID
+   * @param listOfVertices
+   */
+  virtual void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID) = 0;
+
+  /**
    * Stop Data Layer
    */
   virtual void stopAll() = 0;
@@ -186,6 +200,9 @@ class VELaSSCoNull : virtual public VELaSSCoIf {
     return;
   }
   void GetResultFromVerticesID(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */, const std::string& /* listOfVertices */) {
+    return;
+  }
+  void GetCoordinatesAndElementsFromMesh(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */) {
     return;
   }
   void stopAll() {

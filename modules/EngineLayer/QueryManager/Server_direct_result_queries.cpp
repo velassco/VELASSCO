@@ -273,8 +273,10 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 
 	  _return.__set_data( oss.str() ); 
 	  _return.__set_result( (Result::type)VAL_SUCCESS );
+  } else {
+	  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID);
   }
-		  
+
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
   LOGGER << "  result : "   << _return.result        << std::endl;

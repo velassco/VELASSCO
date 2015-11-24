@@ -89,6 +89,26 @@ namespace VELaSSCo
                                              const double       timeStep,
                                              const std::string &resultID,
                                              const std::string &listOfVertices ) = 0;
+                                             
+    /*
+     * Access the database and return a list o vertices, and elements which have created the mesh of a dataset.
+     * The result is a string. Each line represents a vertex and is defined as:
+     * 
+     * <Num_Vertices> <X-coord 0> <Y-coord 0> <Z-coord 0> <X-coord 1> <Y-coord 1> <Z-coord 1> <X-coord 2> <Y-coord 2> <Z-coord 2> <Num_Indices> <Index 0> <Index 1> <Index 2> ...
+     * 
+     * For example:
+     * 
+     *  4 -1 -1 -1 1 -1 -1 1 1 -1 -1 1 -1
+     *  5 1 0 2 3 -1
+     * 
+     * describes a plane made of 4 vertices, and 2 faces. -1 in the end declares end of TRIANGLE_STRIP.
+     * 
+     */                                         
+    virtual std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID,
+                                             const std::string &modelID,
+                                             const std::string &analysisID,
+                                             const double       timeStep,
+                                             const std::string &resultID) = 0;
   };
 
 }

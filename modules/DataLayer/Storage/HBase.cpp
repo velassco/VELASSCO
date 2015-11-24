@@ -476,6 +476,13 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
     return result.str();
 }
 
+std::string HBase::getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
+					const std::string &analysisID, const double       timeStep,  
+					const std::string &resultID,   const std::string &listOfVertices ) {
+  return getResultOnVertices_curl( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
+  // return getResultOnVertices_thrift( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
+}
+
 std::string HBase::getResultOnVertices_curl( const std::string &sessionID,
 					     const std::string &modelID,
 					     const std::string &analysisID,
@@ -684,11 +691,209 @@ std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
   // return result;
 }
 
+// ==============================================================
+// ==============================================================
+// GetCoordinatesAndElementsFromMesh
+// ==============================================================
+// ==============================================================
 
-std::string HBase::getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
-					const std::string &analysisID, const double       timeStep,  
-					const std::string &resultID,   const std::string &listOfVertices ) {
-  return getResultOnVertices_curl( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
-  // return getResultOnVertices_thrift( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
+std::string HBase::getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID) {
+  return getCoordinatesAndElementsFromMesh_curl( sessionID, modelID, analysisID, timeStep, resultID );		
+  //return getCoordinatesAndElementsFromMesh_thrift( sessionID, modelID, analysisID, timeStep, resultID, coords, elements );		
 }
 
+std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID) {
+  std::cout << "getCoordinatesAndElementsFromMesh CURL: =====" << std::endl;
+  std::cout << "S " << sessionID      << std::endl;
+  std::cout << "M " << modelID        << std::endl;
+  std::cout << "R " << resultID       << std::endl;
+  std::cout << "A " << analysisID     << std::endl;
+  std::cout << "T " << timeStep       << std::endl;
+
+  string cmd = "http://pez001:8880/";
+  // cmd += "Simulations_Data";
+  // cmd += "Test_VELaSSCo_Models";
+  cmd += "T_Simulations_Data";
+  cmd += "/";
+  std::stringstream key;
+  //key << "0x";
+  //key << modelID;
+  //key << analysisID;
+  //key << timeStep;
+  //key << resultID;
+
+  //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
+  //key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
+
+  // key << "D*";
+  // key << "scanner/14448375409011a4cbd8";
+	
+	unsigned partitionID = 1;
+	
+	std::string simulationID_hex       = "4d0e0c37be088e715de50d2230887579";
+	std::string analysisNameLength_hex = toHexString(byteSwap((uint32_t)analysisID.size()));
+	std::string analysisNameChars      = analysisID;
+	std::string timeStep_hex           = toHexString(byteSwap((double)timeStep));
+	std::string partitionID_hex        = toHexString(byteSwap((uint32_t)partitionID));
+
+	key << simulationID_hex
+		<< analysisNameLength_hex
+		<< analysisNameChars
+		<< timeStep_hex
+		<< partitionID_hex;
+
+  cmd += key.str();
+  cout << cmd << endl;
+
+    
+  CurlCommand do_curl;
+  string buffer;
+    
+  bool ok = do_curl.Evaluate( buffer, cmd);
+
+  std::cout << "**********\n";    
+  std::cout << buffer << std::endl;
+  std::cout << "**********\n";    
+    
+  //
+  string result( "");
+  if ( ok) {
+    if(analysisID.find("DEM") >= 0)
+      {
+	// buffer should be checked against "Not found"
+	std::size_t found = buffer.find( "Not found");
+	if ( ( found == string::npos) || ( found > 10)) {
+	  // assume that the error message "Not found" should be at the begining of the returned buffer
+	  //result = parse1DEM(buffer, listOfVertices);
+	  cout << "Looking for mesh...\n";
+	  result = buffer;
+	}
+	if ( result == "") { // there has been some errors parsing the JSON tree or is "Not found"
+	  result = buffer;
+	}
+      }
+    else if(analysisID.find("FEM") >= 0)
+      {
+	cout << buffer << endl;
+      }
+  }  else {
+    // !ok
+    result = buffer;
+  }
+  return result;
+}
+
+std::string HBase::getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID) {
+  std::cout << "getResultOnVertices THRIFT: =====" << std::endl;
+  std::cout << "S " << sessionID      << std::endl;
+  std::cout << "M " << modelID        << std::endl;
+  std::cout << "R " << resultID       << std::endl;
+  std::cout << "A " << analysisID     << std::endl;
+  std::cout << "T " << timeStep       << std::endl;
+
+  string table_name = "Simulations_Data";
+  string result;
+
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  // TScan ts;
+  // std::stringstream filter;
+  // filter.str("");
+  // ts.__set_filterString(filter.str());
+
+  StrVec cols;
+  cols.push_back( "M:"); // all qualifiers inside the M column family
+  const char *ascii_model_id = "1dfa14ef887d15415d62d3489c4ce41f";
+  char bin_row_key[ 20];
+  assert( strlen( ascii_model_id) == 32);
+  FromHexString( bin_row_key, 20, ascii_model_id, strlen( ascii_model_id));
+  std::string base64_key = base64_encode( bin_row_key, 16);
+  string start_row = base64_decode( base64_key); // decode base64 to binary string
+
+  for ( int i = 0; i < 16; i++) {
+    std::cout << ( int)bin_row_key[ i] << ", ";
+  }
+  std::cout << endl;
+  for ( int i = 0; i < 16; i++) {
+    std::cout << ( int)start_row.data()[ i] << ", ";
+  }
+  std::cout << endl;
+
+  ScannerID scan_id = _hbase_client->scannerOpen( table_name, start_row, cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+  bool scan_ok = true;
+  try {
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+	break;
+      // process rowsResult
+      std::cout << "numberof rows = " << rowsResult.size() << endl;
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
+	// convert to return type
+	// FullyQualifiedModelName model_info;
+	// bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
+	// if ( ok) {
+	//   listOfModelNames.push_back( model_info);
+	// }
+	printRow( rowsResult[ i]);
+      }
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    result = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    result = tmp.str();
+  } catch (...) {
+    result = "other error";
+  }
+  _hbase_client->scannerClose( scan_id);
+
+  std::cout << "**********\n";
+  std::cout << result << endl;
+  std::cout << "**********\n";
+
+  return "Error";
+  // cmd += "/";
+  // std::stringstream key;
+  // //key << "0x";
+  // //key << modelID;
+  // //key << analysisID;
+  // //key << timeStep;
+  // //key << resultID;
+  // 
+  // //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
+  // key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
+  // 
+  // cmd += key.str();
+  // cout << cmd << endl;
+  // 
+  //   
+  // CurlCommand do_curl;
+  // string buffer;
+  //   
+  // bool ok = do_curl.Evaluate( buffer, cmd);
+  // 
+  // std::cout << "**********\n";    
+  // std::cout << buffer << std::endl;
+  // std::cout << "**********\n";    
+  //   
+  // //
+  // string result;
+  // if(analysisID.find("DEM") >= 0)
+  //   {
+  //     result = parse1DEM(buffer, listOfVertices);
+  //   }
+  // else if(analysisID.find("FEM") >= 0)
+  //   {
+  //     cout << buffer << endl;
+  //   }
+  // 
+  // return result;
+}

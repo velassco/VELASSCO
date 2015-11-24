@@ -65,6 +65,11 @@ public:
 			      double timeStep,
 			      std::string resultID,
 			      std::string listOfVertices);
+  std::string getCoordinatesAndElementsFromMesh( std::string sessionID, 
+				  std::string modelID,
+				  std::string analysisID,
+				  double timeStep,
+				  std::string resultID);
   std::string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 			  const std::string &sessionID, const std::string &modelID,
 			  const std::string &analysisID, const double stepValue);
