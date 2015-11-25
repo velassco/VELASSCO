@@ -1,20 +1,54 @@
 SCHEMA FEM_SCHEMA_VELASSCO;
 
   TYPE ElementType = ENUMERATION OF
-    (LINE,
-     TETRAHEDRA,
+    (POINT,
+     LINE,
      TRIANGLE,
-     SPHERE);
+     QUADRILATERAL,
+     TETRAHEDRA,
+     HEXAHEDRA,
+     PRISM,
+     PYRAMID,
+     SPHERE,
+     CIRCLE);
   END_TYPE;
 
   TYPE ValueType = ENUMERATION OF
     (SCALAR,
-     VECTOR);
+     VECTOR,
+     MATRIX,
+     PLAINDEFORMATIONMATRIX,
+     MAINMATRIX,
+     LOCALAXES,
+     COMPLEXSCALAR,
+     COMPLEXVECTOR);
   END_TYPE;
 
   TYPE LocationType = ENUMERATION OF
-    (LOC_NODE,
-     LOC_GPOINT);
+    (ONNODES,
+     ONGAUSSPOINTS);
+  END_TYPE;
+
+  TYPE GaussPointType = ENUMERATION OF
+    (GP_LINE_1,
+     GP_TRIANGLE_1,
+     GP_TRIANGLE_3,
+     GP_TRIANGLE_6,
+     GP_TETRAHEDRA_1,
+     GP_TETRAHEDRA_4,
+     GP_TETRAHEDRA_10,
+     GP_SPHERE_1,
+     GP_QUADRILATERAL_1,
+     GP_QUADRILATERAL_4,
+     GP_QUADRILATERAL_9,
+     GP_HEXAHEDRA_1,
+     GP_HEXAHEDRA_8,
+     GP_HEXAHEDRA_27,
+     GP_PRISM_1,
+     GP_PRISM_6,
+     GP_PIRAMID_1,
+     GP_PIRAMID_5,
+     GP_CIRCLE_1);
   END_TYPE;
 
   ENTITY Mesh;
@@ -24,6 +58,7 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       elementType   : ElementType;
       nodes         : LIST [1:?] OF Node;
       elements      : LIST [1:?] OF Element;
+      results       : OPTIONAL LIST [1:?] OF ResultHeader;
   END_ENTITY;
 
   ENTITY Node;
@@ -34,7 +69,6 @@ SCHEMA FEM_SCHEMA_VELASSCO;
   END_ENTITY;
 
   ENTITY Element;
-      name  : STRING;
       nodes : LIST [1:?] OF Node;
       id    : INTEGER;
   END_ENTITY;
@@ -51,8 +85,10 @@ SCHEMA FEM_SCHEMA_VELASSCO;
   END_ENTITY;
 
   ENTITY ResultBlock;
-      header : ResultHeader;
-      values : LIST [1:?] OF Result;
+      header           : ResultHeader;
+      values           : LIST [1:?] OF Result;
+      gauss_points     : GaussPoint;
+      gauss_point_type : GaussPointType;
   END_ENTITY;
 
   ENTITY Result
@@ -70,17 +106,24 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       values : LIST [1:?] OF REAL;
   END_ENTITY;
 
-  ENTITY ModelInfo;
-      min_x                 : REAL;
-      min_y                 : REAL;
-      min_z                 : REAL;
-      max_x                 : REAL;
-      max_y                 : REAL;
-      max_z                 : REAL;
-      index_file            : STRING;
-      index_file_version    : INTEGER;
-      build_index_time      : INTEGER;
-      last_change_mesh_time : INTEGER;
+  ENTITY Matrix_2D
+    SUBTYPE OF(Result);
+      values : ARRAY [0:2] OF REAL;
+  END_ENTITY;
+
+  ENTITY Matrix_3D
+    SUBTYPE OF(Result);
+      values : ARRAY [0:5] OF REAL;
+  END_ENTITY;
+
+  ENTITY Matrix_Deformated
+    SUBTYPE OF(Result);
+      values : ARRAY [0:3] OF REAL;
+  END_ENTITY;
+
+  ENTITY GaussPoint;
+      gauss_point_for : Element;
+      values          : SET [1:?] OF REAL;
   END_ENTITY;
 
 END_SCHEMA;
