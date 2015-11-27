@@ -94,11 +94,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src;..\gen-cpp;.;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\edmsys;O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\web.services</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src;..\gen-cpp;.;C:\edm\edmsix.1.100.16\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src;..\gen-cpp;.;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\edmsys;O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\web.services</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\EDM_Interface\dem_schema_velassco.hpp" />
     <ClInclude Include="..\..\..\EDM_Interface\EDM_Interface.h" />
+    <ClInclude Include="..\..\..\EDM_Interface\fem_schema_velassco.hpp" />
     <ClInclude Include="..\gen-cpp\DEM_Injector.h" />
     <ClInclude Include="..\gen-cpp\dem_schema_velassco_constants.h" />
     <ClInclude Include="..\gen-cpp\dem_schema_velassco_types.h" />
@@ -158,9 +160,16 @@
     <ClCompile Include="..\..\..\EDM_Interface\EDM_interface.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\gen-cpp\DEM_Injector.cpp" />
-    <ClCompile Include="..\gen-cpp\dem_schema_velassco_constants.cpp" />
-    <ClCompile Include="..\gen-cpp\dem_schema_velassco_types.cpp" />
+    <ClCompile Include="..\..\..\EDM_Interface\fem_schema_velassco.cpp" />
+    <ClCompile Include="..\gen-cpp\DEM_Injector.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\gen-cpp\dem_schema_velassco_constants.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\gen-cpp\dem_schema_velassco_types.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="DEM_InjectorHandler.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
