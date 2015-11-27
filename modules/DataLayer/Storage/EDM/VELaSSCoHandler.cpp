@@ -1083,9 +1083,15 @@ void  VELaSSCoHandler::CreateClusterModel(rvCreateClusterModel& _return, const s
    char condition[1024];
 
    try {
-      sprintf(condition, "(name = '%s') and (belongs_to.name = '%s')", clusterModelName.data(), clusterRepositoryName.data());
-      CHECK(edmiFindInstancesBN(theCluster->getClusterModelID(), "ClusterModel", condition, 2 * sizeof(SdaiInstance), &index, &numberOfHits, resultBuffer));
-      if (numberOfHits == 0) {
+      Model *m = theCluster->clusterModel;
+      ClusterModel *cm = theCluster->getClusterModel(clusterModelName.data(), clusterRepositoryName.data());
+      if (cm == NULL) {
+         ClusterRepository *cr = theCluster->getClusterRepository(clusterRepositoryName.data());
+         if (!cr) {
+            cr = new(m)ClusterRepository(m); cr->put_name((char*)clusterRepositoryName.data());
+         }
+         cm = new(m)ClusterModel(m); cm->put_name((char*)clusterModelName.data()); cr->put_models_element(cm);
+         m->writeAllObjectsToDatabase();
       } else {
          _return.status = "Error"; _return.report = "Model already exist.";
       }
