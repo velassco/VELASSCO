@@ -312,7 +312,7 @@ void FEM_mesh::put_facets_element(Set<Vertex*>* element) {
    Timestep
 ====================================================================================================*/
 double Timestep::get_time_value() { return getREAL(0, double, 0); }
-void Timestep::put_time_value(double v) { putATTRIBUTE(0, double, v, time_value, 0, 1); }
+void Timestep::put_time_value(double v) { putREAL(0, double, v, time_value, 0, 1); }
 Set<FEM_mesh*>* Timestep::get_boundary() { return getAGGREGATE(8, Set<FEM_mesh*>*, 1); }
 void Timestep::put_boundary(Set<FEM_mesh*>* v) { putAGGREGATE(8, Set<FEM_mesh*>*, v, boundary, 1, 9); }
 void Timestep::put_boundary_element(FEM_mesh* element) {
@@ -356,7 +356,7 @@ void Particle_Particle_contact::put_P2(Particle* v) { putInstance(24, Particle*,
    Sphere
 ====================================================================================================*/
 double Sphere::get_radius() { return getREAL(24, double, 3); }
-void Sphere::put_radius(double v) { putATTRIBUTE(24, double, v, radius, 3, 1); }
+void Sphere::put_radius(double v) { putREAL(24, double, v, radius, 3, 1); }
 /*====================================================================================================
    Template_nn
 ====================================================================================================*/
@@ -400,19 +400,19 @@ void Custom_property_vector::put_name(char * v) { putATTRIBUTE(8, char *, v, nam
    Custom_property_scalar
 ====================================================================================================*/
 double Custom_property_scalar::get_custom_prop() { return getREAL(0, double, 0); }
-void Custom_property_scalar::put_custom_prop(double v) { putATTRIBUTE(0, double, v, custom_prop, 0, 1); }
+void Custom_property_scalar::put_custom_prop(double v) { putREAL(0, double, v, custom_prop, 0, 1); }
 char * Custom_property_scalar::get_name() { return getATTRIBUTE(8, char *, 1); }
 void Custom_property_scalar::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
 /*====================================================================================================
    Mass
 ====================================================================================================*/
 double Mass::get_mass() { return getREAL(0, double, 0); }
-void Mass::put_mass(double v) { putATTRIBUTE(0, double, v, mass, 0, 1); }
+void Mass::put_mass(double v) { putREAL(0, double, v, mass, 0, 1); }
 /*====================================================================================================
    Volume
 ====================================================================================================*/
 double Volume::get_volume() { return getREAL(0, double, 0); }
-void Volume::put_volume(double v) { putATTRIBUTE(0, double, v, volume, 0, 1); }
+void Volume::put_volume(double v) { putREAL(0, double, v, volume, 0, 1); }
 /*====================================================================================================
    Custom_property_contact_vector
 ====================================================================================================*/
@@ -432,7 +432,7 @@ void Custom_property_contact_vector::put_name(char * v) { putATTRIBUTE(8, char *
    Custom_property_contact_scalar
 ====================================================================================================*/
 double Custom_property_contact_scalar::get_property_value() { return getREAL(0, double, 0); }
-void Custom_property_contact_scalar::put_property_value(double v) { putATTRIBUTE(0, double, v, property_value, 0, 1); }
+void Custom_property_contact_scalar::put_property_value(double v) { putREAL(0, double, v, property_value, 0, 1); }
 char * Custom_property_contact_scalar::get_name() { return getATTRIBUTE(8, char *, 1); }
 void Custom_property_contact_scalar::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
 /*====================================================================================================

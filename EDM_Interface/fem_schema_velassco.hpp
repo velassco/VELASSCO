@@ -7,7 +7,7 @@ extern tEdmiEntityData fem_schema_velassco_Entities[];
 namespace fem {
 
 class fem_Schema;
-class ModelInfo;
+class GaussPoint;
 class Result;
 class ResultBlock;
 class ResultHeader;
@@ -16,61 +16,38 @@ class Node;
 class Mesh;
 class ScalarResult;
 class VectorResult;
-typedef enum {LocationType_LOC_NODE, LocationType_LOC_GPOINT} LocationType;
-typedef enum {ValueType_SCALAR, ValueType_VECTOR} ValueType;
-typedef enum {ElementType_LINE, ElementType_TETRAHEDRA, ElementType_TRIANGLE, ElementType_SPHERE} ElementType;
-typedef enum {dt_LocationType, dt_ValueType, dt_ElementType} definedTypeNames;
+class Matrix_2D;
+class Matrix_3D;
+class Matrix_Deformated;
+typedef enum {GaussPointType_GP_LINE_1, GaussPointType_GP_TRIANGLE_1, GaussPointType_GP_TRIANGLE_3, GaussPointType_GP_TRIANGLE_6, GaussPointType_GP_TETRAHEDRA_1, GaussPointType_GP_TETRAHEDRA_4, GaussPointType_GP_TETRAHEDRA_10, GaussPointType_GP_SPHERE_1, GaussPointType_GP_QUADRILATERAL_1, GaussPointType_GP_QUADRILATERAL_4, GaussPointType_GP_QUADRILATERAL_9, GaussPointType_GP_HEXAHEDRA_1, GaussPointType_GP_HEXAHEDRA_8, GaussPointType_GP_HEXAHEDRA_27, GaussPointType_GP_PRISM_1, GaussPointType_GP_PRISM_6, GaussPointType_GP_PIRAMID_1, GaussPointType_GP_PIRAMID_5, GaussPointType_GP_CIRCLE_1} GaussPointType;
+typedef enum {LocationType_ONNODES, LocationType_ONGAUSSPOINTS} LocationType;
+typedef enum {ValueType_SCALAR, ValueType_VECTOR, ValueType_MATRIX, ValueType_PLAINDEFORMATIONMATRIX, ValueType_MAINMATRIX, ValueType_LOCALAXES, ValueType_COMPLEXSCALAR, ValueType_COMPLEXVECTOR} ValueType;
+typedef enum {ElementType_POINT, ElementType_LINE, ElementType_TRIANGLE, ElementType_QUADRILATERAL, ElementType_TETRAHEDRA, ElementType_HEXAHEDRA, ElementType_PRISM, ElementType_PYRAMID, ElementType_SPHERE, ElementType_CIRCLE} ElementType;
+typedef enum {dt_GaussPointType, dt_LocationType, dt_ValueType, dt_ElementType} definedTypeNames;
 
 
-class ModelInfo :  public dbInstance
+class GaussPoint :  public dbInstance
 {
 protected:
-   ModelInfo() {}
+   GaussPoint() {}
 public:
-   static const entityType type = et_ModelInfo;
-   double                               get_min_x();
-   void                                 put_min_x(double v);
-   void                                 unset_min_x() { unsetAttribute(0); }
-   bool                                 exists_min_x() { return isAttrSet(0); }
-   double                               get_min_y();
-   void                                 put_min_y(double v);
-   void                                 unset_min_y() { unsetAttribute(1); }
-   bool                                 exists_min_y() { return isAttrSet(1); }
-   double                               get_min_z();
-   void                                 put_min_z(double v);
-   void                                 unset_min_z() { unsetAttribute(2); }
-   bool                                 exists_min_z() { return isAttrSet(2); }
-   double                               get_max_x();
-   void                                 put_max_x(double v);
-   void                                 unset_max_x() { unsetAttribute(3); }
-   bool                                 exists_max_x() { return isAttrSet(3); }
-   double                               get_max_y();
-   void                                 put_max_y(double v);
-   void                                 unset_max_y() { unsetAttribute(4); }
-   bool                                 exists_max_y() { return isAttrSet(4); }
-   double                               get_max_z();
-   void                                 put_max_z(double v);
-   void                                 unset_max_z() { unsetAttribute(5); }
-   bool                                 exists_max_z() { return isAttrSet(5); }
-   char *                               get_index_file();
-   void                                 put_index_file(char * v);
-   void                                 unset_index_file() { unsetAttribute(6); }
-   bool                                 exists_index_file() { return isAttrSet(6); }
-   int                                  get_index_file_version();
-   void                                 put_index_file_version(int v);
-   void                                 unset_index_file_version() { unsetAttribute(7); }
-   bool                                 exists_index_file_version() { return isAttrSet(7); }
-   int                                  get_build_index_time();
-   void                                 put_build_index_time(int v);
-   void                                 unset_build_index_time() { unsetAttribute(8); }
-   bool                                 exists_build_index_time() { return isAttrSet(8); }
-   int                                  get_last_change_mesh_time();
-   void                                 put_last_change_mesh_time(int v);
-   void                                 unset_last_change_mesh_time() { unsetAttribute(9); }
-   bool                                 exists_last_change_mesh_time() { return isAttrSet(9); }
+   static const entityType type = et_GaussPoint;
+   Element*                             get_gauss_point_for();
+   void                                 put_gauss_point_for(Element* v);
+   void                                 unset_gauss_point_for() { unsetAttribute(0); }
+   bool                                 exists_gauss_point_for() { return isAttrSet(0); }
+   Set<REAL>*                           get_values();
+   void                                 put_values(Set<REAL>* v);
+   void                                 unset_values() { unsetAttribute(1); }
+   bool                                 exists_values() { return isAttrSet(1); }
+   void                                 put_values_element(REAL);
+   GaussPointType                       get_GPtype();
+   void                                 put_GPtype(GaussPointType v);
+   void                                 unset_GPtype() { unsetAttribute(2); }
+   bool                                 exists_GPtype() { return isAttrSet(2); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
-   ModelInfo(Model *m, entityType et=et_ModelInfo) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
-   ModelInfo(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
+   GaussPoint(Model *m, entityType et=et_GaussPoint) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
+   GaussPoint(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
 };
 
 
@@ -105,6 +82,10 @@ public:
    void                                 unset_values() { unsetAttribute(1); }
    bool                                 exists_values() { return isAttrSet(1); }
    void                                 put_values_element(Result*);
+   GaussPoint*                          get_gauss_points();
+   void                                 put_gauss_points(GaussPoint* v);
+   void                                 unset_gauss_points() { unsetAttribute(2); }
+   bool                                 exists_gauss_points() { return isAttrSet(2); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    ResultBlock(Model *m, entityType et=et_ResultBlock) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    ResultBlock(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -162,19 +143,15 @@ protected:
    Element() {}
 public:
    static const entityType type = et_Element;
-   char *                               get_name();
-   void                                 put_name(char * v);
-   void                                 unset_name() { unsetAttribute(0); }
-   bool                                 exists_name() { return isAttrSet(0); }
    List<Node*>*                         get_nodes();
    void                                 put_nodes(List<Node*>* v);
-   void                                 unset_nodes() { unsetAttribute(1); }
-   bool                                 exists_nodes() { return isAttrSet(1); }
+   void                                 unset_nodes() { unsetAttribute(0); }
+   bool                                 exists_nodes() { return isAttrSet(0); }
    void                                 put_nodes_element(Node*);
    int                                  get_id();
    void                                 put_id(int v);
-   void                                 unset_id() { unsetAttribute(2); }
-   bool                                 exists_id() { return isAttrSet(2); }
+   void                                 unset_id() { unsetAttribute(1); }
+   bool                                 exists_id() { return isAttrSet(1); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Element(Model *m, entityType et=et_Element) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    Element(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -241,6 +218,11 @@ public:
    void                                 unset_elements() { unsetAttribute(5); }
    bool                                 exists_elements() { return isAttrSet(5); }
    void                                 put_elements_element(Element*);
+   List<ResultHeader*>*                 get_results();
+   void                                 put_results(List<ResultHeader*>* v);
+   void                                 unset_results() { unsetAttribute(6); }
+   bool                                 exists_results() { return isAttrSet(6); }
+   void                                 put_results_element(ResultHeader*);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Mesh(Model *m, entityType et=et_Mesh) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    Mesh(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -277,6 +259,57 @@ public:
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    VectorResult(Model *m, entityType et=et_VectorResult) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    VectorResult(Model *_m, tEdmiInstData *instData) : Result(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
+};
+
+
+class Matrix_2D :  public Result
+{
+protected:
+   Matrix_2D() {}
+public:
+   static const entityType type = et_Matrix_2D;
+   Array<REAL>*                         get_values();
+   void                                 put_values(Array<REAL>* v);
+   void                                 unset_values() { unsetAttribute(1); }
+   bool                                 exists_values() { return isAttrSet(1); }
+   void                                 put_values_element(int index, REAL);
+   void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
+   Matrix_2D(Model *m, entityType et=et_Matrix_2D) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
+   Matrix_2D(Model *_m, tEdmiInstData *instData) : Result(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
+};
+
+
+class Matrix_3D :  public Result
+{
+protected:
+   Matrix_3D() {}
+public:
+   static const entityType type = et_Matrix_3D;
+   Array<REAL>*                         get_values();
+   void                                 put_values(Array<REAL>* v);
+   void                                 unset_values() { unsetAttribute(1); }
+   bool                                 exists_values() { return isAttrSet(1); }
+   void                                 put_values_element(int index, REAL);
+   void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
+   Matrix_3D(Model *m, entityType et=et_Matrix_3D) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
+   Matrix_3D(Model *_m, tEdmiInstData *instData) : Result(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
+};
+
+
+class Matrix_Deformated :  public Result
+{
+protected:
+   Matrix_Deformated() {}
+public:
+   static const entityType type = et_Matrix_Deformated;
+   Array<REAL>*                         get_values();
+   void                                 put_values(Array<REAL>* v);
+   void                                 unset_values() { unsetAttribute(1); }
+   bool                                 exists_values() { return isAttrSet(1); }
+   void                                 put_values_element(int index, REAL);
+   void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
+   Matrix_Deformated(Model *m, entityType et=et_Matrix_Deformated) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
+   Matrix_Deformated(Model *_m, tEdmiInstData *instData) : Result(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
 };
 
 class fem_Schema : public dbSchema

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "edmcluster_header.h"
+#include "EDMcluster_header.h"
 
 namespace ecl {
 
@@ -69,10 +69,10 @@ tEdmiAttribute ClusterModel_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG ClusterModel_Subtypes[] = {0};
-const char *edmcluster_DefinedTypeNames[] = {
+const char *EDMcluster_DefinedTypeNames[] = {
 NULL
 };
-tEdmiEntityData edmcluster_Entities[] = {
+tEdmiEntityData EDMcluster_Entities[] = {
 {"indeterminate"},
 {"ClusterRepository", 4, 643, 8, 48, 6, et_ClusterRepository, ClusterRepository_AttributeLayout, ClusterRepository_Subtypes, NULL, ClusterRepository_Attributes},
 {"EDMcluster", 5, 639, 8, 56, 4, et_EDMcluster, EDMcluster_AttributeLayout, EDMcluster_Subtypes, NULL, EDMcluster_Attributes},
@@ -256,11 +256,11 @@ default:
    }
    return theObject;
 }
-tEdmiDefinedTypeData edmcluster_definedTypes[] = {
+tEdmiDefinedTypeData EDMcluster_definedTypes[] = {
 {NULL}
 };
 
-ecl_Schema edmcluster_SchemaObject(edmcluster_Entities, edmcluster_definedTypes, edmcluster_DefinedTypeNames);
+ecl_Schema EDMcluster_SchemaObject(EDMcluster_Entities, EDMcluster_definedTypes, EDMcluster_DefinedTypeNames);
 
 static bool supertypeOf_ClusterRepository(entityType wantedSuperType, void **p);
 static bool supertypeOf_EDMcluster(entityType wantedSuperType, void **p);
