@@ -26,7 +26,7 @@ void parse(string cmd)
         
         listOfVertices <<"{\"id\":[";
         bool firstEleme = false;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 10; i++)
         {
             if(rand()%2)
             {
@@ -46,11 +46,20 @@ void parse(string cmd)
         
         string _return = "";
         string sessionID = "sessionID";
-        string modelID  = "0001";
+        string modelID  = "0001"; // does not matter it's hard coded in the DataLayer
         string analysisID  = "DEM";
         double timeStep = 1;
+	timeStep = 2799000;
+
+	// string model_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part-";
+        // string analysisID  = "geometry";
+
         string resultID = "00001";
-        DataLayerAccess::Instance()->getResultFromVerticesID(_return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+	// rvOpenModel om_return;
+	// DataLayerAccess::Instance()->openModel( om_return, sessionID, model_name, "rw");
+	// const string &modelID = om_return.modelID;
+        DataLayerAccess::Instance()->getResultFromVerticesID( _return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+	// DataLayerAccess::Instance()->closeModel();
         cout<<"#### /Query ####"<<endl;
         
     }
@@ -72,7 +81,7 @@ void parse(string cmd)
 
 void printListOfCmd()
 {
-    cout << "List of avaiblable cmd :" << endl;
+    cout << "List of available commands :" << endl;
     cout << "stop: stop the dataLayer application" << endl;
     cout << "ping: get Status of DB" << endl;
     cout << "query: does a query" << endl;

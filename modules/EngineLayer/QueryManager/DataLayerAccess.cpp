@@ -92,7 +92,7 @@ void DataLayerAccess::getResultFromVerticesID(std::string& _return,  std::string
     {
         
         cli->GetResultFromVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
-        cout << "########## getStatus - " << _return << endl;
+        cout << "########## getResultFromVerticesID - " << _return << endl;
     }
     catch (TException& tx)
     {
@@ -106,7 +106,7 @@ void DataLayerAccess::getCoordinatesAndElementsFromMesh( std::string& _return, s
     try
     {
         cli->GetCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, resultID );
-        cout << "########## getStatus - " << _return << endl;
+        cout << "########## getMeshDrawData - " << _return << endl;
     }
     catch(TException& tx)
     {
