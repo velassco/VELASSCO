@@ -85,14 +85,13 @@ SCHEMA FEM_SCHEMA_VELASSCO;
   END_ENTITY;
 
   ENTITY ResultBlock;
-      header           : ResultHeader;
-      values           : LIST [1:?] OF Result;
-      gauss_points     : GaussPoint;
-      gauss_point_type : GaussPointType;
+      header       : ResultHeader;
+      values       : LIST [1:?] OF Result;
+      gauss_points : GaussPoint;
   END_ENTITY;
 
   ENTITY Result
-    ABSTRACT;
+    ABSTRACT SUPERTYPE;
       result_for : Node;
   END_ENTITY;
 
@@ -124,6 +123,7 @@ SCHEMA FEM_SCHEMA_VELASSCO;
   ENTITY GaussPoint;
       gauss_point_for : Element;
       values          : SET [1:?] OF REAL;
+      GPtype          : GaussPointType;
   END_ENTITY;
 
 END_SCHEMA;
