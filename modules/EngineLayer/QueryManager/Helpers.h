@@ -17,6 +17,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "Crono.h"
+
 // ---------------------------------------------------------------------------
 
 // seems that this is not working:
@@ -45,7 +47,7 @@
 #define ENABLE_LOGGING
 #ifdef ENABLE_LOGGING
 // to know that the messages belongs to the EngineLayer
-#	define LOGGER (std::cerr << "[VELaSSCo-EL] ")
+#	define LOGGER (std::cerr << "[VELaSSCo-EL] " << getStrCurrentWallTime() << " ")
 #else
 #	define LOGGER (std::ostream(0))
 #endif
@@ -107,14 +109,14 @@
   }
 
   // returns NULL if dst_len is too short, otherwise return dst
-  inline const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len) {
+  inline const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len, const char *format="%02x") {
     if ( !dst) return NULL;
     if ( dst_len <= 0) return NULL;
     size_t isrc = 0;
     for ( size_t idst = 0; 
 	  ( isrc < src_len) && ( idst < dst_len - 1); 
 	  isrc++, idst += 2) {
-      sprintf( &dst[ idst], "%02x", ( unsigned char)src[ isrc]);
+      sprintf( &dst[ idst], format, ( unsigned char)src[ isrc]);
     }
     // if all chars converted, then return dst
     return ( isrc == src_len) ? dst : NULL;
@@ -142,7 +144,7 @@
     return ( ( isrc == src_len) && !error) ? dst : NULL;
   }
 
-  inline std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, size_t size_tmp_buf) {
+  inline std::string ModelID_DoHexStringConversionIfNecesary( const std::string &modelID, char *tmp_buf, const size_t size_tmp_buf) {
     if ( modelID.length() == 16) {
       return ( std::string) ToHexString( tmp_buf, size_tmp_buf, modelID.c_str(), modelID.size());
     } else {
@@ -153,7 +155,6 @@
   /**
    * Compare two strings ignoring case (OS portable)
    */
-
   inline bool AreEqualNoCase( const std::string &a, const std::string &b) {
     if ( a.size() != b.size()) {
       return false;
@@ -164,6 +165,9 @@
       }
     }
     return true;
+  }
+  inline bool AreEqualNoCaseSubstr( const std::string &a, const std::string &b, const size_t len) {
+    return AreEqualNoCase( a.substr( 0, len), b.substr( 0, len));
   }
 
   // ---------------------------------------------------------------------------

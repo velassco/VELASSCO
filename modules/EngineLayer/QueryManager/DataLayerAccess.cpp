@@ -105,7 +105,7 @@ void DataLayerAccess::getCoordinatesAndElementsFromMesh( std::string& _return, s
 {
     try
     {
-        cli->GetCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, resultID );
+      // cli->getCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, resultID );
         cout << "########## getMeshDrawData - " << _return << endl;
     }
     catch(TException& tx)
@@ -181,6 +181,19 @@ void DataLayerAccess::getListOfTimeSteps( rvGetListOfTimeSteps &_return,
 	// not possible, returning the findings
       }
     }
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
+
+/* as of OP-22.115 */
+void DataLayerAccess::getListOfResultsFromTimeStepAndAnalysis( rvGetListOfResults &_return,
+							       const std::string &sessionID,
+							       const std::string &modelID,
+							       const std::string &analysisID,
+							       const double stepValue) {
+  try {
+    cli->GetListOfResultsFromTimeStepAndAnalysis( _return, sessionID, modelID, analysisID, stepValue);
   } catch ( TException& tx) {
     cout << "ERROR: " << tx.what() << endl;
   }

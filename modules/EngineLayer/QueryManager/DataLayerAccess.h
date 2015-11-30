@@ -58,6 +58,12 @@ public:
 			     const std::string &modelID,
 			     const std::string &analysisID,
 			     const std::string &stepOptions, const int numSteps, const double *lstSteps);
+  /* as opf OP-22.115 */
+  void getListOfResultsFromTimeStepAndAnalysis( rvGetListOfResults &_return,
+						const std::string &sessionID,
+						const std::string &modelID,
+						const std::string &analysisID,
+						const double stepValue);
 			   
     void stopAll();
     

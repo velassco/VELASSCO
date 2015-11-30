@@ -432,8 +432,9 @@ void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const Ses
   std::cout << _return_ << std::endl;
 
   if ( _return_.status == "Error") {
-    if ( _return_.report == "No models") {
-      _return.__set_result( (Result::type)VAL_NO_MODELS_IN_PLATFORM);
+    const std::string not_found( "Not found");
+    if ( AreEqualNoCaseSubstr( _return_.report, not_found, not_found.size())) {
+      _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
     } else {
       _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
     }
@@ -448,7 +449,7 @@ void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const Ses
       //   return { model.name, model.fullpath}
       // _return.__set_data( _return_.meshInfos.srt());
       std::ostringstream oss;
-      oss << "NumberOfModels: " << _return_.meshInfos.size() << std::endl;
+      oss << "NumberOfMeshes: " << _return_.meshInfos.size() << std::endl;
       // C++11 : for ( auto &it : _return_.meshInfos)
       // char hex_string[ 1024];
       for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
@@ -496,8 +497,9 @@ void QueryManagerServer::ManageGetListOfAnalyses( Query_Result &_return, const S
   std::cout << _return_ << std::endl;
   
   if ( _return_.status == "Error") {
-    if ( _return_.report == "No models") {
-      _return.__set_result( (Result::type)VAL_NO_MODELS_IN_PLATFORM);
+    const std::string not_found( "Not found");
+    if ( AreEqualNoCaseSubstr( _return_.report, not_found, not_found.size())) {
+      _return.__set_result( (Result::type)VAL_NO_ANALYSIS_INFORMATION_FOUND);
     } else {
       _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
     }
@@ -550,8 +552,9 @@ void QueryManagerServer::ManageGetListOfTimeSteps( Query_Result &_return, const 
   // std::cout << _return_ << std::endl;
   
   if ( _return_.status == "Error") {
-    if ( _return_.report == "No models") {
-      _return.__set_result( (Result::type)VAL_NO_MODELS_IN_PLATFORM);
+    const std::string not_found( "Not found");
+    if ( AreEqualNoCaseSubstr( _return_.report, not_found, not_found.size())) {
+      _return.__set_result( (Result::type)VAL_NO_STEP_INFORMATION_FOUND);
     } else {
       _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
     }
@@ -587,3 +590,80 @@ void QueryManagerServer::ManageGetListOfTimeSteps( Query_Result &_return, const 
 
 } // ManageGetListOfTimeSteps
 
+void QueryManagerServer::ManageGetListOfResults( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  std::string name       = pt.get<std::string>("name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue       << "-" << std::endl;
+
+  rvGetListOfResults _return_;
+  DataLayerAccess::Instance()->getListOfResultsFromTimeStepAndAnalysis( _return_,
+									sessionIDStr.str(), 
+									modelID, analysisID, stepValue);
+  
+  std::cout << _return_ << std::endl;
+
+  if ( _return_.status == "Error") {
+    const std::string not_found( "Not found");
+    if ( AreEqualNoCaseSubstr( _return_.report, not_found, not_found.size())) {
+      _return.__set_result( (Result::type)VAL_NO_RESULT_INFORMATION_FOUND);
+    } else {
+      _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    }
+    _return.__set_data( _return_.report);
+  } else { // status == "Ok"
+    if ( _return_.result_list.size() == 0) {
+      _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
+    } else {
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      // process data:
+      // foreach model in _return_.result_list
+      //   return { model.name, model.fullpath}
+      // _return.__set_data( _return_.result_list.srt());
+      std::ostringstream oss;
+      oss << "NumberOfResults: " << _return_.result_list.size() << std::endl;
+      // C++11 : for ( auto &it : _return_.result_list)
+      
+      /* the information returned is ResultType, NumberOfComponents, ComponentNames, Location, GaussPointName, CoordinatesName, Units, ... */
+      // char hex_string[ 1024];
+      for ( std::vector< ResultInfo>::iterator it = _return_.result_list.begin();
+          it != _return_.result_list.end(); it++) {
+	oss << "Name: " << it->name << std::endl;
+	oss << "ResultType: " << it->type << std::endl;
+	oss << "NumberOfComponents: " <<  it->numberOfComponents << std::endl;
+	oss << "ComponentNames: ";
+	for ( size_t i = 0; i < it->componentNames.size(); i++) {
+	  if ( i) oss << ", ";
+	  oss << it->componentNames[ i];
+	}
+	oss << std::endl;
+	oss << "Location: " << it->location << std::endl;
+	oss << "GaussPointName: " << it->gaussPointName << std::endl;
+	oss << "CoordinatesName: " << it->coordinatesName << std::endl;
+	oss << "Units: " << it->units << std::endl;
+	// not yet ...
+	oss << "ResultNumber: " << it->resultNumber << std::endl;
+      }
+      _return.__set_data( oss.str());
+    }
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+} // ManageGetListOfMeshes

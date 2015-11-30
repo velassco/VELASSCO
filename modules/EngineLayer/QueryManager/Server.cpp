@@ -148,6 +148,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetListOfAnalyses( _return, sessionID, query);
   } else if ( name == "GetListOfTimeSteps") {
     ManageGetListOfTimeSteps( _return, sessionID, query);
+  } else if ( name == "GetListOfResults") {
+    ManageGetListOfResults( _return, sessionID, query);
     /* Result Analysis Queries */
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);

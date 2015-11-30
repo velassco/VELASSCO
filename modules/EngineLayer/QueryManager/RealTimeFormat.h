@@ -82,7 +82,7 @@ namespace VELaSSCo
 
 }
 
-static std::istream& operator>>(std::istream& is, VELaSSCo::RTFormat::File& file){
+inline std::istream& operator>>(std::istream& is, VELaSSCo::RTFormat::File& file){
   is.read((char*)(&file.header),                  sizeof(VELaSSCo::RTFormat::Header));
 
   if( file.header.descriptionBytes       > 0 )  {  file.data.description        = new uint8_t[file.header.descriptionBytes];        is.read((char*)(file.data.description),        file.header.descriptionBytes);        }
@@ -98,7 +98,7 @@ static std::istream& operator>>(std::istream& is, VELaSSCo::RTFormat::File& file
   return is;
 }
 
-static std::ostream& operator<<(std::ostream& os, const VELaSSCo::RTFormat::File& file){
+inline std::ostream& operator<<(std::ostream& os, const VELaSSCo::RTFormat::File& file){
   os.write((char*)(&file.header),                  sizeof(VELaSSCo::RTFormat::Header));
 
   if( file.header.descriptionBytes       > 0 )    os.write((char*)(file.data.description),        file.header.descriptionBytes);

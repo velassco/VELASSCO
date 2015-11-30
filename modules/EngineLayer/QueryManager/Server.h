@@ -121,6 +121,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageGetListOfMeshes( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfAnalyses( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetListOfResults( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query);
 }; // class QueryManagerServer
