@@ -43,6 +43,25 @@ inline int currentWallTime( struct timeb *tp) {
 #endif
 }
 
+inline std::string getStrCurrentWallTime() {
+#define MAX_getStrCurrentWallTime   255
+  char tmp[ MAX_getStrCurrentWallTime + 1];
+  time_t time_tmp = time( NULL);
+  bool ok = false;
+  if ( time_tmp != ((time_t) -1)) {
+    struct tm *time_ptr = localtime( &time_tmp);
+    if ( time_ptr != NULL) {
+      int rc = strftime( tmp, MAX_getStrCurrentWallTime, "%Y.%m.%d %H:%M:%S", time_ptr);
+      ok = ( rc > 0);
+    }
+  }
+  if ( !ok) {
+    strcpy( tmp, "N/A");
+  }
+  return std::string( tmp);
+#undef MAX_getStrCurrentWallTime
+}
+
 typedef enum {
   CRONO_SYS_TIME = 0, CRONO_WALL_TIME = 1
 } _t_crono_measure_type;

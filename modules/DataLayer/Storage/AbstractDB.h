@@ -68,7 +68,9 @@ namespace VELaSSCo
     virtual std::string getListOfSteps( std::string &report, std::vector< double> &listOfSteps,
 					const std::string &sessionID, const std::string &modelID,
 					const std::string &analysisID) = 0;
-
+    virtual std::string getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
+					  const std::string &sessionID, const std::string &modelID,
+					  const std::string &analysisID, const double stepValue) = 0;
     /*
      * Access the database and return a list o vertices with attributes.
      * The result is a string. Each line represents a vertex and is defined as:

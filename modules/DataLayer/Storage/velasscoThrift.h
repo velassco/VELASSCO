@@ -70,7 +70,10 @@ public:
   void GetListOfTimeSteps( rvGetListOfTimeSteps &_return, 
 			   const std::string &sessionID, const std::string &modelID, 
 			   const std::string &analysisID);
-
+  /* OP-22.115 */
+  void GetListOfResultsFromTimeStepAndAnalysis( rvGetListOfResults &_return, 
+						const std::string &sessionID, const std::string &modelID, 
+						const std::string &analysisID, const double stepValue);
 
   /**
    * Stop Data Layer

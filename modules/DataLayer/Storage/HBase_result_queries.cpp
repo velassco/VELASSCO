@@ -28,6 +28,8 @@
 #include "Extras.h"
 #include "Crono.h"
 
+#define DO_CRONO   true
+
 using namespace std;
 using namespace VELaSSCo;
 
@@ -60,7 +62,7 @@ static ElementShapeType::type getElementTypeFromStr( const std::string &str) {
 static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const TRowResult &rowResult) {
   // M:un for units
   // M:c* prefix for c123456nm c123456nc for name of coordinates set and number of coordinates = vertices = nodes
-  // M:N* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
+  // M:m* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
   //                 m123456ne (numberOfElements) m123456nn (numNodesPerElem) m123456cl (color)
   // MeshInfo has:
   //   std::string name;
@@ -169,7 +171,7 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
   cols.push_back( "M"); // Mesh column family with
   // M:un for units
   // M:c* prefix for c123456nm c123456nc for name of coordinates set and number of coordinates = vertices = nodes
-  // M:N* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
+  // M:m* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
   //                 m123456ne (numberOfElements) m123456nn (numNodesPerElem) m123456cl (color)
   // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
   // has to build the rowkey.... 
@@ -178,6 +180,9 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
   std::string rowKey = createRowKey( modelID, analysisID, my_stepValue);
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+
+  std::cout << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
+
   std::map< int, MeshInfo> map_mesh_info;
   bool scan_ok = true;
   try {
@@ -214,11 +219,11 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
       // scan_ok = false; // scan was ok but nothing found ...
       std::stringstream tmp;
       if ( analysisID != "") {
-	tmp << "Dynamic Mesh nformation not found" 
+	tmp << "Not found: Dynamic Mesh information" 
 	    << " for Analysis = '" << analysisID << "'"
 	    << " and stepValue = " << stepValue;
       } else {
-	tmp << "Static Mesh nformation not found" ;
+	tmp << "Not found: Static Mesh information" ;
       }
       report = tmp.str();
     }
@@ -305,6 +310,14 @@ static bool getAnalysisNameFromMetadataRowKey( std::set< std::string> &analysisN
   return ok;
 }
 
+std::string GetStopKeyFromModelID( const std::string &modelID) {
+  std::string stop( modelID);
+  size_t idx = stop.size() - 1;
+  char last = stop[ idx] + 1; // it's hex, so it can be always + 1
+  stop.replace( idx, 1, 1, last);
+  return stop;
+}
+
 bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< std::string> &listOfAnalyses,
 					      const std::string &metadata_table, const std::string &modelID) {
   // do the scan on the metadata table ...
@@ -327,12 +340,22 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
   std::string rowKeyPrefix( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
   const size_t len_prefix = rowKeyPrefix.length();
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKeyPrefix, cols, m);
-  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+
+  // it's actually faster with the above than with the below code ...
+  // TScan ts;
+  // std::stringstream filter;
+  // filter.str( "FirstKeyOnlyFilter()");
+  // ts.__set_filterString(filter.str());
+  // ts.__set_startRow( rowKeyPrefix);
+  // // std::cout << "start key = " << rowKeyPrefix << std::endl;
+  // // std::cout << " stop key = " << GetStopKeyFromModelID( rowKeyPrefix) << std::endl;
+  // ts.__set_stopRow( GetStopKeyFromModelID( rowKeyPrefix));
+  // ScannerID scan_id = _hbase_client->scannerOpenWithScan( metadata_table, ts, m);
   std::set< std::string> analysisNames;
   bool scan_ok = true;
   int num_rows = 0;
   try {
-    // Crono clk( CRONO_WALL_TIME);
+    Crono clk( CRONO_WALL_TIME);
     // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
     while ( true) {
       _hbase_client->scannerGet( rowsResult, scan_id);
@@ -356,13 +379,15 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
       }
     } // while ( true)
 
-    // std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
+    const bool do_crono = DO_CRONO;
+    if ( do_crono)
+      std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
     if ( analysisNames.size() != 0) {
       listOfAnalyses = std::vector< std::string>( analysisNames.begin(), analysisNames.end());
     } else {
       // nothing found
       // scan_ok = false; // scan was ok but nothing found ...
-      report = "No Analyses could be found.";
+      report = "Not found: Analysis information";
     }
   } catch ( const IOError &ioe) {
     scan_ok = false;
@@ -457,7 +482,7 @@ bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> 
   bool scan_ok = true;
   int num_rows = 0;
   try {
-    // Crono clk( CRONO_WALL_TIME);
+    Crono clk( CRONO_WALL_TIME);
     // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
     while ( true) {
       _hbase_client->scannerGet( rowsResult, scan_id);
@@ -481,13 +506,15 @@ bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> 
       }
     } // while ( true)
 
-    // std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
+    const bool do_crono = DO_CRONO;
+    if ( do_crono)
+      std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
     if ( stepValues_set.size() != 0) {
       listOfSteps = std::vector< double>( stepValues_set.begin(), stepValues_set.end());
     } else {
       // nothing found
       // scan_ok = false; // scan was ok but nothing found ...
-      report = "No Steps values could be found.";
+      report = "Not found: Step information";
     }
   } catch ( const IOError &ioe) {
     scan_ok = false;
@@ -542,5 +569,214 @@ std::string HBase::getListOfSteps( std::string &report, std::vector< double> &li
 
   return result;
 }
+/* end GetListOfAnalyses */
 
+/* GetListOfResults */
+static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, const TRowResult &rowResult) {
+  // R:r* prefix for r123456nm Name, r123456rt Type, r123456nc #comp, r123456cn CompNames,
+  //                 r123456lc Location, r123456gp GPname,  r123456co CoordsName,  r123456un Units
+  // ResultInfo has:
+  //   std::string name;
+  //   std::string type;
+  //   int32_t numberOfComponents;
+  //   std::vector<std::string>  componentNames;
+  //   std::string location;
+  //   std::string gaussPointName;
+  //   std::string coordinatesName;
+  //   std::string units;
+  int num_results = 0;
+  for ( CellMap::const_iterator it = rowResult.columns.begin(); 
+	it != rowResult.columns.end(); ++it) {
+    const char *cq_str = it->first.c_str();
+    const char CF = cq_str[ 0];
+    // cq_str[ 1] should be ':'
+    const char subC = cq_str[ 2];
+    if ( CF == 'R') {
+      if ( it->first.length() > 3) { // for r1nm
+	int result_number = 0;
+	int n = sscanf( &cq_str[ 3], "%d", &result_number);
+	if ( n == 1) {
+	  std::map< int, ResultInfo>::iterator it_mesh = map_result_info.find( result_number);
+	  if ( it_mesh == map_result_info.end()) {
+	    num_results++;
+	    ResultInfo tmp;
+	    tmp.__set_resultNumber( result_number);
+	    map_result_info[ result_number] = tmp;
+	    it_mesh = map_result_info.find( result_number);
+	  }
+	  ResultInfo &current_result = it_mesh->second;
+	  const char *pinfo = &cq_str[ 3];
+	  while ( *pinfo && isdigit( *pinfo))
+	    pinfo++;
+	  // subC should be always 'r'
+	  if ( subC == 'r') {
+	    if ( !strcmp( pinfo, "nm")) {
+	      // can also be 
+	      // current_result.name = it->second.value;
+	      current_result.__set_name( it->second.value);
+	      current_result.__set_resultNumber( result_number);
+	    } else if ( !strcmp( pinfo, "rt")) {
+	      current_result.__set_type( it->second.value);
+	      current_result.__set_resultNumber( result_number);
+	    } else if ( !strcmp( pinfo, "nc")) {
+	      // data is in binary format ...
+	      int num = *( int *)it->second.value.data();
+	      // needs to be swapped !!!!!!!!
+	      // maximum number of components are 6, but for the future ...
+	      current_result.__set_numberOfComponents( byteSwapIfNeedPositive< int>( num, 100));
+	      current_result.__set_resultNumber( result_number);
+	    } else if ( !strcmp( pinfo, "cn")) {
+	      // component names, still we've to agree on the list format, as they are different:
+	      // " kjkl", "l2kjlkj"  or { "klsadjfkls", "lkjkl"} or [] or ...
+	      std::vector<std::string> lst_components;
+	      lst_components.push_back( it->second.value); // needs to be parsed ....
+	      current_result.__set_componentNames( lst_components);
+	      current_result.__set_resultNumber( result_number);
+	    } else if ( !strcmp( pinfo, "lc")) {
+	      current_result.__set_location( it->second.value);
+	      current_result.__set_resultNumber( result_number);
+	    } else if ( !strcmp( pinfo, "gp")) {
+	      current_result.__set_gaussPointName( it->second.value);
+	      current_result.__set_resultNumber( result_number);
+	    } else if ( !strcmp( pinfo, "co")) {
+	      current_result.__set_coordinatesName( it->second.value);
+	      current_result.__set_resultNumber( result_number);
+	    } else if ( !strcmp( pinfo, "un")) {
+	      current_result.__set_units( it->second.value);
+	      current_result.__set_resultNumber( result_number);
+	    }
+	  } else {
+	    // error should be here !!!
+	    // because they are of the form rXXXXXXss
+	  }
+	} else {
+	  // error should be here !!!
+	  // because they are of the form rXXXXXXss
+	}
+      } else {
+	// error should be here !!!
+	// because they are of the form rXXXXXXss
+      }
+    } else { // CF != 'R'
+      // error should be here !!!
+    }
+  }
+  return num_results;
+}  
 
+bool HBase::getListOfResultsFromTables( std::string &report, std::vector< ResultInfo> &listOfResults,
+					const std::string &metadata_table, const std::string &modelID,
+					const std::string &analysisID, const double stepValue) {
+  // do the scan on the metadata table ...
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  StrVec cols;
+  cols.push_back( "R"); // Mesh column family with, 
+  // theoretially all Metadata should start with "R:r000001nm", i.e. at least 1 result defined!
+  // we are looking for all result information ...
+  // cols.push_back( "R:r000001nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  // Metadata rowkeys = modelId + AnalysisID + StepNumber
+  std::string rowKey = createRowKey( modelID, analysisID, stepValue);
+  const size_t len_rowkey = rowKey.length();
+  
+  std::cout << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
+  
+  ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+  std::map< int, ResultInfo> map_result_info;
+  bool scan_ok = true;
+  int num_rows = 0;
+  try {
+    Crono clk( CRONO_WALL_TIME);
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+  	break;
+      // process rowsResult
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
+  	// get only rows with the same rowKeyPrefix ( modelID)
+	// if ( strncasecmp( rowsResult[ i].row.c_str(), rowKeyPrefix.c_str(), rowKeyPrefix.length())) {
+	if ( rowsResult[ i].row.compare( 0, len_rowkey, rowKey) != 0) {
+	  // we'll start with the correct ones, 
+	  // once they are different, then there are no more...
+	  break;
+	}
+  	bool ok = getResultInfoFromRow( map_result_info, rowsResult[ i]);
+	if ( !ok) {
+	  // something wrong with the rowkey ...
+	  break;
+	}
+	num_rows++;
+      }
+    } // while ( true)
+
+    const bool do_crono = DO_CRONO;
+    if ( do_crono)
+      std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
+    if ( map_result_info.size() != 0) {
+      // eventually pass the array-like tmp_lst_meshes to the list lst_mesh_info
+      for ( std::map< int, ResultInfo>::const_iterator it = map_result_info.begin();
+	    it != map_result_info.end();
+	    it++) {
+	listOfResults.push_back( it->second);
+      }
+    } else {
+      // nothing found
+      // scan_ok = false; // scan was ok but nothing found ...
+      report = "Not found: Result Information";
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    report = tmp.str();
+  }
+  _hbase_client->scannerClose( scan_id);
+  
+  return scan_ok;
+}
+
+std::string HBase::getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
+				     const std::string &sessionID, const std::string &modelID,
+				     const std::string &analysisID, const double stepValue) {
+  std::cout << "getListOfResults THRIFT: =====" << std::endl;
+  std::cout << "S  - " << sessionID              << std::endl;
+  std::cout << "M  - " << modelID                << std::endl;
+  std::cout << "An - " << analysisID              << std::endl;
+  std::cout << "Sv - " << stepValue              << std::endl;
+
+  string table_name;
+  bool scan_ok = true;
+
+  // look into the modelInfo table to get the correct table name
+  TableModelEntry table_set;
+  bool found = getTableNames( sessionID, modelID, table_set);
+  if ( found) {
+    scan_ok = getListOfResultsFromTables( report, listOfResults, table_set._metadata, modelID, analysisID, stepValue);
+  } else {
+    scan_ok = false;
+  }
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    bool there_are_results = listOfResults.size();
+    if ( there_are_results) {
+      result = "Ok";
+    } else {
+      result = "Error";
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::getListOfResults THRIFT could not scan.";
+  }
+
+  return result;
+}
+/* end GetListOfResults */

@@ -86,6 +86,11 @@ std::string storageModule::getListOfSteps( std::string &report, std::vector< dou
 					   const std::string &analysisID) {
   return _db->getListOfSteps( report, listOfSteps, sessionID, modelID, analysisID);
 }
+std::string storageModule::getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
+					     const std::string &sessionID, const std::string &modelID,
+					     const std::string &analysisID, const double stepValue) {
+  return _db->getListOfResults( report, listOfResults, sessionID, modelID, analysisID, stepValue);
+}
 
 std::string storageModule::checkIfAllVerticesArePresent(string listOfVertices, string out)
 {

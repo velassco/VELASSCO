@@ -78,6 +78,9 @@ public:
   std::string getListOfSteps( std::string &report, std::vector< double> &listOfSteps,
 			      const std::string &sessionID, const std::string &modelID,
 			      const std::string &analysisID);
+  std::string getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
+				const std::string &sessionID, const std::string &modelID,
+				const std::string &analysisID, const double stepValue);
 
   std::string checkIfAllVerticesArePresent(std::string listOfVertices, string contentToCheck);
 

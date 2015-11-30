@@ -56,6 +56,13 @@ namespace VELaSSCo
 				const std::string &sessionID, const std::string &modelID,
 				const std::string &analysisID);
 
+    bool getListOfResultsFromTables( std::string &report, std::vector< ResultInfo> &listOfResults,
+				     const std::string &sessionID, const std::string &modelID,
+				     const std::string &analysisID, const double stepValue);
+    std::string getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
+				  const std::string &sessionID, const std::string &modelID,
+				  const std::string &analysisID, const double stepValue);
+
     std::string getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
 				     const std::string &analysisID, const double       timeStep,  
 				     const std::string &resultID,   const std::string &listOfVertices );

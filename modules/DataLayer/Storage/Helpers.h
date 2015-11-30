@@ -15,6 +15,9 @@
 
 #include <malloc.h>
 #include <string.h>
+#include <ctype.h>
+
+#include "Crono.h"
 
 // ---------------------------------------------------------------------------
 
@@ -44,7 +47,7 @@
 #define ENABLE_LOGGING
 #ifdef ENABLE_LOGGING
 // to know that the messages belongs to the DataLayer
-#	define LOGGER (std::cerr << "[VELaSSCo-DL] ")
+#	define LOGGER (std::cerr << "[VELaSSCo-DL] " << getStrCurrentWallTime() << " ")
 #else
 #	define LOGGER (std::ostream(0))
 #endif
@@ -68,11 +71,15 @@ namespace VELaSSCo
    * Converts a std::string containing binary to a hex dump ASCII string.
    */ 
 
-  inline std::string Hexdump(const std::string input)
+  inline std::string Hexdump(const std::string input, const size_t max_len = 80)
   {
     std::stringstream out;
 
-    for (size_t i=0; i<input.size(); i+=16)
+    size_t end = input.size();
+    if ( max_len && ( end > max_len)) {
+      end = max_len;
+    }
+    for (size_t i=0; i<max_len; i+=16)
       {
 	out << std::hex << std::setw(2*sizeof(size_t)) << std::setfill('0') << (size_t)i << ": ";
 	for (size_t j=0; j<16; j++) {
@@ -233,7 +240,6 @@ namespace VELaSSCo
   /**
    * Compare two strings ignoring case (OS portable)
    */
-
   inline bool AreEqualNoCase( const std::string &a, const std::string &b) {
     if ( a.size() != b.size()) {
       return false;
@@ -244,6 +250,9 @@ namespace VELaSSCo
       }
     }
     return true;
+  }
+  inline bool AreEqualNoCaseSubstr( const std::string &a, const std::string &b, const size_t len) {
+    return AreEqualNoCase( a.substr( 0, len), b.substr( 0, len));
   }
 
   // ---------------------------------------------------------------------------
