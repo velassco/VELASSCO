@@ -58,6 +58,7 @@ class QM_DemoServer : virtual public QueryManagerIf {
   void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfAnalyses( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetListOfResults( Query_Result &_return, const SessionID sessionID, const std::string& query);
 };
 
 extern int StartServer( const int server_port);

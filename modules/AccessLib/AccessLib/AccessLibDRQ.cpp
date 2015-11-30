@@ -217,6 +217,56 @@ VAL_Result VAL_API valGetListOfTimeSteps(  /* in */
   CATCH_ERROR;
 } // valGetListOfTimeSteps
 
+
+VAL_Result VAL_API valGetListOfResults(  /* in */
+				       VAL_SessionID   sessionID,
+				       const char     *modelID,
+				       const char     *analysisID,
+				       double          stepValue,
+				       /* out */
+				       const char    **result_status,
+				       const char    **result_list_of_results
+				       /* will be: "NumberOfResults: 1234\nName: result_1\nResultType: Scalar\n...\nName: model_2..." */
+				       /* the information returned is ResultType, NumberOfComponents, ComponentNames, Location, GaussPointName, CoordinatesName, Units, ... */
+					 ) {
+  CHECK_SESSION_ID( sessionID );
+  CHECK_QUERY_POINTER( modelID );
+  CHECK_QUERY_POINTER( analysisID );
+  CHECK_QUERY_POINTER( result_status );
+  CHECK_QUERY_POINTER( result_list_of_results );
+  
+  API_TRACE;
+  try
+    {
+      std::stringstream  queryCommand;
+      const std::string* queryData;
+      
+      // Build JSON command string
+      queryCommand << "{\n"
+		   << "  \"name\"       : \"" << "GetListOfResults" << "\",\n"
+		   << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+		   << "  \"analysisID\" : \"" << analysisID                << "\",\n"
+		   << "  \"stepValue\"   : "  << stepValue << "\n";
+      queryCommand << "}\n";
+      
+      // Send command string and get back result data
+      VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+      
+      // Give back pointers to actual binary data
+      if (result == VAL_SUCCESS) {
+	/* will be: "NumberOfResults: 1234\nName: result_1\nResultType: Scalar\n...\nName: model_2..." */
+	/* the information returned is ResultType, NumberOfComponents, ComponentNames, Location, GaussPointName, CoordinatesName, Units, ... */
+	*result_list_of_results = queryData->c_str();
+	*result_status = "Ok";
+      } else {
+	// in case of error queryData has the error message from the data layer
+	*result_status = queryData->c_str();
+      }
+      return result;
+    }
+  CATCH_ERROR;
+} // valGetListOfResults
+
 #ifdef __cplusplus
 }
 #endif

@@ -22,6 +22,7 @@
 #else
 #    include <sys/time.h>
 #endif
+#include "Crono.h"
 
 // ---------------------------------------------------------------------------
 
@@ -51,7 +52,7 @@
 #define ENABLE_LOGGING
 #ifdef ENABLE_LOGGING
 // to know that the messages belongs to the AccessLib
-#	define LOGGER (std::cerr << "[VELaSSCo] ")
+#	define LOGGER (std::cerr << "[VELaSSCo] " << getStrCurrentWallTime() << " ")
 #else
 #	define LOGGER (std::ostream(0))
 #endif
@@ -163,7 +164,6 @@ namespace VELaSSCo
   /**
    * Compare two strings ignoring case (OS portable)
    */
-
   inline bool AreEqualNoCase( const std::string &a, const std::string &b) {
     if ( a.size() != b.size()) {
       return false;
@@ -174,6 +174,9 @@ namespace VELaSSCo
       }
     }
     return true;
+  }
+  inline bool AreEqualNoCaseSubstr( const std::string &a, const std::string &b, const size_t len) {
+    return AreEqualNoCase( a.substr( 0, len), b.substr( 0, len));
   }
 
   // ---------------------------------------------------------------------------

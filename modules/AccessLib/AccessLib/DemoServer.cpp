@@ -508,6 +508,43 @@ void QM_DemoServer::ManageGetListOfTimeSteps( Query_Result &_return, const Sessi
   LOGGER << "  data   : \n" << _return.data << std::endl;
 }
 
+void QM_DemoServer::ManageGetListOfResults( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  /* will be: "NumberOfResults: 1234\nName: result_1\nResultType: Scalar\n...\nName: model_2..." */
+  /* the information returned is ResultType, NumberOfComponents, ComponentNames, Location, GaussPointName, CoordinatesName, Units, ... */
+  std::ostringstream oss;
+  oss << "NumberOfResults: 3" << std::endl;
+  oss << "Name: PartitionID" << std::endl;
+  oss << "ResultType: Scalar" << std::endl;
+  oss << "NumberOfComponents: 1" << std::endl;
+  oss << "ComponentNames: \"\"" << std::endl;
+  oss << "Location: OnNodes" << std::endl;
+  oss << "GaussPointName: \"\"" << std::endl;
+  oss << "Units: \"\"" << std::endl;
+  oss << "Name: Velocity" << std::endl;
+  oss << "ResultType: Vector" << std::endl;
+  oss << "NumberOfComponents: 3" << std::endl;
+  oss << "ComponentNames: \"v-x\", \"v-y\", \"v-z\"" << std::endl;
+  oss << "Location: OnNodes" << std::endl;
+  oss << "GaussPointName: \"\"" << std::endl;
+  oss << "Units: \"m/s\"" << std::endl;
+  oss << "Name: Vorticity" << std::endl;
+  oss << "ResultType: Scalar" << std::endl;
+  oss << "NumberOfComponents: 1" << std::endl;
+  oss << "ComponentNames: \"\"" << std::endl;
+  oss << "Location: OnNodes" << std::endl;
+  oss << "GaussPointName: \"\"" << std::endl;
+  oss << "Units: \"1/s\"" << std::endl;
+  _return.__set_data( oss.str());
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << _return.data << std::endl;
+}
+
+
 void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
   _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));

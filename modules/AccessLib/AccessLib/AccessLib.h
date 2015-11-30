@@ -49,6 +49,13 @@ typedef enum
 	/* CloseModel */
 	
 	/* GetListOfMeshes */
+	VAL_NO_MESH_INFORMATION_FOUND     = 0x0401,
+	/* GetListOfAnalyses */
+	VAL_NO_ANALYSIS_INFORMATION_FOUND = 0x0402,
+	/* GetListOfTimeSteps */
+	VAL_NO_STEP_INFORMATION_FOUND     = 0x0403,
+	/* GetListOfResults */
+	VAL_NO_RESULT_INFORMATION_FOUND   = 0x0404,
 
 	/* GetResultFromVerticesID */
 	VAL_RESULT_ID_NOT_AVAILABLE       = 0x1000,
@@ -148,6 +155,17 @@ extern "C" {
 					   size_t         *num_steps,
 					   const double  **lst_steps
 					     );
+  VAL_Result VAL_API valGetListOfResults(  /* in */
+					 VAL_SessionID   sessionID,
+					 const char     *modelID,
+					 const char     *analysisID,
+					 double          stepValue,
+					 /* out */
+					 const char    **result_status,
+					 const char    **lst_of_results
+					/* will be: "NumberOfResults: 1234\nName: result_1\nResultType: Scalar\n...\nName: model_2..." */
+					/* the information returned is ResultType, NumberOfComponents, ComponentNames, Location, GaussPointName, CoordinatesName, Units, ... */
+					   );
   
   VAL_Result VAL_API valGetMeshDrawData( /* in */
 						VAL_SessionID   sessionID,
