@@ -107,7 +107,7 @@ void DEM_InjectorHandler::StoreDEM_Simulation(std::string& _return, const std::s
             }
          }
       }
-      m->writeAllObjectsToDatabase();
+     // m->writeAllObjectsToDatabase();
 
       _return = "OK";
    } catch (CedmError *e) {
@@ -199,12 +199,12 @@ void DEM_InjectorHandler::InjectMesh(char *MeshFileFolder, char *MeshName, char 
                      meshes[atol(MeshVersion)] = mesh;
                      sprintf(MeshNameWithVersion, "%s_%s", MeshName, MeshVersion); mesh->put_name(ma->allocString(MeshNameWithVersion));
                   }
-                  facet = new(ma)Set<dem::Vertex*>(ma, sdaiINSTANCE, 32);
+                  facet = new(ma)Set<dem::Vertex*>(m);
                   mesh->put_facets_element(facet);
                }
                dem::Vertex *v = newObject(dem::Vertex);
                v->put_vertex_position_element(atof(x)); v->put_vertex_position_element(atof(y)); v->put_vertex_position_element(atof(z));
-               facet->add(v, ma);
+               facet->add(v);
                if (vertexNo >= 3) vertexNo = 0; // build another facet next time
             }
          }
@@ -472,7 +472,7 @@ char *DEM_InjectorHandler::readNextLine()
 
 void DEM_InjectorHandler::flushObjectsAndClose()
 {
-   m->writeAllObjectsToDatabase();
+   //m->writeAllObjectsToDatabase();
    m->close();
 }
 

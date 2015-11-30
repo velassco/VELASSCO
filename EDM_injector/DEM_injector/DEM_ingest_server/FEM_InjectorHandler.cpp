@@ -281,7 +281,7 @@ char *FEM_InjectorHandler::readNextLine()
 
 void FEM_InjectorHandler::flushObjectsAndClose()
 {
-   m->writeAllObjectsToDatabase();
+   //m->writeAllObjectsToDatabase();
    m->close();
 }
 
