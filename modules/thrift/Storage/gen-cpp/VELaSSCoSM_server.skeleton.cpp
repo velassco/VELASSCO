@@ -133,6 +133,20 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
   }
 
   /**
+   * Retrieves the list of results for a given model, analysis and step-value
+   * as of OP-22.115
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param stepValue
+   */
+  void GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue) {
+    // Your implementation goes here
+    printf("GetListOfResultsFromTimeStepAndAnalysis\n");
+  }
+
+  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name

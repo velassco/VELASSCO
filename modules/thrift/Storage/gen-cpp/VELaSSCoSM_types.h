@@ -50,6 +50,8 @@ class MeshInfo;
 
 class Mesh;
 
+class ResultInfo;
+
 class Triangle;
 
 class rvGetElementOfPointsInSpace;
@@ -77,6 +79,8 @@ class rvGetListOfAnalyses;
 class rvGetListOfTimeSteps;
 
 class rvGetListOfMeshes;
+
+class rvGetListOfResults;
 
 typedef struct _ElementType__isset {
   _ElementType__isset() : shape(false), num_nodes(false) {}
@@ -382,6 +386,97 @@ class Mesh {
 };
 
 void swap(Mesh &a, Mesh &b);
+
+typedef struct _ResultInfo__isset {
+  _ResultInfo__isset() : name(false), type(false), numberOfComponents(false), componentNames(false), location(false), gaussPointName(false), coordinatesName(false), units(false), resultNumber(false) {}
+  bool name :1;
+  bool type :1;
+  bool numberOfComponents :1;
+  bool componentNames :1;
+  bool location :1;
+  bool gaussPointName :1;
+  bool coordinatesName :1;
+  bool units :1;
+  bool resultNumber :1;
+} _ResultInfo__isset;
+
+class ResultInfo {
+ public:
+
+  static const char* ascii_fingerprint; // = "97151C990E2F24FBABB8135B737FE75B";
+  static const uint8_t binary_fingerprint[16]; // = {0x97,0x15,0x1C,0x99,0x0E,0x2F,0x24,0xFB,0xAB,0xB8,0x13,0x5B,0x73,0x7F,0xE7,0x5B};
+
+  ResultInfo(const ResultInfo&);
+  ResultInfo& operator=(const ResultInfo&);
+  ResultInfo() : name(), type(), numberOfComponents(0), location(), gaussPointName(), coordinatesName(), units(), resultNumber(0) {
+  }
+
+  virtual ~ResultInfo() throw();
+  std::string name;
+  std::string type;
+  int32_t numberOfComponents;
+  std::vector<std::string>  componentNames;
+  std::string location;
+  std::string gaussPointName;
+  std::string coordinatesName;
+  std::string units;
+  int32_t resultNumber;
+
+  _ResultInfo__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_type(const std::string& val);
+
+  void __set_numberOfComponents(const int32_t val);
+
+  void __set_componentNames(const std::vector<std::string> & val);
+
+  void __set_location(const std::string& val);
+
+  void __set_gaussPointName(const std::string& val);
+
+  void __set_coordinatesName(const std::string& val);
+
+  void __set_units(const std::string& val);
+
+  void __set_resultNumber(const int32_t val);
+
+  bool operator == (const ResultInfo & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(numberOfComponents == rhs.numberOfComponents))
+      return false;
+    if (!(componentNames == rhs.componentNames))
+      return false;
+    if (!(location == rhs.location))
+      return false;
+    if (!(gaussPointName == rhs.gaussPointName))
+      return false;
+    if (!(coordinatesName == rhs.coordinatesName))
+      return false;
+    if (!(units == rhs.units))
+      return false;
+    if (!(resultNumber == rhs.resultNumber))
+      return false;
+    return true;
+  }
+  bool operator != (const ResultInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ResultInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ResultInfo& obj);
+};
+
+void swap(ResultInfo &a, ResultInfo &b);
 
 typedef struct _Triangle__isset {
   _Triangle__isset() : nodes(false) {}
@@ -1212,6 +1307,61 @@ class rvGetListOfMeshes {
 };
 
 void swap(rvGetListOfMeshes &a, rvGetListOfMeshes &b);
+
+typedef struct _rvGetListOfResults__isset {
+  _rvGetListOfResults__isset() : status(false), report(false), result_list(false) {}
+  bool status :1;
+  bool report :1;
+  bool result_list :1;
+} _rvGetListOfResults__isset;
+
+class rvGetListOfResults {
+ public:
+
+  static const char* ascii_fingerprint; // = "69484CB25AE81A607DD24CAECD55B5F7";
+  static const uint8_t binary_fingerprint[16]; // = {0x69,0x48,0x4C,0xB2,0x5A,0xE8,0x1A,0x60,0x7D,0xD2,0x4C,0xAE,0xCD,0x55,0xB5,0xF7};
+
+  rvGetListOfResults(const rvGetListOfResults&);
+  rvGetListOfResults& operator=(const rvGetListOfResults&);
+  rvGetListOfResults() : status(), report() {
+  }
+
+  virtual ~rvGetListOfResults() throw();
+  std::string status;
+  std::string report;
+  std::vector<ResultInfo>  result_list;
+
+  _rvGetListOfResults__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_result_list(const std::vector<ResultInfo> & val);
+
+  bool operator == (const rvGetListOfResults & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(result_list == rhs.result_list))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetListOfResults &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetListOfResults & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetListOfResults& obj);
+};
+
+void swap(rvGetListOfResults &a, rvGetListOfResults &b);
 
 } // namespace
 

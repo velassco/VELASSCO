@@ -72,6 +72,18 @@ struct Mesh {
    6: list<Element>                       elements
 }
 
+struct ResultInfo {
+  1: string        name
+  2: string        type
+  3: i32           numberOfComponents
+  4: list< string> componentNames
+  5: string        location
+  6: string        gaussPointName
+  7: string        coordinatesName
+  8: string        units
+  9: i32           resultNumber // as of R:rXXXXXXnm
+}
+
 struct Triangle {
    1: list<Node>                          nodes
 }
@@ -205,7 +217,11 @@ struct rvGetListOfMeshes {
    3: list<MeshInfo>                      meshInfos
 }
 
-
+struct rvGetListOfResults {
+   1: string            status
+   2: string            report
+   3: list< ResultInfo> result_list
+}
 
 
 // provides service VELaSSCo Storage Module
@@ -293,12 +309,15 @@ service VELaSSCoSM
 	  2: string                           modelID
 	  3: string                           analysisID ),
 	  
-
-
-
-
-
-
+	/**
+	 Retrieves the list of results for a given model, analysis and step-value
+	 as of OP-22.115
+	 */
+	rvGetListOfResults GetListOfResultsFromTimeStepAndAnalysis(
+	  1: string                           sessionID
+	  2: string                           modelID
+	  3: string                           analysisID
+	  4: double                           stepValue),
 
 
   /**
