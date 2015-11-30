@@ -42,6 +42,7 @@ public:
    void                                 put_consists_of(List<Timestep*>* v);
    void                                 unset_consists_of() { unsetAttribute(0); }
    bool                                 exists_consists_of() { return isAttrSet(0); }
+   SdaiAggr                             get_consists_of_aggrId();
    void                                 put_consists_of_element(Timestep*);
    char *                               get_name();
    void                                 put_name(char * v);
@@ -80,6 +81,7 @@ public:
    void                                 put_contact_results_properties(List<Contact_result_property*>* v);
    void                                 unset_contact_results_properties() { unsetAttribute(1); }
    bool                                 exists_contact_results_properties() { return isAttrSet(1); }
+   SdaiAggr                             get_contact_results_properties_aggrId();
    void                                 put_contact_results_properties_element(Contact_result_property*);
    Timestep*                            get_calculated_for();
    void                                 put_calculated_for(Timestep* v);
@@ -118,6 +120,7 @@ public:
    void                                 put_result_properties(List<Particle_result_property*>* v);
    void                                 unset_result_properties() { unsetAttribute(1); }
    bool                                 exists_result_properties() { return isAttrSet(1); }
+   SdaiAggr                             get_result_properties_aggrId();
    void                                 put_result_properties_element(Particle_result_property*);
    Timestep*                            get_calculated_for();
    void                                 put_calculated_for(Timestep* v);
@@ -147,6 +150,7 @@ public:
    void                                 put_coordinates(Array<REAL>* v);
    void                                 unset_coordinates() { unsetAttribute(2); }
    bool                                 exists_coordinates() { return isAttrSet(2); }
+   SdaiAggr                             get_coordinates_aggrId();
    void                                 put_coordinates_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Particle(Model *m, entityType et=et_Particle) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -164,6 +168,7 @@ public:
    void                                 put_contact_location(Array<REAL>* v);
    void                                 unset_contact_location() { unsetAttribute(0); }
    bool                                 exists_contact_location() { return isAttrSet(0); }
+   SdaiAggr                             get_contact_location_aggrId();
    void                                 put_contact_location_element(int index, REAL);
    int                                  get_id();
    void                                 put_id(int v);
@@ -185,6 +190,7 @@ public:
    void                                 put_vertex_position(List<REAL>* v);
    void                                 unset_vertex_position() { unsetAttribute(0); }
    bool                                 exists_vertex_position() { return isAttrSet(0); }
+   SdaiAggr                             get_vertex_position_aggrId();
    void                                 put_vertex_position_element(REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Vertex(Model *m, entityType et=et_Vertex) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -206,6 +212,7 @@ public:
    void                                 put_facets(Set<Set<Vertex*>*>* v);
    void                                 unset_facets() { unsetAttribute(1); }
    bool                                 exists_facets() { return isAttrSet(1); }
+   SdaiAggr                             get_facets_aggrId();
    void                                 put_facets_element(Set<Vertex*>*);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    FEM_mesh(Model *m, entityType et=et_FEM_mesh) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -227,16 +234,19 @@ public:
    void                                 put_boundary(Set<FEM_mesh*>* v);
    void                                 unset_boundary() { unsetAttribute(1); }
    bool                                 exists_boundary() { return isAttrSet(1); }
+   SdaiAggr                             get_boundary_aggrId();
    void                                 put_boundary_element(FEM_mesh*);
    List<Contact*>*                      get_has_contact();
    void                                 put_has_contact(List<Contact*>* v);
    void                                 unset_has_contact() { unsetAttribute(2); }
    bool                                 exists_has_contact() { return isAttrSet(2); }
+   SdaiAggr                             get_has_contact_aggrId();
    void                                 put_has_contact_element(Contact*);
    List<Particle*>*                     get_consists_of();
    void                                 put_consists_of(List<Particle*>* v);
    void                                 unset_consists_of() { unsetAttribute(3); }
    bool                                 exists_consists_of() { return isAttrSet(3); }
+   SdaiAggr                             get_consists_of_aggrId();
    void                                 put_consists_of_element(Particle*);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Timestep(Model *m, entityType et=et_Timestep) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -325,6 +335,7 @@ public:
    void                                 put_Vx_Vy_Vz(Array<REAL>* v);
    void                                 unset_Vx_Vy_Vz() { unsetAttribute(0); }
    bool                                 exists_Vx_Vy_Vz() { return isAttrSet(0); }
+   SdaiAggr                             get_Vx_Vy_Vz_aggrId();
    void                                 put_Vx_Vy_Vz_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Velocity(Model *m, entityType et=et_Velocity) : Particle_result_property(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -342,6 +353,7 @@ public:
    void                                 put_CPx_CPy_CPz(Array<REAL>* v);
    void                                 unset_CPx_CPy_CPz() { unsetAttribute(0); }
    bool                                 exists_CPx_CPy_CPz() { return isAttrSet(0); }
+   SdaiAggr                             get_CPx_CPy_CPz_aggrId();
    void                                 put_CPx_CPy_CPz_element(int index, REAL);
    char *                               get_name();
    void                                 put_name(char * v);
@@ -415,6 +427,7 @@ public:
    void                                 put_CPx_CPy_CPz(Array<REAL>* v);
    void                                 unset_CPx_CPy_CPz() { unsetAttribute(0); }
    bool                                 exists_CPx_CPy_CPz() { return isAttrSet(0); }
+   SdaiAggr                             get_CPx_CPy_CPz_aggrId();
    void                                 put_CPx_CPy_CPz_element(int index, REAL);
    char *                               get_name();
    void                                 put_name(char * v);
@@ -456,6 +469,7 @@ public:
    void                                 put_Fx_Fy_Fz(List<REAL>* v);
    void                                 unset_Fx_Fy_Fz() { unsetAttribute(0); }
    bool                                 exists_Fx_Fy_Fz() { return isAttrSet(0); }
+   SdaiAggr                             get_Fx_Fy_Fz_aggrId();
    void                                 put_Fx_Fy_Fz_element(REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Contact_Force(Model *m, entityType et=et_Contact_Force) : Contact_result_property(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }

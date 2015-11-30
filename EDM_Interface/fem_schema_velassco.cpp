@@ -4,6 +4,14 @@
 namespace fem {
 
 EDMLONG dbInstance_AttributeLayout[] = {0};
+EDMLONG CacheEntry_AttributeLayout[] = {4, 15, 0, 0};
+tEdmiAttribute CacheEntry_Attributes[] = {
+   {"cache_type", 4, 0},
+   {"teh_file", 15, 0},
+   {"size", 0, 0},
+   {NULL, 0, 0},
+};
+EDMLONG CacheEntry_Subtypes[] = {0};
 EDMLONG GaussPoint_AttributeLayout[] = {8, 9, 6, 0};
 tEdmiAttribute GaussPoint_Attributes[] = {
    {"gauss_point_for", 8, 0},
@@ -111,6 +119,7 @@ NULL
 };
 tEdmiEntityData fem_schema_velassco_Entities[] = {
 {"indeterminate"},
+{"CacheEntry", 3, 663, 8, 40, 12, et_CacheEntry, CacheEntry_AttributeLayout, CacheEntry_Subtypes, NULL, CacheEntry_Attributes},
 {"GaussPoint", 3, 661, 8, 40, 11, et_GaussPoint, GaussPoint_AttributeLayout, GaussPoint_Subtypes, NULL, GaussPoint_Attributes},
 {"Result", 1, 649, 8, 24, 5, et_Result, Result_AttributeLayout, Result_Subtypes, NULL, Result_Attributes},
 {"ResultBlock", 3, 647, 8, 40, 4, et_ResultBlock, ResultBlock_AttributeLayout, ResultBlock_Subtypes, NULL, ResultBlock_Attributes},
@@ -127,19 +136,29 @@ tEdmiEntityData fem_schema_velassco_Entities[] = {
 };
 
 /*====================================================================================================
+   CacheEntry
+====================================================================================================*/
+char * CacheEntry::get_cache_type() { return getATTRIBUTE(0, char *, 0); }
+void CacheEntry::put_cache_type(char * v) { putATTRIBUTE(0, char *, v, cache_type, 0, 4); }
+int CacheEntry::get_teh_file() { return getATTRIBUTE(8, int, 1); }
+void CacheEntry::put_teh_file(int v) { putATTRIBUTE(8, int, v, teh_file, 1, 15); }
+int CacheEntry::get_size() { return getATTRIBUTE(16, int, 2); }
+void CacheEntry::put_size(int v) { putATTRIBUTE(16, int, v, size, 2, 0); }
+/*====================================================================================================
    GaussPoint
 ====================================================================================================*/
 Element* GaussPoint::get_gauss_point_for() { return getInstance(0, Element*, 0); }
 void GaussPoint::put_gauss_point_for(Element* v) { putInstance(0, Element*, v, gauss_point_for, 0, 8); v->addToUsedIn(c); }
 Set<REAL>* GaussPoint::get_values() { return getAGGREGATE(8, Set<REAL>*, 1); }
 void GaussPoint::put_values(Set<REAL>* v) { putAGGREGATE(8, Set<REAL>*, v, values, 1, 9); }
+SdaiAggr  GaussPoint::get_values_aggrId() { return getAGGRID(1); }
 void GaussPoint::put_values_element(REAL element) {
-   Set<REAL>* aggregate = get_values();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<REAL>(m->getMemoryAllocator(), sdaiREAL, 3);
-      put_values(aggregate);
+   SdaiAggr agId = get_values_aggrId();
+   Set<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_values(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 GaussPointType GaussPoint::get_GPtype() { return getATTRIBUTE(16, GaussPointType, 2); }
 void GaussPoint::put_GPtype(GaussPointType v) { putATTRIBUTE(16, GaussPointType, v, GPtype, 2, 6); }
@@ -155,13 +174,14 @@ ResultHeader* ResultBlock::get_header() { return getInstance(0, ResultHeader*, 0
 void ResultBlock::put_header(ResultHeader* v) { putInstance(0, ResultHeader*, v, header, 0, 8); v->addToUsedIn(c); }
 List<Result*>* ResultBlock::get_values() { return getAGGREGATE(8, List<Result*>*, 1); }
 void ResultBlock::put_values(List<Result*>* v) { putAGGREGATE(8, List<Result*>*, v, values, 1, 9); }
+SdaiAggr  ResultBlock::get_values_aggrId() { return getAGGRID(1); }
 void ResultBlock::put_values_element(Result* element) {
-   List<Result*>* aggregate = get_values();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Result*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_values(aggregate);
+   SdaiAggr agId = get_values_aggrId();
+   List<Result*> aggregate(m, agId);
+   if (agId == 0) {
+      put_values(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 GaussPoint* ResultBlock::get_gauss_points() { return getInstance(16, GaussPoint*, 2); }
 void ResultBlock::put_gauss_points(GaussPoint* v) { putInstance(16, GaussPoint*, v, gauss_points, 2, 8); v->addToUsedIn(c); }
@@ -178,13 +198,14 @@ char * ResultHeader::get_gpName() { return getATTRIBUTE(24, char *, 3); }
 void ResultHeader::put_gpName(char * v) { putATTRIBUTE(24, char *, v, gpName, 3, 4); }
 List<STRING>* ResultHeader::get_compName() { return getAGGREGATE(32, List<STRING>*, 4); }
 void ResultHeader::put_compName(List<STRING>* v) { putAGGREGATE(32, List<STRING>*, v, compName, 4, 9); }
+SdaiAggr  ResultHeader::get_compName_aggrId() { return getAGGRID(4); }
 void ResultHeader::put_compName_element(STRING element) {
-   List<STRING>* aggregate = get_compName();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<STRING>(m->getMemoryAllocator(), sdaiSTRING, 3);
-      put_compName(aggregate);
+   SdaiAggr agId = get_compName_aggrId();
+   List<STRING> aggregate(m, agId);
+   if (agId == 0) {
+      put_compName(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 int ResultHeader::get_indexMData() { return getATTRIBUTE(40, int, 5); }
 void ResultHeader::put_indexMData(int v) { putATTRIBUTE(40, int, v, indexMData, 5, 0); }
@@ -197,13 +218,14 @@ void ResultHeader::put_location(LocationType v) { putATTRIBUTE(56, LocationType,
 ====================================================================================================*/
 List<Node*>* Element::get_nodes() { return getAGGREGATE(0, List<Node*>*, 0); }
 void Element::put_nodes(List<Node*>* v) { putAGGREGATE(0, List<Node*>*, v, nodes, 0, 9); }
+SdaiAggr  Element::get_nodes_aggrId() { return getAGGRID(0); }
 void Element::put_nodes_element(Node* element) {
-   List<Node*>* aggregate = get_nodes();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Node*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_nodes(aggregate);
+   SdaiAggr agId = get_nodes_aggrId();
+   List<Node*> aggregate(m, agId);
+   if (agId == 0) {
+      put_nodes(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 int Element::get_id() { return getATTRIBUTE(8, int, 1); }
 void Element::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
@@ -231,33 +253,36 @@ ElementType Mesh::get_elementType() { return getATTRIBUTE(24, ElementType, 3); }
 void Mesh::put_elementType(ElementType v) { putATTRIBUTE(24, ElementType, v, elementType, 3, 6); }
 List<Node*>* Mesh::get_nodes() { return getAGGREGATE(32, List<Node*>*, 4); }
 void Mesh::put_nodes(List<Node*>* v) { putAGGREGATE(32, List<Node*>*, v, nodes, 4, 9); }
+SdaiAggr  Mesh::get_nodes_aggrId() { return getAGGRID(4); }
 void Mesh::put_nodes_element(Node* element) {
-   List<Node*>* aggregate = get_nodes();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Node*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_nodes(aggregate);
+   SdaiAggr agId = get_nodes_aggrId();
+   List<Node*> aggregate(m, agId);
+   if (agId == 0) {
+      put_nodes(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 List<Element*>* Mesh::get_elements() { return getAGGREGATE(40, List<Element*>*, 5); }
 void Mesh::put_elements(List<Element*>* v) { putAGGREGATE(40, List<Element*>*, v, elements, 5, 9); }
+SdaiAggr  Mesh::get_elements_aggrId() { return getAGGRID(5); }
 void Mesh::put_elements_element(Element* element) {
-   List<Element*>* aggregate = get_elements();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Element*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_elements(aggregate);
+   SdaiAggr agId = get_elements_aggrId();
+   List<Element*> aggregate(m, agId);
+   if (agId == 0) {
+      put_elements(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 List<ResultHeader*>* Mesh::get_results() { return getAGGREGATE(48, List<ResultHeader*>*, 6); }
 void Mesh::put_results(List<ResultHeader*>* v) { putAGGREGATE(48, List<ResultHeader*>*, v, results, 6, 9); }
+SdaiAggr  Mesh::get_results_aggrId() { return getAGGRID(6); }
 void Mesh::put_results_element(ResultHeader* element) {
-   List<ResultHeader*>* aggregate = get_results();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<ResultHeader*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_results(aggregate);
+   SdaiAggr agId = get_results_aggrId();
+   List<ResultHeader*> aggregate(m, agId);
+   if (agId == 0) {
+      put_results(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 /*====================================================================================================
    ScalarResult
@@ -269,58 +294,63 @@ void ScalarResult::put_val(double v) { putREAL(8, double, v, val, 1, 1); }
 ====================================================================================================*/
 List<REAL>* VectorResult::get_values() { return getAGGREGATE(8, List<REAL>*, 1); }
 void VectorResult::put_values(List<REAL>* v) { putAGGREGATE(8, List<REAL>*, v, values, 1, 9); }
+SdaiAggr  VectorResult::get_values_aggrId() { return getAGGRID(1); }
 void VectorResult::put_values_element(REAL element) {
-   List<REAL>* aggregate = get_values();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<REAL>(m->getMemoryAllocator(), sdaiREAL, 3);
-      put_values(aggregate);
+   SdaiAggr agId = get_values_aggrId();
+   List<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_values(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 /*====================================================================================================
    Matrix_2D
 ====================================================================================================*/
 Array<REAL>* Matrix_2D::get_values() { return getAGGREGATE(8, Array<REAL>*, 1); }
 void Matrix_2D::put_values(Array<REAL>* v) { putAGGREGATE(8, Array<REAL>*, v, values, 1, 9); }
+SdaiAggr  Matrix_2D::get_values_aggrId() { return getAGGRID(1); }
 void Matrix_2D::put_values_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_values();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 0, 2);
-      put_values(aggregate);
+   SdaiAggr agId = get_values_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_values(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 /*====================================================================================================
    Matrix_3D
 ====================================================================================================*/
 Array<REAL>* Matrix_3D::get_values() { return getAGGREGATE(8, Array<REAL>*, 1); }
 void Matrix_3D::put_values(Array<REAL>* v) { putAGGREGATE(8, Array<REAL>*, v, values, 1, 9); }
+SdaiAggr  Matrix_3D::get_values_aggrId() { return getAGGRID(1); }
 void Matrix_3D::put_values_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_values();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 0, 5);
-      put_values(aggregate);
+   SdaiAggr agId = get_values_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_values(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 /*====================================================================================================
    Matrix_Deformated
 ====================================================================================================*/
 Array<REAL>* Matrix_Deformated::get_values() { return getAGGREGATE(8, Array<REAL>*, 1); }
 void Matrix_Deformated::put_values(Array<REAL>* v) { putAGGREGATE(8, Array<REAL>*, v, values, 1, 9); }
+SdaiAggr  Matrix_Deformated::get_values_aggrId() { return getAGGRID(1); }
 void Matrix_Deformated::put_values_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_values();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 0, 3);
-      put_values(aggregate);
+   SdaiAggr agId = get_values_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_values(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 
 void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Model *ma)
 {
    void* theObject = NULL;
 
+   CacheEntry* p_CacheEntry;
    GaussPoint* p_GaussPoint;
    Result* p_Result;
    ResultBlock* p_ResultBlock;
@@ -337,6 +367,10 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
    *entityTypep = entityType;
    instData->entityData = &theEntities[entityType];
    switch(entityType) {
+         case et_CacheEntry:
+            p_CacheEntry = new(ma) CacheEntry(ma, instData);
+            theObject = (void*)p_CacheEntry;
+            break;
          case et_GaussPoint:
             p_GaussPoint = new(ma) GaussPoint(ma, instData);
             theObject = (void*)p_GaussPoint;
@@ -401,6 +435,7 @@ tEdmiDefinedTypeData fem_schema_velassco_definedTypes[] = {
 
 fem_Schema fem_schema_velassco_SchemaObject(fem_schema_velassco_Entities, fem_schema_velassco_definedTypes, fem_schema_velassco_DefinedTypeNames);
 
+static bool supertypeOf_CacheEntry(entityType wantedSuperType, void **p);
 static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **p);
 static bool supertypeOf_Result(entityType wantedSuperType, void **p);
 static bool supertypeOf_ResultBlock(entityType wantedSuperType, void **p);
@@ -413,6 +448,13 @@ static bool supertypeOf_VectorResult(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_2D(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_3D(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_Deformated(entityType wantedSuperType, void **p);
+static dbInstance *dbInstanceOf_CacheEntry(void *obj) { CacheEntry *p = (CacheEntry*)obj; dbInstance *dbi = p; return dbi;}
+
+static bool supertypeOf_CacheEntry(entityType wantedSuperType, void **)
+{
+   return wantedSuperType == et_CacheEntry;
+}
+
 static dbInstance *dbInstanceOf_GaussPoint(void *obj) { GaussPoint *p = (GaussPoint*)obj; dbInstance *dbi = p; return dbi;}
 
 static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **)
@@ -550,6 +592,7 @@ static bool supertypeOf_indeterminate(entityType, void **)
 
 static supertypeCastingFunc castingFunctions[] = {
 &supertypeOf_indeterminate,
+   &supertypeOf_CacheEntry,
    &supertypeOf_GaussPoint,
    &supertypeOf_Result,
    &supertypeOf_ResultBlock,
@@ -565,7 +608,7 @@ static supertypeCastingFunc castingFunctions[] = {
 };
 void *supertype_cast(entityType wantedSuperType, void *p, entityType subType)
 {
-   if (subType >= 0 && subType < 13) {
+   if (subType >= 0 && subType < 14) {
       void *superTypeObject = p;
       if (castingFunctions[subType](wantedSuperType, &superTypeObject)) {
          return superTypeObject;
@@ -581,6 +624,7 @@ static dbInstance *dbInstanceOf_indeterminate(void *)
 
 static dbInstanceCastingFunc dbInstanceCastingFunctions[] = {
 &dbInstanceOf_indeterminate,
+   &dbInstanceOf_CacheEntry,
    &dbInstanceOf_GaussPoint,
    &dbInstanceOf_Result,
    &dbInstanceOf_ResultBlock,
@@ -596,7 +640,7 @@ static dbInstanceCastingFunc dbInstanceCastingFunctions[] = {
 };
 dbInstance *dbInstance_cast(void *p, entityType subType)
 {
-   if (subType < 0 || subType >= 12) {
+   if (subType < 0 || subType >= 13) {
       THROW("Illegal object type index");
    }
    return dbInstanceCastingFunctions[subType](p);

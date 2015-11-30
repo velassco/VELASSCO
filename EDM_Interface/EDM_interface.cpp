@@ -37,17 +37,17 @@ void EDM_interface::setCurrentModel(const char *modelName)
 void EDM_interface::setRemoteModel(char *modelName, char *_serverName, int _serverPort)
 /*===============================================================================================*/
 {
-   m = models[modelName];
+ /*  m = models[modelName];
    if (m == NULL) {
       sm = new SerializableModel(currentRepository, &model_ma, currentSchema, &extra_ma);
       models[modelName] = m = sm;
    }
    serverName = _serverName;
-   serverPort = _serverPort;
+   serverPort = _serverPort;*/
 }
 /*===============================================================================================*/
 void EDM_interface::sendObjectsToServer()
 /*===============================================================================================*/
 {
-   sm->serializeObjectsInBuffer();
+  // sm->serializeObjectsInBuffer();
 }

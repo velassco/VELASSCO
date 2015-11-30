@@ -196,13 +196,14 @@ tEdmiEntityData dem_schema_velassco_Entities[] = {
 ====================================================================================================*/
 List<Timestep*>* Simulation::get_consists_of() { return getAGGREGATE(0, List<Timestep*>*, 0); }
 void Simulation::put_consists_of(List<Timestep*>* v) { putAGGREGATE(0, List<Timestep*>*, v, consists_of, 0, 9); }
+SdaiAggr  Simulation::get_consists_of_aggrId() { return getAGGRID(0); }
 void Simulation::put_consists_of_element(Timestep* element) {
-   List<Timestep*>* aggregate = get_consists_of();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Timestep*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_consists_of(aggregate);
+   SdaiAggr agId = get_consists_of_aggrId();
+   List<Timestep*> aggregate(m, agId);
+   if (agId == 0) {
+      put_consists_of(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 char * Simulation::get_name() { return getATTRIBUTE(8, char *, 1); }
 void Simulation::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
@@ -217,13 +218,14 @@ void * Contact_result::get_valid_for(entityType *etp) { return getInstanceAndTyp
 void Contact_result::put_valid_for(Contact* v) { putInstance(0, Contact*, v, valid_for, 0, 8); v->addToUsedIn(c); }
 List<Contact_result_property*>* Contact_result::get_contact_results_properties() { return getAGGREGATE(8, List<Contact_result_property*>*, 1); }
 void Contact_result::put_contact_results_properties(List<Contact_result_property*>* v) { putAGGREGATE(8, List<Contact_result_property*>*, v, contact_results_properties, 1, 9); }
+SdaiAggr  Contact_result::get_contact_results_properties_aggrId() { return getAGGRID(1); }
 void Contact_result::put_contact_results_properties_element(Contact_result_property* element) {
-   List<Contact_result_property*>* aggregate = get_contact_results_properties();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Contact_result_property*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_contact_results_properties(aggregate);
+   SdaiAggr agId = get_contact_results_properties_aggrId();
+   List<Contact_result_property*> aggregate(m, agId);
+   if (agId == 0) {
+      put_contact_results_properties(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 Timestep* Contact_result::get_calculated_for() { return getInstance(16, Timestep*, 2); }
 void Contact_result::put_calculated_for(Timestep* v) { putInstance(16, Timestep*, v, calculated_for, 2, 8); v->addToUsedIn(c); }
@@ -238,13 +240,14 @@ void * Particle_result::get_valid_for(entityType *etp) { return getInstanceAndTy
 void Particle_result::put_valid_for(Particle* v) { putInstance(0, Particle*, v, valid_for, 0, 8); v->addToUsedIn(c); }
 List<Particle_result_property*>* Particle_result::get_result_properties() { return getAGGREGATE(8, List<Particle_result_property*>*, 1); }
 void Particle_result::put_result_properties(List<Particle_result_property*>* v) { putAGGREGATE(8, List<Particle_result_property*>*, v, result_properties, 1, 9); }
+SdaiAggr  Particle_result::get_result_properties_aggrId() { return getAGGRID(1); }
 void Particle_result::put_result_properties_element(Particle_result_property* element) {
-   List<Particle_result_property*>* aggregate = get_result_properties();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Particle_result_property*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_result_properties(aggregate);
+   SdaiAggr agId = get_result_properties_aggrId();
+   List<Particle_result_property*> aggregate(m, agId);
+   if (agId == 0) {
+      put_result_properties(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 Timestep* Particle_result::get_calculated_for() { return getInstance(16, Timestep*, 2); }
 void Particle_result::put_calculated_for(Timestep* v) { putInstance(16, Timestep*, v, calculated_for, 2, 8); v->addToUsedIn(c); }
@@ -257,26 +260,28 @@ int Particle::get_group() { return getATTRIBUTE(8, int, 1); }
 void Particle::put_group(int v) { putATTRIBUTE(8, int, v, group, 1, 0); }
 Array<REAL>* Particle::get_coordinates() { return getAGGREGATE(16, Array<REAL>*, 2); }
 void Particle::put_coordinates(Array<REAL>* v) { putAGGREGATE(16, Array<REAL>*, v, coordinates, 2, 9); }
+SdaiAggr  Particle::get_coordinates_aggrId() { return getAGGRID(2); }
 void Particle::put_coordinates_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_coordinates();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 1, 3);
-      put_coordinates(aggregate);
+   SdaiAggr agId = get_coordinates_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_coordinates(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 /*====================================================================================================
    Contact
 ====================================================================================================*/
 Array<REAL>* Contact::get_contact_location() { return getAGGREGATE(0, Array<REAL>*, 0); }
 void Contact::put_contact_location(Array<REAL>* v) { putAGGREGATE(0, Array<REAL>*, v, contact_location, 0, 9); }
+SdaiAggr  Contact::get_contact_location_aggrId() { return getAGGRID(0); }
 void Contact::put_contact_location_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_contact_location();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 1, 3);
-      put_contact_location(aggregate);
+   SdaiAggr agId = get_contact_location_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_contact_location(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 int Contact::get_id() { return getATTRIBUTE(8, int, 1); }
 void Contact::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
@@ -285,13 +290,14 @@ void Contact::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
 ====================================================================================================*/
 List<REAL>* Vertex::get_vertex_position() { return getAGGREGATE(0, List<REAL>*, 0); }
 void Vertex::put_vertex_position(List<REAL>* v) { putAGGREGATE(0, List<REAL>*, v, vertex_position, 0, 9); }
+SdaiAggr  Vertex::get_vertex_position_aggrId() { return getAGGRID(0); }
 void Vertex::put_vertex_position_element(REAL element) {
-   List<REAL>* aggregate = get_vertex_position();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<REAL>(m->getMemoryAllocator(), sdaiREAL, 3);
-      put_vertex_position(aggregate);
+   SdaiAggr agId = get_vertex_position_aggrId();
+   List<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_vertex_position(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 /*====================================================================================================
    FEM_mesh
@@ -300,13 +306,14 @@ char * FEM_mesh::get_name() { return getATTRIBUTE(0, char *, 0); }
 void FEM_mesh::put_name(char * v) { putATTRIBUTE(0, char *, v, name, 0, 4); }
 Set<Set<Vertex*>*>* FEM_mesh::get_facets() { return getAGGREGATE(8, Set<Set<Vertex*>*>*, 1); }
 void FEM_mesh::put_facets(Set<Set<Vertex*>*>* v) { putAGGREGATE(8, Set<Set<Vertex*>*>*, v, facets, 1, 9); }
+SdaiAggr  FEM_mesh::get_facets_aggrId() { return getAGGRID(1); }
 void FEM_mesh::put_facets_element(Set<Vertex*>* element) {
-   Set<Set<Vertex*>*>* aggregate = get_facets();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<Set<Vertex*>*>(m->getMemoryAllocator(), sdaiAGGR, 3);
-      put_facets(aggregate);
+   SdaiAggr agId = get_facets_aggrId();
+   Set<Set<Vertex*>*> aggregate(m, agId);
+   if (agId == 0) {
+      put_facets(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 /*====================================================================================================
    Timestep
@@ -315,33 +322,36 @@ double Timestep::get_time_value() { return getREAL(0, double, 0); }
 void Timestep::put_time_value(double v) { putREAL(0, double, v, time_value, 0, 1); }
 Set<FEM_mesh*>* Timestep::get_boundary() { return getAGGREGATE(8, Set<FEM_mesh*>*, 1); }
 void Timestep::put_boundary(Set<FEM_mesh*>* v) { putAGGREGATE(8, Set<FEM_mesh*>*, v, boundary, 1, 9); }
+SdaiAggr  Timestep::get_boundary_aggrId() { return getAGGRID(1); }
 void Timestep::put_boundary_element(FEM_mesh* element) {
-   Set<FEM_mesh*>* aggregate = get_boundary();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<FEM_mesh*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_boundary(aggregate);
+   SdaiAggr agId = get_boundary_aggrId();
+   Set<FEM_mesh*> aggregate(m, agId);
+   if (agId == 0) {
+      put_boundary(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 List<Contact*>* Timestep::get_has_contact() { return getAGGREGATE(16, List<Contact*>*, 2); }
 void Timestep::put_has_contact(List<Contact*>* v) { putAGGREGATE(16, List<Contact*>*, v, has_contact, 2, 9); }
+SdaiAggr  Timestep::get_has_contact_aggrId() { return getAGGRID(2); }
 void Timestep::put_has_contact_element(Contact* element) {
-   List<Contact*>* aggregate = get_has_contact();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Contact*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_has_contact(aggregate);
+   SdaiAggr agId = get_has_contact_aggrId();
+   List<Contact*> aggregate(m, agId);
+   if (agId == 0) {
+      put_has_contact(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 List<Particle*>* Timestep::get_consists_of() { return getAGGREGATE(24, List<Particle*>*, 3); }
 void Timestep::put_consists_of(List<Particle*>* v) { putAGGREGATE(24, List<Particle*>*, v, consists_of, 3, 9); }
+SdaiAggr  Timestep::get_consists_of_aggrId() { return getAGGRID(3); }
 void Timestep::put_consists_of_element(Particle* element) {
-   List<Particle*>* aggregate = get_consists_of();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<Particle*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_consists_of(aggregate);
+   SdaiAggr agId = get_consists_of_aggrId();
+   List<Particle*> aggregate(m, agId);
+   if (agId == 0) {
+      put_consists_of(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 /*====================================================================================================
    Particle_Particle_contact
@@ -373,26 +383,28 @@ void Particle_Geometry_contact::put_geometry(FEM_mesh* v) { putInstance(24, FEM_
 ====================================================================================================*/
 Array<REAL>* Velocity::get_Vx_Vy_Vz() { return getAGGREGATE(0, Array<REAL>*, 0); }
 void Velocity::put_Vx_Vy_Vz(Array<REAL>* v) { putAGGREGATE(0, Array<REAL>*, v, Vx_Vy_Vz, 0, 9); }
+SdaiAggr  Velocity::get_Vx_Vy_Vz_aggrId() { return getAGGRID(0); }
 void Velocity::put_Vx_Vy_Vz_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_Vx_Vy_Vz();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 1, 3);
-      put_Vx_Vy_Vz(aggregate);
+   SdaiAggr agId = get_Vx_Vy_Vz_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_Vx_Vy_Vz(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 /*====================================================================================================
    Custom_property_vector
 ====================================================================================================*/
 Array<REAL>* Custom_property_vector::get_CPx_CPy_CPz() { return getAGGREGATE(0, Array<REAL>*, 0); }
 void Custom_property_vector::put_CPx_CPy_CPz(Array<REAL>* v) { putAGGREGATE(0, Array<REAL>*, v, CPx_CPy_CPz, 0, 9); }
+SdaiAggr  Custom_property_vector::get_CPx_CPy_CPz_aggrId() { return getAGGRID(0); }
 void Custom_property_vector::put_CPx_CPy_CPz_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_CPx_CPy_CPz();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 1, 3);
-      put_CPx_CPy_CPz(aggregate);
+   SdaiAggr agId = get_CPx_CPy_CPz_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_CPx_CPy_CPz(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 char * Custom_property_vector::get_name() { return getATTRIBUTE(8, char *, 1); }
 void Custom_property_vector::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
@@ -418,13 +430,14 @@ void Volume::put_volume(double v) { putREAL(0, double, v, volume, 0, 1); }
 ====================================================================================================*/
 Array<REAL>* Custom_property_contact_vector::get_CPx_CPy_CPz() { return getAGGREGATE(0, Array<REAL>*, 0); }
 void Custom_property_contact_vector::put_CPx_CPy_CPz(Array<REAL>* v) { putAGGREGATE(0, Array<REAL>*, v, CPx_CPy_CPz, 0, 9); }
+SdaiAggr  Custom_property_contact_vector::get_CPx_CPy_CPz_aggrId() { return getAGGRID(0); }
 void Custom_property_contact_vector::put_CPx_CPy_CPz_element(int index, REAL element) {
-   Array<REAL>* aggregate = get_CPx_CPy_CPz();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Array<REAL>(m->getMemoryAllocator(), sdaiREAL, 1, 3);
-      put_CPx_CPy_CPz(aggregate);
+   SdaiAggr agId = get_CPx_CPy_CPz_aggrId();
+   Array<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_CPx_CPy_CPz(&aggregate);
    }
-   aggregate->put(index, element);
+   aggregate.put(index, element);
 }
 char * Custom_property_contact_vector::get_name() { return getATTRIBUTE(8, char *, 1); }
 void Custom_property_contact_vector::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
@@ -440,13 +453,14 @@ void Custom_property_contact_scalar::put_name(char * v) { putATTRIBUTE(8, char *
 ====================================================================================================*/
 List<REAL>* Contact_Force::get_Fx_Fy_Fz() { return getAGGREGATE(0, List<REAL>*, 0); }
 void Contact_Force::put_Fx_Fy_Fz(List<REAL>* v) { putAGGREGATE(0, List<REAL>*, v, Fx_Fy_Fz, 0, 9); }
+SdaiAggr  Contact_Force::get_Fx_Fy_Fz_aggrId() { return getAGGRID(0); }
 void Contact_Force::put_Fx_Fy_Fz_element(REAL element) {
-   List<REAL>* aggregate = get_Fx_Fy_Fz();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())List<REAL>(m->getMemoryAllocator(), sdaiREAL, 3);
-      put_Fx_Fy_Fz(aggregate);
+   SdaiAggr agId = get_Fx_Fy_Fz_aggrId();
+   List<REAL> aggregate(m, agId);
+   if (agId == 0) {
+      put_Fx_Fy_Fz(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 
 void* dem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Model *ma)

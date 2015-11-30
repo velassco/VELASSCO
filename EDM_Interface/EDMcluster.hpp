@@ -27,6 +27,7 @@ public:
    void                                 put_consists_of(Set<EDMrepository*>* v);
    void                                 unset_consists_of() { unsetAttribute(0); }
    bool                                 exists_consists_of() { return isAttrSet(0); }
+   SdaiAggr                             get_consists_of_aggrId();
    void                                 put_consists_of_element(EDMrepository*);
    char *                               get_name();
    void                                 put_name(char * v);
@@ -36,6 +37,7 @@ public:
    void                                 put_models(Set<ClusterModel*>* v);
    void                                 unset_models() { unsetAttribute(2); }
    bool                                 exists_models() { return isAttrSet(2); }
+   SdaiAggr                             get_models_aggrId();
    void                                 put_models_element(ClusterModel*);
    Set<EDMcluster*>*                    get_platform();
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
@@ -62,16 +64,19 @@ public:
    void                                 put_servers(Set<EDMServer*>* v);
    void                                 unset_servers() { unsetAttribute(2); }
    bool                                 exists_servers() { return isAttrSet(2); }
+   SdaiAggr                             get_servers_aggrId();
    void                                 put_servers_element(EDMServer*);
    Set<ClusterRepository*>*             get_repositories();
    void                                 put_repositories(Set<ClusterRepository*>* v);
    void                                 unset_repositories() { unsetAttribute(3); }
    bool                                 exists_repositories() { return isAttrSet(3); }
+   SdaiAggr                             get_repositories_aggrId();
    void                                 put_repositories_element(ClusterRepository*);
    Set<EDMdatabase*>*                   get_databases();
    void                                 put_databases(Set<EDMdatabase*>* v);
    void                                 unset_databases() { unsetAttribute(4); }
    bool                                 exists_databases() { return isAttrSet(4); }
+   SdaiAggr                             get_databases_aggrId();
    void                                 put_databases_element(EDMdatabase*);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    EDMcluster(Model *m, entityType et=et_EDMcluster) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -194,6 +199,7 @@ public:
    void                                 put_consists_of(Set<EDMmodel*>* v);
    void                                 unset_consists_of() { unsetAttribute(0); }
    bool                                 exists_consists_of() { return isAttrSet(0); }
+   SdaiAggr                             get_consists_of_aggrId();
    void                                 put_consists_of_element(EDMmodel*);
    char *                               get_name();
    void                                 put_name(char * v);

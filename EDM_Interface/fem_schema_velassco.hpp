@@ -7,6 +7,7 @@ extern tEdmiEntityData fem_schema_velassco_Entities[];
 namespace fem {
 
 class fem_Schema;
+class CacheEntry;
 class GaussPoint;
 class Result;
 class ResultBlock;
@@ -26,6 +27,30 @@ typedef enum {ElementType_POINT, ElementType_LINE, ElementType_TRIANGLE, Element
 typedef enum {dt_GaussPointType, dt_LocationType, dt_ValueType, dt_ElementType} definedTypeNames;
 
 
+class CacheEntry :  public dbInstance
+{
+protected:
+   CacheEntry() {}
+public:
+   static const entityType type = et_CacheEntry;
+   char *                               get_cache_type();
+   void                                 put_cache_type(char * v);
+   void                                 unset_cache_type() { unsetAttribute(0); }
+   bool                                 exists_cache_type() { return isAttrSet(0); }
+   int                                  get_teh_file();
+   void                                 put_teh_file(int v);
+   void                                 unset_teh_file() { unsetAttribute(1); }
+   bool                                 exists_teh_file() { return isAttrSet(1); }
+   int                                  get_size();
+   void                                 put_size(int v);
+   void                                 unset_size() { unsetAttribute(2); }
+   bool                                 exists_size() { return isAttrSet(2); }
+   void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
+   CacheEntry(Model *m, entityType et=et_CacheEntry) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
+   CacheEntry(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
+};
+
+
 class GaussPoint :  public dbInstance
 {
 protected:
@@ -40,6 +65,7 @@ public:
    void                                 put_values(Set<REAL>* v);
    void                                 unset_values() { unsetAttribute(1); }
    bool                                 exists_values() { return isAttrSet(1); }
+   SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(REAL);
    GaussPointType                       get_GPtype();
    void                                 put_GPtype(GaussPointType v);
@@ -81,6 +107,7 @@ public:
    void                                 put_values(List<Result*>* v);
    void                                 unset_values() { unsetAttribute(1); }
    bool                                 exists_values() { return isAttrSet(1); }
+   SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(Result*);
    GaussPoint*                          get_gauss_points();
    void                                 put_gauss_points(GaussPoint* v);
@@ -118,6 +145,7 @@ public:
    void                                 put_compName(List<STRING>* v);
    void                                 unset_compName() { unsetAttribute(4); }
    bool                                 exists_compName() { return isAttrSet(4); }
+   SdaiAggr                             get_compName_aggrId();
    void                                 put_compName_element(STRING);
    int                                  get_indexMData();
    void                                 put_indexMData(int v);
@@ -147,6 +175,7 @@ public:
    void                                 put_nodes(List<Node*>* v);
    void                                 unset_nodes() { unsetAttribute(0); }
    bool                                 exists_nodes() { return isAttrSet(0); }
+   SdaiAggr                             get_nodes_aggrId();
    void                                 put_nodes_element(Node*);
    int                                  get_id();
    void                                 put_id(int v);
@@ -212,16 +241,19 @@ public:
    void                                 put_nodes(List<Node*>* v);
    void                                 unset_nodes() { unsetAttribute(4); }
    bool                                 exists_nodes() { return isAttrSet(4); }
+   SdaiAggr                             get_nodes_aggrId();
    void                                 put_nodes_element(Node*);
    List<Element*>*                      get_elements();
    void                                 put_elements(List<Element*>* v);
    void                                 unset_elements() { unsetAttribute(5); }
    bool                                 exists_elements() { return isAttrSet(5); }
+   SdaiAggr                             get_elements_aggrId();
    void                                 put_elements_element(Element*);
    List<ResultHeader*>*                 get_results();
    void                                 put_results(List<ResultHeader*>* v);
    void                                 unset_results() { unsetAttribute(6); }
    bool                                 exists_results() { return isAttrSet(6); }
+   SdaiAggr                             get_results_aggrId();
    void                                 put_results_element(ResultHeader*);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Mesh(Model *m, entityType et=et_Mesh) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -255,6 +287,7 @@ public:
    void                                 put_values(List<REAL>* v);
    void                                 unset_values() { unsetAttribute(1); }
    bool                                 exists_values() { return isAttrSet(1); }
+   SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    VectorResult(Model *m, entityType et=et_VectorResult) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -272,6 +305,7 @@ public:
    void                                 put_values(Array<REAL>* v);
    void                                 unset_values() { unsetAttribute(1); }
    bool                                 exists_values() { return isAttrSet(1); }
+   SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Matrix_2D(Model *m, entityType et=et_Matrix_2D) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -289,6 +323,7 @@ public:
    void                                 put_values(Array<REAL>* v);
    void                                 unset_values() { unsetAttribute(1); }
    bool                                 exists_values() { return isAttrSet(1); }
+   SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Matrix_3D(Model *m, entityType et=et_Matrix_3D) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
@@ -306,6 +341,7 @@ public:
    void                                 put_values(Array<REAL>* v);
    void                                 unset_values() { unsetAttribute(1); }
    bool                                 exists_values() { return isAttrSet(1); }
+   SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Matrix_Deformated(Model *m, entityType et=et_Matrix_Deformated) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }

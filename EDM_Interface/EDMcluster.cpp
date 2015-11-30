@@ -89,25 +89,27 @@ tEdmiEntityData EDMcluster_Entities[] = {
 ====================================================================================================*/
 Set<EDMrepository*>* ClusterRepository::get_consists_of() { return getAGGREGATE(0, Set<EDMrepository*>*, 0); }
 void ClusterRepository::put_consists_of(Set<EDMrepository*>* v) { putAGGREGATE(0, Set<EDMrepository*>*, v, consists_of, 0, 9); }
+SdaiAggr  ClusterRepository::get_consists_of_aggrId() { return getAGGRID(0); }
 void ClusterRepository::put_consists_of_element(EDMrepository* element) {
-   Set<EDMrepository*>* aggregate = get_consists_of();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<EDMrepository*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_consists_of(aggregate);
+   SdaiAggr agId = get_consists_of_aggrId();
+   Set<EDMrepository*> aggregate(m, agId);
+   if (agId == 0) {
+      put_consists_of(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 char * ClusterRepository::get_name() { return getATTRIBUTE(8, char *, 1); }
 void ClusterRepository::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
 Set<ClusterModel*>* ClusterRepository::get_models() { return getAGGREGATE(16, Set<ClusterModel*>*, 2); }
 void ClusterRepository::put_models(Set<ClusterModel*>* v) { putAGGREGATE(16, Set<ClusterModel*>*, v, models, 2, 9); }
+SdaiAggr  ClusterRepository::get_models_aggrId() { return getAGGRID(2); }
 void ClusterRepository::put_models_element(ClusterModel* element) {
-   Set<ClusterModel*>* aggregate = get_models();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<ClusterModel*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_models(aggregate);
+   SdaiAggr agId = get_models_aggrId();
+   Set<ClusterModel*> aggregate(m, agId);
+   if (agId == 0) {
+      put_models(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 Set<EDMcluster*>* ClusterRepository::get_platform() { return getAGGREGATE(24, Set<EDMcluster*>*, 3); }
 /*====================================================================================================
@@ -119,33 +121,36 @@ char * EDMcluster::get_description() { return getATTRIBUTE(8, char *, 1); }
 void EDMcluster::put_description(char * v) { putATTRIBUTE(8, char *, v, description, 1, 4); }
 Set<EDMServer*>* EDMcluster::get_servers() { return getAGGREGATE(16, Set<EDMServer*>*, 2); }
 void EDMcluster::put_servers(Set<EDMServer*>* v) { putAGGREGATE(16, Set<EDMServer*>*, v, servers, 2, 9); }
+SdaiAggr  EDMcluster::get_servers_aggrId() { return getAGGRID(2); }
 void EDMcluster::put_servers_element(EDMServer* element) {
-   Set<EDMServer*>* aggregate = get_servers();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<EDMServer*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_servers(aggregate);
+   SdaiAggr agId = get_servers_aggrId();
+   Set<EDMServer*> aggregate(m, agId);
+   if (agId == 0) {
+      put_servers(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 Set<ClusterRepository*>* EDMcluster::get_repositories() { return getAGGREGATE(24, Set<ClusterRepository*>*, 3); }
 void EDMcluster::put_repositories(Set<ClusterRepository*>* v) { putAGGREGATE(24, Set<ClusterRepository*>*, v, repositories, 3, 9); }
+SdaiAggr  EDMcluster::get_repositories_aggrId() { return getAGGRID(3); }
 void EDMcluster::put_repositories_element(ClusterRepository* element) {
-   Set<ClusterRepository*>* aggregate = get_repositories();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<ClusterRepository*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_repositories(aggregate);
+   SdaiAggr agId = get_repositories_aggrId();
+   Set<ClusterRepository*> aggregate(m, agId);
+   if (agId == 0) {
+      put_repositories(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 Set<EDMdatabase*>* EDMcluster::get_databases() { return getAGGREGATE(32, Set<EDMdatabase*>*, 4); }
 void EDMcluster::put_databases(Set<EDMdatabase*>* v) { putAGGREGATE(32, Set<EDMdatabase*>*, v, databases, 4, 9); }
+SdaiAggr  EDMcluster::get_databases_aggrId() { return getAGGRID(4); }
 void EDMcluster::put_databases_element(EDMdatabase* element) {
-   Set<EDMdatabase*>* aggregate = get_databases();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<EDMdatabase*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_databases(aggregate);
+   SdaiAggr agId = get_databases_aggrId();
+   Set<EDMdatabase*> aggregate(m, agId);
+   if (agId == 0) {
+      put_databases(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 /*====================================================================================================
    EDMServer
@@ -195,13 +200,14 @@ void EDMmodel::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
 ====================================================================================================*/
 Set<EDMmodel*>* ClusterModel::get_consists_of() { return getAGGREGATE(0, Set<EDMmodel*>*, 0); }
 void ClusterModel::put_consists_of(Set<EDMmodel*>* v) { putAGGREGATE(0, Set<EDMmodel*>*, v, consists_of, 0, 9); }
+SdaiAggr  ClusterModel::get_consists_of_aggrId() { return getAGGRID(0); }
 void ClusterModel::put_consists_of_element(EDMmodel* element) {
-   Set<EDMmodel*>* aggregate = get_consists_of();
-   if (aggregate == NULL) {
-      aggregate = new(m->getMemoryAllocator())Set<EDMmodel*>(m->getMemoryAllocator(), sdaiINSTANCE, 3);
-      put_consists_of(aggregate);
+   SdaiAggr agId = get_consists_of_aggrId();
+   Set<EDMmodel*> aggregate(m, agId);
+   if (agId == 0) {
+      put_consists_of(&aggregate);
    }
-   aggregate->add(element, m->getMemoryAllocator());
+   aggregate.add(element);
 }
 char * ClusterModel::get_name() { return getATTRIBUTE(8, char *, 1); }
 void ClusterModel::put_name(char * v) { putATTRIBUTE(8, char *, v, name, 1, 4); }
