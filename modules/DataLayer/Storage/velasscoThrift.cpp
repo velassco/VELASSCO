@@ -51,9 +51,9 @@ void VELaSSCoHandler::GetResultFromVerticesID(std::string &_return, const std::s
     // _return = storageModule::Instance()->checkIfAllVerticesArePresent(listOfVertices, _return);
 }
 
-void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID)
+void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const int32_t partitionID)
 {
-	_return = storageModule::Instance()->getCoordinatesAndElementsFromMesh (sessionID, modelID, analysisID, timeStep, resultID);
+	_return = storageModule::Instance()->getCoordinatesAndElementsFromMesh (sessionID, modelID, analysisID, timeStep, partitionID);
 }
 
 void VELaSSCoHandler::GetListOfMeshes( rvGetListOfMeshes &_return, 

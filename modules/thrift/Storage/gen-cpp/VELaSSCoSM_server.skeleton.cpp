@@ -68,6 +68,22 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
   }
 
   /**
+   * Return the coordinates and elements of a model's mesh.
+   * @return string - returns a structured list of vertices and elements of a model's mesh.
+   * if errors occur the contect is also returned here?
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param timeStep
+   * @param partitionID
+   */
+  void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID) {
+    // Your implementation goes here
+    printf("GetCoordinatesAndElementsFromMesh\n");
+  }
+
+  /**
    * Stop Data Layer
    */
   void stopAll() {

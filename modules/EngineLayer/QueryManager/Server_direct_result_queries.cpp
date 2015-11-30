@@ -152,11 +152,12 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   boost::property_tree::ptree pt;
   boost::property_tree::read_json(ss, pt);
 
-  std::string name       = pt.get<std::string>("name");
-  std::string modelID    = pt.get<std::string>("modelID");
-  std::string resultID   = pt.get<std::string>("resultID");
-  std::string analysisID = pt.get<std::string>("analysisID");
-  double      timeStep   = pt.get<double>("timeStep");
+  std::string name        = pt.get<std::string>("name");
+  std::string modelID     = pt.get<std::string>("modelID");
+  //std::string resultID    = pt.get<std::string>("resultID");
+  std::string analysisID  = pt.get<std::string>("analysisID");
+  unsigned    partitionID = pt.get<unsigned>("partitionID");
+  double      timeStep    = pt.get<double>("timeStep");
   
   std::stringstream sessionIDStr;
   sessionIDStr << sessionID;
@@ -170,7 +171,10 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   //std::cout << "V " << vertexIDs  << std::endl;
   //std::cout << "T " << timeStep   << std::endl;
   
-  const bool test = true;
+  std::string simulation_data_table_name = GetModelsTableName( sessionID, modelID.c_str());
+  std::cout << "simulation data table = " << simulation_data_table_name << endl;
+  
+  const bool test = false;
   if(test){
 	  int nFaces = 12;
 	  int nVertices = 8;
@@ -274,7 +278,109 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 	  _return.__set_data( oss.str() ); 
 	  _return.__set_result( (Result::type)VAL_SUCCESS );
   } else {
-	  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID);
+	  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,partitionID);
+	  
+	  const int num_vertices = 2704;
+	  std::vector<float> vertices( 6 * num_vertices );
+	  std::vector<int>   faces;
+	  
+	  size_t i = 0;
+	  while( i < _return_.size() ){
+		  
+		  if(_return_[i] == 't'){
+			  
+			  int64_t indices[3];
+			  indices[0] = static_cast<int>(*((int64_t*)(&_return_[i+1 ])));
+			  indices[1] = static_cast<int>(*((int64_t*)(&_return_[i+9 ])));
+			  indices[2] = static_cast<int>(*((int64_t*)(&_return_[i+17])));
+			  
+			  faces.push_back(static_cast<int>(indices[0]));
+			  faces.push_back(static_cast<int>(indices[1]));
+			  faces.push_back(static_cast<int>(indices[2]));
+			  faces.push_back(-1);
+			  
+			  //cout << "Indices = " << indices[0] << " " << indices[1] << " " << indices[2] << endl;
+			  
+			  
+			  
+			  i += 25;
+			  
+		  }
+		  if(_return_[i] == 'v'){
+			  
+			  int64_t indx = *((int64_t*)(&_return_[i+1]));
+			  
+			  double coords[3];
+			  coords[0] = static_cast<float>(*((double*)(&_return_[i+9 ])));
+			  coords[1] = static_cast<float>(*((double*)(&_return_[i+17])));
+			  coords[2] = static_cast<float>(*((double*)(&_return_[i+25])));
+			  
+			  vertices[6 * indx + 0] = coords[0];
+			  vertices[6 * indx + 1] = coords[1];
+			  vertices[6 * indx + 2] = coords[2];
+			  vertices[6 * indx + 3] = 1.0f;
+			  vertices[6 * indx + 4] = 1.0f;
+			  vertices[6 * indx + 5] = 1.0f;
+			  
+			  
+			  //cout << "Coordinates[ " << indx << " ] = " << coords[0] << " " << coords[1] << " " << coords[2] << endl;
+			  
+			  i += 33;
+		  }
+		  
+	  }
+	  
+	  char description[] =
+		"# TEST PLY DATA                    \n"
+		"VertexDefinition = position, normal\n"
+		"vertexDefinitionType = float       \n"
+
+		"OgLPrimitiveRestartIndex = -1      \n";
+	  
+	  VELaSSCo::RTFormat::File file;
+
+	  file.header.magic[0] = 'V';
+	  file.header.magic[1] = 'E';
+	  file.header.magic[2] = 'L';
+	  file.header.magic[3] = 'a';
+	  file.header.magic[4] = 'S';
+	  file.header.magic[5] = 'S';
+	  file.header.magic[6] = 'C';
+	  file.header.magic[7] = 'o';
+
+	  file.header.version = 100;
+	  file.header.descriptionBytes = sizeof(description);
+
+	  file.header.metaBytes = 0;
+
+	  file.header.vertexDefinitionsBytes  = vertices.size() * sizeof(float);
+	  file.header.vertexAttributesBytes   = 0;
+	  file.header.edgeDefinitionsBytes    = 0;
+	  file.header.edgeAttributesBytes     = 0;
+	  file.header.faceDefinitionsBytes    = faces.size() * sizeof(int);
+	  file.header.faceAttributesBytes     = 0;
+	  file.header.cellDefinitionsBytes    = 0;
+	  file.header.cellAttributesBytes     = 0;
+
+	  file.data.description       = (uint8_t*) description;
+	  file.data.meta              = 0;
+
+	  file.data.vertexDefinitions = (uint8_t*)vertices.data();
+	  file.data.vertexAttributes  = 0;
+	  file.data.edgeDefinitions   = 0;
+	  file.data.edgeAttributes    = 0;
+	  file.data.faceDefinitions   = (uint8_t*)faces.data();
+	  file.data.faceAttributes    = 0;
+	  file.data.cellDefinitions   = 0;
+	  file.data.cellAttributes    = 0;
+
+	  // Pack into string
+	  std::ostringstream oss;
+	  oss << file;  
+
+	  _return.__set_data( oss.str() ); 
+	  _return.__set_result( (Result::type)VAL_SUCCESS );
+	  
   }
 
   LOGGER                                             << std::endl;

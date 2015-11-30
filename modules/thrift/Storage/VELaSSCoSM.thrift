@@ -245,6 +245,19 @@ service VELaSSCoSM
     4: double timeStep,
     5: string resultID,
     6: string listOfVertices ),
+  
+  /**
+   Return the coordinates and elements of a model's mesh.
+   @return string - returns a structured list of vertices and elements of a model's mesh.
+   if errors occur the contect is also returned here?
+   */  
+  string 	GetCoordinatesAndElementsFromMesh(
+	1: string sessionID, 
+	2: string modelID, 
+	3: string analysisID, 
+	4: double timeStep, 
+	5: i32 partitionID),
+    
     /**
      Stop Data Layer
      */							 	

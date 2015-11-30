@@ -697,44 +697,176 @@ std::string HBase::getResultOnVertices_thrift( const std::string &sessionID,
 // ==============================================================
 // ==============================================================
 
-std::string HBase::getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID) {
-  return getCoordinatesAndElementsFromMesh_curl( sessionID, modelID, analysisID, timeStep, resultID );		
+std::string HBase::parse1FEM(std::string b)
+{
+	std::stringstream result;
+
+    printf("Parsing JSON tree ...\n");
+    cJSON *json = cJSON_Parse(b.c_str());
+    if ( !json) {
+      printf("not a JSON tree !\n");
+      return "";
+    }
+	
+	std::vector<int64_t> indices;
+	
+    cJSON *_return = cJSON_CreateObject();
+    cJSON *listOfVertices = cJSON_CreateArray();
+    cJSON *listOfIndices  = cJSON_CreateArray();
+    cJSON_AddItemToObject(_return, "vertices", listOfVertices);
+    cJSON_AddItemToObject(_return, "indices", listOfIndices);
+    
+    // setbuf( stdout, NULL);
+  // printf( "Number of elements = %d\n", cJSON_GetArraySize(json));
+  for (int i = 0; i < cJSON_GetArraySize(json); i ++ ) {
+    // Get each row element
+    cJSON *row = cJSON_GetArrayItem ( json, i);
+    // Read all elements of each row
+    printf( "Number of rows = %d\n", cJSON_GetArraySize(row));
+    int num_models = cJSON_GetArraySize(row);
+    //there_are_models = ( num_models > 0);
+    for (int j = 0; j < num_models; j ++ ) {
+      printf( "row # %d\n", j);
+      //A Hbase key  is composed by two elements: key and cell (which contains data)
+      cJSON *keyC = cJSON_GetArrayItem (row, j);
+      cJSON *keyJ = cJSON_GetArrayItem (keyC, 0);
+      // Row key:
+      string key = base64_decode(keyJ->valuestring);
+      cJSON *cellsJ = cJSON_GetArrayItem (keyC, 1);
+       cJSON * elem  = cJSON_CreateObject();
+       printf( "keyC = %s\n", keyC->valuestring);
+       printf( "keyJ(decod) = %s", Hexdump( key).c_str());
+
+      for (int k = 0; k < cJSON_GetArraySize(cellsJ); k++) {
+	//    printf( "   cell # %d\n", k);
+	cJSON *contents = cJSON_GetArrayItem (cellsJ, k);
+	// contents is an array with 3 items: ( value, timestap, and "$")
+	// printf( "   contents size %d\n", cJSON_GetArraySize( contents));
+	// Colum Qualifier of the form: ColumFamily:qualifier      for instance Properties:nm
+	cJSON *cq = cJSON_GetArrayItem (contents, 0);
+	string tmp_cq = base64_decode(cq->valuestring);
+	//printf( "      elem(decod) = %s\n", tmp_cq.c_str());
+	cJSON *value = cJSON_GetArrayItem (contents, 2);
+	string tmp_value = base64_decode( value->valuestring);
+	//printf( "      elem(decod) = %s\n", tmp_value.c_str());
+	if ( tmp_cq.find("M:c") == 0) {
+		
+		size_t  underline_pos = tmp_cq.find("_");
+		int64_t id = *((int64_t*)(&(tmp_cq[ 10 ])));
+
+        double vertex[3];
+			  
+	    vertex[0] = *((double*)(&tmp_value[0 ]));
+		vertex[1] = *((double*)(&tmp_value[8 ]));
+		vertex[2] = *((double*)(&tmp_value[16]));
+		
+		//vertices.push_back( vertex[0] );
+		//vertices.push_back( vertex[1] );
+		//vertices.push_back( vertex[2] );
+
+		char identifier[] = { 'v' };
+		result.write(identifier, 1);
+		result.write((const char*)&id, 8);
+		result.write((const char*)vertex, 24);
+
+		//static int testi = 0; 
+		//cout << testi++ << ". v [ " << id << " ] = " << vertex[0] << " " << vertex[1] << " " << vertex[2] << endl;
+	} else if ( tmp_cq.find("M:m") == 0) {
+		
+		int64_t id = *((int64_t*)(&(tmp_cq[ 10 ])));
+		
+		//std::cout << "M:m " << tmp_cq << "with id " << id << "found\n";
+		// triangle
+		if(tmp_cq.find("M:m000001_") == 0){
+			int64_t indices[3];
+			
+			indices[0] = *((int64_t*)(&tmp_value[0 ]));			
+			indices[1] = *((int64_t*)(&tmp_value[8 ]));
+			indices[2] = *((int64_t*)(&tmp_value[16 ]));
+			
+			char identifier[] = { 't' };
+			result.write(identifier, 1);
+			result.write((const char*)indices, 24);
+			
+			//static size_t iiiii = 0;
+			//cout << iiiii++ << "indices = ";
+			//for(size_t iii = 0; iii < 3; iii++)  cout << indices[iii] << " ";
+			//cout << endl;
+			
+		}
+		// tetrahedrons
+		else if(tmp_cq.find("M:m020406_") == 0){
+			int64_t indices[4];
+			
+			indices[0] = *((int64_t*)(&tmp_value[0 ]));			
+			indices[1] = *((int64_t*)(&tmp_value[8 ]));
+			indices[2] = *((int64_t*)(&tmp_value[16]));
+			indices[3] = *((int64_t*)(&tmp_value[24]));
+			
+			//cout << "indices = ";
+			//for(size_t iii = 0; iii < 4; iii++)  cout << indices[iii] << " ";
+			//cout << endl;
+			
+		}
+		else if(tmp_cq.find("M:m844444_") == 0){
+			int64_t indices[8];
+			
+			indices[0] = *((int64_t*)(&tmp_value[0 ]));			
+			indices[1] = *((int64_t*)(&tmp_value[8 ]));
+			indices[2] = *((int64_t*)(&tmp_value[16]));
+			indices[3] = *((int64_t*)(&tmp_value[24]));
+			indices[4] = *((int64_t*)(&tmp_value[32]));			
+			indices[5] = *((int64_t*)(&tmp_value[40]));
+			indices[6] = *((int64_t*)(&tmp_value[48]));
+			indices[7] = *((int64_t*)(&tmp_value[56]));
+			
+			//cout << "indices = ";
+			//for(size_t iii = 0; iii < 8; iii++)  cout << indices[iii] << " ";
+			//cout << endl;
+		}
+		
+		
+	}
+      }
+    }
+  }
+
+    //return cJSON_Print(_return);
+    return result.str();
+}
+
+std::string HBase::getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const int32_t partitionID) {
+  return getCoordinatesAndElementsFromMesh_curl( sessionID, modelID, analysisID, timeStep, partitionID );		
   //return getCoordinatesAndElementsFromMesh_thrift( sessionID, modelID, analysisID, timeStep, resultID, coords, elements );		
 }
 
-std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID) {
+std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const unsigned partitionID) {
   std::cout << "getCoordinatesAndElementsFromMesh CURL: =====" << std::endl;
   std::cout << "S " << sessionID      << std::endl;
   std::cout << "M " << modelID        << std::endl;
-  std::cout << "R " << resultID       << std::endl;
+  //std::cout << "R " << resultID     << std::endl;
   std::cout << "A " << analysisID     << std::endl;
   std::cout << "T " << timeStep       << std::endl;
+  std::cout << "P " << partitionID    << std::endl;
+
+  TableModelEntry tableModel;
+  if(getTableNames(sessionID, modelID, tableModel) == false)
+    cout << "No table containing the model with " << modelID << "Model ID.\n";
+  else
+    cout << "Model Table: " << tableModel._list_models
+         << "Meta Table: "  << tableModel._metadata
+         << "Data Table: "  << tableModel._data 		<< endl; 
 
   string cmd = "http://pez001:8880/";
-  // cmd += "Simulations_Data";
-  // cmd += "Test_VELaSSCo_Models";
-  cmd += "T_Simulations_Data";
+  cmd += tableModel._data;
   cmd += "/";
   std::stringstream key;
-  //key << "0x";
-  //key << modelID;
-  //key << analysisID;
-  //key << timeStep;
-  //key << resultID;
-
-  //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
-  //key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
-
-  // key << "D*";
-  // key << "scanner/14448375409011a4cbd8";
 	
-	unsigned partitionID = 1;
-	
-	std::string simulationID_hex       = "4d0e0c37be088e715de50d2230887579";
-	std::string analysisNameLength_hex = toHexString(byteSwap((uint32_t)analysisID.size()));
-	std::string analysisNameChars      = analysisID;
-	std::string timeStep_hex           = toHexString(byteSwap((double)timeStep));
-	std::string partitionID_hex        = toHexString(byteSwap((uint32_t)partitionID));
+  std::string simulationID_hex       = modelID; //"A0F5090200000000A8F5090200000000";//"f8514229cc2e34534b6e48e6d3e829ee";//"4d0e0c37be088e715de50d2230887579";
+  std::string analysisNameLength_hex = toHexString(byteSwap((uint32_t)analysisID.size()));
+  std::string analysisNameChars      = analysisID;
+  std::string timeStep_hex           = toHexString(byteSwap((double)timeStep));
+  std::string partitionID_hex        = toHexString(byteSwap((uint32_t)partitionID));
 
 	key << simulationID_hex
 		<< analysisNameLength_hex
@@ -752,44 +884,35 @@ std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &ses
   bool ok = do_curl.Evaluate( buffer, cmd);
 
   std::cout << "**********\n";    
-  std::cout << buffer << std::endl;
+  // std::cout << buffer << std::endl;
   std::cout << "**********\n";    
     
   //
   string result( "");
-  if ( ok) {
-    if(analysisID.find("DEM") >= 0)
-      {
-	// buffer should be checked against "Not found"
-	std::size_t found = buffer.find( "Not found");
-	if ( ( found == string::npos) || ( found > 10)) {
-	  // assume that the error message "Not found" should be at the begining of the returned buffer
-	  //result = parse1DEM(buffer, listOfVertices);
-	  cout << "Looking for mesh...\n";
-	  result = buffer;
-	}
-	if ( result == "") { // there has been some errors parsing the JSON tree or is "Not found"
-	  result = buffer;
-	}
-      }
-    else if(analysisID.find("FEM") >= 0)
-      {
-	cout << buffer << endl;
-      }
-  }  else {
-    // !ok
-    result = buffer;
+
+  std::size_t found = buffer.find( "Not found");
+  if ( ( found == string::npos) || ( found > 10)) {
+	  cout << cmd << endl;
+    // assume that the error message "Not found" should be at the begining of the returned buffer
+    cout << "Looking for mesh...\n";
+    result = parse1FEM(buffer);
+  } else {
+	cout << "Model not found\n";
   }
+  
+  cout << cmd << endl;
+  
   return result;
 }
 
-std::string HBase::getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID) {
+std::string HBase::getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const unsigned partitionID) {
   std::cout << "getResultOnVertices THRIFT: =====" << std::endl;
   std::cout << "S " << sessionID      << std::endl;
   std::cout << "M " << modelID        << std::endl;
-  std::cout << "R " << resultID       << std::endl;
+  //std::cout << "R " << resultID     << std::endl;
   std::cout << "A " << analysisID     << std::endl;
   std::cout << "T " << timeStep       << std::endl;
+  std::cout << "T " << partitionID    << std::endl;
 
   string table_name = "Simulations_Data";
   string result;

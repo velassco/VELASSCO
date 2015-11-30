@@ -67,9 +67,9 @@ std::string storageModule::getResultOnVertices( std::string sessionID,  std::str
   return _db->getResultOnVertices(sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
 }
 
-std::string storageModule::getCoordinatesAndElementsFromMesh(std::string sessionID, std::string modelID, std::string analysisID, double timeStep, std::string resultID)
+std::string storageModule::getCoordinatesAndElementsFromMesh(std::string sessionID, std::string modelID, std::string analysisID, double timeStep, unsigned partitionID)
 {
-	return _db->getCoordinatesAndElementsFromMesh(sessionID, modelID, analysisID, timeStep, resultID);	
+	return _db->getCoordinatesAndElementsFromMesh(sessionID, modelID, analysisID, timeStep, partitionID);	
 }
 
 std::string storageModule::getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,

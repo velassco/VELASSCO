@@ -609,11 +609,6 @@ uint32_t VELaSSCoSM_FindModel_presult::read(::apache::thrift::protocol::TProtoco
   return xfer;
 }
 
-// =====================================================================
-// =====================================================================
-// == GetResultFromVerticesID
-// =====================================================================
-// =====================================================================
 
 VELaSSCoSM_GetResultFromVerticesID_args::~VELaSSCoSM_GetResultFromVerticesID_args() throw() {
 }
@@ -880,11 +875,6 @@ uint32_t VELaSSCoSM_GetResultFromVerticesID_presult::read(::apache::thrift::prot
   return xfer;
 }
 
-// =====================================================================
-// =====================================================================
-// == GetCoordinatesAndElementsFromMesh
-// =====================================================================
-// =====================================================================
 
 VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args::~VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args() throw() {
 }
@@ -943,9 +933,9 @@ uint32_t VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args::read(::apache::thrif
         }
         break;
       case 5:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->resultID);
-          this->__isset.resultID = true;
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->partitionID);
+          this->__isset.partitionID = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -983,8 +973,8 @@ uint32_t VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args::write(::apache::thri
   xfer += oprot->writeDouble(this->timeStep);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("resultID", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString(this->resultID);
+  xfer += oprot->writeFieldBegin("partitionID", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeI32(this->partitionID);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -1019,8 +1009,8 @@ uint32_t VELaSSCoSM_GetCoordinatesAndElementsFromMesh_pargs::write(::apache::thr
   xfer += oprot->writeDouble((*(this->timeStep)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("resultID", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString((*(this->resultID)));
+  xfer += oprot->writeFieldBegin("partitionID", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeI32((*(this->partitionID)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -1135,11 +1125,6 @@ uint32_t VELaSSCoSM_GetCoordinatesAndElementsFromMesh_presult::read(::apache::th
   return xfer;
 }
 
-// =====================================================================
-// =====================================================================
-// == StopAll Query Implementation
-// =====================================================================
-// =====================================================================
 
 VELaSSCoSM_stopAll_args::~VELaSSCoSM_stopAll_args() throw() {
 }
@@ -3689,20 +3674,14 @@ void VELaSSCoSMClient::recv_GetResultFromVerticesID(std::string& _return)
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetResultFromVerticesID failed: unknown result");
 }
- 
-// =====================================================================
-// =====================================================================
-// == GetCoordinatesAndElementsFromMesh
-// =====================================================================
-// =====================================================================
 
-void VELaSSCoSMClient::GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID)
+void VELaSSCoSMClient::GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID)
 {
-  send_GetCoordinatesAndElementsFromMesh(sessionID, modelID, analysisID, timeStep, resultID);
+  send_GetCoordinatesAndElementsFromMesh(sessionID, modelID, analysisID, timeStep, partitionID);
   recv_GetCoordinatesAndElementsFromMesh(_return);
 }
 
-void VELaSSCoSMClient::send_GetCoordinatesAndElementsFromMesh(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID)
+void VELaSSCoSMClient::send_GetCoordinatesAndElementsFromMesh(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("GetCoordinatesAndElementsFromMesh", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -3712,7 +3691,7 @@ void VELaSSCoSMClient::send_GetCoordinatesAndElementsFromMesh(const std::string&
   args.modelID = &modelID;
   args.analysisID = &analysisID;
   args.timeStep = &timeStep;
-  args.resultID = &resultID;
+  args.partitionID = &partitionID;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -3757,7 +3736,6 @@ void VELaSSCoSMClient::recv_GetCoordinatesAndElementsFromMesh(std::string& _retu
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetCoordinatesAndElementsFromMesh failed: unknown result");
 }
-
 
 void VELaSSCoSMClient::stopAll()
 {
@@ -4667,7 +4645,7 @@ void VELaSSCoSMProcessor::process_GetCoordinatesAndElementsFromMesh(int32_t seqi
 
   VELaSSCoSM_GetCoordinatesAndElementsFromMesh_result result;
   try {
-    iface_->GetCoordinatesAndElementsFromMesh(result.success, args.sessionID, args.modelID, args.analysisID, args.timeStep, args.resultID);
+    iface_->GetCoordinatesAndElementsFromMesh(result.success, args.sessionID, args.modelID, args.analysisID, args.timeStep, args.partitionID);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {

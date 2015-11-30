@@ -49,18 +49,17 @@ class VELaSSCoSMIf {
   virtual void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) = 0;
 
   /**
-   * Return the coordinate and elements of a model's mesh.
-   * @return string - returns a structured list of vertices and elements together. 
+   * Return the coordinates and elements of a model's mesh.
+   * @return string - returns a structured list of vertices and elements of a model's mesh.
    * if errors occur the contect is also returned here?
    * 
    * @param sessionID
    * @param modelID
    * @param analysisID
    * @param timeStep
-   * @param resultID
-   * @param listOfVertices
+   * @param partitionID
    */
-  virtual void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID) = 0;
+  virtual void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID) = 0;
 
   /**
    * Stop Data Layer
@@ -204,8 +203,8 @@ class VELaSSCoSMNull : virtual public VELaSSCoSMIf {
   void GetResultFromVerticesID(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */, const std::string& /* listOfVertices */) {
     return;
   }
-  void GetCoordinatesAndElementsFromMesh(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const std::string& /* resultID */) {
-	  return;
+  void GetCoordinatesAndElementsFromMesh(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* analysisID */, const double /* timeStep */, const int32_t /* partitionID */) {
+    return;
   }
   void stopAll() {
     return;
@@ -773,30 +772,24 @@ class VELaSSCoSM_GetResultFromVerticesID_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetResultFromVerticesID_presult& obj);
 };
 
-// =====================================================================
-// =====================================================================
-// == GetCoordinatesAndElementsFromMesh Query Handlers
-// =====================================================================
-// =====================================================================
-
 typedef struct _VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args__isset {
-  _VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args__isset() : sessionID(false), modelID(false), analysisID(false), timeStep(false), resultID(false) {}
+  _VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args__isset() : sessionID(false), modelID(false), analysisID(false), timeStep(false), partitionID(false) {}
   bool sessionID :1;
   bool modelID :1;
   bool analysisID :1;
   bool timeStep :1;
-  bool resultID :1;
+  bool partitionID :1;
 } _VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args__isset;
 
 class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args {
  public:
 
-  static const char* ascii_fingerprint; // = "028F20434CE844656C7FFE290B942938";
-  static const uint8_t binary_fingerprint[16]; // = {0x02,0x8F,0x20,0x43,0x4C,0xE8,0x44,0x65,0x6C,0x7F,0xFE,0x29,0x0B,0x94,0x29,0x38};
+  static const char* ascii_fingerprint; // = "5AB69FA6367D31312AC3D0C0EA7197D6";
+  static const uint8_t binary_fingerprint[16]; // = {0x5A,0xB6,0x9F,0xA6,0x36,0x7D,0x31,0x31,0x2A,0xC3,0xD0,0xC0,0xEA,0x71,0x97,0xD6};
 
   VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args(const VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args&);
   VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args& operator=(const VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args&);
-  VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args() : sessionID(), modelID(), analysisID(), timeStep(0), resultID() {
+  VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args() : sessionID(), modelID(), analysisID(), timeStep(0), partitionID(0) {
   }
 
   virtual ~VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args() throw();
@@ -804,7 +797,7 @@ class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args {
   std::string modelID;
   std::string analysisID;
   double timeStep;
-  std::string resultID;
+  int32_t partitionID;
 
   _VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args__isset __isset;
 
@@ -816,9 +809,7 @@ class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args {
 
   void __set_timeStep(const double val);
 
-  void __set_resultID(const std::string& val);
-
-  void __set_listOfVertices(const std::string& val);
+  void __set_partitionID(const int32_t val);
 
   bool operator == (const VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args & rhs) const
   {
@@ -830,7 +821,7 @@ class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args {
       return false;
     if (!(timeStep == rhs.timeStep))
       return false;
-    if (!(resultID == rhs.resultID))
+    if (!(partitionID == rhs.partitionID))
       return false;
     return true;
   }
@@ -850,8 +841,8 @@ class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args {
 class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_pargs {
  public:
 
-  static const char* ascii_fingerprint; // = "028F20434CE844656C7FFE290B942938";
-  static const uint8_t binary_fingerprint[16]; // = {0x02,0x8F,0x20,0x43,0x4C,0xE8,0x44,0x65,0x6C,0x7F,0xFE,0x29,0x0B,0x94,0x29,0x38};
+  static const char* ascii_fingerprint; // = "5AB69FA6367D31312AC3D0C0EA7197D6";
+  static const uint8_t binary_fingerprint[16]; // = {0x5A,0xB6,0x9F,0xA6,0x36,0x7D,0x31,0x31,0x2A,0xC3,0xD0,0xC0,0xEA,0x71,0x97,0xD6};
 
 
   virtual ~VELaSSCoSM_GetCoordinatesAndElementsFromMesh_pargs() throw();
@@ -859,7 +850,7 @@ class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_pargs {
   const std::string* modelID;
   const std::string* analysisID;
   const double* timeStep;
-  const std::string* resultID;
+  const int32_t* partitionID;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -929,11 +920,6 @@ class VELaSSCoSM_GetCoordinatesAndElementsFromMesh_presult {
   friend std::ostream& operator<<(std::ostream& out, const VELaSSCoSM_GetCoordinatesAndElementsFromMesh_presult& obj);
 };
 
-// =====================================================================
-// =====================================================================
-// == stopAll Query Handlers
-// =====================================================================
-// =====================================================================
 
 class VELaSSCoSM_stopAll_args {
  public:
@@ -2387,12 +2373,9 @@ class VELaSSCoSMClient : virtual public VELaSSCoSMIf {
   void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
   void send_GetResultFromVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
   void recv_GetResultFromVerticesID(std::string& _return);
-  
-  // GetCoordinatesAndElementsFromMesh handler, send, and receive functions
-  void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID);
-  void send_GetCoordinatesAndElementsFromMesh(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID);
+  void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID);
+  void send_GetCoordinatesAndElementsFromMesh(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID);
   void recv_GetCoordinatesAndElementsFromMesh(std::string& _return);
-  
   void stopAll();
   void send_stopAll();
   void recv_stopAll();
@@ -2543,14 +2526,14 @@ class VELaSSCoSMMultiface : virtual public VELaSSCoSMIf {
     ifaces_[i]->GetResultFromVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
     return;
   }
-  
-  void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID) {
+
+  void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->GetCoordinatesAndElementsFromMesh(_return, sessionID, modelID, analysisID, timeStep, resultID);
+      ifaces_[i]->GetCoordinatesAndElementsFromMesh(_return, sessionID, modelID, analysisID, timeStep, partitionID);
     }
-    ifaces_[i]->GetCoordinatesAndElementsFromMesh(_return, sessionID, modelID, analysisID, timeStep, resultID);
+    ifaces_[i]->GetCoordinatesAndElementsFromMesh(_return, sessionID, modelID, analysisID, timeStep, partitionID);
     return;
   }
 

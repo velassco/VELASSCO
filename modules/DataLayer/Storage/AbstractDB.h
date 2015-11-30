@@ -107,8 +107,8 @@ namespace VELaSSCo
     virtual std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID,
                                              const std::string &modelID,
                                              const std::string &analysisID,
-                                             const double       timeStep,
-                                             const std::string &resultID) = 0;
+                                             const double      timeStep,
+                                             const int32_t     partitionID) = 0;
   };
 
 }

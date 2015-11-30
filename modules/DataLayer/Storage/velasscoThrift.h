@@ -55,9 +55,11 @@ public:
 			       
   void GetCoordinatesAndElementsFromMesh(std::string& _return, 
 				   const std::string& sessionID, const std::string& modelID, 
-				   const std::string& analysisID, const double timeStep, const std::string& resultID);
-  
-			     
+				   const std::string& analysisID, const double timeStep, const int32_t partitionID);
+				   
+ // void GetCoordinatesAndElementsFromMesh(std::string& _return, 
+ //                  const std::string& sessionID, const std::string& modelID, 
+//                   const std::string& analysisID, const double timeStep, const int32_t partitionID);		     
 
   void GetListOfMeshes( rvGetListOfMeshes &_return, 
 			const std::string &sessionID, const std::string &modelID, 

@@ -34,7 +34,7 @@ public:
 				  std::string sessionID, std::string modelID, std::string analysisID, 
 				  double timeStep, std::string resultID,  std::string listOfVertices) ;
 	void getCoordinatesAndElementsFromMesh( std::string& _return, 
-                  std::string sessionID, std::string modelID, std::string analysisID, double timeStep, std::string resultID ) ;
+                  std::string sessionID, std::string modelID, std::string analysisID, double timeStep, int32_t partitionID ) ;
   // session queries
     
     void getListOfModels( rvGetListOfModels &_return,

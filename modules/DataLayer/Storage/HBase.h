@@ -70,20 +70,21 @@ namespace VELaSSCo
 	std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID,
                                              const std::string &analysisID,
                                              const double       timeStep,
-                                             const std::string &resultID);
+                                             const int32_t     partitionID);
 	std::string getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID,
                                              const std::string &analysisID,
                                              const double       timeStep,
-                                             const std::string &resultID);
+                                             const unsigned     partitionID);
 	std::string getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID,
                                              const std::string &analysisID,
                                              const double       timeStep,
-                                             const std::string &resultID);
+                                             const unsigned     partitionID);
   private:
 
     double fRand(double fMin, double fMax);
     std::string parseStatusDB( std::string b);
     std::string parse1DEM(std::string b, std::string LOVertices);
+    std::string parse1FEM(std::string b);
     // returns true if there are models on the table to be parsed
     bool parseListOfModelNames( std::string &report,
 				std::vector< FullyQualifiedModelName> &listOfModelNames,

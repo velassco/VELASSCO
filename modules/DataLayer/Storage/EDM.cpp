@@ -108,7 +108,7 @@ std::string EDM::getCoordinatesAndElementsFromMesh( const std::string &sessionID
                                      const std::string &modelID,
                                      const std::string &analysisID,
                                      const double       timeStep,
-                                     const std::string &resultID 	   )
+                                     const int32_t     partitionID )
 {
 
 #ifdef _WIN32

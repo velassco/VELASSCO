@@ -60,7 +60,7 @@ namespace VELaSSCo
                                      const std::string &modelID,
                                      const std::string &analysisID,
                                      const double       timeStep,
-                                     const std::string &resultID 	   );
+                                     const int32_t      partitionID    );
                                          
   private:
     EDMClient *_edm_client;
