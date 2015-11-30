@@ -23,9 +23,10 @@ extern "C" {
   VAL_Result VAL_API valGetMeshDrawData( /* in */
 						VAL_SessionID   sessionID,
 						const char*     modelID,
-						const char*     resultID,
+						//const char*     resultID,
 						const char*     analysisID,
 						double          timeStep,
+						unsigned        partitionID,
 
 						/* out */
             const char                        **result_status,
@@ -34,7 +35,7 @@ extern "C" {
   {
     CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
-    CHECK_QUERY_POINTER( resultID );
+    //CHECK_QUERY_POINTER( resultID );
     CHECK_QUERY_POINTER( analysisID );
     CHECK_QUERY_POINTER( result_status );
     CHECK_QUERY_POINTER( result_mesh_draw_data );
@@ -47,20 +48,13 @@ extern "C" {
 
 	// Build JSON command string
 	queryCommand << "{\n"
-		     << "  \"name\"       : \"" << "GetMeshDrawData" << "\",\n"
-		     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
-		     << "  \"resultID\"   : \"" << resultID                  << "\",\n"
-		     << "  \"analysisID\" : \"" << analysisID                << "\",\n";
-	//queryCommand << "  \"vertexIDs\"  : [";
-	//const int64_t *ip = vertexIDs;
-	//while (*ip != 0) {
-	//  queryCommand << *ip++;
-	//  if (*ip != 0)
-	//    queryCommand << ",";
-	//}
-	//queryCommand << "],\n";
-	queryCommand << "  \"timeStep\"   : "  << timeStep << "\n";
-	queryCommand << "}\n";
+				<< "  \"name\"       : \"" << "GetMeshDrawData" << "\",\n"
+				<< "  \"modelID\"    : \"" << modelID           << "\",\n"
+				//<< "  \"resultID\"   : \"" << resultID          << "\",\n"
+				<< "  \"analysisID\" : \"" << analysisID        << "\",\n"
+				<< "  \"timeStep\"   : "   << timeStep 			<< ",\n"
+				<< "  \"partitionID\": "   << partitionID       << "\n"
+				<< "}\n";
 
 	// Send command string and get back result data
 	VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
@@ -79,7 +73,7 @@ extern "C" {
   else
   {
     // in case of error queryData has the error message from the data layer
-	  *result_status = queryData->c_str();
+	*result_status = queryData->c_str();
   }
 
 	return result;

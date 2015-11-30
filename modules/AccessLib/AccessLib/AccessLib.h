@@ -152,9 +152,9 @@ extern "C" {
   VAL_Result VAL_API valGetMeshDrawData( /* in */
 						VAL_SessionID   sessionID,
 						const char*     modelID,
-						const char*     resultID,
 						const char*     analysisID,
 						double          timeStep,
+						unsigned        partitionID,
 
 						/* out */
             const char                      **result_status,
