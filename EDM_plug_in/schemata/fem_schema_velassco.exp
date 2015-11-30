@@ -126,4 +126,10 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       GPtype          : GaussPointType;
   END_ENTITY;
 
+  ENTITY CacheEntry;
+      cache_type      : string;
+      teh_file        : _FILE;
+	  size		      : INTEGER;
+  END_ENTITY;
+
 END_SCHEMA;
