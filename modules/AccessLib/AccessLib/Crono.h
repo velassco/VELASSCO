@@ -51,7 +51,7 @@ inline std::string getStrCurrentWallTime() {
   if ( time_tmp != ((time_t) -1)) {
     struct tm *time_ptr = localtime( &time_tmp);
     if ( time_ptr != NULL) {
-      int rc = strftime( tmp, MAX_getStrCurrentWallTime, "%Y.%m.%d %H:%M:%S", time_ptr);
+      size_t rc = strftime( tmp, MAX_getStrCurrentWallTime, "%Y.%m.%d %H:%M:%S", time_ptr);
       ok = ( rc > 0);
     }
   }
