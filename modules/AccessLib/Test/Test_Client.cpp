@@ -120,8 +120,8 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   //
   // Test GetMeshDrawData() 
   //
-  const char* fem_name 		= "VELaSSCo_HbaseBasicTest-part-" ; // "fine_mesh"; //"VELaSSCo_HbaseBasicTest";
-  const char* fem_fullpath 	= "/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM";//"/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";// "/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/";
+  const char* fem_name 		= "VELaSSCo_HbaseBasicTest-part_" ; // "fine_mesh"; //"VELaSSCo_HbaseBasicTest";
+  const char* fem_fullpath 	= "/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM";//"/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";// "/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/";
   const char* fem_tablename = "VELaSSCo_Models_V4CIMNE";// "VELaSSCo_Models"; //
   
   //const char* fem_name 			=	"fine_mesh-ascii_";
