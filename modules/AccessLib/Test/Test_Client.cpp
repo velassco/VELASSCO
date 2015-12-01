@@ -112,9 +112,8 @@ std::string getStringFromCharPointers( const char *str1, const char *str2) {
   return std::string( str1 ? str1 : "") + std::string( str2 ? str2 : "");
 }
 
-int doTestMorteza() {
+int doTestMorteza( const VAL_SessionID sessionID) {
   VAL_Result    result;
-  VAL_SessionID sessionID;
   const char *status = NULL;
   char hex_string[ 1024];
   
@@ -138,17 +137,15 @@ int doTestMorteza() {
   const char *fem_access = "";
   const char *fem_return_modelID = NULL;
   result = valOpenModel( sessionID, fem_unique_name.c_str(), fem_access, &status, &fem_return_modelID);
+  CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
-  std::cout << "   status = " << status << std::endl;
+  std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
   char fem_hex_string[ 1024];
   if ( fem_return_modelID) {
     std::cout << "   FEM model_modelID = " << ModelID_DoHexStringConversionIfNecesary( fem_return_modelID, fem_hex_string, 1024) << std::endl;
   } else {
     // logout as it is not valid ...
     std::cout << "   ERROR FEM model could not be opened, login out ..." << std::endl;
-    result = valUserLogout(sessionID);
-    CheckVALResult(result);
-    
     return EXIT_SUCCESS;
   }
   
@@ -207,7 +204,7 @@ int doTestMorteza() {
   result = valGetListOfMeshes( sessionID, fem_opened_modelID.c_str(), "", 0.0, &status, &list_of_meshes);
   //CheckVALResult(result, getStringFromCharPointers( "valGetListOfMeshes ", fem_steps_return_error_str));
   std::cout << "result: " << result << std::endl;
-  std::cout << "status: " << status << std::endl;
+  std::cout << "status: " << ( status ? status : "(null)") << std::endl;
   std::cout << list_of_meshes << std::endl;
   
   const VELaSSCo::RTFormat::File* fem_mesh_draw_data = NULL;
@@ -222,9 +219,8 @@ int doTestMorteza() {
   return EXIT_SUCCESS;
 }
 
-int doTestMiguel() {
+int doTestMiguel( const VAL_SessionID sessionID) {
   VAL_Result    result;
-  VAL_SessionID sessionID;
   const char *status = NULL;
   char hex_string[ 1024];
 
@@ -239,20 +235,20 @@ int doTestMiguel() {
   // const char *unique_name = "Test_VELaSSCo_Models:*:*"; // or using only the table's name and get the first one
   // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii:fine_mesh-ascii_";
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
-  const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
+  // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
+  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part_";
   const char *access = "";
   const char *return_modelID = NULL;
+  std::cout << "doing OpenModel of " << unique_name << std::endl;
   result = valOpenModel( sessionID, unique_name, access, &status, &return_modelID);
+  CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
-  std::cout << "   status = " << status << std::endl;
+  std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
   if ( return_modelID) {
     std::cout << "   model_modelID = " << ModelID_DoHexStringConversionIfNecesary( return_modelID, hex_string, 1024) << std::endl;
   } else {
     // logout as it is not valid ...
     std::cout << "   ERROR model could not be opened, login out ..." << std::endl;
-    result = valUserLogout(sessionID);
-    CheckVALResult(result);
-    
     return EXIT_SUCCESS;
   }
 
@@ -349,6 +345,7 @@ int doTestMiguel() {
     if ( return_list) {
       std::cout << "   List_size = " << return_num_steps << std::endl;
       std::cout << "   Step_list = " << Hexdump( std::string( ( char *)return_list, return_num_steps)) << std::endl;
+      std::cout << "   # steps   = " << return_num_steps << std::endl;
       if ( return_num_steps > 0)
 	std::cout << "      Step 0 = " << return_list[ 0] << std::endl;
       if ( return_num_steps > 1)
@@ -454,11 +451,8 @@ int doTestMiguel() {
   result = valCloseModel( sessionID, modelID, &status);
   CheckVALResult(result);
   std::cout << "CloseModel: " << std::endl;
-  std::cout << "   status = " << status << std::endl;
+  std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
   
-  result = valUserLogout(sessionID);
-  CheckVALResult(result);  
-
   return EXIT_SUCCESS;
 }
 
@@ -518,8 +512,11 @@ int main(int argc, char* argv[])
   // std::cout << "   model_list = " << return_list << std::endl;
 
   int ret = 0;
-  ret = doTestMorteza();
-  // ret = doTestMiguel();  
+  ret = doTestMorteza( sessionID);
+  // ret = doTestMiguel( sessionID);  
+
+  result = valUserLogout(sessionID);
+  CheckVALResult(result);  
 
   return ret;
 }
