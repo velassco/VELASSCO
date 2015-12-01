@@ -40,7 +40,7 @@ namespace VELaSSCo
 
     bool getListOfMeshInfoFromTables( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 					     const std::string &metadata_table, const std::string &modelID,
-					     const std::string &analysisID, const double stepValue);
+					     const std::string &analysisID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
     std::string getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 				 const std::string &sessionID, const std::string &modelID,
 				 const std::string &analysisID, const double stepValue);
@@ -58,7 +58,7 @@ namespace VELaSSCo
 
     bool getListOfResultsFromTables( std::string &report, std::vector< ResultInfo> &listOfResults,
 				     const std::string &sessionID, const std::string &modelID,
-				     const std::string &analysisID, const double stepValue);
+				     const std::string &analysisID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
     std::string getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
 				  const std::string &sessionID, const std::string &modelID,
 				  const std::string &analysisID, const double stepValue);
@@ -119,7 +119,7 @@ namespace VELaSSCo
     bool storeTableNames( const std::string &sessionID, const std::string &modelID, const std::string &velassco_model_table_name);
     std::vector< std::string> getModelListTables() const;
 
-    std::string createRowKey( const std::string modelID, const std::string &analysysID, const double stepValue);
+    std::string createRowKey( const std::string modelID, const std::string &analysysID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
     std::string createRowKeyPrefix( const std::string modelID, const std::string &analysysID);
   };
 
@@ -132,14 +132,14 @@ namespace VELaSSCo
     return ( it != _table_models.end());
   }
 
-  inline std::string HBase::createRowKey( const std::string modelID, const std::string &analysisID, const double stepValue) {
+  inline std::string HBase::createRowKey( const std::string modelID, const std::string &analysisID, const double stepValue, const char *format) { // for the stepvalue hex string
     const size_t tmp_buf_size = 256;
     char tmp_buf[ tmp_buf_size];
     std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
     size_t analysis_length = analysisID.length();
     // needs to be swapped !!!!!!!!
     std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
-    std::string step_hex( toHexStringSwap< double>( stepValue));
+    std::string step_hex( toHexStringSwap< double>( stepValue, format));
     return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex) : ( modelID_hex + length_hex + step_hex));
   }
   inline std::string HBase::createRowKeyPrefix( const std::string modelID, const std::string &analysisID) {

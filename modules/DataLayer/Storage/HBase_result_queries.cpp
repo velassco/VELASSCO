@@ -158,7 +158,7 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
 
 bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshInfo> &listOfMeshes,
 					 const std::string &metadata_table, const std::string &modelID,
-					 const std::string &analysisID, const double stepValue) {
+					 const std::string &analysisID, const double stepValue, const char *format) {
   // do the scan on the metadata table ...
 
   vector< TRowResult> rowsResult;
@@ -177,7 +177,7 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
   // has to build the rowkey.... 
   // Metadata rowkeys = modelId + AnalysisID + StepNumber
   double my_stepValue = ( analysisID == "") ? 0.0 : stepValue; // rowkeys for static meshes have stepValue == 0.0
-  std::string rowKey = createRowKey( modelID, analysisID, my_stepValue);
+  std::string rowKey = createRowKey( modelID, analysisID, my_stepValue, format);
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
@@ -260,7 +260,13 @@ std::string HBase::getListOfMeshes( std::string &report, std::vector< MeshInfo> 
   TableModelEntry table_set;
   bool found = getTableNames( sessionID, modelID, table_set);
   if ( found) {
+    // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getListOfMeshInfoFromTables( report, listOfMeshes, table_set._metadata, modelID, analysisID, stepValue);
+    if ( scan_ok && ( listOfMeshes.size() == 0)) {
+      // try with uppercase
+      scan_ok = getListOfMeshInfoFromTables( report, listOfMeshes, table_set._metadata, modelID, analysisID, stepValue, "%02X");
+    }
+
   } else {
     scan_ok = false;
   }
@@ -536,7 +542,7 @@ std::string HBase::getListOfSteps( std::string &report, std::vector< double> &li
 				   const std::string &sessionID, const std::string &modelID,
 				   const std::string &analysisID) {
 
-  std::cout << "getListOfAnalyses THRIFT: =====" << std::endl;
+  std::cout << "getListOfSteps THRIFT: =====" << std::endl;
   std::cout << "S  - " << sessionID              << std::endl;
   std::cout << "M  - " << modelID                << std::endl;
   std::cout << "An - " << analysisID              << std::endl;
@@ -666,7 +672,7 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
 
 bool HBase::getListOfResultsFromTables( std::string &report, std::vector< ResultInfo> &listOfResults,
 					const std::string &metadata_table, const std::string &modelID,
-					const std::string &analysisID, const double stepValue) {
+					const std::string &analysisID, const double stepValue, const char *format) {
   // do the scan on the metadata table ...
   vector< TRowResult> rowsResult;
   std::map<std::string,std::string> m;
@@ -676,7 +682,7 @@ bool HBase::getListOfResultsFromTables( std::string &report, std::vector< Result
   // we are looking for all result information ...
   // cols.push_back( "R:r000001nm"); // this halves the time wrt "R", which is 4x faster than no cols.
   // Metadata rowkeys = modelId + AnalysisID + StepNumber
-  std::string rowKey = createRowKey( modelID, analysisID, stepValue);
+  std::string rowKey = createRowKey( modelID, analysisID, stepValue, format);
   const size_t len_rowkey = rowKey.length();
   
   std::cout << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
@@ -758,7 +764,12 @@ std::string HBase::getListOfResults( std::string &report, std::vector< ResultInf
   TableModelEntry table_set;
   bool found = getTableNames( sessionID, modelID, table_set);
   if ( found) {
+    // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getListOfResultsFromTables( report, listOfResults, table_set._metadata, modelID, analysisID, stepValue);
+    if ( scan_ok && ( listOfResults.size() == 0)) {
+      // try with uppercase
+      scan_ok = getListOfResultsFromTables( report, listOfResults, table_set._metadata, modelID, analysisID, stepValue, "%02X");
+    }
   } else {
     scan_ok = false;
   }
