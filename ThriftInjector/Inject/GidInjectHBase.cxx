@@ -693,10 +693,10 @@ int InsertResult_MetaData( const std::string &host, int port,
 
               if ( itR->second.compName.size() )
                 {
-                // cnm
+                // cn
                 mutations.push_back( Mutation() );
                 mutations.back( ).column = pr;
-                mutations.back( ).column += "cnm";
+                mutations.back( ).column += "cn";
                 for( std::vector<std::string>::const_iterator itC = itR->second.compName.begin( );
                      itC != itR->second.compName.end( ); ++itC )
                   {
@@ -944,8 +944,8 @@ int InsertPartResult_Data( const std::string &host, int port,
                            const std::string &keyModel, 
                            GID::IdPartition indexPart,
                            GID::UInt32 indexESet,
-                           GID::MeshResultType &meshPart,
-                           GID::ResultContainerType &resultPart)
+                           const GID::MeshResultType &meshPart,
+                           const GID::ResultContainerType &resultPart)
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );

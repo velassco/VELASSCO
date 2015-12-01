@@ -9,7 +9,7 @@ BEGIN_GID_DECLS
 static char hexTable[] =
 {
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-  'A', 'B', 'C', 'D', 'E', 'F'
+  'a', 'b', 'c', 'd', 'e', 'f'
 };
 
 inline void CharToHex( char c, char hex[2] )
@@ -38,12 +38,12 @@ inline bool HexValue( char h, char & c )
     c = h - '0';
     return true;
     }
-  if ( h >= 'A' && h <= 'F' )
+  if ( h >= 'a' && h <= 'f' )
     {
-    c = h - 'A' + 10;
+    c = h - 'a' + 10;
     return true;
     }
-  c = 0xFF;
+  c = 0xff;
   return false;
 }
 
