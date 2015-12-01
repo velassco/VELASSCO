@@ -205,7 +205,7 @@ VAL_Result VAL_API valGetListOfTimeSteps(  /* in */
       // Give back pointers to actual binary data
       if (result == VAL_SUCCESS) {
 	/* will be: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
-	*result_num_steps = queryData->size();
+	*result_num_steps = queryData->size() / sizeof( double); // size() is in bytes ....
 	*result_list_of_steps = ( const double *)queryData->data();
 	*result_status = "Ok";
       } else {
