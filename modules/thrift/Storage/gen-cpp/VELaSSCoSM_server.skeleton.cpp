@@ -173,9 +173,9 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
    * GUID (OpenModel). Corresponding housekeeping is wrapped up.
    * 
    * @param sessionID
-   * @param modelName
+   * @param modelID
    */
-  void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName) {
+  void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelID) {
     // Your implementation goes here
     printf("CloseModel\n");
   }

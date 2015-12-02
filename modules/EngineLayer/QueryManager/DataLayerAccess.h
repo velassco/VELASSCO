@@ -29,6 +29,7 @@ public:
     static DataLayerAccess *Instance();
     bool startConnection( const char *data_layer_hostname, const int data_layer_port);
     bool stopConnection();
+
     void getStatusDB( std::string& _return);
     void getResultFromVerticesID( std::string& _return, 
 				  std::string sessionID, std::string modelID, std::string analysisID, 
@@ -36,6 +37,9 @@ public:
 	void getCoordinatesAndElementsFromMesh( std::string& _return, 
                   std::string sessionID, std::string modelID, std::string analysisID, double timeStep, int32_t partitionID ) ;
   // session queries
+  
+    void userLogin( std::string &_return, const std::string &name, const std::string &role, const std::string &password);
+    void userLogout( std::string &_return, const std::string &sessionID);
     
     void getListOfModels( rvGetListOfModels &_return,
 			  const std::string &sessionID, 
@@ -43,6 +47,9 @@ public:
     void openModel( rvOpenModel &_return,
 		    const std::string &sessionID, 
 		    const std::string &unique_name, const std::string &requested_access);
+  void closeModel( std::string &_return,
+		   const std::string &sessionID, 
+		   const std::string &modelID);
   // direct result queries
     void getListOfMeshes( rvGetListOfMeshes &_return,
 			  const std::string &sessionID,

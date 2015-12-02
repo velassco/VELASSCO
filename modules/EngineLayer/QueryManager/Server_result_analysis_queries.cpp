@@ -70,10 +70,10 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   std::string strSteps           = as_string< size_t>( pt, "lstSteps");
   std::vector< double> lstSteps  = as_vector< double>( pt, "lstSteps");
   
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
-  
-  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
   std::cout << "nV -" << numVertexIDs       << "-" << std::endl;
   std::cout << "Vs -" << lstVertexIDs       << "-" << std::endl;
@@ -89,7 +89,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   // not implemented yet:
   // std::string _return_; // status
   // DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
-  // 						      sessionIDStr.str(), modelID,
+  // 						      dl_sessionID, modelID,
   // 						      analysisID,
   // 						      stepOptions, numSteps, lstSteps);
   // parse _return_ into a double *lstSteps
@@ -97,7 +97,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   double bbox[ 6];
   std::string error_str;
   try {
-    AnalyticsModule::getInstance()->calculateBoundingBox( sessionIDStr.str(), modelID,
+    AnalyticsModule::getInstance()->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
 							  simulation_data_table_name,
 							  // analysisID, numSteps, lstSteps,
 							  "", 0, NULL,
@@ -152,10 +152,10 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   double deltaT    =	pt.get< double>("deltaT");
  
  
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
-  
-  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
   std::cout << "AN -" << analysisName     << "-" << std::endl;
   std::cout << "SM -" << staticMeshID     << "-" << std::endl;
@@ -177,12 +177,12 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
     // not implemented yet:
     // std::string _return_; // status
     // DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
-    // 						      sessionIDStr.str(), modelID,
+    // 						      dl_sessionID, modelID,
     // 						      analysisID,
     // 						      stepOptions, numSteps, lstSteps);
     // parse _return_ into a double *lstSteps
     
-	AnalyticsModule::getInstance()->calculateDiscrete2Continuum (sessionIDStr.str(), modelID,
+    AnalyticsModule::getInstance()->calculateDiscrete2Continuum ( GetQueryManagerSessionID( sessionID), modelID,
 								 analysisName, staticMeshID, stepOptions, numSteps, lstSteps.data(),
 								 coarseGrainingMethod, width, cutoffFactor, processContacts, 
 								 doTemporalAVG, temporalAVGOptions, deltaT, &query_outcome, &error_str);

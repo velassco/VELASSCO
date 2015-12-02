@@ -178,6 +178,7 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
   // Metadata rowkeys = modelId + AnalysisID + StepNumber
   double my_stepValue = ( analysisID == "") ? 0.0 : stepValue; // rowkeys for static meshes have stepValue == 0.0
   std::string rowKey = createRowKey( modelID, analysisID, my_stepValue, format);
+  const size_t len_rowkey = rowKey.length();
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
@@ -195,7 +196,8 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
       // std::cout << "number of rows = " << rowsResult.size() << endl;
       for ( size_t i = 0; i < rowsResult.size(); i++) {
   	// convert to return type
-	if ( rowsResult[ i].row != rowKey)
+	if ( rowsResult[ i].row.compare( 0, len_rowkey, rowKey) != 0)
+	  // if ( rowsResult[ i].row != rowKey)
 	  continue; // break;
   	bool ok = getMeshInfoFromRow( map_mesh_info, rowsResult[ i]);
   	if ( ok) {

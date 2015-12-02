@@ -382,7 +382,7 @@ service VELaSSCoSM
 	     */
 	    string CloseModel(
 	      1: string                           sessionID
-	      2: string                           modelName ),
+	      2: string                           modelID ),
 
 
 

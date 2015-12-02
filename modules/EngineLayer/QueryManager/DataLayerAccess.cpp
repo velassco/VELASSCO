@@ -65,10 +65,26 @@ void DataLayerAccess::getStatusDB( std::string& _return) {
     }
 }
 
+void DataLayerAccess::userLogin( std::string &_return, 
+				 const std::string &name, const std::string &role, const std::string &password) {
+  try {
+    cli->UserLogin( _return, name, role, password);
+  } catch (TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
+
+void DataLayerAccess::userLogout( std::string &_return, const std::string &sessionID) {
+  try {
+    cli->UserLogout( _return, sessionID);
+  } catch (TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
 
 void DataLayerAccess::getListOfModels( rvGetListOfModels &_return,
-					  const std::string &sessionID, 
-					  const std::string &model_group_qualifier, const std::string &model_name_pattern) {
+				       const std::string &sessionID, 
+				       const std::string &model_group_qualifier, const std::string &model_name_pattern) {
   try {
     cli->GetListOfModelNames( _return, sessionID, model_group_qualifier, model_name_pattern);
   } catch ( TException& tx) {
@@ -81,6 +97,16 @@ void DataLayerAccess::openModel( rvOpenModel &_return,
 				    const std::string &unique_name, const std::string &requested_access) {
   try {
     cli->FindModel( _return, sessionID, unique_name, requested_access); // requested_access not used at the momemnt
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
+
+void DataLayerAccess::closeModel( std::string &_return,
+				  const std::string &sessionID, 
+				  const std::string &modelID) {
+  try {
+    cli->CloseModel( _return, sessionID, modelID); // requested_access not used at the momemnt
   } catch ( TException& tx) {
     cout << "ERROR: " << tx.what() << endl;
   }

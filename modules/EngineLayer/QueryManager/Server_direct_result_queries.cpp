@@ -69,8 +69,10 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   stringstream listOfVertices;
   listOfVertices << "{\"id\":" << "[]" /*vertexIDs*/ << "}";
   
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  // std::cout << "S   " << sessionID        << std::endl;
+  // std::cout << "dlS " << dl_sessionID     << std::endl;
   
   std::string _return_;
   
@@ -81,7 +83,7 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   //std::cout << "V " << vertexIDs  << std::endl;
   //std::cout << "T " << timeStep   << std::endl;
   
-  DataLayerAccess::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+  DataLayerAccess::Instance()->getResultFromVerticesID(_return_ , dl_sessionID,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
   
   std::vector<int64_t> resultVertexIDs;
   std::vector<double>  resultValues;
@@ -159,8 +161,10 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   unsigned    partitionID = pt.get<unsigned>("partitionID");
   double      timeStep    = pt.get<double>("timeStep");
   
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  // std::cout << "S   " << sessionID        << std::endl;
+  // std::cout << "dlS " << dl_sessionID     << std::endl;
   
   std::string _return_;
   
@@ -278,7 +282,7 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 	  _return.__set_data( oss.str() ); 
 	  _return.__set_result( (Result::type)VAL_SUCCESS );
   } else {
-	  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,partitionID);
+	  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,analysisID ,timeStep ,partitionID);
 	  
 	  const int num_vertices = 2704;
 	  std::vector<float> vertices( 6 * num_vertices );
@@ -417,17 +421,17 @@ void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const Ses
   std::string analysisID = pt.get<std::string>( "analysisID");
   double stepValue       = pt.get< double>( "stepValue");
   
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
-  
-  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
   std::cout << "An -" << analysisID       << "-" << std::endl;
   std::cout << "Sv -" << stepValue       << "-" << std::endl;
 
   rvGetListOfMeshes _return_;
   DataLayerAccess::Instance()->getListOfMeshes( _return_,
-						sessionIDStr.str(), modelID, analysisID, stepValue);
+						dl_sessionID, modelID, analysisID, stepValue);
   
   std::cout << _return_ << std::endl;
 
@@ -484,15 +488,15 @@ void QueryManagerServer::ManageGetListOfAnalyses( Query_Result &_return, const S
   std::string name       = pt.get<std::string>("name");
   std::string modelID    = pt.get<std::string>( "modelID");
   
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
-  
-  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
 
   rvGetListOfAnalyses _return_;
   DataLayerAccess::Instance()->getListOfAnalyses( _return_,
-						  sessionIDStr.str(), modelID);
+						  dl_sessionID, modelID);
   
   std::cout << _return_ << std::endl;
   
@@ -537,16 +541,16 @@ void QueryManagerServer::ManageGetListOfTimeSteps( Query_Result &_return, const 
   std::string modelID    = pt.get<std::string>( "modelID"); 
   std::string analysisID = pt.get<std::string>( "analysisID");
  
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
-  
-  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
   std::cout << "An -" << analysisID       << "-" << std::endl;
 
   rvGetListOfTimeSteps _return_;
   DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
-						   sessionIDStr.str(), modelID, analysisID,
+						   dl_sessionID, modelID, analysisID,
 						   "ALL", 0, NULL);
   
   // std::cout << _return_ << std::endl;
@@ -581,6 +585,7 @@ void QueryManagerServer::ManageGetListOfTimeSteps( Query_Result &_return, const 
   LOGGER << "  result : "   << _return.result        << std::endl;
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   LOGGER << "  data   : \n" << Hexdump( _return.data) << std::endl;
+  LOGGER << "  # steps: "   << _return_.time_steps.size() << std::endl;
   if ( _return_.time_steps.size() > 0)
     LOGGER << "  step 0 : " << _return_.time_steps[ 0] << std::endl;
   if ( _return_.time_steps.size() > 1)
@@ -601,17 +606,17 @@ void QueryManagerServer::ManageGetListOfResults( Query_Result &_return, const Se
   std::string analysisID = pt.get<std::string>( "analysisID");
   double stepValue       = pt.get< double>( "stepValue");
   
-  std::stringstream sessionIDStr;
-  sessionIDStr << sessionID;
-  
-  std::cout << "S  -" << sessionID        << "-" << std::endl;
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
   std::cout << "An -" << analysisID       << "-" << std::endl;
   std::cout << "Sv -" << stepValue       << "-" << std::endl;
 
   rvGetListOfResults _return_;
   DataLayerAccess::Instance()->getListOfResultsFromTimeStepAndAnalysis( _return_,
-									sessionIDStr.str(), 
+									dl_sessionID, 
 									modelID, analysisID, stepValue);
   
   std::cout << _return_ << std::endl;

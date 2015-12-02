@@ -6,6 +6,8 @@
 #include "VELaSSCoSM.h"
 #include "storageModule.h"
 
+#include "Helpers.h"
+
 using namespace VELaSSCoSM;
 
 class VELaSSCoHandler : virtual public VELaSSCoSMIf
@@ -81,8 +83,14 @@ public:
   void stopAll();
     
   /* To be implemented */
-  void UserLogin(std::string&, const std::string&, const std::string&, const std::string&) {};
-  void UserLogout(std::string&, const std::string&) {};
+  void UserLogin(std::string&ret, const std::string&user, const std::string&role, const std::string&pass) {
+    // LOGGER << "UserLogin: " << user << " as " << role << " with password " << pass << std::endl;
+    // LOGGER << "      ret = " << ret << std::endl;
+  };
+  void UserLogout(std::string&ret, const std::string&sessionID) {
+    // LOGGER << "UserLogout: " << sessionID << std::endl;
+    // LOGGER << "      ret = " << ret << std::endl;
+  };
   void CloseModel(std::string&, const std::string&, const std::string&) {};
   void SetThumbnailOfAModel(std::string&, const std::string&, const std::string&, const std::string&) {};
   void GetThumbnailOfAModel(rvGetThumbnailOfAModel&, const std::string&, const std::string&) {};

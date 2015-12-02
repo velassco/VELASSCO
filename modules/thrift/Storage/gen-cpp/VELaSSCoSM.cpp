@@ -2586,8 +2586,8 @@ uint32_t VELaSSCoSM_CloseModel_args::read(::apache::thrift::protocol::TProtocol*
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->modelName);
-          this->__isset.modelName = true;
+          xfer += iprot->readString(this->modelID);
+          this->__isset.modelID = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -2613,8 +2613,8 @@ uint32_t VELaSSCoSM_CloseModel_args::write(::apache::thrift::protocol::TProtocol
   xfer += oprot->writeString(this->sessionID);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("modelName", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->modelName);
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->modelID);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -2637,8 +2637,8 @@ uint32_t VELaSSCoSM_CloseModel_pargs::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeString((*(this->sessionID)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("modelName", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString((*(this->modelName)));
+  xfer += oprot->writeFieldBegin("modelID", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->modelID)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -4382,20 +4382,20 @@ void VELaSSCoSMClient::recv_UserLogout(std::string& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "UserLogout failed: unknown result");
 }
 
-void VELaSSCoSMClient::CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName)
+void VELaSSCoSMClient::CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelID)
 {
-  send_CloseModel(sessionID, modelName);
+  send_CloseModel(sessionID, modelID);
   recv_CloseModel(_return);
 }
 
-void VELaSSCoSMClient::send_CloseModel(const std::string& sessionID, const std::string& modelName)
+void VELaSSCoSMClient::send_CloseModel(const std::string& sessionID, const std::string& modelID)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("CloseModel", ::apache::thrift::protocol::T_CALL, cseqid);
 
   VELaSSCoSM_CloseModel_pargs args;
   args.sessionID = &sessionID;
-  args.modelName = &modelName;
+  args.modelID = &modelID;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -5371,7 +5371,7 @@ void VELaSSCoSMProcessor::process_CloseModel(int32_t seqid, ::apache::thrift::pr
 
   VELaSSCoSM_CloseModel_result result;
   try {
-    iface_->CloseModel(result.success, args.sessionID, args.modelName);
+    iface_->CloseModel(result.success, args.sessionID, args.modelID);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {

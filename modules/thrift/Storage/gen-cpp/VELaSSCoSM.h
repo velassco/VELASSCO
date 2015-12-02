@@ -130,9 +130,9 @@ class VELaSSCoSMIf {
    * GUID (OpenModel). Corresponding housekeeping is wrapped up.
    * 
    * @param sessionID
-   * @param modelName
+   * @param modelID
    */
-  virtual void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName) = 0;
+  virtual void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelID) = 0;
 
   /**
    * Description: Store a new thumbnail of a model
@@ -238,7 +238,7 @@ class VELaSSCoSMNull : virtual public VELaSSCoSMIf {
   void UserLogout(std::string& /* _return */, const std::string& /* sessionID */) {
     return;
   }
-  void CloseModel(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelName */) {
+  void CloseModel(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */) {
     return;
   }
   void SetThumbnailOfAModel(std::string& /* _return */, const std::string& /* sessionID */, const std::string& /* modelID */, const std::string& /* imageFile */) {
@@ -1822,9 +1822,9 @@ class VELaSSCoSM_UserLogout_presult {
 };
 
 typedef struct _VELaSSCoSM_CloseModel_args__isset {
-  _VELaSSCoSM_CloseModel_args__isset() : sessionID(false), modelName(false) {}
+  _VELaSSCoSM_CloseModel_args__isset() : sessionID(false), modelID(false) {}
   bool sessionID :1;
-  bool modelName :1;
+  bool modelID :1;
 } _VELaSSCoSM_CloseModel_args__isset;
 
 class VELaSSCoSM_CloseModel_args {
@@ -1835,24 +1835,24 @@ class VELaSSCoSM_CloseModel_args {
 
   VELaSSCoSM_CloseModel_args(const VELaSSCoSM_CloseModel_args&);
   VELaSSCoSM_CloseModel_args& operator=(const VELaSSCoSM_CloseModel_args&);
-  VELaSSCoSM_CloseModel_args() : sessionID(), modelName() {
+  VELaSSCoSM_CloseModel_args() : sessionID(), modelID() {
   }
 
   virtual ~VELaSSCoSM_CloseModel_args() throw();
   std::string sessionID;
-  std::string modelName;
+  std::string modelID;
 
   _VELaSSCoSM_CloseModel_args__isset __isset;
 
   void __set_sessionID(const std::string& val);
 
-  void __set_modelName(const std::string& val);
+  void __set_modelID(const std::string& val);
 
   bool operator == (const VELaSSCoSM_CloseModel_args & rhs) const
   {
     if (!(sessionID == rhs.sessionID))
       return false;
-    if (!(modelName == rhs.modelName))
+    if (!(modelID == rhs.modelID))
       return false;
     return true;
   }
@@ -1878,7 +1878,7 @@ class VELaSSCoSM_CloseModel_pargs {
 
   virtual ~VELaSSCoSM_CloseModel_pargs() throw();
   const std::string* sessionID;
-  const std::string* modelName;
+  const std::string* modelID;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -2552,8 +2552,8 @@ class VELaSSCoSMClient : virtual public VELaSSCoSMIf {
   void UserLogout(std::string& _return, const std::string& sessionID);
   void send_UserLogout(const std::string& sessionID);
   void recv_UserLogout(std::string& _return);
-  void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName);
-  void send_CloseModel(const std::string& sessionID, const std::string& modelName);
+  void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelID);
+  void send_CloseModel(const std::string& sessionID, const std::string& modelID);
   void recv_CloseModel(std::string& _return);
   void SetThumbnailOfAModel(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& imageFile);
   void send_SetThumbnailOfAModel(const std::string& sessionID, const std::string& modelID, const std::string& imageFile);
@@ -2766,13 +2766,13 @@ class VELaSSCoSMMultiface : virtual public VELaSSCoSMIf {
     return;
   }
 
-  void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelName) {
+  void CloseModel(std::string& _return, const std::string& sessionID, const std::string& modelID) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->CloseModel(_return, sessionID, modelName);
+      ifaces_[i]->CloseModel(_return, sessionID, modelID);
     }
-    ifaces_[i]->CloseModel(_return, sessionID, modelName);
+    ifaces_[i]->CloseModel(_return, sessionID, modelID);
     return;
   }
 

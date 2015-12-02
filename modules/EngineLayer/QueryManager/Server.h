@@ -69,6 +69,9 @@ struct User
 {
   std::string loginName;
   std::string loginTime;
+  // we have a int64 SessionId between AccessLib and QueryManager
+  // but a std::string between QueryManager and DataLayer
+  std::string dataLayerSessionID;
 };
 typedef std::map< SessionID, User> UserMap;
 
@@ -92,6 +95,10 @@ class QueryManagerServer : virtual public QueryManagerIf {
   ModelMap m_models;
 
   bool ValidSessionID( const SessionID &sessionID) const;
+  // here we have a int64 SessionId between AccessLib and QueryManager
+  // but a std::string between QueryManager and DataLayer
+  std::string GetQueryManagerSessionID( const SessionID &sessionID) const;
+  std::string GetDataLayerSessionID( const SessionID &sessionID) const;
   // support simulation data in several tables: 
   //    VELaSSCo_Models & co.
   //    VELaSSCo_Models_V4CIMNE & co.
@@ -130,6 +137,19 @@ class QueryManagerServer : virtual public QueryManagerIf {
 inline bool QueryManagerServer::ValidSessionID( const SessionID &sessionID) const {
   const UserMap::const_iterator it = m_users.find(sessionID);
   return (it != m_users.end());
+}
+inline std::string QueryManagerServer::GetQueryManagerSessionID( const SessionID &sessionID) const {
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  return sessionIDStr.str();
+}
+inline std::string QueryManagerServer::GetDataLayerSessionID( const SessionID &sessionID) const {
+  std::string ret( "");
+  if ( ValidSessionID( sessionID)) {
+    const std::string &dl_session = m_users.at( sessionID).dataLayerSessionID;
+    ret = ( dl_session.size() != 0) ? dl_session : GetQueryManagerSessionID( sessionID);
+  }
+  return ret;
 }
 inline bool QueryManagerServer::GetModelInfo( const SessionID &sessionID, const ModelID &model, 
 					      QMS_FullyQualifiedModelName &ret) const {
