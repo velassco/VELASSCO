@@ -124,17 +124,17 @@ Command can eiter be "all" or any of the querynames.
       printf("Comments: %s\n", rvOM.report.data());
       modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
       
-      if (strEQL(command, "all") || strEQL(command, "CreateClusterModel")) {
-         rvCreateClusterModel rvccm;
-         vector<string> physicalModelNames;
+      //if (strEQL(command, "all") || strEQL(command, "CreateClusterModel")) {
+      //   rvCreateClusterModel rvccm;
+      //   vector<string> physicalModelNames;
 
-         physicalModelNames.push_back("myModel_0");
-         physicalModelNames.push_back("myModel_1");
-         printf("\n--->CreateClusterModel:\n");
-         client.CreateClusterModel(rvccm, sessionID, "FEM_models", "myModel", "fem_schema_velassco", physicalModelNames);
-         printf("Return status: %s\n", rvccm.status.data());
-         printf("Comments: %s\n", rvccm.report.data());
-      }
+      //   physicalModelNames.push_back("myModel_0");
+      //   physicalModelNames.push_back("myModel_1");
+      //   printf("\n--->CreateClusterModel:\n");
+      //   client.CreateClusterModel(rvccm, sessionID, "FEM_models", "myModel", "fem_schema_velassco", physicalModelNames);
+      //   printf("Return status: %s\n", rvccm.status.data());
+      //   printf("Comments: %s\n", rvccm.report.data());
+      //}
       //double theBoundingBox[6];
       //string returnMsg;
       //theAnalyst->calculateBoundingBox(sessionID, modelID_of_VELaSSCo_HbaseBasicTest_part_1, "", "", 0, NULL, 0, NULL, theBoundingBox, &returnMsg);
@@ -157,11 +157,15 @@ Command can eiter be "all" or any of the querynames.
          printf("Return status: %s\n", rv.status.data());
          printf("Comments: %s\n", rv.report.data());
          if (strEQL(rv.status.data(), "OK")) {
-            int ix = 0;
+            int ix = 0, nCorrect = 0;
             int nErrorFound = false;
             for (std::vector<VELaSSCoSM::Element>::iterator elemId = rv.elements.begin(); elemId != rv.elements.end(); elemId++) {
-               if (elemId->id != elementID_of_random_points[ix]) {
-                  printf("illegal elementid for point nr %d", ix); nErrorFound++;
+               if (elemId->id != -1) {
+                  if (elemId->id != elementID_of_random_points[ix]) {
+                     printf("illegal elementid for point nr %d", ix); nErrorFound++;
+                  } else {
+                     nCorrect++;
+                  }
                }
                ix++;
             }
