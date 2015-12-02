@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
       ourVELaSSCoHandler->cDEMrep = &demRepository;
       ourVELaSSCoHandler->cFEMrep = &femRepository;
 
-
+#ifdef Cluster
       SdaiRepository repositoryId;
       CMemoryAllocator ma(0x100000);
       int rstat = edmiCreateRepository("EDMcluster", &repositoryId);
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
          rstat = edmiCreateModelBN(repositoryId, "EDMcluster", "EDMcluster", 0);
       }
       Repository clusterRepository(&VELaSSCo_db, "EDMcluster");
-      Model clusterModel(&clusterRepository, &ma, &edmcluster_SchemaObject);
+      Model clusterModel(&clusterRepository, &ma, &EDMcluster_SchemaObject);
       //clusterModel.open("EDMcluster", sdaiRW);
       VELaSSCoCluster ourCluster(&clusterModel);
       if (argc == 6) {
@@ -64,6 +64,8 @@ int main(int argc, char* argv[])
       findAllModels.getBoundingBox();
 
       ourVELaSSCoHandler->defineCluster(&ourCluster);
+#endif /* Cluster */
+
 
       //ourVELaSSCoHandler->InitQueryCaches();
       FILE *logFile = fopen("EDMstorageModule.log", "w");

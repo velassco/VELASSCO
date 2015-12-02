@@ -209,135 +209,140 @@ void VELaSSCoHandler::stopAll()
 
 void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points)
 {
-   EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelName.data()));
-   if (emc) {
-      FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+   try {
+      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelName.data()));
+      if (emc) {
+         FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
 
-      Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element));
-      Iterator<fem::Node*, fem::entityType> nodeIter(fmc->getObjectSet(fem::et_Node));
-
-
-      bool sequentialSearch = false;
-      bool boxSearch = true;
-      int n_IsPointInsideTetrahedron_1 = 0;
-      int n_IsPointInsideTetrahedron_2 = 0;
-      int n_Points = 0;
-      std::vector<VELaSSCoSM::Element>  returnedElements_1;
-      std::vector<VELaSSCoSM::Element>  returnedElements_2;
+         Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element), fmc);
+         Iterator<fem::Node*, fem::entityType> nodeIter(fmc->getObjectSet(fem::et_Node), fmc);
 
 
-      int startTime = GetTickCount();
-      if (boxSearch) {
-         Matrix<Set<fem::Element*>*> *elemBoxMatrix = (Matrix<Set<fem::Element*>*> *)fmc->voidElemBoxMatrix;
-         int nInside = 0, nPointsInsideSeveralElements = 0;
-         std::vector<VELaSSCoSM::Point> myPoints = points;
-         for (std::vector<VELaSSCoSM::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
+         bool sequentialSearch = false;
+         bool boxSearch = true;
+         int n_IsPointInsideTetrahedron_1 = 0;
+         int n_IsPointInsideTetrahedron_2 = 0;
+         int n_Points = 0;
+         std::vector<VELaSSCoSM::Element>  returnedElements_1;
+         std::vector<VELaSSCoSM::Element>  returnedElements_2;
 
-            n_Points++;
-            double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
-            int bx = p_in_x / fmc->dx, by = p_in_y / fmc->dy, bz = p_in_z / fmc->dz;
-            Set<fem::Element*> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
-            bool outsideAll = true;
-            Iterator<fem::Element*, fem::entityType> boxElemIter(elemBox);
 
-            for (fem::Element *ep = boxElemIter.first(); ep; ep = boxElemIter.next()) {
-               int elemId = ep->get_id();
+         int startTime = GetTickCount();
+         if (boxSearch) {
+            Matrix<Collection<fem::Element*>*> *elemBoxMatrix = (Matrix<Collection<fem::Element*>*> *)fmc->voidElemBoxMatrix;
+            int nInside = 0, nPointsInsideSeveralElements = 0;
+            std::vector<VELaSSCoSM::Point> myPoints = points;
+            for (std::vector<VELaSSCoSM::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
 
-               Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
-               if (nodeOfElemIter.size() == 4) {
-                  fem::Node *np = nodeOfElemIter.first();
-                  double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
-                  double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
-                  double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
-                  double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
-                  double dst, epsilon = 0.000;
-                  double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
-                  n_IsPointInsideTetrahedron_1++;
-                  if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
-                     epsilon, r_a, r_b, r_c, r_d, &dst)) {
-                     int elemId = ep->get_id();
-                     nInside++;
-                     if (outsideAll) {
-                        VELaSSCoSM::Element de;
-                        de.__set_id(ep->get_id()); returnedElements_1.push_back(de);
-                     } else {
-                        nPointsInsideSeveralElements++;
+               n_Points++;
+               double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
+               int bx = p_in_x / fmc->dx, by = p_in_y / fmc->dy, bz = p_in_z / fmc->dz;
+               Collection<fem::Element*> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
+               bool outsideAll = true;
+
+               for (fem::Element *ep = elemBox->first(); ep; ep = elemBox->next()) {
+                  int elemId = ep->get_id();
+
+                  Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes(), fmc);
+                  if (nodeOfElemIter.size() == 4) {
+                     fem::Node *np = nodeOfElemIter.first();
+                     double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
+                     double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
+                     double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
+                     double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
+                     double dst, epsilon = 0.000;
+                     double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
+                     n_IsPointInsideTetrahedron_1++;
+                     if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
+                        epsilon, r_a, r_b, r_c, r_d, &dst)) {
+                        int elemId = ep->get_id();
+                        nInside++;
+                        if (outsideAll) {
+                           VELaSSCoSM::Element de;
+                           de.__set_id(ep->get_id()); returnedElements_1.push_back(de);
+                        } else {
+                           nPointsInsideSeveralElements++;
+                        }
+                        outsideAll = false;
                      }
-                     outsideAll = false;
                   }
                }
-            }
-            if (outsideAll) {
-               VELaSSCoSM::Element de;
-               de.__set_id(-1); returnedElements_1.push_back(de);
+               if (outsideAll) {
+                  VELaSSCoSM::Element de;
+                  de.__set_id(-1); returnedElements_1.push_back(de);
+               }
             }
          }
-      }
-      int endTime = GetTickCount();
+         int endTime = GetTickCount();
 
-      if (sequentialSearch) {
-         int nInside = 0, nPointsInsideSeveralElements = 0;
-         std::vector<VELaSSCoSM::Point> myPoints = points;
-         for (std::vector<VELaSSCoSM::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
+         if (sequentialSearch) {
+            int nInside = 0, nPointsInsideSeveralElements = 0;
+            std::vector<VELaSSCoSM::Point> myPoints = points;
+            for (std::vector<VELaSSCoSM::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
 
-            double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
-            bool outsideAll = true;
-            for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
-               int elemId = ep->get_id();
+               double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
+               bool outsideAll = true;
+               for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
+                  int elemId = ep->get_id();
 
-               Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
-               if (nodeOfElemIter.size() == 4) {
-                  fem::Node *np = nodeOfElemIter.first();
-                  double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
-                  double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
-                  double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
-                  double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
-                  double dst, epsilon = 0.000;
-                  double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
-                  n_IsPointInsideTetrahedron_2++;
-                  if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
-                     epsilon, r_a, r_b, r_c, r_d, &dst)) {
-                     int elemId = ep->get_id();
-                     nInside++;
-                     if (outsideAll) {
-                        VELaSSCoSM::Element de;
-                        de.__set_id(ep->get_id()); returnedElements_2.push_back(de);
-                     } else {
-                        nPointsInsideSeveralElements++;
+                  Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes(), fmc);
+                  if (nodeOfElemIter.size() == 4) {
+                     fem::Node *np = nodeOfElemIter.first();
+                     double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
+                     double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
+                     double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
+                     double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
+                     double dst, epsilon = 0.000;
+                     double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
+                     n_IsPointInsideTetrahedron_2++;
+                     if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
+                        epsilon, r_a, r_b, r_c, r_d, &dst)) {
+                        int elemId = ep->get_id();
+                        nInside++;
+                        if (outsideAll) {
+                           VELaSSCoSM::Element de;
+                           de.__set_id(ep->get_id()); returnedElements_2.push_back(de);
+                        } else {
+                           nPointsInsideSeveralElements++;
+                        }
+                        outsideAll = false;
                      }
-                     outsideAll = false;
                   }
                }
-            }
-            if (outsideAll) {
-               VELaSSCoSM::Element de;
-               de.__set_id(-1); returnedElements_2.push_back(de);
-            }
-         }
-      }
-      if (sequentialSearch && boxSearch) {
-         std::vector<VELaSSCoSM::Element>::iterator e1 = returnedElements_1.begin();
-         for (std::vector<VELaSSCoSM::Element>::iterator e2 = returnedElements_2.begin(); e2 != returnedElements_2.end(); e2++) {
-            if (e1 != returnedElements_1.end()) {
-               if (e1->id != e2->id) {
-                  printf("Difference between box search and sequential search!!!");
+               if (outsideAll) {
+                  VELaSSCoSM::Element de;
+                  de.__set_id(-1); returnedElements_2.push_back(de);
                }
-            } else {
-               printf("Different length of box search and sequential search!!!");
             }
-            e1++;
          }
+         if (sequentialSearch && boxSearch) {
+            std::vector<VELaSSCoSM::Element>::iterator e1 = returnedElements_1.begin();
+            for (std::vector<VELaSSCoSM::Element>::iterator e2 = returnedElements_2.begin(); e2 != returnedElements_2.end(); e2++) {
+               if (e1 != returnedElements_1.end()) {
+                  if (e1->id != e2->id) {
+                     printf("Difference between box search and sequential search!!!");
+                  }
+               } else {
+                  printf("Different length of box search and sequential search!!!");
+               }
+               e1++;
+            }
+         }
+         if (boxSearch) {
+            char msg[10000];
+            sprintf(msg, "Containing element found for %d points.\nIsPointInsideTetrahedron is executed %d times.\nElapsed time for the search is %d millisecponds\n",
+               n_Points, n_IsPointInsideTetrahedron_1, endTime - startTime);
+            _return.__set_report(msg);
+         }
+         _return.__set_status("OK");
+         _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
+      } else {
+         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
       }
-      if (boxSearch) {
-         char msg[10000];
-         sprintf(msg, "Containing element found for %d points.\nIsPointInsideTetrahedron is executed %d times.\nElapsed time for the search is %d millisecponds\n",
-            n_Points, n_IsPointInsideTetrahedron_1, endTime - startTime);
-         _return.__set_report(msg);
-      }
-      _return.__set_status("OK");
-      _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
-   } else {
-      _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
 
@@ -396,10 +401,10 @@ void copyNode(VELaSSCoSM::Node &dn, fem::Node *sn)
 void VELaSSCoHandler::CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle>  &elements)
 {
 
-   Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element));
+   Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element), fmc);
 
    for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
-      Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes());
+      Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes(), fmc);
       if (nodeIter.size() == 4) {
          NodeInfo nodes[4];
          int ix = 0;
@@ -501,13 +506,13 @@ void VELaSSCoHandler::GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _r
    std::vector<VertexResult> vResults;
 
    try {
-      Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+      Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
       for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
          if (strEQL(analysisID, rh->get_analysis()) && time_step == rh->get_step() && strEQL(resultID, rh->get_name())) {
             fem::ResultBlock *rb = (fem::ResultBlock *)rh->getFirstReferencing(fem::et_ResultBlock);
             if (rb) {
                nResultHeaderMatches++;
-               Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values());
+               Iterator<fem::Result*, fem::entityType> valueIter(rb->get_values(), fmc);
                fem::entityType resultType;
                for (fem::Result *r = valueIter.first(&resultType); r; r = valueIter.next(&resultType)) {
                   VertexResult vr;
@@ -521,7 +526,7 @@ void VELaSSCoHandler::GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _r
                         values.push_back(sr->get_val());
                      } else {
                         fem::VectorResult *vr = static_cast<VectorResult*>(r);
-                        Iterator<double, fem::entityType> resultIter(vr->get_values());
+                        Iterator<double, fem::entityType> resultIter(vr->get_values(), fmc);
                         for (double val = resultIter.firstReal(); resultIter.moreElems(); val = resultIter.nextReal()) {
                            values.push_back(val);
                         }
@@ -851,14 +856,14 @@ void VELaSSCoHandler::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std:
          vector<string> analysisNames;
         if (emc->type == mtDEM) {
             DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation));
+            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
             for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
                analysisNames.push_back(s->get_name());
             }
             _return.__set_status("OK"); _return.__set_analyses(analysisNames);
          } else if (emc->type == mtFEM) {
             FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
             map<string, int> names;
             for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
                char *name = rh->get_analysis();
@@ -896,13 +901,13 @@ void VELaSSCoHandler::CalculateBoundingBox(rvGetListOfAnalyses& _return, const s
          vector<string> analysisNames;
         if (emc->type == mtDEM) {
             DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation));
+            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
 
 
             _return.__set_status("OK"); _return.__set_analyses(analysisNames);
          } else if (emc->type == mtFEM) {
             FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh));
+            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh), fmc);
             fem::Mesh *mesh = meshIter.first();
             //while (mesh) {
             //   Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
@@ -951,13 +956,13 @@ void VELaSSCoHandler::GetBoundingBox(rvGetBoundingBox& _return, const std::strin
          vector<string> analysisNames;
          if (emc->type == mtDEM) {
             DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation));
+            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
 
 
             _return.__set_status("OK"); 
          } else if (emc->type == mtFEM) {
             FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh));
+            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh), fmc);
             fem::Mesh *mesh = meshIter.first();
             //while (mesh) {
             //   Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
@@ -1000,10 +1005,10 @@ void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const st
          vector<double> timeSteps;
          if (emc->type == mtDEM) {
             DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation));
+            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
             for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
                if (strEQL(s->get_name(), analysisID.data())) {
-                  Iterator<dem::Timestep*, dem::entityType> tsIter(s->get_consists_of());
+                  Iterator<dem::Timestep*, dem::entityType> tsIter(s->get_consists_of(), dmc);
                   for (dem::Timestep *ts = tsIter.first(); ts; ts = tsIter.next()) {
                      timeSteps.push_back(ts->get_time_value());
                   }
@@ -1012,7 +1017,7 @@ void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const st
             _return.__set_status("OK"); _return.__set_time_steps(timeSteps);
          } else {
             FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader));
+            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
             for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
                if (strEQL(rh->get_analysis(), analysisID.data())) {
                   timeSteps.push_back(rh->get_step());
@@ -1054,7 +1059,7 @@ void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::str
          } else {
             vector<VELaSSCoSM::MeshInfo> meshInfos;
             FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_ResultHeader));
+            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
             for (fem::Mesh *m = meshIter.first(); m; m = meshIter.next()) {
                //if (strEQL(rh->get_analysis(), analysisID.data())) {
                //   timeSteps.push_back(rh->get_step());
@@ -1091,7 +1096,7 @@ void  VELaSSCoHandler::CreateClusterModel(rvCreateClusterModel& _return, const s
             cr = new(m)ClusterRepository(m); cr->put_name((char*)clusterRepositoryName.data());
          }
          cm = new(m)ClusterModel(m); cm->put_name((char*)clusterModelName.data()); cr->put_models_element(cm);
-         m->writeAllObjectsToDatabase();
+         //m->writeAllObjectsToDatabase();
       } else {
          _return.status = "Error"; _return.report = "Model already exist.";
       }

@@ -12,9 +12,9 @@
 
 
 
-void calculateBoundingBox(fem::Element *ep, BoundingBox *bb)
+void FEMmodelCache::calculateBoundingBox(fem::Element *ep, BoundingBox *bb)
 {
-   Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes());
+   Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes(), this);
    fem::Node*np = nodeIter.first();
    if (np) {
       double max_x = np->get_x(), min_x = max_x;
@@ -59,19 +59,19 @@ DEMmodelCache::DEMmodelCache(Repository *r, dbSchema *_schema)
 
 void DEMmodelCache::initCache()
 {
-   defineObjectSet(dem::et_Simulation, 0x4000, true);
-   readAllObjectsToMemory();
+   //defineObjectSet(dem::et_Simulation, 0x4000, true);
+   //readAllObjectsToMemory();
 }
 void FEMmodelCache::initCache()
 {
-   defineObjectSet(fem::et_Element, 0x4000, true);
-   defineObjectSet(fem::et_Mesh, 0x4000, true);
-   defineObjectSet(fem::et_Node, 0x4000, true);
-   defineObjectSet(fem::et_ResultHeader, 0x4000, true);
-   readAllObjectsToMemory();
+   //defineObjectSet(fem::et_Element, 0x4000, true);
+   //defineObjectSet(fem::et_Mesh, 0x4000, true);
+   //defineObjectSet(fem::et_Node, 0x4000, true);
+   //defineObjectSet(fem::et_ResultHeader, 0x4000, true);
+   //readAllObjectsToMemory();
 
-   Iterator<fem::Element*, fem::entityType> elemIter(getObjectSet(fem::et_Element));
-   Iterator<fem::Node*, fem::entityType> nodeIter(getObjectSet(fem::et_Node));
+   Iterator<fem::Element*, fem::entityType> elemIter(getObjectSet(fem::et_Element), this);
+   Iterator<fem::Node*, fem::entityType> nodeIter(getObjectSet(fem::et_Node), this);
 
    ma.init(0x100000);
    // elemsInThisBox = new(&ma)SetInMem<fem::Element*>(&ma, sdaiINTEGER, 100);
@@ -102,13 +102,13 @@ void FEMmodelCache::initCache()
       int nx = dnx, ny = dny, nz = dnz;
       nx++; ny++; nz++;
 
-      Matrix<Set<fem::Element*>*> *elemBoxMatrix = new(&ma) Matrix<Set<fem::Element*>*>(nx, ny, nz, sizeof(Set<fem::Element*>*), &ma);
+      Matrix<Collection<fem::Element*>*> *elemBoxMatrix = new(&ma) Matrix<Collection<fem::Element*>*>(nx, ny, nz, sizeof(Collection<fem::Element*>*), &ma);
       voidElemBoxMatrix = (void*)elemBoxMatrix;
 
       for (int ix = 0; ix < nx; ix++) {
          for (int iy = 0; iy < ny; iy++) {
             for (int iz = 0; iz < nz; iz++) {
-               elemBoxMatrix->setElement(ix, iy, iz, new(&ma)Set<fem::Element*>(&ma, sdaiINSTANCE, 32));
+               elemBoxMatrix->setElement(ix, iy, iz, new(&ma)Collection<fem::Element*>(&ma));
             }
          }
       }
@@ -128,8 +128,8 @@ void FEMmodelCache::initCache()
          for (int ix = min_ix; ix <= max_ix; ix++) {
             for (int iy = min_iy; iy <= max_iy; iy++) {
                for (int iz = min_iz; iz <= max_iz; iz++) {
-                  Set<fem::Element*> *elemBox = elemBoxMatrix->getElement(ix, iy, iz);
-                  elemBox->add(ep, &ma);
+                  Collection<fem::Element*> *elemBox = elemBoxMatrix->getElement(ix, iy, iz);
+                  elemBox->add(ep);
                   nElemInBox++;
                }
             }

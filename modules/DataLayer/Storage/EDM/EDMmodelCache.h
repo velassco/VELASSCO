@@ -24,6 +24,7 @@ public:
 
    FEMmodelCache::FEMmodelCache(Repository *r, dbSchema *_schema);
    void                             initCache();
+   void                             calculateBoundingBox(fem::Element *ep, BoundingBox *bb);
 };
 
 /*===============================================================================================*/

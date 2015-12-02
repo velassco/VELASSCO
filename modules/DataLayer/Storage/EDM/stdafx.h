@@ -66,4 +66,8 @@ using namespace ecl;
 
 
 
+typedef struct BoundingBox {
+   double min_x, min_y, min_z, max_x, max_y, max_z;
+} BoundingBox;
+
 // TODO: reference additional headers your program requires here

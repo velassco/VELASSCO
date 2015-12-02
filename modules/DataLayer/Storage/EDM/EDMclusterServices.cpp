@@ -34,7 +34,7 @@ SdaiModel EDMclusterServices::getClusterModelID()
 ecl::ClusterModel *EDMclusterServices::getClusterModel(const char *name, const char *repositoryName)
 /*==============================================================================================================================*/
 {
-   Iterator<ecl::ClusterModel*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_ClusterModel));
+   Iterator<ecl::ClusterModel*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_ClusterModel), clusterModel);
    for (ecl::ClusterModel *cm = clIter.first(); cm; cm = clIter.next()) {
       ClusterRepository *cr = (ClusterRepository *)cm->getFirstReferencing(ecl::et_ClusterRepository);
       if (strEQL(cm->get_name(), name) && cr && strEQL(cr->get_name(), repositoryName)) {
@@ -47,7 +47,7 @@ ecl::ClusterModel *EDMclusterServices::getClusterModel(const char *name, const c
 ecl::ClusterRepository *EDMclusterServices::getClusterRepository(const char *name)
 /*==============================================================================================================================*/
 {
-   Iterator<ecl::ClusterRepository*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_ClusterRepository));
+   Iterator<ecl::ClusterRepository*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_ClusterRepository), clusterModel);
    for (ecl::ClusterRepository *cr = clIter.first(); cr; cr = clIter.next()) {
       if (strEQL(cr->get_name(), name)) {
          return cr;
@@ -61,15 +61,15 @@ void EDMclusterServices::startServices()
 /*==============================================================================================================================*/
 {
    clusterModel->open("EDMcluster", sdaiRW);
-   clusterModel->defineObjectSet(ecl::et_EDMcluster, 2, true);
-   clusterModel->defineObjectSet(ecl::et_ClusterRepository, 8, true);
-   clusterModel->defineObjectSet(ecl::et_ClusterModel, 8, true);
-   clusterModel->defineObjectSet(ecl::et_EDMdatabase, 8, true);
-   clusterModel->readAllObjectsToMemory();
-   Iterator<ecl::EDMcluster*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_EDMcluster));
+   //clusterModel->defineObjectSet(ecl::et_EDMcluster, 2, true);
+   //clusterModel->defineObjectSet(ecl::et_ClusterRepository, 8, true);
+   //clusterModel->defineObjectSet(ecl::et_ClusterModel, 8, true);
+   //clusterModel->defineObjectSet(ecl::et_EDMdatabase, 8, true);
+   //clusterModel->readAllObjectsToMemory();
+   Iterator<ecl::EDMcluster*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_EDMcluster), clusterModel);
    ourCluster = clIter.first();
    if (!ourCluster) THROW("EDMclusterServices::startServices() - No EDMcluser object defined.");
-   databaseIter.init(clusterModel->getObjectSet(ecl::et_EDMcluster));
+   databaseIter.init(clusterModel->getObjectSet(ecl::et_EDMcluster), 0, clusterModel);
 }
 /*==============================================================================================================================*/
 void EDMclusterServices::initClusterModel(char *serverListFileName)
@@ -101,7 +101,7 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
             }
          }
       }
-      clusterModel->writeAllObjectsToDatabase();
+      //clusterModel->writeAllObjectsToDatabase();
       clusterModel->close();
       //ma->reset();
       fclose(serverListFile);
@@ -127,14 +127,14 @@ void EDMclusterExecution::buildServerContexts(char *user, char *group, char *pas
    ma.reset();
    serverContexts = new(&ma)Collection<SdaiServerContext>(&ma);
 
-   Iterator<ecl::EDMdatabase*, ecl::entityType>  dbIter(theServer->getTheEDMcluster()->get_databases());
-   for (ecl::EDMdatabase*db = dbIter.first(); db; db = dbIter.next()) {
-      SdaiServerContext serverContextId;
-      theServer->getUniqueServerContextID(serverContextName);
-      char *port = db->get_server()->get_Port();
-      char *host = db->get_server()->get_Host();
-      CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port,
-         host, NULL, NULL, NULL, NULL, NULL, &serverContextId));
-      serverContexts->add(serverContextId);
-   }
+   //Iterator<ecl::EDMdatabase*, ecl::entityType>  dbIter(theServer->getTheEDMcluster()->get_databases(), theServer);
+   //for (ecl::EDMdatabase*db = dbIter.first(); db; db = dbIter.next()) {
+   //   SdaiServerContext serverContextId;
+   //   theServer->getUniqueServerContextID(serverContextName);
+   //   char *port = db->get_server()->get_Port();
+   //   char *host = db->get_server()->get_Host();
+   //   CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port,
+   //      host, NULL, NULL, NULL, NULL, NULL, &serverContextId));
+   //   serverContexts->add(serverContextId);
+   //}
 }

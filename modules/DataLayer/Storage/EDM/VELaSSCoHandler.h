@@ -187,8 +187,3 @@ public:
    void GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, DEMmodelCache *dmc);
    void defineCluster(EDMclusterServices *cs) { theCluster = cs; }
 };
-
-
-typedef struct BoundingBox {
-   double min_x, min_y, min_z, max_x, max_y, max_z;
-} BoundingBox;
