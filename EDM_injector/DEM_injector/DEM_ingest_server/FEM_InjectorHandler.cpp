@@ -228,8 +228,9 @@ void FEM_InjectorHandler::InjectMeshFile()
             readNextLine();
             if (line[0] == '#') readNextLine();
             if (strEQL(line, "Coordinates\n")) {
+               readNextLine();
                while (bytesRead && strNEQ(line, "end coordinates\n")) {
-                  nColumns = sscanf(line, "%llu %f %f %f", &nodeID, &x, &y, &z);
+                  nColumns = sscanf(line, "%llu %lf %lf %lf", &nodeID, &x, &y, &z);
                   fem::Node *n = newObject(fem::Node); n->put_id(nodeID); n->put_x(x); n->put_y(y); n->put_z(z);
                   cMesh->put_nodes_element(n); nodes[nodeID] = n;
                   readNextLine();
