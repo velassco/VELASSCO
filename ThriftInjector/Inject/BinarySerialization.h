@@ -8,10 +8,54 @@
 
 BEGIN_GID_DECLS
 
+enum Endianness { LittleEndian, BigEndian, HostEndian };
+
+template <typename T>
+T bswap( T w )
+{
+  T r = 0;
+  
+  // decent compilers will unroll this (gcc)
+  // or even convert straight into single bswap (clang)
+  for (int i = 0; i < sizeof(r); i++) 
+    {
+    r <<= 8;
+    r |= w & 0xff;
+    w >>= 8;
+    }
+  return r;
+}
+
+double bswap( double w );
+
+template <typename T>
+T endian(T w, Endianness endian )
+{
+  if ( endian == HostEndian ) return w;
+  // this gets optimized out into if (endian == host_endian) return w;
+  union { uint64_t quad; uint32_t islittle; } t;
+  t.quad = 1;
+  if (t.islittle ^ uint32_t(endian) ) return w;
+  return bswap( w );
+
+  /*
+  T r = 0;
+  
+  // decent compilers will unroll this (gcc)
+  // or even convert straight into single bswap (clang)
+  for (int i = 0; i < sizeof(r); i++) {
+  r <<= 8;
+  r |= w & 0xff;
+  w >>= 8;
+  }
+  return r;
+  */
+};
+
 class BinarySerializer
 {
 public:
-  BinarySerializer( ) : m_ConvertToHex( false ) { };
+  BinarySerializer( ) : m_ConvertToHex( false ), m_Endianness( HostEndian ) { };
   virtual ~BinarySerializer( ) { };
   
   void SetConvertToHex( bool x )
@@ -26,6 +70,18 @@ public:
 
   static std::string BinToHex( const std::string &source );
   static void BinToHex( char c, char buffer[2] );
+
+  void SetEndianness( Endianness t )
+  {
+    this->m_Endianness = t;
+  }
+
+  Endianness GetEndianness( )
+  {
+    return this->m_Endianness;
+  }
+
+  bool IsEndiannessNative();
 
   // int8_t
   virtual boost::uint32_t Write( std::string &dest, const boost::int8_t *values, boost::uint32_t n ) = 0;
@@ -103,8 +159,12 @@ public:
     return this->Write( dest, &value, 1 );
   }
 
+protected:
+  void AppendWithEndianness( std::string & dest, const char *buffer, int length );
+
  private:
   bool m_ConvertToHex;
+  Endianness m_Endianness;
 };
 
 class BinarySerializerThrift : public BinarySerializer
@@ -165,7 +225,7 @@ public:
 class BinaryDeserializer
 {
 public:
-  BinaryDeserializer( )  : m_ConvertFromHex( false ) { };
+  BinaryDeserializer( )  : m_ConvertFromHex( false ), m_Endianness( HostEndian ) { };
   ~BinaryDeserializer( ) { };
 
   void SetConvertFromHex( bool x )
@@ -177,6 +237,18 @@ public:
   {
     return this->m_ConvertFromHex;
   }
+
+  void SetEndianness( Endianness t )
+  {
+    this->m_Endianness = t;
+  }
+
+  Endianness GetEndianness()
+  {
+    return this->m_Endianness;
+  }
+
+  bool IsEndiannessNative();
 
   // int8_t
   virtual boost::uint32_t Read( const std::string &source,
@@ -230,8 +302,17 @@ public:
 				double *values, boost::uint32_t n, 
 				boost::uint32_t pos = 0 ) = 0;
 
- private:
+protected:
+
+  template <typename T>
+  T endian( T w )
+  {
+    return GID::endian( w, this->GetEndianness( ) );
+  }
+
+private:
   bool m_ConvertFromHex;
+  Endianness m_Endianness;
 };
 
 class BinaryDeserializerThrift : public BinaryDeserializer

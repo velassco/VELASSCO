@@ -1,10 +1,53 @@
 #include "BinarySerialization.h"
 #include <iostream>
+#include <stdint.h>
 
 using namespace apache::thrift::transport;
 using namespace apache::thrift::protocol;
 
 BEGIN_GID_DECLS
+
+double bswap( double w )
+{
+  union { uint64_t quad; double d; } t;
+  t.d = w;
+  t.quad = bswap( t.quad );
+  return t.d;
+}
+
+inline
+static bool is_big_endian(void)
+{
+  union {
+    uint32_t i;
+    char c[4];
+  } bint = {0x01020304};
+  
+  return bint.c[0] == 1; 
+}
+
+inline
+static Endianness get_my_endianness()
+{
+  return is_big_endian() ? BigEndian : LittleEndian;
+}
+
+inline
+static bool is_endianness_native( Endianness t )
+{
+  return (t == HostEndian) ? true : (get_my_endianness( ) == t); 
+}
+
+inline
+void rappend( std::string &dest, const char *from, int length )
+{
+  int i = length;
+  while( length > 0 )
+    {
+    --length;
+    dest += from[ i ];
+    }
+}
 
 static char hexTable[] =
 {
@@ -90,6 +133,23 @@ std::string BinarySerializer::BinToHex( const std::string &source )
     hexStr.append( tmp, 2 );
     }
   return hexStr;
+}
+
+bool BinarySerializer::IsEndiannessNative()
+{
+  return is_endianness_native( this->GetEndianness( ) );
+}
+
+void BinarySerializer::AppendWithEndianness( std::string &dest, const char *buffer, int length )
+{
+  if ( this->IsEndiannessNative( ) )
+    {
+    dest.append( buffer, sizeof( length ) );
+    }
+  else
+    {
+    rappend( dest, buffer, sizeof( length ) );
+    }
 }
 
 BinarySerializerThrift::BinarySerializerThrift( )
@@ -221,6 +281,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest, const std::str
   boost::uint32_t lengthStr = str.length( );
   boost::uint32_t n;
   
+  // write string length
   if ( this->GetConvertToHex( ) )
     {
     char tmp[ sizeof(lengthStr)*2 ];
@@ -232,9 +293,11 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest, const std::str
     {
     boost::uint32_t *pLength = &lengthStr;
     char *pChar = reinterpret_cast<char*>(pLength);
-    dest.append( pChar, sizeof( lengthStr ) );
+    this->AppendWithEndianness( dest, pChar, sizeof( lengthStr ) );
     n = sizeof( lengthStr );
     }
+
+  // write the string's content
   dest.append( str );
   n += lengthStr;
   return n;
@@ -255,12 +318,20 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
       }
     return needed * 2;    
     }
-  else
+  if( this->IsEndiannessNative( ) )
     {
     const char *pChar = reinterpret_cast<const char*>( values );
     dest.append( pChar, needed );
-    return needed;
     }
+  else
+    {
+    for( int i = 0; i < n; i++ )
+      {
+      const char *pChar = reinterpret_cast<const char*>( values+i );
+      rappend( dest, pChar, sizeValue );
+      }
+    }
+  return needed;   
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
@@ -279,12 +350,20 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
       }
     return needed * 2;    
     }
-  else
+  if( this->IsEndiannessNative( ) )
     {
     const char *pChar = reinterpret_cast<const char*>(values);
     dest.append( pChar, needed );
-    return needed;
     }
+  else
+    {
+    for( int i = 0; i < n; i++ )
+      {
+      const char *pChar = reinterpret_cast<const char*>( values+i );
+      rappend( dest, pChar, sizeValue );
+      }
+    }
+  return needed;
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
@@ -303,12 +382,20 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
       }
     return needed * 2;    
     }
-  else
+  if( this->IsEndiannessNative( ) )
     {
     const char *pChar = reinterpret_cast<const char*>(values);
     dest.append( pChar, needed );
-    return needed;
     }
+  else
+    {
+    for( int i = 0; i < n; i++ )
+      {
+      const char *pChar = reinterpret_cast<const char*>( values+i );
+      rappend( dest, pChar, sizeValue );
+      }
+    }
+  return needed;
 }
 
 boost::uint32_t BinarySerializerNative::Write( std::string &dest,
@@ -327,12 +414,20 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
       }
     return needed * 2;    
     }
-  else
+  if( this->IsEndiannessNative( ) )
     {
     const char *pChar = reinterpret_cast<const char*>(values);
     dest.append( pChar, needed );
-    return needed;
     }
+  else
+    {
+    for( int i = 0; i < n; i++ )
+      {
+      const char *pChar = reinterpret_cast<const char*>( values+i );
+      rappend( dest, pChar, sizeValue );
+      }
+    }
+  return needed;
 }
 
 BinaryDeserializerThrift::BinaryDeserializerThrift( )
@@ -345,7 +440,8 @@ BinaryDeserializerThrift::~BinaryDeserializerThrift( )
 {
 }
 
-boost::uint32_t BinaryDeserializerThrift::ResetBuffer( const std::string &source, boost::uint32_t pos,
+boost::uint32_t BinaryDeserializerThrift::ResetBuffer( const std::string &source,
+                                                       boost::uint32_t pos,
                                                        boost::uint32_t needed )
 {
   boost::uint32_t lengthBuffer = source.length();
@@ -558,7 +654,8 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
     }
   else
     {
-    lengthStr = *(reinterpret_cast<const boost::uint32_t*>(source.c_str( ) + pos));
+    const char *addr = source.c_str( ) + pos;
+    lengthStr = this->endian( *( reinterpret_cast<const boost::uint32_t*>( addr ) ) );
     }
   const boost::uint32_t pos1 = pos + minLength;
   if ( !this->CheckBuffer( source, pos1, lengthStr ) )
@@ -603,7 +700,7 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
     const boost::int16_t *ptrValues = reinterpret_cast<const boost::int16_t*>( source.c_str( ) + pos );
     for( boost::uint32_t i = 0; i < n; i++ )
       {
-      values[ i ] = ptrValues[ i ];
+      values[ i ] = this->endian( ptrValues[ i ] );
       }
     }
   return pos + needed;
@@ -640,7 +737,7 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
     const boost::int32_t *ptrValues = reinterpret_cast<const boost::int32_t*>( source.c_str( ) + pos );
     for( boost::uint32_t i = 0; i < n; i++ )
       {
-      values[ i ] = ptrValues[ i ];
+      values[ i ] = this->endian( ptrValues[ i ] );
       }
     }
   return pos + needed;
@@ -677,7 +774,7 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
     const boost::int64_t *ptrValues = reinterpret_cast<const boost::int64_t*>( source.c_str( ) + pos );
     for( boost::uint32_t i = 0; i < n; i++ )
       {
-      values[ i ] = ptrValues[ i ];
+      values[ i ] = this->endian( ptrValues[ i ] );
       }
     }
   return pos + needed;
@@ -714,7 +811,7 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
     const double *ptrValues = reinterpret_cast<const double*>( source.c_str( ) + pos );
     for( boost::uint32_t i = 0; i < n; i++ )
       {
-      values[ i ] = ptrValues[ i ];
+      values[ i ] = this->endian( ptrValues[ i ] );
       }
     }
   return pos + needed;

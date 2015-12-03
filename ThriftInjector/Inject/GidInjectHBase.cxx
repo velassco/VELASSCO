@@ -514,6 +514,7 @@ int EncodeRowKey_MetaData( const std::string &keyModel,
 #else
   binWriter.SetConvertToHex( true );
 #endif
+  binWriter.SetEndianness( GID::BigEndian );
   binWriter.Write( rowKey, analysisName );
   binWriter.Write( rowKey, step );
   return SUCCESS;
@@ -549,6 +550,7 @@ int DecodeRowKey_MetaData( const std::string &rowKey,
 #else
   binReader.SetConvertFromHex( true );
 #endif
+  binReader.SetEndianness( GID::BigEndian );
   boost::uint32_t pos1 = binReader.Read( rowKey, analysisName, pos0 );
   if ( pos1 <= pos0  )
     {
@@ -596,6 +598,7 @@ int InsertResult_MetaData( const std::string &host, int port,
       bool csetFound = false;
       BinarySerializerType binWriter;
       binWriter.SetConvertToHex( false );
+      binWriter.SetEndianness( GID::BigEndian );
       for( GlobalMeshInfoType::MapHeaderType::const_iterator it = meshInfo.headers.begin( );
            it  != meshInfo.headers.end( ); ++it  )
         {
@@ -853,7 +856,7 @@ int EncodeColumn_Data( char family, char prefix, GID::UInt32 indexSet, GID::UInt
   char cprefix[3];
 
   binWriter.SetConvertToHex( false );
-
+  binWriter.SetEndianness( GID::BigEndian );
   cprefix[0] = family;
   cprefix[1] = ':';
   cprefix[2] = prefix;
@@ -903,6 +906,7 @@ int DecodeColumn_Data( const std::string &column, char family, char prefix,
     }
   BinaryDeserializerType binReader;
   binReader.SetConvertFromHex( false );
+  binReader.SetEndianness( GID::BigEndian );
   boost::uint32_t pos0 = binReader.Read( column, &id, i + 1 );
   if ( pos0 != i + 1 + sizeof( id ) )
     {
@@ -970,6 +974,7 @@ int InsertPartResult_Data( const std::string &host, int port,
 #endif
       BinarySerializerType binWriter;
       binWriter.SetConvertToHex( false );
+      binWriter.SetEndianness( GID::BigEndian );
       std::vector<Mutation> mutations;
       // TODO: first prototype use only one coordinate set
       GID::UInt32 indexCSet = 1;
@@ -1004,6 +1009,7 @@ int InsertPartResult_Data( const std::string &host, int port,
             }
           BinarySerializerType binWriter;
           binWriter.SetConvertToHex( false );
+          binWriter.SetEndianness( GID::BigEndian );
           for( size_t i = 1; i < it->size(); i++ )
             {
             // copy from boost::long_long_type to boost::uint64_t
@@ -1120,6 +1126,7 @@ int InsertModelInfo( const std::string &host, int port,
   HbaseClient client( protocol );
   BinarySerializerType binBuffer;
   binBuffer.SetConvertToHex( false );
+  binBuffer.SetEndianness( GID::BigEndian );
   try 
     {    
     transport->open( );
