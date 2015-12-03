@@ -225,11 +225,13 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
          int n_Points = 0;
          std::vector<VELaSSCoSM::Element>  returnedElements_1;
          std::vector<VELaSSCoSM::Element>  returnedElements_2;
-
+         tEdmiInstData elementData;
+         elementData.cppObject = NULL; elementData.entityData = &fmc->theEntities[fem::et_Element];
+         fem::Element cElement(fmc, &elementData);
 
          int startTime = GetTickCount();
          if (boxSearch) {
-            Matrix<Collection<fem::Element*>*> *elemBoxMatrix = (Matrix<Collection<fem::Element*>*> *)fmc->voidElemBoxMatrix;
+            Matrix<Collection<InstanceId>*> *elemBoxMatrix = (Matrix<Collection<InstanceId>*> *)fmc->voidElemBoxMatrix;
             int nInside = 0, nPointsInsideSeveralElements = 0;
             std::vector<VELaSSCoSM::Point> myPoints = points;
             for (std::vector<VELaSSCoSM::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
@@ -237,33 +239,36 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
                n_Points++;
                double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
                int bx = p_in_x / fmc->dx, by = p_in_y / fmc->dy, bz = p_in_z / fmc->dz;
-               Collection<fem::Element*> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
                bool outsideAll = true;
+               if (bx < fmc->nOf_x && by < fmc->nOf_y && bz < fmc->nOf_z) {
+                  Collection<InstanceId> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
 
-               for (fem::Element *ep = elemBox->first(); ep; ep = elemBox->next()) {
-                  int elemId = ep->get_id();
+                  for (InstanceId elementId = elemBox->first(); elementId; elementId = elemBox->next()) {
+                     cElement.setInstanceId(elementId);
+                     int elemId = cElement.get_id();
 
-                  Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes(), fmc);
-                  if (nodeOfElemIter.size() == 4) {
-                     fem::Node *np = nodeOfElemIter.first();
-                     double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
-                     double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
-                     double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
-                     double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
-                     double dst, epsilon = 0.000;
-                     double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
-                     n_IsPointInsideTetrahedron_1++;
-                     if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
-                        epsilon, r_a, r_b, r_c, r_d, &dst)) {
-                        int elemId = ep->get_id();
-                        nInside++;
-                        if (outsideAll) {
-                           VELaSSCoSM::Element de;
-                           de.__set_id(ep->get_id()); returnedElements_1.push_back(de);
-                        } else {
-                           nPointsInsideSeveralElements++;
+                     Iterator<fem::Node*, fem::entityType> nodeOfElemIter(cElement.get_nodes(), fmc);
+                     if (nodeOfElemIter.size() == 4) {
+                        fem::Node *np = nodeOfElemIter.first();
+                        double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
+                        double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
+                        double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
+                        double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
+                        double dst, epsilon = 0.000;
+                        double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
+                        n_IsPointInsideTetrahedron_1++;
+                        if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
+                           epsilon, r_a, r_b, r_c, r_d, &dst)) {
+                           int elemId = cElement.get_id();
+                           nInside++;
+                           if (outsideAll) {
+                              VELaSSCoSM::Element de;
+                              de.__set_id(elemId); returnedElements_1.push_back(de);
+                           } else {
+                              nPointsInsideSeveralElements++;
+                           }
+                           outsideAll = false;
                         }
-                        outsideAll = false;
                      }
                   }
                }

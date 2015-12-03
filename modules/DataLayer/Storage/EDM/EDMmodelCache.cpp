@@ -73,6 +73,7 @@ void FEMmodelCache::initCache()
    Iterator<fem::Element*, fem::entityType> elemIter(getObjectSet(fem::et_Element), this);
    Iterator<fem::Node*, fem::entityType> nodeIter(getObjectSet(fem::et_Node), this);
 
+   cache_ma.init(0x100000);
    ma.init(0x100000);
    // elemsInThisBox = new(&ma)SetInMem<fem::Element*>(&ma, sdaiINTEGER, 100);
 
@@ -99,21 +100,21 @@ void FEMmodelCache::initCache()
       double dny = cbrt((ly * ly * nElem) / (lx * lz));
       double dnz = cbrt((lz * lz * nElem) / (ly * lx));
       double test = dnx * dny * dnz;
-      int nx = dnx, ny = dny, nz = dnz;
-      nx++; ny++; nz++;
+      nOf_x = dnx, nOf_y = dny, nOf_z = dnz;
+      nOf_x++; nOf_y++; nOf_z++;
 
-      Matrix<Collection<fem::Element*>*> *elemBoxMatrix = new(&ma) Matrix<Collection<fem::Element*>*>(nx, ny, nz, sizeof(Collection<fem::Element*>*), &ma);
+      Matrix<Collection<InstanceId>*> *elemBoxMatrix = new(&cache_ma) Matrix<Collection<InstanceId>*>(nOf_x, nOf_y, nOf_z, sizeof(Collection<InstanceId>*), &cache_ma);
       voidElemBoxMatrix = (void*)elemBoxMatrix;
 
-      for (int ix = 0; ix < nx; ix++) {
-         for (int iy = 0; iy < ny; iy++) {
-            for (int iz = 0; iz < nz; iz++) {
-               elemBoxMatrix->setElement(ix, iy, iz, new(&ma)Collection<fem::Element*>(&ma));
+      for (EDMULONG ix = 0; ix < nOf_x; ix++) {
+         for (EDMULONG iy = 0; iy < nOf_y; iy++) {
+            for (EDMULONG iz = 0; iz < nOf_z; iz++) {
+               elemBoxMatrix->setElement(ix, iy, iz, new(&cache_ma)Collection<InstanceId>(&cache_ma));
             }
          }
       }
 
-      dx = lx / dnx, dy = ly / dny, dz = lz / dnz;
+      dx = lx / dnx; dy = ly / dny; dz = lz / dnz;
       BoundingBox bb;
       int nElemInBox = 0;
       for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
@@ -128,8 +129,8 @@ void FEMmodelCache::initCache()
          for (int ix = min_ix; ix <= max_ix; ix++) {
             for (int iy = min_iy; iy <= max_iy; iy++) {
                for (int iz = min_iz; iz <= max_iz; iz++) {
-                  Collection<fem::Element*> *elemBox = elemBoxMatrix->getElement(ix, iy, iz);
-                  elemBox->add(ep);
+                  Collection<InstanceId> *elemBox = elemBoxMatrix->getElement(ix, iy, iz);
+                  elemBox->add(ep->getInstanceId());
                   nElemInBox++;
                }
             }

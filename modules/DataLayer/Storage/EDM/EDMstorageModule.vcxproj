@@ -141,6 +141,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\EDM_Interface\dem_schema_velassco.hpp" />
+    <ClInclude Include="..\..\..\..\EDM_Interface\dem_schema_velassco_entityTypes.h" />
+    <ClInclude Include="..\..\..\..\EDM_Interface\fem_schema_velassco.hpp" />
+    <ClInclude Include="..\..\..\..\EDM_Interface\fem_schema_velassco_entityTypes.h" />
     <ClInclude Include="CLogger.h" />
     <ClInclude Include="EDMclusterServices.h" />
     <ClInclude Include="gen-cpp\VELaSSCoSM.h" />

@@ -6,6 +6,7 @@ class EDMmodelCache : public Model
 /*===============================================================================================*/
 {
 protected:
+   CMemoryAllocator                 cache_ma;
    CMemoryAllocator                 ma;
 public:
    ModelType                        type;
@@ -20,7 +21,8 @@ class FEMmodelCache : public EDMmodelCache
 {
 public:
    void                             *voidElemBoxMatrix;
-   double                           dx, dy, dz; // Lengt of box size in x, y, z direction;
+   double                           dx, dy, dz;             // Lengt of box size in x, y, z direction;
+   EDMULONG                         nOf_x, nOf_y, nOf_z;    // NUmber of boxes in each direction
 
    FEMmodelCache::FEMmodelCache(Repository *r, dbSchema *_schema);
    void                             initCache();
