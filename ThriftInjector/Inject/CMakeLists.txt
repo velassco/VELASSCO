@@ -25,3 +25,10 @@ target_include_directories( check_model PRIVATE
   ${THRIFTCPP_INCLUDE_DIRS} )
 target_link_libraries( check_model
   ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} thriftcpp )
+
+add_executable( TestEndianness TestEndianness.cxx BinarySerialization.cxx )
+target_include_directories( TestEndianness PRIVATE 
+  ${THRIFTCPP_INCLUDE_DIRS} )
+target_link_libraries( TestEndianness
+  ${CMAKE_THREAD_LIBS_INIT} ${THRIFT_LIBRARIES} )
+

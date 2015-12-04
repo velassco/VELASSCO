@@ -42,9 +42,9 @@ inline
 void rappend( std::string &dest, const char *from, int length )
 {
   int i = length;
-  while( length > 0 )
+  while( i > 0 )
     {
-    --length;
+    --i;
     dest += from[ i ];
     }
 }
