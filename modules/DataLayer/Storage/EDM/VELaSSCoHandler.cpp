@@ -11,6 +11,27 @@
 #include "Matrix.h"
 #include < time.h >
 
+/* ================================================================================================
+string	statusDL(),
+rvGetListOfModels GetListOfModelNames(1: string sessionID,
+rvOpenModel FindModel(1: string sessionID,
+-->   string	GetResultFromVerticesID(1: string sessionID,
+-->   string 	GetCoordinatesAndElementsFromMesh(
+-->   void stopAll()
+rvGetListOfMeshes GetListOfMeshes(
+rvGetListOfAnalyses GetListOfAnalyses(
+rvGetListOfTimeSteps GetListOfTimeSteps(
+rvGetListOfResults GetListOfResultsFromTimeStepAndAnalysis(
+string	GetResultFormVerticesID(1: string sessionID,
+string UserLogin(
+string UserLogout(
+string CloseModel(
+string SetThumbnailOfAModel(
+rvGetThumbnailOfAModel GetThumbnailOfAModel(
+rvGetElementOfPointsInSpace GetElementOfPointsInSpace(
+rvGetBoundaryOfLocalMesh GetBoundaryOfLocalMesh(
+================================================================================================ */
+
 
 #define newObject(className) new(m)className(m)
 
@@ -186,6 +207,23 @@ void VELaSSCoHandler::UserLogout(std::string& _return, const std::string& sessio
 * @param listOfVertices
 */
 void VELaSSCoHandler::GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices)
+{
+
+}
+
+
+/**
+* Return the coordinates and elements of a model's mesh.
+* @return string - returns a structured list of vertices and elements of a model's mesh.
+* if errors occur the contect is also returned here?
+*
+* @param sessionID
+* @param modelID
+* @param analysisID
+* @param timeStep
+* @param partitionID
+*/
+void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID)
 {
 
 }
@@ -692,10 +730,10 @@ void VELaSSCoHandler::GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _r
 
 void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern)
 {
-   char *modelName, *repositoryName;
+   char *modelName, *repositoryName, *schemaName;
    SdaiBoolean userDefined;
    SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 10, numberOfHits = 1, nModels = 0;
-   SdaiInstance resultBuffer[1], repositoryID;
+   SdaiInstance resultBuffer[1], repositoryID, schemaID;
    VELaSSCoSM::FullyQualifiedModelName fqmn;
    std::vector<VELaSSCoSM::FullyQualifiedModelName>  infoList;
    char nameBuf[2048];
@@ -713,14 +751,23 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
                sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
                if (sp) {
                   if (strEQL(repositoryName, "DataRepository") || userDefined) {
-                     sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
+                     sp = sdaiGetAttrBN(resultBuffer[0], "Schema", sdaiINSTANCE, &schemaID);
+                     sp = sdaiGetAttrBN(schemaID, "Name", sdaiSTRING, &schemaName);
                      if (sp) {
-                        fqmn.__set_name(modelName); nModels++;
-                        sprintf(nameBuf, "%s.%s", repositoryName, modelName); fqmn.__set_full_path(nameBuf);
-                        sprintf(nameBuf, "%llu", resultBuffer[0]); fqmn.__set_modelID(nameBuf);
-                        infoList.push_back(fqmn);
+                        if (strEQL(schemaName, "DEM_SCHEMA_VELASSCO") || strEQL(schemaName, "FEM_SCHEMA_VELASSCO")) {
+                           sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
+                           if (sp) {
+                              fqmn.__set_name(modelName); nModels++;
+                              sprintf(nameBuf, "%s.%s", repositoryName, modelName); fqmn.__set_full_path(nameBuf);
+                              sprintf(nameBuf, "%llu", resultBuffer[0]); fqmn.__set_modelID(nameBuf);
+                              infoList.push_back(fqmn);
+                              edmiFree(modelName);
+                           }
+                        }
+                        edmiFree(schemaName);
                      }
                   }
+                  edmiFree(repositoryName);
                }
             }
          }
@@ -951,45 +998,45 @@ void VELaSSCoHandler::CalculateBoundingBox(rvGetListOfAnalyses& _return, const s
 * @param timeStepOption
 * @param timeSteps
 */
-void VELaSSCoHandler::GetBoundingBox(rvGetBoundingBox& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & verticesID, const std::string& analysisID, const std::string& timeStepOption, const std::vector<double> & timeSteps)
-{
-   try {
-      thelog->logg(2, "-->GetBoundingBox\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
-      setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
-      if (emc) {
-         vector<string> analysisNames;
-         if (emc->type == mtDEM) {
-            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
-
-
-            _return.__set_status("OK"); 
-         } else if (emc->type == mtFEM) {
-            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh), fmc);
-            fem::Mesh *mesh = meshIter.first();
-            //while (mesh) {
-            //   Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
-            //   for (fem::Node *n = nodeIter.first(); n; )
-            //}
-
-
-
-
-            _return.__set_status("OK"); 
-            thelog->logg(0, "status=OK\n\n");
-         }
-      } else {
-         char *emsg = "Model does not exist.";
-         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
-      }
-   } catch (CedmError *e) {
-      string errMsg;
-      handleError(errMsg, e);
-      _return.__set_status("Error"); _return.__set_report(errMsg);
-   }
-}
+//void VELaSSCoHandler::GetBoundingBox(rvGetBoundingBox& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & verticesID, const std::string& analysisID, const std::string& timeStepOption, const std::vector<double> & timeSteps)
+//{
+//   try {
+//      thelog->logg(2, "-->GetBoundingBox\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
+//      setCurrentSession(sessionID.data());
+//      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
+//      if (emc) {
+//         vector<string> analysisNames;
+//         if (emc->type == mtDEM) {
+//            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
+//            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
+//
+//
+//            _return.__set_status("OK"); 
+//         } else if (emc->type == mtFEM) {
+//            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
+//            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh), fmc);
+//            fem::Mesh *mesh = meshIter.first();
+//            //while (mesh) {
+//            //   Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
+//            //   for (fem::Node *n = nodeIter.first(); n; )
+//            //}
+//
+//
+//
+//
+//            _return.__set_status("OK"); 
+//            thelog->logg(0, "status=OK\n\n");
+//         }
+//      } else {
+//         char *emsg = "Model does not exist.";
+//         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+//      }
+//   } catch (CedmError *e) {
+//      string errMsg;
+//      handleError(errMsg, e);
+//      _return.__set_status("Error"); _return.__set_report(errMsg);
+//   }
+//}
 
 
 
@@ -1043,6 +1090,20 @@ void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const st
 }
 
 /**
+* Retrieves the list of results for a given model, analysis and step-value
+* as of OP-22.115
+*
+* @param sessionID
+* @param modelID
+* @param analysisID
+* @param stepValue
+*/
+void VELaSSCoHandler::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue)
+{
+
+}
+
+/**
 * Returns a list of meshes present for the given time-step of that analysis.
 * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
 * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
@@ -1059,13 +1120,22 @@ void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::str
       setCurrentSession(sessionID.data());
       EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
       if (emc) {
+         vector<VELaSSCoSM::MeshInfo> meshInfos;
          if (emc->type == mtDEM) {
             DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
+            /* Need to get ifo from UEDIN about how to store mesh */
          } else {
-            vector<VELaSSCoSM::MeshInfo> meshInfos;
             FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
+            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh), fmc);
             for (fem::Mesh *m = meshIter.first(); m; m = meshIter.next()) {
+               VELaSSCoSM::MeshInfo mi;
+               List<fem::Element*>* elems = m->get_elements();
+               List<fem::Node*>* nodes = m->get_nodes();
+               string name = m->get_name();
+               mi.__set_name(name);
+               mi.__set_nElements(elems ? elems->size() : 0);
+               mi.__set_nVertices(nodes ? nodes->size() : 0);
+               meshInfos.push_back(mi);
                //if (strEQL(rh->get_analysis(), analysisID.data())) {
                //   timeSteps.push_back(rh->get_step());
                //}
@@ -1083,34 +1153,34 @@ void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::str
       _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
-/*=============================================================================================================================*/
-void  VELaSSCoHandler::CreateClusterModel(rvCreateClusterModel& _return, const std::string& sessionID, const std::string& clusterRepositoryName,
-   const std::string& clusterModelName, const std::string& schemaName, const std::vector<std::string> & physicalModelNames)
-/*=============================================================================================================================*/
-{
-   SdaiInteger  index = 0, numberOfHits = 2;
-   SdaiInstance resultBuffer[2];
-   char condition[1024];
-
-   try {
-      Model *m = theCluster->clusterModel;
-      ClusterModel *cm = theCluster->getClusterModel(clusterModelName.data(), clusterRepositoryName.data());
-      if (cm == NULL) {
-         ClusterRepository *cr = theCluster->getClusterRepository(clusterRepositoryName.data());
-         if (!cr) {
-            cr = new(m)ClusterRepository(m); cr->put_name((char*)clusterRepositoryName.data());
-         }
-         cm = new(m)ClusterModel(m); cm->put_name((char*)clusterModelName.data()); cr->put_models_element(cm);
-         //m->writeAllObjectsToDatabase();
-      } else {
-         _return.status = "Error"; _return.report = "Model already exist.";
-      }
-   } catch (CedmError *e) {
-      string errMsg;
-      handleError(errMsg, e);
-      _return.__set_status("Error"); _return.__set_report(errMsg);
-   }
-}
+///*=============================================================================================================================*/
+//void  VELaSSCoHandler::CreateClusterModel(rvCreateClusterModel& _return, const std::string& sessionID, const std::string& clusterRepositoryName,
+//   const std::string& clusterModelName, const std::string& schemaName, const std::vector<std::string> & physicalModelNames)
+///*=============================================================================================================================*/
+//{
+//   SdaiInteger  index = 0, numberOfHits = 2;
+//   SdaiInstance resultBuffer[2];
+//   char condition[1024];
+//
+//   try {
+//      Model *m = theCluster->clusterModel;
+//      ClusterModel *cm = theCluster->getClusterModel(clusterModelName.data(), clusterRepositoryName.data());
+//      if (cm == NULL) {
+//         ClusterRepository *cr = theCluster->getClusterRepository(clusterRepositoryName.data());
+//         if (!cr) {
+//            cr = new(m)ClusterRepository(m); cr->put_name((char*)clusterRepositoryName.data());
+//         }
+//         cm = new(m)ClusterModel(m); cm->put_name((char*)clusterModelName.data()); cr->put_models_element(cm);
+//         //m->writeAllObjectsToDatabase();
+//      } else {
+//         _return.status = "Error"; _return.report = "Model already exist.";
+//      }
+//   } catch (CedmError *e) {
+//      string errMsg;
+//      handleError(errMsg, e);
+//      _return.__set_status("Error"); _return.__set_report(errMsg);
+//   }
+//}
 /*=============================================================================================================================*/
 void VELaSSCoHandler::handleError(string &errMsg, CedmError *e)
 /*=============================================================================================================================*/

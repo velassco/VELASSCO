@@ -48,6 +48,19 @@ public:
    void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
 
    /**
+   * Return the coordinates and elements of a model's mesh.
+   * @return string - returns a structured list of vertices and elements of a model's mesh.
+   * if errors occur the contect is also returned here?
+   *
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param timeStep
+   * @param partitionID
+   */
+   virtual void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID);
+
+   /**
    * Stop Data Layer
    */
    void stopAll();
@@ -136,6 +149,17 @@ public:
    void GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID);
 
    /**
+   * Retrieves the list of results for a given model, analysis and step-value
+   * as of OP-22.115
+   *
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param stepValue
+   */
+   void GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue);
+
+   /**
    * Returns a list of meshes present for the given time-step of that analysis.
    * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
    * If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes
@@ -162,7 +186,7 @@ public:
    * @param timeStepOption
    * @param timeSteps
    */
-   void GetBoundingBox(rvGetBoundingBox& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & verticesID, const std::string& analysisID, const std::string& timeStepOption, const std::vector<double> & timeSteps);
+//   void GetBoundingBox(rvGetBoundingBox& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & verticesID, const std::string& analysisID, const std::string& timeStepOption, const std::vector<double> & timeSteps);
    /**
    * Create cluster model creates, as the name says, a cluster model. The specified schema must exist
    * in all the EDM databases in the clulster.
@@ -178,7 +202,7 @@ public:
    * @param schemaName
    * @param physicalModelNames
    */
-   void CreateClusterModel(rvCreateClusterModel& _return, const std::string& sessionID, const std::string& clusterRepositoryName, const std::string& clusterModelName, const std::string& schemaName, const std::vector<std::string> & physicalModelNames);
+//   void CreateClusterModel(rvCreateClusterModel& _return, const std::string& sessionID, const std::string& clusterRepositoryName, const std::string& clusterModelName, const std::string& schemaName, const std::vector<std::string> & physicalModelNames);
 
    void CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle> &elements);
    void ReportError(char *f);

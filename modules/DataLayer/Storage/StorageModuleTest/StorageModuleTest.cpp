@@ -48,13 +48,21 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    string FluidizedbedModelID;
    rvGetListOfAnalyses rvAnalysisList;
    rvGetListOfTimeSteps rvTimesteps;
+   rvGetListOfMeshes rvMeshes;
 
-   printf("\n--->OpenModel - \"%s\"\n", modelName);
+   //printf("\n--->OpenModel - \"%s\"\n", modelName);
    client.FindModel(rvOM, sessionID, modelName, "read");
-   printf("Returned modelID: %s\n", rvOM.modelID.data());
-   printf("Comments: %s\n", rvOM.report.data());
+   //printf("Returned modelID: %s\n", rvOM.modelID.data());
+   //printf("Comments: %s\n", rvOM.report.data());
    FluidizedbedModelID = rvOM.modelID;
 
+   printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
+   client.GetListOfMeshes(rvMeshes, sessionID, FluidizedbedModelID, "", 0.0);
+   printf("Return status: %s\n", rvMeshes.status.data());
+   printf("%s has %d meshes.\n", modelName, rvMeshes.meshInfos.size());
+   for (vector<MeshInfo>::iterator meshIter = rvMeshes.meshInfos.begin(); meshIter != rvMeshes.meshInfos.end(); meshIter++) {
+      printf("   %20s  %10llu  %10llu\n", meshIter->name.data(), meshIter->nElements, meshIter->nVertices);
+   }
    printf("\n--->GetListOfAnalyses - \"%s\"\n", modelName);
    client.GetListOfAnalyses(rvAnalysisList, sessionID, FluidizedbedModelID);
    printf("Return status: %s\n", rvAnalysisList.status.data());
@@ -62,6 +70,7 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    for (vector<string>::iterator nameIter = rvAnalysisList.analyses.begin(); nameIter != rvAnalysisList.analyses.end(); nameIter++) {
       printf("Analysis name : %s\n", (char*)nameIter->data());
       client.GetListOfTimeSteps(rvTimesteps, sessionID, FluidizedbedModelID, *nameIter);
+      printf("   %s has %d time steps:\n", (char*)nameIter->data(), rvTimesteps.time_steps.size());
       //printf("   %s has the following time steps:\n", (char*)nameIter->data());
       //int i = 0;
       //for (vector<double>::iterator tsIter = rvTimesteps.time_steps.begin(); tsIter != rvTimesteps.time_steps.end(); tsIter++) {
@@ -207,7 +216,6 @@ Command can eiter be "all" or any of the querynames.
       if (strEQL(command, "all") || strEQL(command, "GetListOfModels")) {
          rvGetListOfModels modelsInfo;
          rvOpenModel rvOM;
-         string DEM_boxModelID;
 
          printf("\n--->GetListOfModels:\n");
          client.GetListOfModelNames(modelsInfo, sessionID, "", "");
@@ -216,7 +224,11 @@ Command can eiter be "all" or any of the querynames.
          for (std::vector<VELaSSCoSM::FullyQualifiedModelName>::iterator modelIter = modelsInfo.models.begin(); modelIter != modelsInfo.models.end(); modelIter++) {
             printf("%s\n", modelIter->name.data());
          }
-         printf("\n--->OpenModel - \"DEM_b*\"\n");
+      }
+      if (strEQL(command, "all") || strEQL(command, "FindModel_DEM_b*")) {
+         string DEM_boxModelID;
+
+         printf("\n--->FindModel - \"DEM_b*\"\n");
          client.FindModel(rvOM, sessionID, "DEM_b*", "read");
          printf("Returned modelID: %s\n", rvOM.modelID.data());
          printf("Comments: %s\n", rvOM.report.data());
@@ -225,15 +237,17 @@ Command can eiter be "all" or any of the querynames.
          rvGetResultFromVerticesID_B rvB;
          vector<int64_t> vertexIDs;
 
-         printf("\n--->GetResultFromVerticesID - DEM model DEM_box:\n");
-//         client.GetResultFromVerticesID(rvB, sessionID, DEM_boxModelID, "", vertexIDs, "Height", 1.0, "geometry");
-         printf("Return status: %s\n", rvB.status.data());
-         printf("Comments: %s\n", rvB.report.data());
+         //printf("\n--->GetResultFromVerticesID - DEM model DEM_box:\n");
+         //client.GetResultFromVerticesID(rvB, sessionID, DEM_boxModelID, "", vertexIDs, "Height", 1.0, "geometry");
+         //printf("Return status: %s\n", rvB.status.data());
+         //printf("Comments: %s\n", rvB.report.data());
       }
 
       if (strEQL(command, "all") || strEQL(command, "testListAnalyses")) {
          testListAnalyses(client, sessionID, "VELaSSCo_HbaseBasicTest_part_1");
          testListAnalyses(client, sessionID, "Fluidizedbed");
+         testListAnalyses(client, sessionID, "DEM_box");
+         testListAnalyses(client, sessionID, "Telescope");
       }
 
       transport->close();
