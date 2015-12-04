@@ -26,6 +26,7 @@ int main(int argc, char **argv)
    char errTxt[1024];
    FILE *paraMfile = NULL;
    int startTime = GetTickCount();
+   bool batchMode = false;
 
    try {
       char *command, *dbFolder = "", *dbName = "", *dbPassword = "", *model = "";
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
       if (argc > 2) {
          command = allocString(argv[1]);
       }
-      if (argc == 2 && (paraMfile = fopen(argv[1], "r"))) {
+      if ((argc == 2 || argc == 3) && (paraMfile = fopen(argv[1], "r"))) {
          char line[2048], a[1024], b[1024];
 
          for (int i = 0; i < 5 && fgets(line, sizeof(line), paraMfile); i++) {
@@ -44,6 +45,7 @@ int main(int argc, char **argv)
             else if (strEQL(a, "dbPassword")) dbPassword = allocString(b);
             else if (strEQL(a, "model")) model = allocString(b);
          }
+         if (argc == 3 && strEQL(argv[2], "batchMode")) batchMode = true;
       } else if (argc >= 5 && (strEQL(command, "Server") || strEQL(command, "Files") || strEQL(command, "FEMfiles"))) {
          dbFolder = argv[2];
          dbName = argv[3];
@@ -125,11 +127,9 @@ int main(int argc, char **argv)
             femInjector.flushObjectsAndClose();
          }
       } else if (strEQL(command, "Files") || strEQL(command, "Client")) {
-         FILE *paraMfile = NULL;
          if (strEQL(command, "Files")) {
-            demInjector.setCurrentModel(argv[5]);
+            demInjector.setCurrentModel(model);
             demInjector.DeleteCurrentModelContent();
-            paraMfile = fopen(argv[6], "r");
          } else {
             demInjector.setRemoteModel(argv[2], "localhost", 9090);
             paraMfile = fopen(argv[3], "r");
@@ -180,8 +180,11 @@ int main(int argc, char **argv)
       printf(errTxt);
    }
    int endTime = GetTickCount();
-   printf("\n\nTime used: %d milliseconds\nEnter a character to stop the program.\n", endTime - startTime);
-   getchar();
+   printf("\n\nTime used: %d milliseconds\n", endTime - startTime);
+   if (!batchMode) {
+      printf("\n\nEnter a character to stop the program.\n");
+      getchar();
+   }
    exit(0);
 }
 

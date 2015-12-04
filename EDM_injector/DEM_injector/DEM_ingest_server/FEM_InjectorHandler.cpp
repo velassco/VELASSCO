@@ -247,6 +247,7 @@ void FEM_InjectorHandler::InjectMeshFile()
                &elementID, &nID[0], &nID[1], &nID[2], &nID[3], &nID[4], &nID[5], &nID[6], &nID[7], &nID[8], &nID[9], &nID[10]);
             if (nColumns > nNodes) {
                fem::Element *elem = newObject(fem::Element); elem->put_id(elementID);
+               cMesh->put_elements_element(elem);
                for (int i = 0; i < nNodes; i++) {
                   fem::Node *n = nodes[nID[i]];
                   if (n) {
