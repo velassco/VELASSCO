@@ -4,14 +4,6 @@
 namespace fem {
 
 EDMLONG dbInstance_AttributeLayout[] = {0};
-EDMLONG CacheEntry_AttributeLayout[] = {4, 15, 0, 0};
-tEdmiAttribute CacheEntry_Attributes[] = {
-   {"cache_type", 4, 0},
-   {"teh_file", 15, 0},
-   {"size", 0, 0},
-   {NULL, 0, 0},
-};
-EDMLONG CacheEntry_Subtypes[] = {0};
 EDMLONG GaussPoint_AttributeLayout[] = {8, 9, 6, 0};
 tEdmiAttribute GaussPoint_Attributes[] = {
    {"gauss_point_for", 8, 0},
@@ -119,7 +111,6 @@ NULL
 };
 tEdmiEntityData fem_schema_velassco_Entities[] = {
 {"indeterminate"},
-{"CacheEntry", 3, 663, 8, 40, 12, et_CacheEntry, CacheEntry_AttributeLayout, CacheEntry_Subtypes, NULL, CacheEntry_Attributes},
 {"GaussPoint", 3, 661, 8, 40, 11, et_GaussPoint, GaussPoint_AttributeLayout, GaussPoint_Subtypes, NULL, GaussPoint_Attributes},
 {"Result", 1, 649, 8, 24, 5, et_Result, Result_AttributeLayout, Result_Subtypes, NULL, Result_Attributes},
 {"ResultBlock", 3, 647, 8, 40, 4, et_ResultBlock, ResultBlock_AttributeLayout, ResultBlock_Subtypes, NULL, ResultBlock_Attributes},
@@ -135,15 +126,6 @@ tEdmiEntityData fem_schema_velassco_Entities[] = {
 {NULL},
 };
 
-/*====================================================================================================
-   CacheEntry
-====================================================================================================*/
-char * CacheEntry::get_cache_type() { return getATTRIBUTE(0, char *, 0); }
-void CacheEntry::put_cache_type(char * v) { putATTRIBUTE(0, char *, v, cache_type, 0, 4); }
-int CacheEntry::get_teh_file() { return getATTRIBUTE(8, int, 1); }
-void CacheEntry::put_teh_file(int v) { putATTRIBUTE(8, int, v, teh_file, 1, 15); }
-int CacheEntry::get_size() { return getATTRIBUTE(16, int, 2); }
-void CacheEntry::put_size(int v) { putATTRIBUTE(16, int, v, size, 2, 0); }
 /*====================================================================================================
    GaussPoint
 ====================================================================================================*/
@@ -350,7 +332,6 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
 {
    void* theObject = NULL;
 
-   CacheEntry* p_CacheEntry;
    GaussPoint* p_GaussPoint;
    Result* p_Result;
    ResultBlock* p_ResultBlock;
@@ -367,10 +348,6 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
    *entityTypep = entityType;
    instData->entityData = &theEntities[entityType];
    switch(entityType) {
-         case et_CacheEntry:
-            p_CacheEntry = new(ma) CacheEntry(ma, instData);
-            theObject = (void*)p_CacheEntry;
-            break;
          case et_GaussPoint:
             p_GaussPoint = new(ma) GaussPoint(ma, instData);
             theObject = (void*)p_GaussPoint;
@@ -435,7 +412,6 @@ tEdmiDefinedTypeData fem_schema_velassco_definedTypes[] = {
 
 fem_Schema fem_schema_velassco_SchemaObject(fem_schema_velassco_Entities, fem_schema_velassco_definedTypes, fem_schema_velassco_DefinedTypeNames);
 
-static bool supertypeOf_CacheEntry(entityType wantedSuperType, void **p);
 static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **p);
 static bool supertypeOf_Result(entityType wantedSuperType, void **p);
 static bool supertypeOf_ResultBlock(entityType wantedSuperType, void **p);
@@ -448,13 +424,6 @@ static bool supertypeOf_VectorResult(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_2D(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_3D(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_Deformated(entityType wantedSuperType, void **p);
-static dbInstance *dbInstanceOf_CacheEntry(void *obj) { CacheEntry *p = (CacheEntry*)obj; dbInstance *dbi = p; return dbi;}
-
-static bool supertypeOf_CacheEntry(entityType wantedSuperType, void **)
-{
-   return wantedSuperType == et_CacheEntry;
-}
-
 static dbInstance *dbInstanceOf_GaussPoint(void *obj) { GaussPoint *p = (GaussPoint*)obj; dbInstance *dbi = p; return dbi;}
 
 static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **)
@@ -592,7 +561,6 @@ static bool supertypeOf_indeterminate(entityType, void **)
 
 static supertypeCastingFunc castingFunctions[] = {
 &supertypeOf_indeterminate,
-   &supertypeOf_CacheEntry,
    &supertypeOf_GaussPoint,
    &supertypeOf_Result,
    &supertypeOf_ResultBlock,
@@ -608,7 +576,7 @@ static supertypeCastingFunc castingFunctions[] = {
 };
 void *supertype_cast(entityType wantedSuperType, void *p, entityType subType)
 {
-   if (subType >= 0 && subType < 14) {
+   if (subType >= 0 && subType < 13) {
       void *superTypeObject = p;
       if (castingFunctions[subType](wantedSuperType, &superTypeObject)) {
          return superTypeObject;
@@ -624,7 +592,6 @@ static dbInstance *dbInstanceOf_indeterminate(void *)
 
 static dbInstanceCastingFunc dbInstanceCastingFunctions[] = {
 &dbInstanceOf_indeterminate,
-   &dbInstanceOf_CacheEntry,
    &dbInstanceOf_GaussPoint,
    &dbInstanceOf_Result,
    &dbInstanceOf_ResultBlock,
@@ -640,7 +607,7 @@ static dbInstanceCastingFunc dbInstanceCastingFunctions[] = {
 };
 dbInstance *dbInstance_cast(void *p, entityType subType)
 {
-   if (subType < 0 || subType >= 13) {
+   if (subType < 0 || subType >= 12) {
       THROW("Illegal object type index");
    }
    return dbInstanceCastingFunctions[subType](p);

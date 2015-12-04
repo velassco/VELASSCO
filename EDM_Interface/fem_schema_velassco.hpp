@@ -7,7 +7,6 @@ extern tEdmiEntityData fem_schema_velassco_Entities[];
 namespace fem {
 
 class fem_Schema;
-class CacheEntry;
 class GaussPoint;
 class Result;
 class ResultBlock;
@@ -25,30 +24,6 @@ typedef enum {LocationType_ONNODES, LocationType_ONGAUSSPOINTS} LocationType;
 typedef enum {ValueType_SCALAR, ValueType_VECTOR, ValueType_MATRIX, ValueType_PLAINDEFORMATIONMATRIX, ValueType_MAINMATRIX, ValueType_LOCALAXES, ValueType_COMPLEXSCALAR, ValueType_COMPLEXVECTOR} ValueType;
 typedef enum {ElementType_POINT, ElementType_LINE, ElementType_TRIANGLE, ElementType_QUADRILATERAL, ElementType_TETRAHEDRA, ElementType_HEXAHEDRA, ElementType_PRISM, ElementType_PYRAMID, ElementType_SPHERE, ElementType_CIRCLE} ElementType;
 typedef enum {dt_GaussPointType, dt_LocationType, dt_ValueType, dt_ElementType} definedTypeNames;
-
-
-class CacheEntry :  public dbInstance
-{
-protected:
-   CacheEntry() {}
-public:
-   static const entityType type = et_CacheEntry;
-   char *                               get_cache_type();
-   void                                 put_cache_type(char * v);
-   void                                 unset_cache_type() { unsetAttribute(0); }
-   bool                                 exists_cache_type() { return isAttrSet(0); }
-   int                                  get_teh_file();
-   void                                 put_teh_file(int v);
-   void                                 unset_teh_file() { unsetAttribute(1); }
-   bool                                 exists_teh_file() { return isAttrSet(1); }
-   int                                  get_size();
-   void                                 put_size(int v);
-   void                                 unset_size() { unsetAttribute(2); }
-   bool                                 exists_size() { return isAttrSet(2); }
-   void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
-   CacheEntry(Model *m, entityType et=et_CacheEntry) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
-   CacheEntry(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
-};
 
 
 class GaussPoint :  public dbInstance
