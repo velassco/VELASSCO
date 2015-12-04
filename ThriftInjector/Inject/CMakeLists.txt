@@ -19,12 +19,14 @@ target_include_directories( gid_inject PRIVATE
 target_link_libraries( gid_inject 
   ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} thriftcpp )
 
+if( CHECK_HBASE_MODEL )
 add_executable( check_model CheckHBaseModel.cxx Logger.cxx )
 target_include_directories( check_model PRIVATE
   ${Boost_INCLUDE_DIRS}
   ${THRIFTCPP_INCLUDE_DIRS} )
 target_link_libraries( check_model
   ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} thriftcpp )
+endif()
 
 add_executable( TestEndianness TestEndianness.cxx BinarySerialization.cxx )
 target_include_directories( TestEndianness PRIVATE 
