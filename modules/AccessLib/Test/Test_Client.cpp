@@ -81,7 +81,7 @@
     }
   }
 
-void CheckVALResult(VAL_Result result, const std::string &error_message = "")
+void CheckVALResult(VAL_Result result, const std::string &error_message = "", const bool do_exit = true)
 {
   if (result != VAL_SUCCESS)
   {
@@ -93,7 +93,8 @@ void CheckVALResult(VAL_Result result, const std::string &error_message = "")
     if ( error_message.length() > 0) {
       std::cout << "  Query message: " << error_message    << std::endl;
     }
-    exit(EXIT_FAILURE);
+    if ( do_exit)
+      exit(EXIT_FAILURE);
   }
 }
 
@@ -236,7 +237,10 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii:fine_mesh-ascii_";
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
-  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part_";
+  // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part_";
+
+  // EDM models:
+  const char *unique_name = "VELaSSCo_HbaseBasicTest_part_1";
   const char *access = "";
   const char *return_modelID = NULL;
   std::cout << "doing OpenModel of " << unique_name << std::endl;
@@ -258,8 +262,8 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   //
   // Test GetResultFromVerticesID()
   //
-
-  const char*   modelID     = "d94ca29be534ca1ed578e90123b7"; // current DEM_box example in VELaSSCo_Models as of 10.11.2015, two days ago there where two models !
+  
+  const char*   vert_modelID     = "d94ca29be534ca1ed578e90123b7"; // current DEM_box example in VELaSSCo_Models as of 10.11.2015, two days ago there where two models !
   const char*   resultID    = "MASS";
   const char*   analysisID  = "DEM";
   const int64_t vertexIDs[] = { 1, 2, 3, 4, 5, 6, 7, 0 };
@@ -270,7 +274,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   size_t         resultNumVertices;
   
   // This call does not comply with the VQuery form, but in the meantime ...
-  result = valGetResultFromVerticesID(sessionID, modelID,
+  result = valGetResultFromVerticesID(sessionID, vert_modelID,
                                       resultID,
                                       analysisID,
                                       vertexIDs,
@@ -290,10 +294,10 @@ int doTestMiguel( const VAL_SessionID sessionID) {
       std::cout << "  ID: " << resultVertexIDs[i];
       std::cout << "  Values: [";
       for (size_t j=0; j<3; j++)
-	std::cout << " " << resultValues[3*i+j];
+  	std::cout << " " << resultValues[3*i+j];
       std::cout << " ]" << std::endl;
     }
-
+  
   //
   // Test GetListOfAnalyses
   //
@@ -303,27 +307,27 @@ int doTestMiguel( const VAL_SessionID sessionID) {
     const char *return_error_str = NULL;
     std::cout << "doing valGetListOfAnalyses" << std::endl;
     result = valGetListOfAnalyses( sessionID, opened_modelID.c_str(),
-				   &return_error_str, &return_list);
+  				   &return_error_str, &return_list);
     CheckVALResult(result, getStringFromCharPointers( "valGetListOfAnalyses ", return_error_str));
     ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
     std::cout << "GetListOfAnalyses: " << opened_modelID << 
       ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
     if ( return_list) {
       std::cout << "   Analyses_list = " << return_list << std::endl;
-
+  
       /* list is of the form: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
       // select first analysis:
       char *sel_an = strdup( return_list);
       char *end = strchr( sel_an, '\n');
       if ( end) {
-	*end = '\0';
+  	*end = '\0';
       }
       analysisID = sel_an;
     } else {
       std::cout << "Error: " << return_error_str << std::endl;
     }
   }
-
+  
   //
   // Test GetListOfTimeSteps
   //
@@ -335,9 +339,9 @@ int doTestMiguel( const VAL_SessionID sessionID) {
     const char *return_error_str = NULL;
     std::cout << "doing valGetListOfTimeSteps for analysis = '" << analysisID << "'." << std::endl;
     result = valGetListOfTimeSteps( sessionID, opened_modelID.c_str(),
-				    analysisID, 
-				    &return_error_str, 
-				    &return_num_steps, &return_list);
+  				    analysisID, 
+  				    &return_error_str, 
+  				    &return_num_steps, &return_list);
     CheckVALResult(result, getStringFromCharPointers( "valGetListOfTimeSteps ", return_error_str));
     ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
     std::cout << "GetListOfTimeSteps: " << opened_modelID << 
@@ -347,18 +351,18 @@ int doTestMiguel( const VAL_SessionID sessionID) {
       std::cout << "   Step_list = " << Hexdump( std::string( ( char *)return_list, return_num_steps)) << std::endl;
       std::cout << "   # steps   = " << return_num_steps << std::endl;
       if ( return_num_steps > 0)
-	std::cout << "      Step 0 = " << return_list[ 0] << std::endl;
+  	std::cout << "      Step 0 = " << return_list[ 0] << std::endl;
       if ( return_num_steps > 1)
-	std::cout << "      Step 1 = " << return_list[ 1] << std::endl;
+  	std::cout << "      Step 1 = " << return_list[ 1] << std::endl;
       if ( return_num_steps > 2)
-	std::cout << "      Step 2 = " << return_list[ 2] << std::endl;
+  	std::cout << "      Step 2 = " << return_list[ 2] << std::endl;
       if ( return_num_steps > 0)
-	step_value = return_list[ 0];
+  	step_value = return_list[ 0];
     } else {
       std::cout << "Error: " << return_error_str << std::endl;
     }
   }
-
+  
   //
   // Test GetListOfResults
   //
@@ -368,10 +372,11 @@ int doTestMiguel( const VAL_SessionID sessionID) {
     const char *return_error_str = NULL;
     std::cout << "doing valGetListOfResults for analysis = '" << analysisID << "' and step = '" << step_value << "'." << std::endl;
     result = valGetListOfResults( sessionID, opened_modelID.c_str(),
-				  analysisID, step_value,
-				  &return_error_str, 
-				  &return_list);
-    CheckVALResult(result, getStringFromCharPointers( "valGetListOfResults ", return_error_str));
+  				  analysisID, step_value,
+  				  &return_error_str, 
+  				  &return_list);
+    const bool do_exit = false;
+    CheckVALResult(result, getStringFromCharPointers( "valGetListOfResults ", return_error_str), do_exit);
     ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
     std::cout << "GetListOfResults: " << opened_modelID << 
       ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
@@ -381,8 +386,8 @@ int doTestMiguel( const VAL_SessionID sessionID) {
       std::cout << "Error: " << return_error_str << std::endl;
     }
   }
-
-
+  
+  
   //
   // Test GetListOfMeshes
   //
@@ -402,9 +407,10 @@ int doTestMiguel( const VAL_SessionID sessionID) {
     }
     // double stepValue = 0.0; // for dynamic meshes
     result = valGetListOfMeshes( sessionID, opened_modelID.c_str(),
-				 my_analysisID, my_stepValue,
-				 &return_error_str, &return_list);
-    CheckVALResult(result, getStringFromCharPointers( "valGetListOfMeshes ", return_error_str));
+  				 my_analysisID, my_stepValue,
+  				 &return_error_str, &return_list);
+    const bool do_exit = false;
+    CheckVALResult(result, getStringFromCharPointers( "valGetListOfMeshes ", return_error_str), do_exit);
     ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
     std::cout << "GetListOfMeshes: " << opened_modelID << 
       ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
@@ -415,40 +421,40 @@ int doTestMiguel( const VAL_SessionID sessionID) {
       std::cout << "Error: " << return_error_str << std::endl;
     }
   }
-
-  //
-  // Test GetBoundingBox()
-  //
-
-  bool do_bbox = false;
-  if ( do_bbox) {
-    const double *return_bbox = NULL;
-    const char *return_error_str = NULL;
-    std::cout << "doing valGetBoundingBox" << std::endl;
-    
-    result = valGetBoundingBox( sessionID, opened_modelID.c_str(), // the already opened model
-				NULL, 0, // use all vertices ID
-				"", // don't care about analysisID
-				"ALL", NULL, 0, // use all steps / or don't care
-				&return_bbox, &return_error_str);
-    CheckVALResult(result, getStringFromCharPointers( "valGetBoundingBox ", return_error_str));
-    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
-    std::cout << "GetBoundingBox: " << opened_modelID << 
-      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
-    if ( return_bbox) {
-      std::cout << "         bbox = ( " ;
-      std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
-		<< return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
-    } else {
-      std::cout << "Error: " << return_error_str << std::endl;
-    }
-  }
+  
+  // //
+  // // Test GetBoundingBox()
+  // //
+  // 
+  // bool do_bbox = false;
+  // if ( do_bbox) {
+  //   const double *return_bbox = NULL;
+  //   const char *return_error_str = NULL;
+  //   std::cout << "doing valGetBoundingBox" << std::endl;
+  //   
+  //   result = valGetBoundingBox( sessionID, opened_modelID.c_str(), // the already opened model
+  // 				NULL, 0, // use all vertices ID
+  // 				"", // don't care about analysisID
+  // 				"ALL", NULL, 0, // use all steps / or don't care
+  // 				&return_bbox, &return_error_str);
+  //   CheckVALResult(result, getStringFromCharPointers( "valGetBoundingBox ", return_error_str));
+  //   ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+  //   std::cout << "GetBoundingBox: " << opened_modelID << 
+  //     ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+  //   if ( return_bbox) {
+  //     std::cout << "         bbox = ( " ;
+  //     std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
+  // 		<< return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
+  //   } else {
+  //     std::cout << "Error: " << return_error_str << std::endl;
+  //   }
+  // }
 
   //
   // Test CloseModel() & UserLogout()
   //
 
-  result = valCloseModel( sessionID, modelID, &status);
+  result = valCloseModel( sessionID, opened_modelID.c_str(), &status);
   CheckVALResult(result);
   std::cout << "CloseModel: " << std::endl;
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
@@ -505,15 +511,15 @@ int main(int argc, char* argv[])
   std::cout << "   status = " << status << std::endl;
   std::cout << "   model_list = " << return_list << std::endl;
   // group_qualifier = "Test_VELaSSCo_Models";
-  // result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
-  // CheckVALResult(result);
+  result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
+  CheckVALResult(result);
   // std::cout << "in VELaSSCo_Models_V4CIMNE:" << std::endl;
-  // std::cout << "   status = " << status << std::endl;
-  // std::cout << "   model_list = " << return_list << std::endl;
+  std::cout << "   status = " << status << std::endl;
+  std::cout << "   model_list = " << return_list << std::endl;
 
   int ret = 0;
-  ret = doTestMorteza( sessionID);
-  // ret = doTestMiguel( sessionID);  
+  // ret = doTestMorteza( sessionID);
+  ret = doTestMiguel( sessionID); 
 
   result = valUserLogout(sessionID);
   CheckVALResult(result);  

@@ -193,8 +193,8 @@ namespace VELaSSCo
     for ( size_t idst = 0; 
 	  ( isrc < src_len) && ( idst < dst_len); 
 	  isrc += 2, idst++) {
-      int hi4 = tolower( src[ isrc]);
-      int lo4 = tolower( src[ isrc + 1]);
+      int hi4 = tolower( ( int)( unsigned char)src[ isrc]);
+      int lo4 = tolower( ( int)( unsigned char)src[ isrc + 1]);
       if ( isxdigit( hi4) && isxdigit( lo4)) {
 	hi4 -= isdigit( hi4) ? '0' : ( 'a' - 10);
 	lo4 -= isdigit( lo4) ? '0' : ( 'a' - 10);
@@ -214,8 +214,8 @@ namespace VELaSSCo
     for ( size_t idst = 0; 
 	  ( isrc < src_len) && ( idst < dst_len); 
 	  isrc += 2, idst++) {
-      int hi4 = tolower( src[ isrc]);
-      int lo4 = tolower( src[ isrc + 1]);
+      int hi4 = tolower( ( int)( unsigned char)src[ isrc]);
+      int lo4 = tolower( ( int)( unsigned char)src[ isrc + 1]);
       if ( isxdigit( hi4) && isxdigit( lo4)) {
 	hi4 -= isdigit( hi4) ? '0' : ( 'a' - 10);
 	lo4 -= isdigit( lo4) ? '0' : ( 'a' - 10);
@@ -245,7 +245,7 @@ namespace VELaSSCo
       return false;
     }
     for ( std::string::const_iterator c1 = a.begin(), c2 = b.begin(); c1 != a.end(); ++c1, ++c2) {
-      if ( tolower( *c1) != tolower( *c2)) {
+      if ( tolower( ( int)( unsigned char)*c1) != tolower( ( int)( unsigned char)*c2)) {
 	return false;
       }
     }
@@ -253,6 +253,25 @@ namespace VELaSSCo
   }
   inline bool AreEqualNoCaseSubstr( const std::string &a, const std::string &b, const size_t len) {
     return AreEqualNoCase( a.substr( 0, len), b.substr( 0, len));
+  }
+
+  inline std::string ToLower( const std::string &str) {
+    // something like:
+    // std::transform(data.begin(), data.end(), data.begin(), ::tolower);
+    // may not work for "negative" chars
+    std::string ret( "");
+    for ( std::string::const_iterator c = str.begin(); c != str.end(); ++c) {
+      ret += tolower( ( int)( unsigned char)*c);
+    }
+    return ret;
+  }
+
+  inline std::string ToUpper( const std::string &str) {
+    std::string ret( "");
+    for ( std::string::const_iterator c = str.begin(); c != str.end(); ++c) {
+      ret += toupper( ( int)( unsigned char)*c);
+    }
+    return ret;
   }
 
   // ---------------------------------------------------------------------------
