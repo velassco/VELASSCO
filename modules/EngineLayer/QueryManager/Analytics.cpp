@@ -56,21 +56,23 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
 
   // remove local
-  // MR output in '../bbox/_SUCCESS'
-  // output in '../bbox/part-r-00000'
-  // error in '../bbox/error.txt'
-  // unlink( "bbox/part-r-00000");
-  // unlink( "bbox/error.txt");
-  // unlink( "bbox/_SUCCESS");
-  // rmdir( "bbox");
+  // MR output in '../bbox_sessionID_modelID/_SUCCESS'
+  // output in '../bbox_sessionID_modelID/part-r-00000'
+  // error in '../bbox_sessionID_modelID/error.txt'
+  // unlink( "bbox_sessionID_modelID/part-r-00000");
+  // unlink( "bbox_sessionID_modelID/error.txt");
+  // unlink( "bbox_sessionID_modelID/_SUCCESS");
+  // rmdir( "bbox_sessionID_modelID");
   // delete local temporary files
-  recursive_rmdir( "bbox");
+  std::string output_folder = ToLower( "bbox_" + sessionID + "_" + cli_modelID);
+  recursive_rmdir( output_folder.c_str());
 
   bool use_yarn = true;
   // running java:
   int ret_cmd = 0;
   if ( !use_yarn) {
-    std::string cmd_line = "java -jar ../Analytics/GetBoundingBoxOfAModel.jar " + cli_modelID + " " + dataTableName;
+    std::string cmd_line = "java -jar ../Analytics/GetBoundingBoxOfAModel.jar " + 
+      sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
   } else { 
@@ -79,26 +81,31 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // running Yarn:
     std::string hadoop_home = "/localfs/home/velassco/common";
     std::string hadoop_bin = hadoop_home + "/hadoop/bin";
-    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetBoundingBoxOfAModel.jar " + cli_modelID + " " + dataTableName;
+    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetBoundingBoxOfAModel.jar " + 
+      sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
-    // output in '../bbox/part-r-00000' but in hdfs
-    // error in '../bbox/error.txt'
+    // output in '../bbox_sessionID_modelID/part-r-00000' but in hdfs
+    // error in '../bbox_sessionID_modelID/error.txt'
     // copy it to local:
-    cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
+    // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
+    cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal " + output_folder + " .";
     ret_cmd = system( cmd_line.c_str());
   }
 
   // ret_cmd is -1 on error
 
-  // output in '../bbox/part-r-00000'
-  // error in '../bbox/error.txt'
-  FILE *fi = fopen( "bbox/part-r-00000", "r");
+  // output in '../bbox_sessionID_modelID/part-r-00000'
+  // error in '../bbox_sessionID_modelID/error.txt'
+  char filename[ 8192];
+  sprintf( filename, "%s/part-r-00000", output_folder.c_str());
+  FILE *fi = fopen( filename, "r");
   
   if (!fi) {
     // try reading error file
     bool errorfile_read = false;
-    fi = fopen( "bbox/error.txt", "r");
+    sprintf( filename, "%s/error.txt", output_folder.c_str());
+    fi = fopen( filename, "r");
     if (fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
@@ -136,7 +143,8 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   if ( num_values != 6) {
     // try reading error file
     bool errorfile_read = false;
-    fi = fopen( "bbox/error.txt", "r");
+    sprintf( filename, "%s/error.txt", output_folder.c_str());
+    fi = fopen( filename, "r");
     if ( fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
