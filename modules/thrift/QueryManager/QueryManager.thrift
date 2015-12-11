@@ -34,6 +34,11 @@ struct StatusDB_Result {
   2: optional string status
 }
 
+struct StopVELaSSCo_Result {
+  1: required Result result,
+  2: optional string status
+}
+
 service QueryManager {
 
     /**
@@ -55,4 +60,8 @@ service QueryManager {
       * StatusDB: status of the HBase system or the EDM system
       */
     StatusDB_Result GetStatusDB(1:SessionID sessionID)
+    /**
+      * StatusDB: status of the HBase system or the EDM system
+      */
+    StopVELaSSCo_Result StopVELaSSCo(1:SessionID sessionID)
 }

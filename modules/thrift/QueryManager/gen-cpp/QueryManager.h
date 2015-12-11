@@ -46,6 +46,13 @@ class QueryManagerIf {
    * @param sessionID
    */
   virtual void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) = 0;
+
+  /**
+   * StatusDB: status of the HBase system or the EDM system
+   * 
+   * @param sessionID
+   */
+  virtual void StopVELaSSCo(StopVELaSSCo_Result& _return, const SessionID sessionID) = 0;
 };
 
 class QueryManagerIfFactory {
@@ -85,6 +92,9 @@ class QueryManagerNull : virtual public QueryManagerIf {
     return;
   }
   void GetStatusDB(StatusDB_Result& /* _return */, const SessionID /* sessionID */) {
+    return;
+  }
+  void StopVELaSSCo(StopVELaSSCo_Result& /* _return */, const SessionID /* sessionID */) {
     return;
   }
 };
@@ -590,6 +600,126 @@ class QueryManager_GetStatusDB_presult {
   friend std::ostream& operator<<(std::ostream& out, const QueryManager_GetStatusDB_presult& obj);
 };
 
+typedef struct _QueryManager_StopVELaSSCo_args__isset {
+  _QueryManager_StopVELaSSCo_args__isset() : sessionID(false) {}
+  bool sessionID :1;
+} _QueryManager_StopVELaSSCo_args__isset;
+
+class QueryManager_StopVELaSSCo_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  QueryManager_StopVELaSSCo_args(const QueryManager_StopVELaSSCo_args&);
+  QueryManager_StopVELaSSCo_args& operator=(const QueryManager_StopVELaSSCo_args&);
+  QueryManager_StopVELaSSCo_args() : sessionID(0) {
+  }
+
+  virtual ~QueryManager_StopVELaSSCo_args() throw();
+  SessionID sessionID;
+
+  _QueryManager_StopVELaSSCo_args__isset __isset;
+
+  void __set_sessionID(const SessionID val);
+
+  bool operator == (const QueryManager_StopVELaSSCo_args & rhs) const
+  {
+    if (!(sessionID == rhs.sessionID))
+      return false;
+    return true;
+  }
+  bool operator != (const QueryManager_StopVELaSSCo_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const QueryManager_StopVELaSSCo_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_StopVELaSSCo_args& obj);
+};
+
+
+class QueryManager_StopVELaSSCo_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+
+  virtual ~QueryManager_StopVELaSSCo_pargs() throw();
+  const SessionID* sessionID;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_StopVELaSSCo_pargs& obj);
+};
+
+typedef struct _QueryManager_StopVELaSSCo_result__isset {
+  _QueryManager_StopVELaSSCo_result__isset() : success(false) {}
+  bool success :1;
+} _QueryManager_StopVELaSSCo_result__isset;
+
+class QueryManager_StopVELaSSCo_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "23FC8AEC2F4D082E52FC139A12C7E4E0";
+  static const uint8_t binary_fingerprint[16]; // = {0x23,0xFC,0x8A,0xEC,0x2F,0x4D,0x08,0x2E,0x52,0xFC,0x13,0x9A,0x12,0xC7,0xE4,0xE0};
+
+  QueryManager_StopVELaSSCo_result(const QueryManager_StopVELaSSCo_result&);
+  QueryManager_StopVELaSSCo_result& operator=(const QueryManager_StopVELaSSCo_result&);
+  QueryManager_StopVELaSSCo_result() {
+  }
+
+  virtual ~QueryManager_StopVELaSSCo_result() throw();
+  StopVELaSSCo_Result success;
+
+  _QueryManager_StopVELaSSCo_result__isset __isset;
+
+  void __set_success(const StopVELaSSCo_Result& val);
+
+  bool operator == (const QueryManager_StopVELaSSCo_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const QueryManager_StopVELaSSCo_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const QueryManager_StopVELaSSCo_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_StopVELaSSCo_result& obj);
+};
+
+typedef struct _QueryManager_StopVELaSSCo_presult__isset {
+  _QueryManager_StopVELaSSCo_presult__isset() : success(false) {}
+  bool success :1;
+} _QueryManager_StopVELaSSCo_presult__isset;
+
+class QueryManager_StopVELaSSCo_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "23FC8AEC2F4D082E52FC139A12C7E4E0";
+  static const uint8_t binary_fingerprint[16]; // = {0x23,0xFC,0x8A,0xEC,0x2F,0x4D,0x08,0x2E,0x52,0xFC,0x13,0x9A,0x12,0xC7,0xE4,0xE0};
+
+
+  virtual ~QueryManager_StopVELaSSCo_presult() throw();
+  StopVELaSSCo_Result* success;
+
+  _QueryManager_StopVELaSSCo_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const QueryManager_StopVELaSSCo_presult& obj);
+};
+
 class QueryManagerClient : virtual public QueryManagerIf {
  public:
   QueryManagerClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -627,6 +757,9 @@ class QueryManagerClient : virtual public QueryManagerIf {
   void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID);
   void send_GetStatusDB(const SessionID sessionID);
   void recv_GetStatusDB(StatusDB_Result& _return);
+  void StopVELaSSCo(StopVELaSSCo_Result& _return, const SessionID sessionID);
+  void send_StopVELaSSCo(const SessionID sessionID);
+  void recv_StopVELaSSCo(StopVELaSSCo_Result& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -646,6 +779,7 @@ class QueryManagerProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_UserLogout(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_Query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetStatusDB(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_StopVELaSSCo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   QueryManagerProcessor(boost::shared_ptr<QueryManagerIf> iface) :
     iface_(iface) {
@@ -653,6 +787,7 @@ class QueryManagerProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["UserLogout"] = &QueryManagerProcessor::process_UserLogout;
     processMap_["Query"] = &QueryManagerProcessor::process_Query;
     processMap_["GetStatusDB"] = &QueryManagerProcessor::process_GetStatusDB;
+    processMap_["StopVELaSSCo"] = &QueryManagerProcessor::process_StopVELaSSCo;
   }
 
   virtual ~QueryManagerProcessor() {}
@@ -718,6 +853,16 @@ class QueryManagerMultiface : virtual public QueryManagerIf {
       ifaces_[i]->GetStatusDB(_return, sessionID);
     }
     ifaces_[i]->GetStatusDB(_return, sessionID);
+    return;
+  }
+
+  void StopVELaSSCo(StopVELaSSCo_Result& _return, const SessionID sessionID) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->StopVELaSSCo(_return, sessionID);
+    }
+    ifaces_[i]->StopVELaSSCo(_return, sessionID);
     return;
   }
 

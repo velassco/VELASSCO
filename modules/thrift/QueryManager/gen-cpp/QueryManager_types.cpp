@@ -466,4 +466,121 @@ std::ostream& operator<<(std::ostream& out, const StatusDB_Result& obj) {
   return out;
 }
 
+
+StopVELaSSCo_Result::~StopVELaSSCo_Result() throw() {
+}
+
+
+void StopVELaSSCo_Result::__set_result(const Result::type val) {
+  this->result = val;
+}
+
+void StopVELaSSCo_Result::__set_status(const std::string& val) {
+  this->status = val;
+__isset.status = true;
+}
+
+const char* StopVELaSSCo_Result::ascii_fingerprint = "24652790C81ECE22B629CB60A19F1E93";
+const uint8_t StopVELaSSCo_Result::binary_fingerprint[16] = {0x24,0x65,0x27,0x90,0xC8,0x1E,0xCE,0x22,0xB6,0x29,0xCB,0x60,0xA1,0x9F,0x1E,0x93};
+
+uint32_t StopVELaSSCo_Result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_result = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast12;
+          xfer += iprot->readI32(ecast12);
+          this->result = (Result::type)ecast12;
+          isset_result = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_result)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t StopVELaSSCo_Result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("StopVELaSSCo_Result");
+
+  xfer += oprot->writeFieldBegin("result", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((int32_t)this->result);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.status) {
+    xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->status);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(StopVELaSSCo_Result &a, StopVELaSSCo_Result &b) {
+  using ::std::swap;
+  swap(a.result, b.result);
+  swap(a.status, b.status);
+  swap(a.__isset, b.__isset);
+}
+
+StopVELaSSCo_Result::StopVELaSSCo_Result(const StopVELaSSCo_Result& other13) {
+  result = other13.result;
+  status = other13.status;
+  __isset = other13.__isset;
+}
+StopVELaSSCo_Result& StopVELaSSCo_Result::operator=(const StopVELaSSCo_Result& other14) {
+  result = other14.result;
+  status = other14.status;
+  __isset = other14.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const StopVELaSSCo_Result& obj) {
+  using apache::thrift::to_string;
+  out << "StopVELaSSCo_Result(";
+  out << "result=" << to_string(obj.result);
+  out << ", " << "status="; (obj.__isset.status ? (out << to_string(obj.status)) : (out << "<null>"));
+  out << ")";
+  return out;
+}
+
 } // namespace
