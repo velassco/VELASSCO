@@ -237,10 +237,12 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii:fine_mesh-ascii_";
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
+  const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/:VELaSSCo_HbaseBasicTest";
+
   // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part_";
 
-  // EDM models:
-  const char *unique_name = "VELaSSCo_HbaseBasicTest_part_1";
+  // // EDM models:
+  // const char *unique_name = "VELaSSCo_HbaseBasicTest_part_1";
   const char *access = "";
   const char *return_modelID = NULL;
   std::cout << "doing OpenModel of " << unique_name << std::endl;
@@ -520,6 +522,9 @@ int main(int argc, char* argv[])
   int ret = 0;
   // ret = doTestMorteza( sessionID);
   ret = doTestMiguel( sessionID); 
+
+  // result = valStopVELaSSCo( sessionID, &status);
+  // CheckVALResult(result);  
 
   result = valUserLogout(sessionID);
   CheckVALResult(result);  
