@@ -284,6 +284,7 @@ std::vector< std::string> HBase::getModelListTables() const {
   std::vector< std::string> lst;
   lst.push_back( "VELaSSCo_Models");
   lst.push_back( "VELaSSCo_Models_V4CIMNE");
+  lst.push_back( "VELaSSCo_Models_V4CIMNE_Test");
   lst.push_back( "Test_VELaSSCo_Models");
   lst.push_back( "T_VELaSSCo_Models");
   return lst;
@@ -305,6 +306,9 @@ bool HBase::storeTableNames( const std::string &sessionID, const std::string &mo
   } else if ( model_table_name == "VELaSSCo_Models_V4CIMNE") {
     metadata_table_name = "Simulations_Metadata_V4CIMNE";
     data_table_name = "Simulations_Data_V4CIMNE";
+  } else if ( model_table_name == "VELaSSCo_Models_V4CIMNE_Test") {
+    metadata_table_name = "Simulations_Metadata_V4CIMNE_Test";
+    data_table_name = "Simulations_Data_V4CIMNE_Test";
   } else if ( model_table_name == "Test_VELaSSCo_Models") {
     metadata_table_name = "Test_Simulations_Metadata";
     data_table_name = "Test_Simulations_Data";
