@@ -76,6 +76,7 @@ void parse(string cmd)
         cout<<"#### stop ####"<<endl;
         DataLayerAccess::Instance()->stopAll();
         cout<<"#### /stop ####"<<endl;
+	exit( 0);
     }
 }
 

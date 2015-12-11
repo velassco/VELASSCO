@@ -84,6 +84,10 @@ void QMS_FullyQualifiedModelName::GetTableNames( std::string &model_table, std::
       model_table = "VELaSSCo_Models_V4CIMNE";
       metadata_table = "Simulations_Metadata_V4CIMNE";
       data_table = "Simulations_Data_V4CIMNE";
+    } else if ( AreEqualNoCase( table_name, "VELaSSCo_Models_V4CIMNE_Test")) {
+      model_table = "VELaSSCo_Models_V4CIMNE_Test";
+      metadata_table = "Simulations_Metadata_V4CIMNE_Test";
+      data_table = "Simulations_Data_V4CIMNE_Test";
     } else if ( AreEqualNoCase( table_name, "Test_VELaSSCo_Models")) {
       model_table == "Test_VELaSSCo_Models";
       metadata_table = "Test_Simulations_Metadata";
@@ -167,6 +171,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
   }
 }
 
+TSimpleServer *QueryManagerServer::m_simpleServer = NULL;
+
 int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;
 
@@ -179,9 +185,11 @@ int StartServer( const int server_port) {
   boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
   boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+  TSimpleServer *server = new TSimpleServer(processor, serverTransport, transportFactory, protocolFactory);
+  handler->SetSimpleServer( server);
   DEBUG( "  before serving ...");
-  server.serve();
+  server->serve();
   DEBUG( "  after serving ...");
+  exit( 0);
   return 0;
 }

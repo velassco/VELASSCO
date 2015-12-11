@@ -76,3 +76,43 @@ void QueryManagerServer::GetStatusDB(StatusDB_Result& _return, const SessionID s
   LOGGER << "  result    : " << _return.result    << std::endl;
   LOGGER << "  status    : " << _return.status << std::endl;
 }
+
+void QueryManagerServer::StopVELaSSCo(StopVELaSSCo_Result& _return, const SessionID sessionID) {
+  LOGGER                              << std::endl;
+  LOGGER << "----- StopVELaSSCo() -----" << std::endl;
+
+  LOGGER                                << std::endl;
+  LOGGER << "Input:"                        << std::endl;
+  LOGGER << "  sessionID : "   << sessionID << std::endl;
+
+  // Check session ID
+  if (!ValidSessionID(sessionID))
+    {
+      _return.__set_result( (Result::type)VAL_INVALID_SESSION_ID );
+
+      LOGGER                                    << std::endl;
+      LOGGER << "Output:"                       << std::endl;
+      LOGGER << "  result : " << _return.result << std::endl;
+
+      return;
+    }
+
+  std::string status;
+  // DataLayerAccess::Instance()->stopVELaSSCo( status);
+  // do a user logout first
+  UserLogout_Result logout_result;
+  this->UserLogout( logout_result, sessionID);
+
+  // stop Data Layer
+  DataLayerAccess::Instance()->stopAll( );
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+  status = " StorageModule and QueryManager servers stopped.";
+  _return.__set_status( status );
+
+  LOGGER                                          << std::endl;
+  LOGGER << "Output:"                             << std::endl;
+  LOGGER << "  result    : " << _return.result    << std::endl;
+  LOGGER << "  status    : " << _return.status << std::endl;
+  this->m_simpleServer->stop();
+  this->SetSimpleServer( NULL);
+}

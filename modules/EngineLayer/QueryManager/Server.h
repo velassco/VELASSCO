@@ -91,6 +91,7 @@ typedef struct OpenModelKey {
 typedef std::map< OpenModelKey, QMS_FullyQualifiedModelName> ModelMap; // key = SessionID + ModelID
 
 class QueryManagerServer : virtual public QueryManagerIf {
+  static ::apache::thrift::server::TSimpleServer *m_simpleServer;
   UserMap m_users;
   ModelMap m_models;
 
@@ -119,6 +120,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void Query(Query_Result& _return, const SessionID sessionID, const std::string& query);
   
   void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID);
+  void StopVELaSSCo(StopVELaSSCo_Result& _return, const SessionID sessionID);
 
   void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetMeshDrawData( Query_Result& _return, const SessionID sessionID, const std::string& query );
@@ -131,6 +133,13 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageGetListOfResults( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query);
+
+public:
+  static void SetSimpleServer( ::apache::thrift::server::TSimpleServer *simpleServer) {
+    if ( m_simpleServer)
+      delete m_simpleServer;
+    m_simpleServer = simpleServer;
+  }
 }; // class QueryManagerServer
 
 

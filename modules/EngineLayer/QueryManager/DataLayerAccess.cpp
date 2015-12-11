@@ -237,6 +237,5 @@ void DataLayerAccess::stopAll()
     {
         cout << "ERROR: " << tx.what() << endl;
     }
-    stopConnection();
-    exit(0);
+    this->stopConnection();
 }
