@@ -4,14 +4,16 @@ include_directories( ${THRIFT_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIRS} )
 
 # List of Thrift generated sources
-set(THRIFT_GEN_SOURCE_DIR ${SOURCE_ROOT}/Thrift/gen-cpp)
+# this is not the correct folder :
+# set(THRIFT_GEN_SOURCE_DIR ${SOURCE_ROOT}/Thrift/gen-cpp)
+set(THRIFT_GEN_SOURCE_DIR ${SOURCE_ROOT}/../thrift/QueryManager/gen-cpp)
 set(THRIFT_GEN_SOURCES ${THRIFT_GEN_SOURCE_DIR}/QueryManager.cpp
                        ${THRIFT_GEN_SOURCE_DIR}/QueryManager.h
                        ${THRIFT_GEN_SOURCE_DIR}/QueryManager_server.skeleton.cpp
-                       ${THRIFT_GEN_SOURCE_DIR}/velassco_constants.cpp
-                       ${THRIFT_GEN_SOURCE_DIR}/velassco_constants.h
-                       ${THRIFT_GEN_SOURCE_DIR}/velassco_types.cpp
-                       ${THRIFT_GEN_SOURCE_DIR}/velassco_types.h)
+                       ${THRIFT_GEN_SOURCE_DIR}/QueryManager_constants.cpp
+                       ${THRIFT_GEN_SOURCE_DIR}/QueryManager_constants.h
+                       ${THRIFT_GEN_SOURCE_DIR}/QueryManager_types.cpp
+                       ${THRIFT_GEN_SOURCE_DIR}/QueryManager_types.h)
 
 # List of access library sources
 set(ACCESS_LIB_SOURCE_DIR ${SOURCE_ROOT}/AccessLib)
