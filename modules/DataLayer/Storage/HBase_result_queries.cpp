@@ -196,8 +196,8 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
       // std::cout << "number of rows = " << rowsResult.size() << endl;
       for ( size_t i = 0; i < rowsResult.size(); i++) {
   	// convert to return type
-	if ( rowsResult[ i].row.compare( 0, len_rowkey, rowKey) != 0)
-	  // if ( rowsResult[ i].row != rowKey)
+	// if ( rowsResult[ i].row.compare( 0, len_rowkey, rowKey) != 0)
+	if ( rowsResult[ i].row != rowKey)
 	  continue; // break;
   	bool ok = getMeshInfoFromRow( map_mesh_info, rowsResult[ i]);
   	if ( ok) {
