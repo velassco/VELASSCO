@@ -13,7 +13,7 @@
 #include "AccessLib.h"
 
 // Generated code
-#include "../Thrift/gen-cpp/QueryManager.h"
+#include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 
 
 namespace VELaSSCo
@@ -62,7 +62,11 @@ public:
 	VAL_Result GetStatusDB( /* in */ 
 			       SessionID          sessionID,
 			       /* out */
-			       const std::string* &status );
+			       const std::string *&status );
+	VAL_Result StopVELaSSCo(  /* in */
+				SessionID   sessionID,
+				/* out */ 
+				const std::string *&status);
 
 private:
 
@@ -74,6 +78,7 @@ private:
 	
 	Query_Result m_queryResult;
 	StatusDB_Result m_getStatusDBResult;
+	StopVELaSSCo_Result m_stopVELaSSCoResult;
 };
 
 }

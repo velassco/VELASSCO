@@ -250,6 +250,10 @@ extern "C" {
 				    VAL_SessionID   sessionID,
 				    /* out */ 
 				    const char **status);
+  VAL_Result VAL_API valStopVELaSSCo(  /* in */
+				     VAL_SessionID   sessionID,
+				     /* out */ 
+				     const char **status);
   
   /**
    * API testing. 

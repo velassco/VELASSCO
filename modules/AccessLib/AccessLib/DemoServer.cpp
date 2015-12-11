@@ -43,6 +43,9 @@ using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
 
+// global variable server:
+TSimpleServer *G_DemoServer = NULL;
+
 // ***************************************************************************
 //
 // Actual implementation of QueryManager functions.
@@ -190,7 +193,7 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
   }
 }
 
-void QM_DemoServer::GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) {
+void QM_DemoServer::GetStatusDB( StatusDB_Result &_return, const SessionID sessionID) {
   LOGGER                              << std::endl;
   LOGGER << "----- GetStatusDB() -----" << std::endl;
 
@@ -217,6 +220,41 @@ void QM_DemoServer::GetStatusDB(StatusDB_Result& _return, const SessionID sessio
   LOGGER << "Output:"                             << std::endl;
   LOGGER << "  result    : " << _return.result    << std::endl;
   LOGGER << "  status    : " << _return.status << std::endl;
+}
+
+void QM_DemoServer::StopVELaSSCo( StopVELaSSCo_Result &_return, const SessionID sessionID) {
+  LOGGER                              << std::endl;
+  LOGGER << "----- StopVELaSSCo() -----" << std::endl;
+
+  LOGGER                                << std::endl;
+  LOGGER << "Input:"                      << std::endl;
+  LOGGER << "  sessionID : " << sessionID << std::endl;
+
+  // Check session ID
+  if (!ValidSessionID(sessionID))
+    {
+      _return.__set_result( (Result::type)VAL_INVALID_SESSION_ID );
+
+      LOGGER                                    << std::endl;
+      LOGGER << "Output:"                       << std::endl;
+      LOGGER << "  result : " << _return.result << std::endl;
+
+      return;
+    }
+  // Return session id
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+  _return.__set_status( (std::string)"Test_Server Stopped");
+
+  LOGGER                                          << std::endl;
+  LOGGER << "Output:"                             << std::endl;
+  LOGGER << "  result    : " << _return.result    << std::endl;
+  LOGGER << "  status    : " << _return.status << std::endl;
+
+  if ( G_DemoServer) {
+    G_DemoServer->stop();
+    delete G_DemoServer;
+    G_DemoServer = NULL;
+  }
 }
 
 void QM_DemoServer::ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query) {
@@ -569,9 +607,10 @@ int StartServer( const int server_port) {
   shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
   shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+  // TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+  G_DemoServer = new TSimpleServer(processor, serverTransport, transportFactory, protocolFactory);
   DEBUG( "  before serving ...");
-  server.serve();
+  G_DemoServer->serve();
   DEBUG( "  after serving ...");
   return 0;
 }

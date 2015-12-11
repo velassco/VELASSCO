@@ -48,6 +48,7 @@ class QM_DemoServer : virtual public QueryManagerIf {
   void Query(Query_Result& _return, const SessionID sessionID, const std::string& query);
   
   void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID);
+  void StopVELaSSCo( StopVELaSSCo_Result &_return, const SessionID sessionID);
 
   void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetMeshDrawData( Query_Result & _return, const SessionID sessionID, const std::string& query);

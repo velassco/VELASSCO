@@ -173,3 +173,37 @@ VAL_Result Client::GetStatusDB( /* in */
   
 }
 
+
+VAL_Result Client::StopVELaSSCo(  /* in */
+				SessionID   sessionID,
+				/* out */ 
+				const std::string *&status) {
+
+  PING;
+  
+  try
+    {
+      m_transport->open();
+      m_client->StopVELaSSCo( m_stopVELaSSCoResult, sessionID); // using a object's property so that the returned pointers are valid, as they point to the objects data...
+      m_transport->close();
+      
+      LOGGER << "StopVELaSSCo_Result: "                                 << std::endl;
+      LOGGER << "        result : " << m_stopVELaSSCoResult.result        << std::endl;
+      LOGGER << "        status : " << m_stopVELaSSCoResult.status << std::endl;
+      
+      // Return pointer to result string (Thrift uses std::string)
+      status = &(m_stopVELaSSCoResult.status);
+      
+      return (VAL_Result)(m_stopVELaSSCoResult.result);
+    }
+  catch (TException& tx)
+    {
+      LOGGER << FUNCTION_NAME << " ERROR: " << tx.what() << std::endl;
+      return VAL_SYSTEM_NOT_AVAILABLE;
+    }
+  catch (...)
+	{
+	  return VAL_UNKNOWN_ERROR;
+	}
+  
+}

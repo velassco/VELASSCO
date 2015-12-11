@@ -39,6 +39,25 @@ VAL_Result VAL_API valGetStatusDB( /* in */
 	CATCH_ERROR;
   }
 
+  VAL_Result VAL_API valStopVELaSSCo( /* in */
+				     VAL_SessionID   sessionID,
+				     /* out */ 
+				     const char **status) {
+    
+    CHECK_SESSION_ID( sessionID );
+    
+    API_TRACE;
+    try
+      {
+	// Try to log out from VELaSSCo server
+	const std::string *str_status;
+	VAL_Result result = g_clients[sessionID]->StopVELaSSCo( sessionID, str_status);
+	*status = str_status->c_str(); // eventually strdup() ...
+	return result;
+      }
+    CATCH_ERROR;
+  }
+
 VAL_Result VAL_API valErrorMessage( /* in */
 	                                VAL_Result   error,
 
