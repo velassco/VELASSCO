@@ -143,7 +143,7 @@ std::string HBase::getListOfModelNames_curl( std::string &report, std::vector< F
     table_name = model_group_qualifier;
   }
 
-  string cmd = "http://pez001:8880/";
+  string cmd = "http://" + _db_host + ":8880/";
   cmd += table_name + "/";
 
   std::stringstream key;

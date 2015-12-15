@@ -15,7 +15,7 @@ namespace VELaSSCo
   {
   
   public:
-    HBase(): _hbase_client( NULL), _socket( NULL), _transport( NULL), _protocol( NULL) {}
+    HBase(): _hbase_client( NULL), _socket( NULL), _transport( NULL), _protocol( NULL), _db_host("") {}
     ~HBase() { stopConnection(); }
 
     bool startConnection( const char *DB_hostname, const int DB_port);
@@ -103,6 +103,7 @@ namespace VELaSSCo
     boost::shared_ptr<TTransport> *_socket;
     boost::shared_ptr<TTransport> *_transport;
     boost::shared_ptr<TProtocol> *_protocol;
+    std::string _db_host;
 
     // to store information on where is the model stored
     class TableModelEntry {

@@ -37,6 +37,7 @@ bool HBase::startConnection( const char *DB_hostname, const int DB_port) {
   _transport = new boost::shared_ptr<TTransport>( new TBufferedTransport( *_socket));
   _protocol = new boost::shared_ptr<TProtocol>( new TBinaryProtocol( *_transport));
   _hbase_client = new HbaseClient( *_protocol);
+  _db_host = DB_hostname;
   bool connected = true;
   try {
     ( *_transport)->open();
@@ -498,7 +499,7 @@ std::string HBase::getResultOnVertices_curl( const std::string &sessionID,
   std::cout << "V " << listOfVertices << std::endl;
   std::cout << "T " << timeStep       << std::endl;
 
-  string cmd = "http://pez001:8880/";
+  string cmd = "http://" + _db_host + ":8880/";
   // cmd += "Simulations_Data";
   // cmd += "Test_VELaSSCo_Models";
   cmd += "T_Simulations_Data";
@@ -857,7 +858,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &ses
          << "Meta Table: "  << tableModel._metadata
          << "Data Table: "  << tableModel._data 		<< endl; 
 
-  string cmd = "http://pez001:8880/";
+  string cmd = "http://" + _db_host + ":8880/";
   cmd += tableModel._data;
   cmd += "/";
   std::stringstream key;
