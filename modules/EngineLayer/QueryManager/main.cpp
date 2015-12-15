@@ -110,7 +110,7 @@ int main(int argc, char **argv)
     srand(time(NULL));
     
     int listen_port = 26267; // standard thrift port : 9090
-    const char *data_layer_hostname = "pez001";
+    const char *data_layer_hostname = "localhost"; // or "pez001";
     int         data_layer_port     = 26266;
     if ( thereIsHelpSwitch( argc, argv)) {
       printf( "Usage: %s [ options] \n", argv[ 0]);
