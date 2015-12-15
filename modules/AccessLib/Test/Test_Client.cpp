@@ -269,7 +269,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   const char*   resultID    = "MASS";
   const char*   analysisID  = "DEM";
   const int64_t vertexIDs[] = { 1, 2, 3, 4, 5, 6, 7, 0 };
-  const double  timeStep    = 10000.0;
+  const double  timeStep    = 2799000.0; //10000.0;
   
   const int64_t* resultVertexIDs;
   const double*  resultValues;
