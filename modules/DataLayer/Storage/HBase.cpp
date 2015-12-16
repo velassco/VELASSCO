@@ -907,7 +907,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &ses
 }
 
 std::string HBase::getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const unsigned partitionID) {
-  std::cout << "getResultOnVertices THRIFT: =====" << std::endl;
+  std::cout << "getCoordinatesAndElementsFromMesh THRIFT: =====" << std::endl;
   std::cout << "S " << sessionID      << std::endl;
   std::cout << "M " << modelID        << std::endl;
   //std::cout << "R " << resultID     << std::endl;
