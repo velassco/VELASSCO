@@ -477,7 +477,19 @@ bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> 
   StrVec cols;
   // cols.push_back( "R"); // Mesh column family with, 
   // theoretially all Metadata should start with "R:r000001nm", i.e. at least 1 result defined!
+  // sometimes r1 is not in other steps ....
   cols.push_back( "R:r000001nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000002nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000003nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000004nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000005nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000006nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000007nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000008nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  cols.push_back( "R:r000009nm"); // this halves the time wrt "R", which is 4x faster than no cols.
+  // above is a bad trick ... the ideal would be to hace the ModelInfo/Analysis+Steps+Results cached in the sessionID
+  // and if it's not present, the get the full info once and return the asked info (piecewise).
+  // this way the time will be spent only once, in the first hbase/GetList...Analyses query 
   // we only need the step_values which are in the rowKeys
   // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
   // has to build the rowkey.... 
