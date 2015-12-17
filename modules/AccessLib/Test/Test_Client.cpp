@@ -209,7 +209,7 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   std::cout << list_of_meshes << std::endl;
   
   const VELaSSCo::RTFormat::File* fem_mesh_draw_data = NULL;
-  result = valGetMeshDrawData( sessionID, fem_opened_modelID.c_str(), "", 0.0, 1, &status, &fem_mesh_draw_data );
+  result = valGetMeshDrawData( sessionID, fem_opened_modelID.c_str(), "", 0.0, "1", &status, &fem_mesh_draw_data );
   if(fem_mesh_draw_data)
   {
   }
