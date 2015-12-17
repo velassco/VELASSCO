@@ -172,7 +172,7 @@ extern "C" {
 						const char*     modelID,
 						const char*     analysisID,
 						double          timeStep,
-						unsigned        partitionID,
+						const char*     meshID,
 
 						/* out */
             const char                      **result_status,
