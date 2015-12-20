@@ -849,7 +849,8 @@ int DecodeRowKey_Data( const std::string &keyData,
   return SUCCESS;
 }
 
-int EncodeColumn_Data( char family, char prefix, GID::UInt32 indexSet, GID::UInt64 id, std::string &column)
+int EncodeColumn_Data( char family, char prefix, GID::UInt32 indexSet,
+                       const char * _SS, GID::UInt64 id, std::string &column)
 {
   std::string binId;  
   BinarySerializerType binWriter;
@@ -864,7 +865,7 @@ int EncodeColumn_Data( char family, char prefix, GID::UInt32 indexSet, GID::UInt
   
   std::stringstream ss;
   ss << std::setfill( '0' ) << std::setw( 6 );
-  ss << indexSet;
+  ss << indexSet << _SS;
   column += ss.str();
   // column += boost::lexical_cast<std::string>(indexSet);
   column += "_";
@@ -874,7 +875,7 @@ int EncodeColumn_Data( char family, char prefix, GID::UInt32 indexSet, GID::UInt
 }
 
 // REVIEW: this function must be updated see how EncodeColumn_Data
-// works for indexSet coding.
+// works for indexSet coding & _SS
 int DecodeColumn_Data( const std::string &column, char family, char prefix,
                        GID::UInt32 &indexSet, GID::UInt64 &id )
 {
@@ -986,7 +987,7 @@ int InsertPartResult_Data( const std::string &host, int port,
         {
         mutations.push_back( Mutation( ) );
         
-        status = EncodeColumn_Data( 'M', 'c', indexCSet, it->id, mutations.back().column );
+        status = EncodeColumn_Data( 'M', 'c', indexCSet, "", it->id, mutations.back().column );
         if ( status != SUCCESS )
           {
           break;
@@ -1002,7 +1003,8 @@ int InsertPartResult_Data( const std::string &host, int port,
              it != meshPart.elements.end(); it++ )
           {
           mutations.push_back( Mutation( ) );
-          status = EncodeColumn_Data( 'M', 'm', indexESet, (*it)[0], mutations.back().column );
+          status = EncodeColumn_Data( 'M', 'm', indexESet, "cn",
+                                      (*it)[0], mutations.back().column );
           if ( status != SUCCESS )
             {
             break;
@@ -1049,7 +1051,7 @@ int InsertPartResult_Data( const std::string &host, int port,
                itV != itR->values.end( ); itV++ ) 
             {
             mutations.push_back( Mutation( ) );
-            status = EncodeColumn_Data( 'R', 'r', indexMData, itV->id, mutations.back().column );
+            status = EncodeColumn_Data( 'R', 'r', indexMData, "", itV->id, mutations.back().column );
             if ( status != SUCCESS )
               {
               break;
