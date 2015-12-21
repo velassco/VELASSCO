@@ -34,3 +34,8 @@ target_include_directories( TestEndianness PRIVATE
 target_link_libraries( TestEndianness
   ${CMAKE_THREAD_LIBS_INIT} ${THRIFT_LIBRARIES} )
 
+add_executable( TestStringSerialization TestStringSerialization.cxx BinarySerialization.cxx )
+target_include_directories( TestStringSerialization PRIVATE 
+  ${THRIFTCPP_INCLUDE_DIRS} )
+target_link_libraries( TestStringSerialization
+  ${CMAKE_THREAD_LIBS_INIT} ${THRIFT_LIBRARIES} )
