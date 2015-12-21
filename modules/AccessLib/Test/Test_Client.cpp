@@ -261,46 +261,49 @@ int doTestMiguel( const VAL_SessionID sessionID) {
 
   // need to store as return_modelID points to a temporary storage that will be reused in next query
   std::string opened_modelID( return_modelID);
+  const char*   analysisID  = "";
 
   //
   // Test GetResultFromVerticesID()
   //
-  
-  const char*   vert_modelID     = "d94ca29be534ca1ed578e90123b7"; // current DEM_box example in VELaSSCo_Models as of 10.11.2015, two days ago there where two models !
-  const char*   resultID    = "MASS";
-  const char*   analysisID  = "DEM";
-  const int64_t vertexIDs[] = { 1, 2, 3, 4, 5, 6, 7, 0 };
-  const double  timeStep    = 2799000.0; //10000.0;
-  
-  const int64_t* resultVertexIDs;
-  const double*  resultValues;
-  size_t         resultNumVertices;
-  
-  // This call does not comply with the VQuery form, but in the meantime ...
-  result = valGetResultFromVerticesID(sessionID, vert_modelID,
-                                      resultID,
-                                      analysisID,
-                                      vertexIDs,
-                                      timeStep,
-                                      &resultVertexIDs,
-                                      &resultValues,
-                                      &resultNumVertices);
-  CheckVALResult(result, "valGetResultFromVerticesID");
-  
-  //
-  // Print received data
-  //
-  
-  for (size_t i=0; i<resultNumVertices; i++)
-    {
-      std::cout << "Vertex: " << i;
-      std::cout << "  ID: " << resultVertexIDs[i];
-      std::cout << "  Values: [";
-      for (size_t j=0; j<3; j++)
-  	std::cout << " " << resultValues[3*i+j];
-      std::cout << " ]" << std::endl;
-    }
-  
+  bool do_GetResultFromVerticesID = false;
+  if ( do_GetResultFromVerticesID) {
+    const char*   vert_modelID     = "d94ca29be534ca1ed578e90123b7"; // current DEM_box example in VELaSSCo_Models as of 10.11.2015, two days ago there where two models !
+    const char*   resultID    = "MASS";
+    analysisID  = "DEM";
+    const int64_t vertexIDs[] = { 1, 2, 3, 4, 5, 6, 7, 0 };
+    const double  timeStep    = 2799000.0; //10000.0;
+    
+    const int64_t* resultVertexIDs;
+    const double*  resultValues;
+    size_t         resultNumVertices;
+    
+    // This call does not comply with the VQuery form, but in the meantime ...
+    result = valGetResultFromVerticesID(sessionID, vert_modelID,
+					resultID,
+					analysisID,
+					vertexIDs,
+					timeStep,
+					&resultVertexIDs,
+					&resultValues,
+					&resultNumVertices);
+    CheckVALResult(result, "valGetResultFromVerticesID");
+    
+    //
+    // Print received data
+    //
+    
+    for (size_t i=0; i<resultNumVertices; i++)
+      {
+	std::cout << "Vertex: " << i;
+	std::cout << "  ID: " << resultVertexIDs[i];
+	std::cout << "  Values: [";
+	for (size_t j=0; j<3; j++)
+	  std::cout << " " << resultValues[3*i+j];
+	std::cout << " ]" << std::endl;
+      }
+  }
+
   //
   // Test GetListOfAnalyses
   //

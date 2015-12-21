@@ -599,31 +599,34 @@ void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID
 void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // if this is really needed, then may be it's better to change num_nodes to be int64_t ...
 #pragma pack( push, 1)
-  typedef double MeshPoint[ 3];
+  typedef struct {
+    int64_t _id;
+    double _coord[ 3];
+  } MeshPoint;
   typedef struct {
     int _num_nodes;
     int64_t _nodes[ 3];
   } BoundaryTriangle;
 #pragma pack( pop)
   MeshPoint lst_vertices[] = {
-    {  0.000000,  1.000000,  0.000000},
-    {  0.707107,  0.707107,  0.000000},
-    {  0.000000,  0.707107, -0.707107},
-    { -0.000000,  0.707107,  0.707107},
-    { -0.707107,  0.707107, -0.000000},
-    {  1.000000, -0.000000,  0.000000},
-    {  0.000000, -0.000000, -1.000000},
-    { -0.000000, -0.000000,  1.000000},
-    { -0.707107, -0.000000, -0.707107},
-    { -1.000000, -0.000000, -0.000000},
-    { -0.707107, -0.000000,  0.707107},
-    {  0.707107, -0.000000, -0.707107},
-    {  0.707107, -0.000000,  0.707107},
-    {  0.000000, -0.707107, -0.707107},
-    { -0.000000, -0.707107,  0.707107},
-    {  0.707107, -0.707107,  0.000000},
-    { -0.707107, -0.707107, -0.000000},
-    {  0.000000, -1.000000,  0.000000}
+    {  1, {  0.000000,  1.000000,  0.000000}},
+    {  2, {  0.707107,  0.707107,  0.000000}},
+    {  3, {  0.000000,  0.707107, -0.707107}},
+    {  4, { -0.000000,  0.707107,  0.707107}},
+    {  5, { -0.707107,  0.707107, -0.000000}},
+    {  6, {  1.000000, -0.000000,  0.000000}},
+    {  7, {  0.000000, -0.000000, -1.000000}},
+    {  8, { -0.000000, -0.000000,  1.000000}},
+    {  9, { -0.707107, -0.000000, -0.707107}},
+    { 10, { -1.000000, -0.000000, -0.000000}},
+    { 11, { -0.707107, -0.000000,  0.707107}},
+    { 12, {  0.707107, -0.000000, -0.707107}},
+    { 13, {  0.707107, -0.000000,  0.707107}},
+    { 14, {  0.000000, -0.707107, -0.707107}},
+    { 15, { -0.000000, -0.707107,  0.707107}},
+    { 16, {  0.707107, -0.707107,  0.000000}},
+    { 17, { -0.707107, -0.707107, -0.000000}},
+    { 18, {  0.000000, -1.000000,  0.000000}}
   };
   BoundaryTriangle lst_triangles[] = {
     { 3, { 17, 13, 16}},
@@ -674,7 +677,7 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
   LOGGER << "  result : "   << _return.result        << std::endl;
   LOGGER << "  mesh : " << num_vertices << " vertices and " << num_triangles << " triangles" << std::endl;
   LOGGER << "         ( " << oss.str().length() << " bytes)" << std::endl;
-  LOGGER << "         sizeof ( MeshPoint, BoundaryTriangle) = " << sizeof( MeshPoint) << ", " << sizeof( BoundaryTriangle) << std::endl;
+  LOGGER << "     sizeof() MeshPoint = " << sizeof( MeshPoint) << ", BoundaryTriangle = " << sizeof( BoundaryTriangle) << std::endl;
   LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
 }
 
