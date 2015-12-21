@@ -159,8 +159,9 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetBoundingBox( _return, sessionID, query);
   } else if ( name == "GetDiscrete2Continuum") {
     ManageGetDiscrete2Continuum(_return, sessionID, query);
-  }
-  else {
+  } else if ( name == "GetBoundaryOfAMesh") {
+    ManageGetBoundaryOfAMesh( _return, sessionID, query);
+  } else {
     _return.__set_result( (Result::type)VAL_INVALID_QUERY );
     
     LOGGER                                    << std::endl;

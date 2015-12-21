@@ -438,14 +438,14 @@ void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const Ses
   if ( _return_.status == "Error") {
     const std::string not_found( "Not found");
     if ( AreEqualNoCaseSubstr( _return_.report, not_found, not_found.size())) {
-      _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+      _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
     } else {
       _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
     }
     _return.__set_data( _return_.report);
   } else { // status == "Ok"
     if ( _return_.meshInfos.size() == 0) {
-      _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
+      _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
     } else {
       _return.__set_result( (Result::type)VAL_SUCCESS );
       // process data:

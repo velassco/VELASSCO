@@ -207,3 +207,92 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   LOGGER << "  result : "   << _return.result        << std::endl;
   //LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
+
+
+
+void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string name       = pt.get<std::string>( "name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string meshName     = pt.get<std::string>( "meshID"); // in fact it's the mesh name
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "Msh-" << meshName           << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue       << "-" << std::endl;
+
+  // in theory should check first if it has already been calculated by doing a
+  // DataLayerAccess::Instance()->getBoundingBox( sessionID, query);
+  // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
+
+  std::string error_str;
+
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes _return_;
+  DataLayerAccess::Instance()->getListOfMeshes( _return_,
+						dl_sessionID, modelID, analysisID, stepValue);
+  int meshID = -1;
+  if ( _return_.meshInfos.size() == 0) {
+    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+    error_str = "There is no mesh metadata.";
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	break;
+      }
+    }
+    if ( meshID == -1) { // not found
+      error_str = "Mesh name " + meshName + " not in metadata.";
+    }
+  }
+  
+  std::string binary_mesh = "";
+  if ( error_str.length() == 0) {
+    std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << std::endl;
+    std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
+    try {
+      AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), modelID,
+								simulation_data_table_name,
+								meshID,
+								analysisID, stepValue, 
+								&binary_mesh, &error_str);
+      GraphicsModule *graphics = GraphicsModule::getInstance();
+      // just to link to the GraphicsModule;
+    } catch ( TException &e) {
+      std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+    } catch ( exception &e) {
+      std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+    }
+  }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( binary_mesh);
+  } else {
+    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+}
+

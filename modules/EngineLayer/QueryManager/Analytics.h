@@ -25,6 +25,9 @@ public:
 				    const int numSteps, const double *lstSteps, const std::string &coarseGrainingMethod, const double width, const double cutoffFactor,
 				    const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGoptions, const double deltaT,
 				    std::string *returnQueryOutcome, std::string *return_error_str);
+  void calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
+				 const int meshID, const std::string &analysisID, const double stepValue,
+				 std::string *return_binary_mesh, std::string *return_error_str);
 
 private:
   AnalyticsModule() {};
