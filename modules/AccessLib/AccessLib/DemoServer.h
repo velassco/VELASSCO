@@ -41,25 +41,30 @@ class QM_DemoServer : virtual public QueryManagerIf {
     return (it != m_users.end());
   }
   
+  /* Session Queries */
   void UserLogin(UserLogin_Result& _return, const std::string& url, const std::string& name, const std::string& password);
-  
   void UserLogout(UserLogout_Result& _return, const SessionID sessionID);
   
+  /* all other Session, Direct Result and Result Analysis queries ges through Query() and then Manage... */
   void Query(Query_Result& _return, const SessionID sessionID, const std::string& query);
-  
+
+  /* Monitoring Queries */  
   void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID);
   void StopVELaSSCo( StopVELaSSCo_Result &_return, const SessionID sessionID);
-
-  void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
-  void ManageGetMeshDrawData( Query_Result & _return, const SessionID sessionID, const std::string& query);
+  /* Session Queries */
   void ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageOpenModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  /* Direct Result Queries */
+  void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfMeshes( Query_Result &_return, const SessionID sessionID, const std::string& query);
-  void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfAnalyses( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfResults( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetMeshDrawData( Query_Result & _return, const SessionID sessionID, const std::string& query);
+  /* Result Analysis Queries */
+  void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
 };
 
 extern int StartServer( const int server_port);

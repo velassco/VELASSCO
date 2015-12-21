@@ -181,6 +181,8 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageGetListOfTimeSteps( _return, sessionID, query);
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
+  } else if ( name == "GetBoundaryOfAMesh") {
+    ManageGetBoundaryOfAMesh( _return, sessionID, query);
   } else {
     _return.__set_result( (Result::type)VAL_INVALID_QUERY );
     
@@ -591,6 +593,88 @@ void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
   LOGGER << "  result : "   << _return.result        << std::endl;
+  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+}
+
+void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // if this is really needed, then may be it's better to change num_nodes to be int64_t ...
+#pragma pack( push, 1)
+  typedef double MeshPoint[ 3];
+  typedef struct {
+    int _num_nodes;
+    int64_t _nodes[ 3];
+  } BoundaryTriangle;
+#pragma pack( pop)
+  MeshPoint lst_vertices[] = {
+    {  0.000000,  1.000000,  0.000000},
+    {  0.707107,  0.707107,  0.000000},
+    {  0.000000,  0.707107, -0.707107},
+    { -0.000000,  0.707107,  0.707107},
+    { -0.707107,  0.707107, -0.000000},
+    {  1.000000, -0.000000,  0.000000},
+    {  0.000000, -0.000000, -1.000000},
+    { -0.000000, -0.000000,  1.000000},
+    { -0.707107, -0.000000, -0.707107},
+    { -1.000000, -0.000000, -0.000000},
+    { -0.707107, -0.000000,  0.707107},
+    {  0.707107, -0.000000, -0.707107},
+    {  0.707107, -0.000000,  0.707107},
+    {  0.000000, -0.707107, -0.707107},
+    { -0.000000, -0.707107,  0.707107},
+    {  0.707107, -0.707107,  0.000000},
+    { -0.707107, -0.707107, -0.000000},
+    {  0.000000, -1.000000,  0.000000}
+  };
+  BoundaryTriangle lst_triangles[] = {
+    { 3, { 17, 13, 16}},
+    { 3, {  6,  8, 13}},
+    { 3, {  8,  9, 16}},
+    { 3, {  8, 16, 13}},
+    { 3, {  8,  6,  2}},
+    { 3, {  4,  9,  8}},
+    { 3, {  2,  0,  4}},
+    { 3, {  2,  4,  8}},
+    { 3, { 17, 16, 14}},
+    { 3, {  9, 10, 16}},
+    { 3, { 10,  7, 14}},
+    { 3, { 10, 14, 16}},
+    { 3, { 10,  9,  4}},
+    { 3, {  3,  7, 10}},
+    { 3, {  4,  0,  3}},
+    { 3, {  4,  3, 10}},
+    { 3, { 17, 15, 13}},
+    { 3, {  5, 11, 15}},
+    { 3, { 11,  6, 13}},
+    { 3, { 11, 13, 15}},
+    { 3, { 11,  5,  1}},
+    { 3, {  2,  6, 11}},
+    { 3, {  1,  0,  2}},
+    { 3, {  1,  2, 11}},
+    { 3, { 17, 14, 15}},
+    { 3, {  7, 12, 14}},
+    { 3, { 12,  5, 15}},
+    { 3, { 12, 15, 14}},
+    { 3, { 12,  7,  3}},
+    { 3, {  1,  5, 12}},
+    { 3, {  3,  0,  1}},
+    { 3, {  3,  1, 12}}
+  };
+  int64_t num_vertices = ( int64_t)( sizeof( lst_vertices) / sizeof( MeshPoint));
+  int64_t num_triangles = ( int64_t)( sizeof( lst_triangles) / sizeof( BoundaryTriangle));
+  std::ostringstream oss;
+  oss << "NumberOfVertices: " << num_vertices << std::endl;
+  oss << "NumberOfFaces: " << num_triangles << std::endl;
+  oss.write( ( const char *)lst_vertices, sizeof( lst_vertices));
+  oss.write( ( const char *)lst_triangles, sizeof( lst_triangles));
+  _return.__set_data( oss.str());
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  LOGGER << "  mesh : " << num_vertices << " vertices and " << num_triangles << " triangles" << std::endl;
+  LOGGER << "         ( " << oss.str().length() << " bytes)" << std::endl;
+  LOGGER << "         sizeof ( MeshPoint, BoundaryTriangle) = " << sizeof( MeshPoint) << ", " << sizeof( BoundaryTriangle) << std::endl;
   LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
 }
 

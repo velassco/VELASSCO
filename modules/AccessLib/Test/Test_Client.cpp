@@ -237,9 +237,10 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii:fine_mesh-ascii_";
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
-  const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/:VELaSSCo_HbaseBasicTest";
+  // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/:VELaSSCo_HbaseBasicTest";
 
   // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part_";
+  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part-";
 
   // // EDM models:
   // const char *unique_name = "VELaSSCo_HbaseBasicTest_part_1";
@@ -451,6 +452,33 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   //     std::cout << "Error: " << return_error_str << std::endl;
   //   }
   // }
+
+  //
+  // Test GetBoundaryOfAMesh()
+  //
+  
+  bool do_boundary = true;
+  if ( do_boundary) {
+    const char *return_mesh = NULL;
+    size_t return_mesh_size = 0;
+    const char *return_error_str = NULL;
+    std::cout << "doing valGetBoundaryOfAMesh" << std::endl;
+    
+    result = valGetBoundaryOfAMesh( sessionID, opened_modelID.c_str(), // the already opened model
+				    "Part", // Mesh ID ( name)
+				    "", 0.0, // don't care about analysisID or stepValue
+				    &return_mesh, &return_mesh_size, &return_error_str);
+    CheckVALResult(result, getStringFromCharPointers( "valGetBoundaryOfAMesh ", return_error_str));
+    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+    std::cout << "GetBoundaryOfAMesh: " << opened_modelID << 
+      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+    if ( return_mesh) {
+      std::cout << "   boundary_mesh = ( " << return_mesh_size << " bytes)" << std::endl;
+      std::cout << Hexdump( std::string( return_mesh, return_mesh_size), 128) << std::endl;
+    } else {
+      std::cout << "Error: " << return_error_str << std::endl;
+    }
+  }
 
   //
   // Test CloseModel() & UserLogout()

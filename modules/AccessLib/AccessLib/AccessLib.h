@@ -63,10 +63,13 @@ typedef enum
 
 	/* GetBoundingBox */
 	// also uses VAL_SOME_VERTEX_IDS_NOT_AVAILABLE
-	VAL_MODEL_ID_INVALID              = 0x2000,
+	VAL_MODEL_ID_NOT_FOUND              = 0x2000,
+
+	/* GetBoundaryOfAMesh */
+	VAL_MESH_ID_NOT_FOUND               = 0x2001,
 
 	/* GetDiscrete2ContinuumOfAModel */
-	// also uses VAL_MODEL_ID_INVALID
+	// also uses VAL_INVALID_MODEL_ID
 	
 } VAL_Result;
 
@@ -231,6 +234,18 @@ extern "C" {
 					      /* out */
 					      const char   	**queryOutcome,  
 					      const char     **resultErrorStr); // in case of error
+
+  VAL_Result VAL_API valGetBoundaryOfAMesh( /* in */
+					   VAL_SessionID   sessionID,
+					   const char     *modelID,
+					   const char     *meshID,
+					   const char     *analysisID,
+					   const double    stepValue,
+				       /* out */
+					   const char     **resultMesh, // binary data with the mesh vertices and elements
+					   size_t         *resultMeshByteSize,
+					   const char     **resultErrorStr); // in case of error
+
 
   /**
    * Translate a numerical result code into an error message string.

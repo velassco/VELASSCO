@@ -277,6 +277,58 @@ extern "C" {
   }
 
 
+  VAL_Result VAL_API valGetBoundaryOfAMesh( /* in */
+					   VAL_SessionID   sessionID,
+					   const char     *modelID,
+					   const char     *meshID,
+					   const char     *analysisID,
+					   const double    stepValue,
+				       /* out */
+					   const char     **resultMesh, // binary data with the mesh vertices and elements
+					   size_t         *resultMeshByteSize,
+					   const char     **resultErrorStr) { // in case of error
+  CHECK_SESSION_ID( sessionID );
+  CHECK_QUERY_POINTER( modelID );
+  CHECK_QUERY_POINTER( meshID );
+  CHECK_QUERY_POINTER( analysisID );
+  CHECK_QUERY_POINTER( resultMesh );
+  CHECK_QUERY_POINTER( resultMeshByteSize );
+  CHECK_QUERY_POINTER( resultErrorStr );
+    
+  *resultMesh = NULL;
+  *resultErrorStr = NULL;
+  
+  API_TRACE;
+  try
+    {
+      std::stringstream  queryCommand;
+      const std::string *queryData = NULL;
+      
+      // Build JSON command string
+      queryCommand << "{\n"
+		   << "  \"name\"       : \"" << "GetBoundaryOfAMesh" << "\",\n"
+		   << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+		   << "  \"meshID\"     : \"" << meshID                   << "\",\n"
+		   << "  \"analysisID\" : \"" << analysisID                << "\",\n"
+		   << "  \"stepValue\"  : \"" << stepValue                  << "\"\n";
+      queryCommand << "}\n";
+
+	// Send command string and get back result data
+	VAL_Result result = g_clients[sessionID]->Query( sessionID, queryCommand.str(), queryData);
+
+	// Give back pointers to actual binary data
+	if (result == VAL_SUCCESS) {
+	    *resultMesh = ( const char *)queryData->data();
+	    *resultMeshByteSize = queryData->length();
+	} else {
+	  *resultErrorStr = queryData->c_str();
+	}
+
+	return result;
+      }
+    CATCH_ERROR;
+  }
+
 
 #ifdef __cplusplus
 }

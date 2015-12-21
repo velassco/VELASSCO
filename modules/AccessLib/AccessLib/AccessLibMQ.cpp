@@ -100,6 +100,11 @@ VAL_Result VAL_API valErrorMessage( /* in */
 	  /* GetListOfResults */
 	case VAL_NO_RESULT_INFORMATION_FOUND:   *message = "No result information found.";   break;
 
+	  /* GetBoundingBox */
+	case VAL_MODEL_ID_NOT_FOUND:            *message = "Model ID not found.";   break;
+
+	  /* GetBoundaryOfAMesh */
+	case VAL_MESH_ID_NOT_FOUND:             *message = "Mesh ID not found.";   break;
 	default:                                *message = "Invalid error code.";            break;
 	}
 	
