@@ -448,8 +448,12 @@ void MeshInfo::__set_meshNumber(const int32_t val) {
   this->meshNumber = val;
 }
 
-const char* MeshInfo::ascii_fingerprint = "883D2504C06A2E71D93C0A5D97A7C4AE";
-const uint8_t MeshInfo::binary_fingerprint[16] = {0x88,0x3D,0x25,0x04,0xC0,0x6A,0x2E,0x71,0xD9,0x3C,0x0A,0x5D,0x97,0xA7,0xC4,0xAE};
+void MeshInfo::__set_coordsName(const std::string& val) {
+  this->coordsName = val;
+}
+
+const char* MeshInfo::ascii_fingerprint = "BB55A649757DA08871436B00AE301AE5";
+const uint8_t MeshInfo::binary_fingerprint[16] = {0xBB,0x55,0xA6,0x49,0x75,0x7D,0xA0,0x88,0x71,0x43,0x6B,0x00,0xAE,0x30,0x1A,0xE5};
 
 uint32_t MeshInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -527,6 +531,14 @@ uint32_t MeshInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->coordsName);
+          this->__isset.coordsName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -572,6 +584,10 @@ uint32_t MeshInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeI32(this->meshNumber);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("coordsName", ::apache::thrift::protocol::T_STRING, 8);
+  xfer += oprot->writeString(this->coordsName);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   oprot->decrementRecursionDepth();
@@ -587,6 +603,7 @@ void swap(MeshInfo &a, MeshInfo &b) {
   swap(a.meshUnits, b.meshUnits);
   swap(a.meshColor, b.meshColor);
   swap(a.meshNumber, b.meshNumber);
+  swap(a.coordsName, b.coordsName);
   swap(a.__isset, b.__isset);
 }
 
@@ -598,6 +615,7 @@ MeshInfo::MeshInfo(const MeshInfo& other13) {
   meshUnits = other13.meshUnits;
   meshColor = other13.meshColor;
   meshNumber = other13.meshNumber;
+  coordsName = other13.coordsName;
   __isset = other13.__isset;
 }
 MeshInfo& MeshInfo::operator=(const MeshInfo& other14) {
@@ -608,6 +626,7 @@ MeshInfo& MeshInfo::operator=(const MeshInfo& other14) {
   meshUnits = other14.meshUnits;
   meshColor = other14.meshColor;
   meshNumber = other14.meshNumber;
+  coordsName = other14.coordsName;
   __isset = other14.__isset;
   return *this;
 }
@@ -621,6 +640,7 @@ std::ostream& operator<<(std::ostream& out, const MeshInfo& obj) {
   out << ", " << "meshUnits=" << to_string(obj.meshUnits);
   out << ", " << "meshColor=" << to_string(obj.meshColor);
   out << ", " << "meshNumber=" << to_string(obj.meshNumber);
+  out << ", " << "coordsName=" << to_string(obj.coordsName);
   out << ")";
   return out;
 }
@@ -3232,8 +3252,8 @@ void rvGetListOfMeshes::__set_meshInfos(const std::vector<MeshInfo> & val) {
   this->meshInfos = val;
 }
 
-const char* rvGetListOfMeshes::ascii_fingerprint = "5FD86D68036BB6375BE8459471F23F69";
-const uint8_t rvGetListOfMeshes::binary_fingerprint[16] = {0x5F,0xD8,0x6D,0x68,0x03,0x6B,0xB6,0x37,0x5B,0xE8,0x45,0x94,0x71,0xF2,0x3F,0x69};
+const char* rvGetListOfMeshes::ascii_fingerprint = "1087FB53E7F49E11A7305C9D3673CCBA";
+const uint8_t rvGetListOfMeshes::binary_fingerprint[16] = {0x10,0x87,0xFB,0x53,0xE7,0xF4,0x9E,0x11,0xA7,0x30,0x5C,0x9D,0x36,0x73,0xCC,0xBA};
 
 uint32_t rvGetListOfMeshes::read(::apache::thrift::protocol::TProtocol* iprot) {
 

@@ -236,7 +236,7 @@ class Element {
 void swap(Element &a, Element &b);
 
 typedef struct _MeshInfo__isset {
-  _MeshInfo__isset() : name(false), elementType(false), nVertices(false), nElements(false), meshUnits(false), meshColor(false), meshNumber(false) {}
+  _MeshInfo__isset() : name(false), elementType(false), nVertices(false), nElements(false), meshUnits(false), meshColor(false), meshNumber(false), coordsName(false) {}
   bool name :1;
   bool elementType :1;
   bool nVertices :1;
@@ -244,17 +244,18 @@ typedef struct _MeshInfo__isset {
   bool meshUnits :1;
   bool meshColor :1;
   bool meshNumber :1;
+  bool coordsName :1;
 } _MeshInfo__isset;
 
 class MeshInfo {
  public:
 
-  static const char* ascii_fingerprint; // = "883D2504C06A2E71D93C0A5D97A7C4AE";
-  static const uint8_t binary_fingerprint[16]; // = {0x88,0x3D,0x25,0x04,0xC0,0x6A,0x2E,0x71,0xD9,0x3C,0x0A,0x5D,0x97,0xA7,0xC4,0xAE};
+  static const char* ascii_fingerprint; // = "BB55A649757DA08871436B00AE301AE5";
+  static const uint8_t binary_fingerprint[16]; // = {0xBB,0x55,0xA6,0x49,0x75,0x7D,0xA0,0x88,0x71,0x43,0x6B,0x00,0xAE,0x30,0x1A,0xE5};
 
   MeshInfo(const MeshInfo&);
   MeshInfo& operator=(const MeshInfo&);
-  MeshInfo() : name(), nVertices(0), nElements(0), meshUnits(), meshColor(), meshNumber(0) {
+  MeshInfo() : name(), nVertices(0), nElements(0), meshUnits(), meshColor(), meshNumber(0), coordsName() {
   }
 
   virtual ~MeshInfo() throw();
@@ -265,6 +266,7 @@ class MeshInfo {
   std::string meshUnits;
   std::string meshColor;
   int32_t meshNumber;
+  std::string coordsName;
 
   _MeshInfo__isset __isset;
 
@@ -282,6 +284,8 @@ class MeshInfo {
 
   void __set_meshNumber(const int32_t val);
 
+  void __set_coordsName(const std::string& val);
+
   bool operator == (const MeshInfo & rhs) const
   {
     if (!(name == rhs.name))
@@ -297,6 +301,8 @@ class MeshInfo {
     if (!(meshColor == rhs.meshColor))
       return false;
     if (!(meshNumber == rhs.meshNumber))
+      return false;
+    if (!(coordsName == rhs.coordsName))
       return false;
     return true;
   }
@@ -1263,8 +1269,8 @@ typedef struct _rvGetListOfMeshes__isset {
 class rvGetListOfMeshes {
  public:
 
-  static const char* ascii_fingerprint; // = "5FD86D68036BB6375BE8459471F23F69";
-  static const uint8_t binary_fingerprint[16]; // = {0x5F,0xD8,0x6D,0x68,0x03,0x6B,0xB6,0x37,0x5B,0xE8,0x45,0x94,0x71,0xF2,0x3F,0x69};
+  static const char* ascii_fingerprint; // = "1087FB53E7F49E11A7305C9D3673CCBA";
+  static const uint8_t binary_fingerprint[16]; // = {0x10,0x87,0xFB,0x53,0xE7,0xF4,0x9E,0x11,0xA7,0x30,0x5C,0x9D,0x36,0x73,0xCC,0xBA};
 
   rvGetListOfMeshes(const rvGetListOfMeshes&);
   rvGetListOfMeshes& operator=(const rvGetListOfMeshes&);
