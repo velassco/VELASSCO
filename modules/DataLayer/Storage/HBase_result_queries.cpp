@@ -72,6 +72,7 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
   //   std::string meshUnits;
   //   std::string meshColor;
   //   int32_t meshNumber;
+  //   std::string coordsName;
   
   int num_meshes = 0;
   std::string units( "");
@@ -135,6 +136,9 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
 	      current_mesh.__set_meshNumber( mesh_number);
 	    } else if ( !strcmp( pinfo, "cl")) {
 	      current_mesh.__set_meshColor( it->second.value);
+	      current_mesh.__set_meshNumber( mesh_number);
+	    } else if ( !strcmp( pinfo, "cn")) {
+	      current_mesh.__set_coordsName( it->second.value);
 	      current_mesh.__set_meshNumber( mesh_number);
 	    }
 	  } else {
