@@ -466,6 +466,7 @@ void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const Ses
 	oss << "Units: " << it->meshUnits << std::endl;
 	oss << "Color: " << it->meshColor << std::endl;
 	oss << "MeshNumber: " << it->meshNumber << std::endl;
+	oss << "CoordsName: " << it->coordsName << std::endl;
 
       }
       _return.__set_data( oss.str());
