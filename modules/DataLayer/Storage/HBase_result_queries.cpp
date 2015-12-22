@@ -28,6 +28,11 @@
 #include "Extras.h"
 #include "Crono.h"
 
+#ifdef WITH_PARSE_COMPONENTS
+#include "BinarySerialization.h"
+#endif
+
+
 #define DO_CRONO   true
 
 using namespace std;
@@ -653,7 +658,21 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
 	      // component names, still we've to agree on the list format, as they are different:
 	      // " kjkl", "l2kjlkj"  or { "klsadjfkls", "lkjkl"} or [] or ...
 	      std::vector<std::string> lst_components;
-	      lst_components.push_back( it->second.value); // needs to be parsed ....
+#ifdef WITH_PARSE_COMPONENTS
+              boost::uint32_t pos = 0;
+              GID::BinaryDeserializerNative deser;
+              deser.SetEndianness( GID::BigEndian );
+              while( pos < it->second.value.length() )
+                {
+                std::string str;
+                pos = deser.Read( it->second.value, str, pos );
+                lst_components.push_back( str );
+                }
+#else
+	      lst_components.push_back( it->second.value); // needs to
+                                                           // be parsed
+                                                           // ....
+#endif
 	      current_result.__set_componentNames( lst_components);
 	      current_result.__set_resultNumber( result_number);
 	    } else if ( !strcmp( pinfo, "lc")) {

@@ -33,7 +33,8 @@ DATA_LAYER_CPP_FILES = \
 	HBase.cpp HBase_status.cpp HBase_model_operations.cpp \
 	HBase_result_queries.cpp \
 	EDM.cpp \
-	velasscoThrift.cpp storageModule.cpp Helpers.cpp main.cpp
+	velasscoThrift.cpp storageModule.cpp Helpers.cpp main.cpp \
+	GidTypes.cxx BinarySerialization.cxx
 
 DATA_LAYER_C_FILES = cJSON.c base64.c
 DATA_LAYER_OBJS_TMP = ${DATA_LAYER_CPP_FILES:.cpp=.o} ${DATA_LAYER_C_FILES:.c=.o}
