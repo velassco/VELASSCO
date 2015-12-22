@@ -29,6 +29,7 @@
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 #include "../../EngineLayer/QueryManager/RealTimeFormat.h"
+#include "../../EngineLayer/QueryManager/BoundaryBinaryMesh.h"
 
 
 
@@ -386,6 +387,8 @@ void QM_DemoServer::ManageGetListOfMeshes( Query_Result &_return, const SessionI
   oss << "NumberOfElements: " << "2468" << std::endl;
   oss << "Units: " << "m" << std::endl;
   oss << "Color: " << "#bbbbbb" << std::endl;
+  oss << "MeshNumber: " << 1 << std::endl;
+  oss << "CoordsName: " << "c000001" << std::endl;
   oss << "Name: " << "Air" << std::endl;
   oss << "ElementType: " << "Tetrahedra" << std::endl;
   oss << "NumberOfVerticesPerElement: " << "4" << std::endl;
@@ -393,6 +396,8 @@ void QM_DemoServer::ManageGetListOfMeshes( Query_Result &_return, const SessionI
   oss << "NumberOfElements: " << "2468000" << std::endl;
   oss << "Units: " << "m" << std::endl;
   oss << "Color: " << "#2277ee" << std::endl;
+  oss << "MeshNumber: " << 2 << std::endl;
+  oss << "CoordsName: " << "c000001" << std::endl;
   _return.__set_data( oss.str());
   _return.__set_result( (Result::type)VAL_SUCCESS );
 		  
@@ -597,17 +602,6 @@ void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID
 }
 
 void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
-  // if this is really needed, then may be it's better to change num_nodes to be int64_t ...
-#pragma pack( push, 1)
-  typedef struct {
-    int64_t _id;
-    double _coord[ 3];
-  } MeshPoint;
-  typedef struct {
-    int _num_nodes;
-    int64_t _nodes[ 3];
-  } BoundaryTriangle;
-#pragma pack( pop)
   MeshPoint lst_vertices[] = {
     {  0, {  0.000000,  1.000000,  0.000000}},
     {  1, {  0.707107,  0.707107,  0.000000}},
