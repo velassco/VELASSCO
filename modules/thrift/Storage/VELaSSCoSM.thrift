@@ -60,6 +60,7 @@ struct MeshInfo {
    5: string                              meshUnits
    6: string                              meshColor
    7: i32                                 meshNumber // as of M:mXXXXXXnm
+   8: string                              coordsName // as in M:mXXXXXXcn coordinates name, qualifier prefix
 }
 
 struct Mesh {
