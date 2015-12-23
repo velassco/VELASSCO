@@ -17,7 +17,7 @@ T bswap( T w )
   
   // decent compilers will unroll this (gcc)
   // or even convert straight into single bswap (clang)
-  for (int i = 0; i < sizeof(r); i++) 
+  for (size_t i = 0; i < sizeof(r); i++) 
     {
     r <<= 8;
     r |= w & 0xff;
@@ -43,7 +43,7 @@ T endian(T w, Endianness endian )
   
   // decent compilers will unroll this (gcc)
   // or even convert straight into single bswap (clang)
-  for (int i = 0; i < sizeof(r); i++) {
+  for (size_t i = 0; i < sizeof(r); i++) {
   r <<= 8;
   r |= w & 0xff;
   w >>= 8;

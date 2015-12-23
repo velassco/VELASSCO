@@ -311,7 +311,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
   if ( this->GetConvertToHex( ) )
     {
     char tmp[sizeValue * 2];
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       GID::BinToHex( values[i], tmp );
       dest.append( tmp, sizeValue * 2 );
@@ -325,7 +325,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
     }
   else
     {
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       const char *pChar = reinterpret_cast<const char*>( values+i );
       rappend( dest, pChar, sizeValue );
@@ -343,7 +343,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
   if ( this->GetConvertToHex( ) )
     {
     char tmp[sizeValue * 2];
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       GID::BinToHex( values[i], tmp );
       dest.append( tmp, sizeValue *2 );      
@@ -357,7 +357,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
     }
   else
     {
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       const char *pChar = reinterpret_cast<const char*>( values+i );
       rappend( dest, pChar, sizeValue );
@@ -375,7 +375,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
   if ( this->GetConvertToHex( ) )
     {
     char tmp[sizeValue * 2];
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       GID::BinToHex( values[i], tmp );
       dest.append( tmp, sizeValue * 2 );      
@@ -389,7 +389,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
     }
   else
     {
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       const char *pChar = reinterpret_cast<const char*>( values+i );
       rappend( dest, pChar, sizeValue );
@@ -407,7 +407,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
   if ( this->GetConvertToHex( ) )
     {
     char tmp[ sizeValue * 2 ];
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       GID::BinToHex( values[i], tmp );
       dest.append( tmp, sizeValue * 2 );      
@@ -421,7 +421,7 @@ boost::uint32_t BinarySerializerNative::Write( std::string &dest,
     }
   else
     {
-    for( int i = 0; i < n; i++ )
+    for( boost::uint32_t i = 0; i < n; i++ )
       {
       const char *pChar = reinterpret_cast<const char*>( values+i );
       rappend( dest, pChar, sizeValue );
@@ -587,7 +587,7 @@ boost::uint32_t BinaryDeserializerNative::Read( const std::string &source,
                                                 boost::uint32_t pos )
 {
   boost::uint32_t needed;
-  int step;
+  // int step;
   if ( this->GetConvertFromHex( ) )
     {
     needed = n * 2;
