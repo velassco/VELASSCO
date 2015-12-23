@@ -112,7 +112,11 @@ namespace VELaSSCo {
   }
 
 #define __STDC_FORMAT_MACROS
+#ifndef _WIN32
 #include <inttypes.h>
+#else
+#include <stdint.h>
+#endif
   // needed for:
   // int64_t nv = 0;
   // int n = sscanf( data, "Key: %" SCNi64, &nv);
