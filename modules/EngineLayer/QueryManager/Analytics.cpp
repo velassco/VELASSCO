@@ -356,7 +356,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 static
   std::string analytics_program = "../Analytics/GetListOfVerticesFromMesh.jar";
 
-  bool use_yarn = false;
+  bool use_yarn = true;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
@@ -368,7 +368,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
     ret_cmd = system( cmd_line.c_str());
   } else { 
     // Using yarn: execute and copy to localdir the result's files
-    std::string cmd_line = hadoop_bin + "/yarn jar"  + analytics_program + " " +
+    std::string cmd_line = hadoop_bin + "/yarn jar " + analytics_program + " " +
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -630,7 +630,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-    std::string cmd_line = hadoop_bin + "/yarn jar"  + analytics_program + " " +
+    std::string cmd_line = hadoop_bin + "/yarn jar " + analytics_program + " " +
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
