@@ -29,7 +29,10 @@
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 #include "../../EngineLayer/QueryManager/RealTimeFormat.h"
-#include "../../EngineLayer/QueryManager/BoundaryBinaryMesh.h"
+
+// the format is shared between the QueryManager, the AccessLibrary and th visualiztion client
+// so it's located in the AccessLibrary folder
+#include "BoundaryBinaryMesh.h"
 
 
 
@@ -602,7 +605,7 @@ void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID
 }
 
 void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
-  MeshPoint lst_vertices[] = {
+  VELaSSCo::BoundaryBinaryMesh::MeshPoint lst_vertices[] = {
     {  0, {  0.000000,  1.000000,  0.000000}},
     {  1, {  0.707107,  0.707107,  0.000000}},
     {  2, {  0.000000,  0.707107, -0.707107}},
@@ -622,7 +625,7 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
     { 16, { -0.707107, -0.707107, -0.000000}},
     { 17, {  0.000000, -1.000000,  0.000000}}
   };
-  BoundaryTriangle lst_triangles[] = {
+  VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle lst_triangles[] = {
     { 3, { 17, 13, 16}},
     { 3, {  6,  8, 13}},
     { 3, {  8,  9, 16}},
@@ -656,22 +659,23 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
     { 3, {  3,  0,  1}},
     { 3, {  3,  1, 12}}
   };
-  int64_t num_vertices = ( int64_t)( sizeof( lst_vertices) / sizeof( MeshPoint));
-  int64_t num_triangles = ( int64_t)( sizeof( lst_triangles) / sizeof( BoundaryTriangle));
-  std::ostringstream oss;
-  oss << "NumberOfVertices: " << num_vertices << std::endl;
-  oss << "NumberOfFaces: " << num_triangles << std::endl;
-  oss.write( ( const char *)lst_vertices, sizeof( lst_vertices));
-  oss.write( ( const char *)lst_triangles, sizeof( lst_triangles));
-  _return.__set_data( oss.str());
+  VELaSSCo::BoundaryBinaryMesh demo_mesh;
+  int64_t num_vertices = ( int64_t)( sizeof( lst_vertices) / sizeof( VELaSSCo::BoundaryBinaryMesh::MeshPoint));
+  int64_t num_triangles = ( int64_t)( sizeof( lst_triangles) / sizeof( VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle));
+  demo_mesh.set( lst_vertices, num_vertices, lst_triangles, num_triangles, VELaSSCo::BoundaryBinaryMesh::STATIC);
+
+  std::string demo_mesh_str( demo_mesh.toString());
+
+  _return.__set_data( demo_mesh_str);
   _return.__set_result( (Result::type)VAL_SUCCESS );
 
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
   LOGGER << "  result : "   << _return.result        << std::endl;
   LOGGER << "  mesh : " << num_vertices << " vertices and " << num_triangles << " triangles" << std::endl;
-  LOGGER << "         ( " << oss.str().length() << " bytes)" << std::endl;
-  LOGGER << "     sizeof() MeshPoint = " << sizeof( MeshPoint) << ", BoundaryTriangle = " << sizeof( BoundaryTriangle) << std::endl;
+  LOGGER << "         ( " << demo_mesh_str.length() << " bytes)" << std::endl;
+  LOGGER << "     sizeof() MeshPoint = " << sizeof( VELaSSCo::BoundaryBinaryMesh::MeshPoint) 
+	 << ", BoundaryTriangle = " << sizeof( VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle) << std::endl;
   LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
 }
 
