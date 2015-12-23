@@ -246,6 +246,7 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
   DataLayerAccess::Instance()->getListOfMeshes( _return_,
 						dl_sessionID, modelID, analysisID, stepValue);
   int meshID = -1;
+  std::string elementType = "";
   if ( _return_.meshInfos.size() == 0) {
     _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
     error_str = "There is no mesh metadata.";
@@ -254,22 +255,26 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
           it != _return_.meshInfos.end(); it++) {
       if ( AreEqualNoCase( it->name, meshName)) {
 	meshID = it->meshNumber;
+	elementType = getStrFromElementType( it->elementType.shape);
 	break;
       }
     }
     if ( meshID == -1) { // not found
       error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
     }
   }
   
   std::string binary_mesh = "";
   if ( error_str.length() == 0) {
-    std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << std::endl;
+    std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << " and elementType = " << elementType << std::endl;
     std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
     try {
-      AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), modelID,
+      AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
+								dl_sessionID,
+								modelID,
 								simulation_data_table_name,
-								meshID,
+								meshID, elementType,
 								analysisID, stepValue, 
 								&binary_mesh, &error_str);
       GraphicsModule *graphics = GraphicsModule::getInstance();
@@ -293,6 +298,11 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
   LOGGER << "Output:"                                << std::endl;
   LOGGER << "  result : "   << _return.result        << std::endl;
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
-  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+  LOGGER << "  boundary_mesh = ( " << _return.data.length() << " bytes)" << std::endl;
+  if ( error_str.length() == 0) {
+    LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+  } else {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
 }
 

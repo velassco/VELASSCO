@@ -225,6 +225,18 @@ void DataLayerAccess::getListOfResultsFromTimeStepAndAnalysis( rvGetListOfResult
   }
 }
 
+/* as of OP-22.116 */
+void DataLayerAccess::getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+						 const std::string &sessionID, const std::string &modelID, 
+						 const std::string &analysisID, const double stepValue, 
+						 const int32_t meshID) {
+  try {
+    cli->GetListOfVerticesFromMesh( _return, sessionID, modelID, analysisID, stepValue, meshID);
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }
+}
+
 void DataLayerAccess::stopAll()
 {
     try

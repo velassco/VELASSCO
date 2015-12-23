@@ -108,6 +108,42 @@
     return out.str();
   }
 
+
+	template<typename T>
+	inline T byteSwap(T value)
+	{
+		if (sizeof(T) == 8)
+		{
+			uint64_t src = reinterpret_cast<uint64_t&>(value);
+			uint64_t dst = __builtin_bswap64(src);
+		
+			return reinterpret_cast<T&>(dst);
+		}
+		else if (sizeof(T) == 4)
+		{
+			uint32_t src = reinterpret_cast<uint32_t&>(value);
+			uint32_t dst = __builtin_bswap32(src);
+		
+			return reinterpret_cast<T&>(dst);
+		}
+	}
+  template< typename T>
+  inline T byteSwapIfNeed( T value, T saneLimit) {
+    // swapping depends if value has been injected as big (from java) or little (from c++) endian ...
+    return ( value > saneLimit) ? byteSwap< T>( value) : value;
+  }
+  template< typename T>
+  inline T byteSwapIfNeedPositive( T value, T saneLimit) {
+    // swapping depends if value has been injected as big (from java) or little (from c++) endian ...
+    return ( ( value < 0) || ( value > saneLimit)) ? byteSwap< T>( value) : value;
+  }
+
+// this limits the highest ID to 1.000.000 billion
+#define MAXIMUM_ALLOWED_I64_NUMBER ( ( int64_t)1024 * 1024 * 1024 * 1024 * 1024 * 1024)
+// this limits the highest ID to 1 billion
+#define MAXIMUM_ALLOWED_I32_NUMBER ( ( int)1024 * 1024 * 1024)
+
+
   // returns NULL if dst_len is too short, otherwise return dst
   inline const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len, const char *format="%02x") {
     if ( !dst) return NULL;

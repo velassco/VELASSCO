@@ -140,6 +140,8 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
 
+  // to get the string representation of the thrift type ElementShapeType::type
+  const char *getStrFromElementType( const ElementShapeType::type &elem);
 public:
   static void SetSimpleServer( ::apache::thrift::server::TSimpleServer *simpleServer) {
     if ( m_simpleServer)

@@ -393,7 +393,7 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
 
-static const char *getStrFromElementType( const ElementShapeType::type &elem) {
+const char *QueryManagerServer::getStrFromElementType( const ElementShapeType::type &elem) {
   const char *str_elem = "Unkown";
   if ( elem == ElementShapeType::type::UnknownElement)	             str_elem = "Unknown";	      	
   else if ( elem == ElementShapeType::type::PointElement)	     str_elem = "Point";	        
