@@ -186,7 +186,7 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
   // has to build the rowkey.... 
   // Metadata rowkeys = modelId + AnalysisID + StepNumber
   double my_stepValue = ( analysisID == "") ? 0.0 : stepValue; // rowkeys for static meshes have stepValue == 0.0
-  std::string rowKey = createRowKey( modelID, analysisID, my_stepValue, format);
+  std::string rowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
   const size_t len_rowkey = rowKey.length();
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
@@ -503,7 +503,7 @@ bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> 
   // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
   // has to build the rowkey.... 
   // Metadata rowkeys = modelId + AnalysisID + StepNumber
-  std::string rowKeyPrefix = createRowKeyPrefix( modelID, analysisID);
+  std::string rowKeyPrefix = createMetaRowKeyPrefix( modelID, analysisID);
   const size_t len_prefix = rowKeyPrefix.length();
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKeyPrefix, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
@@ -719,7 +719,7 @@ bool HBase::getListOfResultsFromTables( std::string &report, std::vector< Result
   // we are looking for all result information ...
   // cols.push_back( "R:r000001nm"); // this halves the time wrt "R", which is 4x faster than no cols.
   // Metadata rowkeys = modelId + AnalysisID + StepNumber
-  std::string rowKey = createRowKey( modelID, analysisID, stepValue, format);
+  std::string rowKey = createMetaRowKey( modelID, analysisID, stepValue, format);
   const size_t len_rowkey = rowKey.length();
   
   std::cout << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
@@ -828,3 +828,186 @@ std::string HBase::getListOfResults( std::string &report, std::vector< ResultInf
   return result;
 }
 /* end GetListOfResults */
+
+/* GetListOfVerticesFromMesh */
+static bool getVerticesFromRow( std::vector< Vertex> &listOfVertices, const TRowResult &rowResult, const int meshID) {
+  int num_vertices = 0;
+  for ( CellMap::const_iterator it = rowResult.columns.begin(); 
+	it != rowResult.columns.end(); ++it) {
+    const char *cq_str = it->first.c_str();
+    const char CF = cq_str[ 0];
+    // cq_str[ 1] should be ':'
+    const char subC = cq_str[ 2];
+    if ( CF == 'M') {
+      if ( it->first.length() > 3) { // for c1xxxx
+	int mesh_number = 0;
+	int n = sscanf( &cq_str[ 3], "%d", &mesh_number);
+	if ( n == 1) {
+	  // in fact not needed as it should always be meshID ( == coordsID)
+	  const char *pinfo = &cq_str[ 3];
+	  while ( *pinfo && isdigit( *pinfo))
+	    pinfo++;
+	  if ( subC == 'c') { // right qualifier, coordinates
+	    // coordinates are of the form cXXXXXX_ID, where ID is binary indes ...
+	    int64_t node_id;
+	    double node_x, node_y, node_z;
+	    pinfo++; // the '_'
+	    node_id = byteSwap< int64_t>( *( int64_t *)pinfo);
+	    double *coords = ( double *)it->second.value.data();
+	    node_x = byteSwap< double>( coords[ 0]);
+	    node_y = byteSwap< double>( coords[ 1]);
+	    node_z = byteSwap< double>( coords[ 2]);
+	    Vertex mesh_vertex;
+	    mesh_vertex.__set_id( node_id);
+	    mesh_vertex.__set_x( node_x);
+	    mesh_vertex.__set_y( node_y);
+	    mesh_vertex.__set_z( node_z);
+	    listOfVertices.push_back( mesh_vertex);
+	    num_vertices++;
+	  }
+	}
+      }
+    }
+  }
+  return num_vertices;
+}
+
+bool HBase::getListOfVerticesFromTables( std::string &report, std::vector< Vertex> &listOfVertices,
+					 const std::string &data_table,  
+					 const std::string &modelID,
+					 const std::string &analysisID, const double stepValue, 
+					 const int32_t meshID,  // it's actually the coordsID as in cXXXXX...
+					 const char *format) { // for the stepvalue hex string
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  // TScan ts;
+  // std::stringstream filter;
+  // filter.str("");
+  // ts.__set_filterString(filter.str());
+  StrVec cols;
+  // char buf[ 100];
+  // these filters: do not work, should check another way ...
+  // sprintf( buf, "M:c%06d*", meshID);
+  // sprintf( buf, "M:c%06d", meshID);
+  // cols.push_back( buf); // Mesh column family with
+  cols.push_back( "M");
+  // M:un for units
+  // M:c* prefix for c123456nm c123456nc for name of coordinates set and number of coordinates = vertices = nodes
+  // M:m* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
+  //                 m123456ne (numberOfElements) m123456nn (numNodesPerElem) m123456cl (color)
+  // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
+  // has to build the rowkey.... 
+  // Metadata rowkeys = modelId + AnalysisID + StepNumber
+  double my_stepValue = ( analysisID == "") ? 0.0 : stepValue; // rowkeys for static meshes have stepValue == 0.0
+  std::string prefixRowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
+  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, 0, format); // partitionID = 0
+  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, ( int)0x7fffffff, format); // partitionID = biggest ever
+  const size_t len_prefix_rowkey = prefixRowKey.length();
+  ScannerID scan_id = _hbase_client->scannerOpenWithStop( data_table, startRowKey, stopRowKey, cols, m);
+  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+
+  std::cout << "\tAccessing table '" << data_table << "' with";
+  std::cout << "\t startRowKey = " << startRowKey << std::endl;
+  std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+
+  bool scan_ok = true;
+  try {
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+  	break;
+      // process rowsResult
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
+  	// convert to return type
+	// check if the rowkey is our's ... should be ....
+	if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey) != 0)
+	  continue; // break;
+  	bool ok = getVerticesFromRow( listOfVertices, rowsResult[ i], meshID);
+  	if ( ok) {
+  	  // getMeshInfoFromRow.push_back( model_info);
+	  // getMeshInfoFromRow( tmp_lst_meshes, rowsResult[ i]);
+  	} else {
+	  // nothing read? 
+	  // eventually provide an error
+	}
+	// several rows = partitions so don't quit yet,
+	// break;
+      }
+    } // while ( true)
+
+    if ( listOfVertices.size() == 0) {
+      // nothing found
+      // scan_ok = false; // scan was ok but nothing found ...
+      std::stringstream tmp;
+      if ( analysisID != "") {
+	tmp << "Not found: Vertices for Dynamic Mesh" 
+	    << " for Analysis = '" << analysisID << "'"
+	    << " and stepValue = " << stepValue;
+      } else {
+	tmp << "Not found: Vertices for Static Mesh" ;
+      }
+      report = tmp.str();
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    report = tmp.str();
+  }
+  _hbase_client->scannerClose( scan_id);
+  
+  return scan_ok;
+}
+
+std::string HBase::getListOfVerticesFromMesh( std::string &report, std::vector< Vertex> &listOfVertices,
+					      const std::string &sessionID, const std::string &modelID, 
+					      const std::string &analysisID, const double stepValue, 
+					      const int32_t meshID) {
+  std::cout << "getListOfVerticesFromMesh THRIFT: =====" << std::endl;
+  std::cout << "S  - " << sessionID              << std::endl;
+  std::cout << "M  - " << modelID                << std::endl;
+  std::cout << "An - " << analysisID              << std::endl;
+  std::cout << "Sv - " << stepValue              << std::endl;
+  std::cout << "Msh- " << meshID                 << std::endl;
+
+  string table_name;
+  bool scan_ok = true;
+
+  // look into the modelInfo table to get the correct table name
+  TableModelEntry table_set;
+  bool found = getTableNames( sessionID, modelID, table_set);
+  if ( found) {
+    // by default hexstrings are lower case but some data has been injected as upper case !!!
+    scan_ok = getListOfVerticesFromTables( report, listOfVertices, table_set._data, modelID, analysisID, stepValue, meshID);
+    if ( scan_ok && ( listOfVertices.size() == 0)) {
+      // try with uppercase
+      scan_ok = getListOfVerticesFromTables( report, listOfVertices, table_set._data, modelID, analysisID, stepValue, meshID, "%02X");
+    }
+  } else {
+    scan_ok = false;
+  }
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    bool there_are_vertices = listOfVertices.size();
+    if ( there_are_vertices) {
+      result = "Ok";
+    } else {
+      result = "Error";
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
+  }
+
+  return result;
+}
+/* end GetListOfResults */
+

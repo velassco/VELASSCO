@@ -62,6 +62,15 @@ namespace VELaSSCo
     std::string getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
 				  const std::string &sessionID, const std::string &modelID,
 				  const std::string &analysisID, const double stepValue);
+    bool getListOfVerticesFromTables( std::string &report, std::vector< Vertex> &listOfVertices,
+				      const std::string &sessionID, const std::string &modelID,
+				      const std::string &analysisID, const double stepValue, 
+				      const int32_t meshID, 
+				      const char *format="%02x"); // for the stepvalue hex string
+    std::string getListOfVerticesFromMesh( std::string &report, std::vector< Vertex> &listOfVertices,
+					   const std::string &sessionID, const std::string &modelID, 
+					   const std::string &analysisID, const double stepValue, 
+					   const int32_t meshID);
 
     std::string getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
 				     const std::string &analysisID, const double       timeStep,  
@@ -120,8 +129,9 @@ namespace VELaSSCo
     bool storeTableNames( const std::string &sessionID, const std::string &modelID, const std::string &velassco_model_table_name);
     std::vector< std::string> getModelListTables() const;
 
-    std::string createRowKey( const std::string modelID, const std::string &analysysID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
-    std::string createRowKeyPrefix( const std::string modelID, const std::string &analysysID);
+    std::string createMetaRowKey( const std::string modelID, const std::string &analysysID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
+    std::string createDataRowKey( const std::string modelID, const std::string &analysysID, const double stepValue, const int partitionID, const char *format="%02x"); // for the stepvalue hex string
+    std::string createMetaRowKeyPrefix( const std::string modelID, const std::string &analysysID);
   };
 
   typedef std::vector<std::string> StrVec;
@@ -133,7 +143,7 @@ namespace VELaSSCo
     return ( it != _table_models.end());
   }
 
-  inline std::string HBase::createRowKey( const std::string modelID, const std::string &analysisID, const double stepValue, const char *format) { // for the stepvalue hex string
+  inline std::string HBase::createMetaRowKey( const std::string modelID, const std::string &analysisID, const double stepValue, const char *format) { // for the stepvalue hex string
     const size_t tmp_buf_size = 256;
     char tmp_buf[ tmp_buf_size];
     std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
@@ -143,7 +153,7 @@ namespace VELaSSCo
     std::string step_hex( toHexStringSwap< double>( stepValue, format));
     return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex) : ( modelID_hex + length_hex + step_hex));
   }
-  inline std::string HBase::createRowKeyPrefix( const std::string modelID, const std::string &analysisID) {
+  inline std::string HBase::createMetaRowKeyPrefix( const std::string modelID, const std::string &analysisID) {
     const size_t tmp_buf_size = 256;
     char tmp_buf[ tmp_buf_size];
     std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
@@ -151,6 +161,17 @@ namespace VELaSSCo
     // needs to be swapped !!!!!!!!
     std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
     return ( analysis_length ? ( modelID_hex + length_hex + analysisID) : ( modelID_hex + length_hex));
+  }
+  inline std::string HBase::createDataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue, const int partitionID, const char *format) { // for the stepvalue hex string
+    const size_t tmp_buf_size = 256;
+    char tmp_buf[ tmp_buf_size];
+    std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
+    size_t analysis_length = analysisID.length();
+    // needs to be swapped !!!!!!!!
+    std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
+    std::string step_hex( toHexStringSwap< double>( stepValue, format));
+    std::string part_hex( toHexStringSwap< int>( partitionID, format));
+    return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex + part_hex) : ( modelID_hex + length_hex + step_hex + part_hex));
   }
 
 

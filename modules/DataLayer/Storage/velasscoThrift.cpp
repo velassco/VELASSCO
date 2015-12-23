@@ -101,6 +101,22 @@ void VELaSSCoHandler::GetListOfResultsFromTimeStepAndAnalysis( rvGetListOfResult
   _return.__set_result_list( listOfResults);
 }
 
+void VELaSSCoHandler::GetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+						 const std::string &sessionID, const std::string &modelID, 
+						 const std::string &analysisID, const double stepValue, 
+						 const int32_t meshID) {
+  std::string report;
+  std::vector< Vertex> listOfVertices;
+  std::string status = storageModule::Instance()->getListOfVerticesFromMesh( report, listOfVertices,
+									     sessionID, modelID, 
+									     analysisID, stepValue,
+									     meshID);
+  _return.__set_status( status);
+  _return.__set_report( report);
+  _return.__set_vertex_list( listOfVertices);
+  
+}
+
 void VELaSSCoHandler::stopAll() {
   storageModule *sm = storageModule::Instance();
   sm->stopConnection();

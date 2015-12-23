@@ -92,6 +92,14 @@ std::string storageModule::getListOfResults( std::string &report, std::vector< R
   return _db->getListOfResults( report, listOfResults, sessionID, modelID, analysisID, stepValue);
 }
 
+std::string storageModule::getListOfVerticesFromMesh( std::string &report, std::vector< Vertex> &listOfVertices,
+						      const std::string &sessionID, const std::string &modelID, 
+						      const std::string &analysisID, const double stepValue, 
+						      const int32_t meshID) {
+  return _db->getListOfVerticesFromMesh( report, listOfVertices,
+					 sessionID, modelID, analysisID, stepValue, meshID);
+}
+
 std::string storageModule::checkIfAllVerticesArePresent(string listOfVertices, string out)
 {
     
