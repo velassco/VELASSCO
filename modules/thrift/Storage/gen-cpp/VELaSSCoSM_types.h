@@ -38,11 +38,13 @@ struct ElementShapeType {
 
 extern const std::map<int, const char*> _ElementShapeType_VALUES_TO_NAMES;
 
-typedef int64_t Node;
+typedef int64_t NodeID;
 
 class ElementType;
 
 class Point;
+
+class Vertex;
 
 class Element;
 
@@ -81,6 +83,8 @@ class rvGetListOfTimeSteps;
 class rvGetListOfMeshes;
 
 class rvGetListOfResults;
+
+class rvGetListOfVerticesFromMesh;
 
 typedef struct _ElementType__isset {
   _ElementType__isset() : shape(false), num_nodes(false) {}
@@ -186,6 +190,67 @@ class Point {
 
 void swap(Point &a, Point &b);
 
+typedef struct _Vertex__isset {
+  _Vertex__isset() : id(false), x(false), y(false), z(false) {}
+  bool id :1;
+  bool x :1;
+  bool y :1;
+  bool z :1;
+} _Vertex__isset;
+
+class Vertex {
+ public:
+
+  static const char* ascii_fingerprint; // = "3BC5E6ABCC6C77829F8D2E02BF3E7711";
+  static const uint8_t binary_fingerprint[16]; // = {0x3B,0xC5,0xE6,0xAB,0xCC,0x6C,0x77,0x82,0x9F,0x8D,0x2E,0x02,0xBF,0x3E,0x77,0x11};
+
+  Vertex(const Vertex&);
+  Vertex& operator=(const Vertex&);
+  Vertex() : id(0), x(0), y(0), z(0) {
+  }
+
+  virtual ~Vertex() throw();
+  NodeID id;
+  double x;
+  double y;
+  double z;
+
+  _Vertex__isset __isset;
+
+  void __set_id(const NodeID val);
+
+  void __set_x(const double val);
+
+  void __set_y(const double val);
+
+  void __set_z(const double val);
+
+  bool operator == (const Vertex & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (!(x == rhs.x))
+      return false;
+    if (!(y == rhs.y))
+      return false;
+    if (!(z == rhs.z))
+      return false;
+    return true;
+  }
+  bool operator != (const Vertex &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Vertex & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const Vertex& obj);
+};
+
+void swap(Vertex &a, Vertex &b);
+
 typedef struct _Element__isset {
   _Element__isset() : id(false), nodes_ids(false) {}
   bool id :1;
@@ -205,13 +270,13 @@ class Element {
 
   virtual ~Element() throw();
   int64_t id;
-  std::vector<Node>  nodes_ids;
+  std::vector<NodeID>  nodes_ids;
 
   _Element__isset __isset;
 
   void __set_id(const int64_t val);
 
-  void __set_nodes_ids(const std::vector<Node> & val);
+  void __set_nodes_ids(const std::vector<NodeID> & val);
 
   bool operator == (const Element & rhs) const
   {
@@ -333,8 +398,8 @@ typedef struct _Mesh__isset {
 class Mesh {
  public:
 
-  static const char* ascii_fingerprint; // = "46C85421A06219720D181E7217492E73";
-  static const uint8_t binary_fingerprint[16]; // = {0x46,0xC8,0x54,0x21,0xA0,0x62,0x19,0x72,0x0D,0x18,0x1E,0x72,0x17,0x49,0x2E,0x73};
+  static const char* ascii_fingerprint; // = "DF18DD7E21D82A44600394ED79F2401D";
+  static const uint8_t binary_fingerprint[16]; // = {0xDF,0x18,0xDD,0x7E,0x21,0xD8,0x2A,0x44,0x60,0x03,0x94,0xED,0x79,0xF2,0x40,0x1D};
 
   Mesh(const Mesh&);
   Mesh& operator=(const Mesh&);
@@ -346,7 +411,7 @@ class Mesh {
   int64_t numberOfVertices;
   int64_t dimension;
   ElementType type;
-  std::vector<Node>  nodes;
+  std::vector<Vertex>  nodes;
   std::vector<Element>  elements;
 
   _Mesh__isset __isset;
@@ -359,7 +424,7 @@ class Mesh {
 
   void __set_type(const ElementType& val);
 
-  void __set_nodes(const std::vector<Node> & val);
+  void __set_nodes(const std::vector<Vertex> & val);
 
   void __set_elements(const std::vector<Element> & val);
 
@@ -501,11 +566,11 @@ class Triangle {
   }
 
   virtual ~Triangle() throw();
-  std::vector<Node>  nodes;
+  std::vector<NodeID>  nodes;
 
   _Triangle__isset __isset;
 
-  void __set_nodes(const std::vector<Node> & val);
+  void __set_nodes(const std::vector<NodeID> & val);
 
   bool operator == (const Triangle & rhs) const
   {
@@ -1368,6 +1433,61 @@ class rvGetListOfResults {
 };
 
 void swap(rvGetListOfResults &a, rvGetListOfResults &b);
+
+typedef struct _rvGetListOfVerticesFromMesh__isset {
+  _rvGetListOfVerticesFromMesh__isset() : status(false), report(false), vertex_list(false) {}
+  bool status :1;
+  bool report :1;
+  bool vertex_list :1;
+} _rvGetListOfVerticesFromMesh__isset;
+
+class rvGetListOfVerticesFromMesh {
+ public:
+
+  static const char* ascii_fingerprint; // = "3DED750E99F49707EC95BA91390DEF81";
+  static const uint8_t binary_fingerprint[16]; // = {0x3D,0xED,0x75,0x0E,0x99,0xF4,0x97,0x07,0xEC,0x95,0xBA,0x91,0x39,0x0D,0xEF,0x81};
+
+  rvGetListOfVerticesFromMesh(const rvGetListOfVerticesFromMesh&);
+  rvGetListOfVerticesFromMesh& operator=(const rvGetListOfVerticesFromMesh&);
+  rvGetListOfVerticesFromMesh() : status(), report() {
+  }
+
+  virtual ~rvGetListOfVerticesFromMesh() throw();
+  std::string status;
+  std::string report;
+  std::vector<Vertex>  vertex_list;
+
+  _rvGetListOfVerticesFromMesh__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_vertex_list(const std::vector<Vertex> & val);
+
+  bool operator == (const rvGetListOfVerticesFromMesh & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(vertex_list == rhs.vertex_list))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetListOfVerticesFromMesh &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetListOfVerticesFromMesh & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetListOfVerticesFromMesh& obj);
+};
+
+void swap(rvGetListOfVerticesFromMesh &a, rvGetListOfVerticesFromMesh &b);
 
 } // namespace
 

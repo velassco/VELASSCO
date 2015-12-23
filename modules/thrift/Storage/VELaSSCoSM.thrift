@@ -38,17 +38,17 @@ struct Point {
    3: double                              z
 }
 
-typedef i64 Node;
-// struct Node {
-//    1: i64                                 id
-//    2: double                              x
-//    3: double                              y
-//    4: double                              z
-// }
+typedef i64 NodeID;
+struct Vertex {
+   1: NodeID                              id
+   2: double                              x
+   3: double                              y
+   4: double                              z
+}
 
 struct Element {
    1: i64                                 id
-   2: list<Node>                          nodes_ids
+   2: list<NodeID>                          nodes_ids
    // 2: list<i64>                           nodes_ids
 }
 
@@ -69,7 +69,7 @@ struct Mesh {
    2: i64                                 numberOfVertices
    3: i64                                 dimension
    4: ElementType                         type
-   5: list<Node>                          nodes
+   5: list<Vertex>                          nodes
    6: list<Element>                       elements
 }
 
@@ -86,7 +86,7 @@ struct ResultInfo {
 }
 
 struct Triangle {
-   1: list<Node>                          nodes
+   1: list<NodeID>                          nodes
 }
 
 
@@ -224,6 +224,12 @@ struct rvGetListOfResults {
    3: list< ResultInfo> result_list
 }
 
+struct rvGetListOfVerticesFromMesh {
+   1: string            status
+   2: string            report
+   3: list<Vertex>      vertex_list
+}
+
 
 // provides service VELaSSCo Storage Module
 service VELaSSCoSM
@@ -320,6 +326,18 @@ service VELaSSCoSM
 	  3: string                           analysisID
 	  4: double                           stepValue),
 
+
+	  /**
+	   Extract a list of vertices from the open model and the selected meshID
+	   as of OP-22.116 
+	   */
+	  rvGetListOfVerticesFromMesh GetListOfVerticesFromMesh(
+	  1: string                           sessionID
+	  2: string                           modelID
+	  3: string                           analysisID
+	  4: double                           stepValue
+	  5: i32                              meshID // actually it's the coordsID, i.e. cXXXXX ...
+	    ),
 
   /**
    Return the status of the different services 

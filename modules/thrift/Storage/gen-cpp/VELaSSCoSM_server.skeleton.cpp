@@ -147,6 +147,21 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
   }
 
   /**
+   * Extract a list of vertices from the open model and the selected meshID
+   * as of OP-22.116
+   * 
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param stepValue
+   * @param meshID
+   */
+  void GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID) {
+    // Your implementation goes here
+    printf("GetListOfVerticesFromMesh\n");
+  }
+
+  /**
    * returns a session if if the user exists with the specified password and the specified role or an empty role.
    * 
    * @param user_name
