@@ -141,23 +141,6 @@ namespace VELaSSCo
 // this limits the highest ID to 1 billion
 #define MAXIMUM_ALLOWED_I32_NUMBER ( ( int)1024 * 1024 * 1024)
 
-	template<typename T>
-	inline std::string toHexString(T value, const char *format="%02x") {
-	  char buffer[2*sizeof(value) + 1]; // the '\0' and avoid memory corruption
-	  ToHexString(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
-	  
-	  return std::string(buffer, 2*sizeof(value));
-	}
-
-	template<typename T>
-	inline std::string toHexStringSwap(T value, const char *format="%02x") {
-	  char buffer[2*sizeof(value) + 1]; // the '\0' and avoid memory corruption
-	  ToHexStringSwap(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
-	  
-	  return std::string(buffer, 2*sizeof(value));
-	}
-
-
   // returns NULL if dst_len is too short, otherwise return dst
   inline const char *ToHexString( char *dst, size_t dst_len, const char *src, const size_t src_len, const char *format="%02x") {
     if ( !dst) return NULL;
@@ -184,6 +167,23 @@ namespace VELaSSCo
     // if all chars converted, then return dst
     return ( isrc == src_len) ? dst : NULL;
   }
+
+	template<typename T>
+	inline std::string toHexString(T value, const char *format="%02x") {
+	  char buffer[2*sizeof(value) + 1]; // the '\0' and avoid memory corruption
+	  ToHexString(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
+	  
+	  return std::string(buffer, 2*sizeof(value));
+	}
+
+	template<typename T>
+	inline std::string toHexStringSwap(T value, const char *format="%02x") {
+	  char buffer[2*sizeof(value) + 1]; // the '\0' and avoid memory corruption
+	  ToHexStringSwap(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
+	  
+	  return std::string(buffer, 2*sizeof(value));
+	}
+
 
   // returns NULL if dst_len is too short or error in conversion, otherwise return dst
   inline const char *FromHexString( char *dst, size_t dst_len, const char *src, const size_t src_len) {
