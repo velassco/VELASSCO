@@ -606,7 +606,6 @@ void QM_DemoServer::ManageGetBoundingBox( Query_Result &_return, const SessionID
 
 void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   VELaSSCo::BoundaryBinaryMesh::MeshPoint lst_vertices[] = {
-    {  0, {  0.000000,  1.000000,  0.000000}},
     {  1, {  0.707107,  0.707107,  0.000000}},
     {  2, {  0.000000,  0.707107, -0.707107}},
     {  3, { -0.000000,  0.707107,  0.707107}},
@@ -623,7 +622,8 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
     { 14, { -0.000000, -0.707107,  0.707107}},
     { 15, {  0.707107, -0.707107,  0.000000}},
     { 16, { -0.707107, -0.707107, -0.000000}},
-    { 17, {  0.000000, -1.000000,  0.000000}}
+    { 17, {  0.000000, -1.000000,  0.000000}},
+    { 18, {  0.000000,  1.000000,  0.000000}}
   };
   VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle lst_triangles[] = {
     { 3, { 17, 13, 16}},
@@ -632,7 +632,7 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
     { 3, {  8, 16, 13}},
     { 3, {  8,  6,  2}},
     { 3, {  4,  9,  8}},
-    { 3, {  2,  0,  4}},
+    { 3, {  2, 18,  4}},
     { 3, {  2,  4,  8}},
     { 3, { 17, 16, 14}},
     { 3, {  9, 10, 16}},
@@ -640,7 +640,7 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
     { 3, { 10, 14, 16}},
     { 3, { 10,  9,  4}},
     { 3, {  3,  7, 10}},
-    { 3, {  4,  0,  3}},
+    { 3, {  4, 18,  3}},
     { 3, {  4,  3, 10}},
     { 3, { 17, 15, 13}},
     { 3, {  5, 11, 15}},
@@ -648,7 +648,7 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
     { 3, { 11, 13, 15}},
     { 3, { 11,  5,  1}},
     { 3, {  2,  6, 11}},
-    { 3, {  1,  0,  2}},
+    { 3, {  1, 18,  2}},
     { 3, {  1,  2, 11}},
     { 3, { 17, 14, 15}},
     { 3, {  7, 12, 14}},
@@ -656,7 +656,7 @@ void QM_DemoServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const Sessi
     { 3, { 12, 15, 14}},
     { 3, { 12,  7,  3}},
     { 3, {  1,  5, 12}},
-    { 3, {  3,  0,  1}},
+    { 3, {  3, 18,  1}},
     { 3, {  3,  1, 12}}
   };
   VELaSSCo::BoundaryBinaryMesh demo_mesh;
