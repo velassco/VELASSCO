@@ -45,6 +45,7 @@ namespace VELaSSCo
   {
 	
   public:
+    virtual ~AbstractDB() = 0; // pure virtual destructor
 
     virtual bool startConnection( const char *DB_hostname, const int DB_port) = 0;
     virtual bool stopConnection() = 0;
@@ -116,5 +117,5 @@ namespace VELaSSCo
                                              const double      timeStep,
                                              const int32_t     partitionID) = 0;
   };
-
+  inline AbstractDB::~AbstractDB() {}
 }
