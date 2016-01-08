@@ -14,6 +14,15 @@ C_FLAGS = $(EXTRA_FLAGS)
 
 OPTS = -g
 
+# thrift headers and libs
+#THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
+THRIFT_BASE = $(HOME)
+EXTRA_INC_DIRS = -I$(THRIFT_BASE)/include -I$(HOME)/include
+EXTRA_LIB_DIRS = -L$(THRIFT_BASE)/lib -L$(HOME)/lib
+
+#EXTRA_LIB_DIRS = -L/exports/applications/apps/community/VELaSSCo/build/lib
+
+
 THRIFT_STORAGE_DIR=../../thrift/Storage/gen-cpp
 THRIFT_HBASE_DIR=../../thrift/Storage/hbase/gen-cpp
 
@@ -45,8 +54,8 @@ DATA_LAYER_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
 	$(THRIFT_STORAGE_DEPENDENCIES) $(THRIFT_HBASE_DEPENDENCIES)
 
 DATA_LAYER_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_HBASE_DIR) \
-	-I/usr/local/include -I/opt/local/include
-DATA_LAYER_LIBS = -L/usr/local/lib -lthrift -lcurl
+	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include
+DATA_LAYER_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -lthrift -lcurl
 
 all: $(BIN) $(BIN)/$(EXEC)
 
@@ -65,15 +74,15 @@ $(OBJS_DIR)/%.o : %.cpp $(DATA_LAYER_INCLUDE_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(DATA_LAYER_INCS) $< -o $@
 
 $(OBJS_DIR)/%.o : %.c $(DATA_LAYER_INCLUDE_DEPENDENCIES)
-	$(CCPP) -c $(C_FLAGS) $(OPTS) $< -o $@
+	$(CCPP) -c $(C_FLAGS) $(OPTS) $(EXTRA_INC_DIRS) $< -o $@
 
 # Storage Thirft API:
 $(OBJS_DIR)/%.o : $(THRIFT_STORAGE_DIR)/%.cpp $(THRIFT_STORAGE_DEPENDENCIES)
-	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_STORAGE_DIR) $< -o $@
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_STORAGE_DIR) $(EXTRA_INC_DIRS) $< -o $@
 
 # HBase Thirft API:
 $(OBJS_DIR)/%.o : $(THRIFT_HBASE_DIR)/%.cpp $(THRIFT_HBASE_DEPENDENCIES)
-	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_HBASE_DIR) $< -o $@
+	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_HBASE_DIR) $(EXTRA_INC_DIRS) $< -o $@
 
 clean:
 	rm -f $(BIN)/*.o $(BIN)/$(EXEC)
