@@ -3,7 +3,7 @@ CC=gcc
 EXEC=QueryManager
 BIN=bin
 
-EXTRA_FLAGS = -Wall -Wcast-align -Wcomment
+EXTRA_FLAGS = -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs
 # other interesting warnings not included in Wall:
 #  -Wcast-align -Wcomment
 #   -Wconversion  --> warnings in boost
