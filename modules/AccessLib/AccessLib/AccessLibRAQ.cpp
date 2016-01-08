@@ -73,24 +73,24 @@ extern "C" {
 	  {
 	    size_t numVertices;
 	    size_t numElements;
-
+	    
 	    std::istringstream in(*queryData);
 	    in >> numVertices >> numElements >> std::ws;
-
-		  if(numVertices > 0 && numElements > 0){
-	        const size_t offsetVertexIDs = (size_t)in.tellg();
-	        const size_t offsetValues    = offsetVertexIDs + numVertices*sizeof(int64_t);
-
-	        *resultVertexIDs   = (const int64_t*)(&((*queryData)[offsetVertexIDs]));
-	        *resultValues      = (const double*) (&((*queryData)[offsetValues]));
-	        *resultNumVertices = numVertices;
-		  } else {
-          *resultVertexIDs   = nullptr;
-          *resultValues      = nullptr;
-          *resultNumVertices = 0;
-      }
+	    
+	    if(numVertices > 0 && numElements > 0){
+	      const size_t offsetVertexIDs = (size_t)in.tellg();
+	      const size_t offsetValues    = offsetVertexIDs + numVertices*sizeof(int64_t);
+	      
+	      *resultVertexIDs   = (const int64_t*)(&((*queryData)[offsetVertexIDs]));
+	      *resultValues      = (const double*) (&((*queryData)[offsetValues]));
+	      *resultNumVertices = numVertices;
+	    } else {
+	      *resultVertexIDs   = NULL;//nullptr;
+	      *resultValues      = NULL;//nullptr;
+	      *resultNumVertices = 0;
+	    }
 	  }
-
+	
 	return result;
       }
     CATCH_ERROR;
