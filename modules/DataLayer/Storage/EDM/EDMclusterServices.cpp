@@ -69,7 +69,7 @@ void EDMclusterServices::startServices()
    Iterator<ecl::EDMcluster*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_EDMcluster), clusterModel);
    ourCluster = clIter.first();
    if (!ourCluster) THROW("EDMclusterServices::startServices() - No EDMcluser object defined.");
-   databaseIter.init(clusterModel->getObjectSet(ecl::et_EDMcluster), 0, clusterModel);
+   databaseIter.init(clusterModel->getObjectSet(ecl::et_EDMdatabase), 0, clusterModel);
 }
 /*==============================================================================================================================*/
 void EDMclusterServices::initClusterModel(char *serverListFileName)
@@ -126,15 +126,18 @@ void EDMclusterExecution::buildServerContexts(char *user, char *group, char *pas
 
    ma.reset();
    serverContexts = new(&ma)Collection<SdaiServerContext>(&ma);
+   EDMcluster *theCluster = theServer->getTheEDMcluster();
 
-   //Iterator<ecl::EDMdatabase*, ecl::entityType>  dbIter(theServer->getTheEDMcluster()->get_databases(), theServer);
-   //for (ecl::EDMdatabase*db = dbIter.first(); db; db = dbIter.next()) {
-   //   SdaiServerContext serverContextId;
-   //   theServer->getUniqueServerContextID(serverContextName);
-   //   char *port = db->get_server()->get_Port();
-   //   char *host = db->get_server()->get_Host();
-   //   CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port,
-   //      host, NULL, NULL, NULL, NULL, NULL, &serverContextId));
-   //   serverContexts->add(serverContextId);
-   //}
+   //Iterator<ecl::EDMdatabase*, ecl::entityType>  dbIter(theCluster->get_databases(), theServer->clusterModel);
+   for (ecl::EDMdatabase*db = theServer->databaseIter.first(); db; db = theServer->databaseIter.next()) {
+      SdaiServerContext serverContextId;
+      theServer->getUniqueServerContextID(serverContextName);
+      ecl::EDMServer *srv = db->get_server();
+      if (srv) {
+         char *port = srv->get_Port();
+         char *host = srv->get_Host();
+         CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &serverContextId));
+         serverContexts->add(serverContextId);
+      }
+   }
 }

@@ -158,6 +158,18 @@ public:
    * @param stepValue
    */
    void GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue);
+   
+   /**
+   * Extract a list of vertices from the open model and the selected meshID
+   * as of OP-22.116
+   *
+   * @param sessionID
+   * @param modelID
+   * @param analysisID
+   * @param stepValue
+   * @param meshID
+   */
+   void GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID);
 
    /**
    * Returns a list of meshes present for the given time-step of that analysis.

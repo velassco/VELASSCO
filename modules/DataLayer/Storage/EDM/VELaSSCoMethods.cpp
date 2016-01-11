@@ -61,19 +61,20 @@ void VELaSSCoMethods::getBoundingBox()
 {
    int startTime = GetTickCount();
    if (serverContexts) {
-//      SdaiServerContext *scs = serverContexts->getElementArray();
-//      EDMULONG nsc = serverContexts->size();
-//      SdaiInteger          edmSystemType;
-//
-//#pragma omp parallel for
-//      for (int i = 0; i < nsc; i++) {
-//         SdaiInteger        warnings, errors;
-//         int rstat = edmiRemoteGetEdmSystemType(scs[i], &edmSystemType, NULL);
-//         CHECK(edmiRemoteExecuteCppMethod(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", "cpp_plugins", "VELaSSCo", "", 0, 0, NULL, &params[i], NULL));
-//      }
+      SdaiServerContext *scs = serverContexts->getElementArray();
+      EDMULONG nsc = serverContexts->size();
+      SdaiInteger          edmSystemType;
+
+#pragma omp parallel for
+      for (int i = 0; i < nsc; i++) {
+         SdaiInteger        warnings, errors;
+         int rstat = edmiRemoteGetEdmSystemType(scs[i], &edmSystemType, NULL);
+         //CHECK(edmiRemoteExecuteCppMethod(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", "cpp_plugins", "VELaSSCo", "getBoundingBox",
+         //   0, 0, NULL, NULL, &returnValue, NULL));
+      }
    }
    int endTime = GetTickCount();
-   printf("Elapsed time for the validation is %d millisecponds\n", endTime - startTime);
+   printf("Elapsed time is %d milliseconds\n", endTime - startTime);
 }
 
 

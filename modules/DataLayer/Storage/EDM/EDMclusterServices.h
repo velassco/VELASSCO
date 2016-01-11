@@ -17,12 +17,12 @@ class EDMclusterServices
    repository.model Cluster.Cluster
 */
 {
-   Iterator<ecl::EDMdatabase*, ecl::entityType>       databaseIter;
    ecl::EDMcluster                                    *ourCluster;
 
    EDMULONG                                           serverContextID;
    SdaiModel                                          clusterModelID;
 public:
+   Iterator<ecl::EDMdatabase*, ecl::entityType>       databaseIter;
    Model                                              *clusterModel;
 /*!
 */
@@ -51,10 +51,12 @@ protected:
    CMemoryAllocator                 ma;
    EDMclusterServices               *theServer;
    EDMULONG                         nParameters;
-   tSdaiSelect                      params[MAX_PAR];
+   tRemoteParameter                 params[MAX_PAR];
+   tRemoteParameter                 *paramAddresses[MAX_PAR];
+   tRemoteParameter                 returnValue;
    void                             init()
    {
-      nParameters = 0; params[0].nTypes = 0;
+      nParameters = 0;
    }
 public:
    Collection<SdaiServerContext>    *serverContexts;

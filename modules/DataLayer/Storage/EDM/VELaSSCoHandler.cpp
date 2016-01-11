@@ -189,7 +189,6 @@ void VELaSSCoHandler::UserLogin(std::string& _return, const std::string& user_na
 void VELaSSCoHandler::UserLogout(std::string& _return, const std::string& sessionID)
 {
    thelog->logg(1, "-->UserLogout\nsessionID=%s\n\n", sessionID.data());
-
 }
 
 /**
@@ -208,7 +207,7 @@ void VELaSSCoHandler::UserLogout(std::string& _return, const std::string& sessio
 */
 void VELaSSCoHandler::GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices)
 {
-
+   //--------------------->
 }
 
 
@@ -225,7 +224,7 @@ void VELaSSCoHandler::GetResultFromVerticesID(std::string& _return, const std::s
 */
 void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID)
 {
-
+//--------------------->
 }
 
 /**
@@ -233,7 +232,7 @@ void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(std::string& _return, co
 */
 void VELaSSCoHandler::stopAll()
 {
-
+   //--------------------->
 }
 /**
 * For each point in the input parameter points, the method returns data about the element that contains the point.
@@ -435,12 +434,6 @@ int findElementsOfTriangle(NodeInfo &n1, NodeInfo &n2, NodeInfo &n3)
    return nElems;
 }
 
-void copyNode(VELaSSCoSM::Node &dn, fem::Node *sn)
-{
-   //dn.__set_id(sn->get_id());
-   //dn.__set_x(sn->get_x()); dn.__set_y(sn->get_y()); dn.__set_z(sn->get_z());
-}
-
 void VELaSSCoHandler::CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle>  &elements)
 {
 
@@ -477,13 +470,10 @@ void VELaSSCoHandler::CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Tr
          for (int i = 0; i < 4; i++) {
             NodeInfo *ni1 = &nodes[nodesInTriangles[i][0]], *ni2 = &nodes[nodesInTriangles[i][1]], *ni3 = &nodes[nodesInTriangles[i][2]];
             if (findElementsOfTriangle (*ni1, *ni2, *ni3) == 1) {
-               VELaSSCoSM::Node dn;
-               std::vector <VELaSSCoSM::Node> dnodes;
-               copyNode(dn, ni1->theNode); dnodes.push_back(dn);
-               copyNode(dn, ni2->theNode); dnodes.push_back(dn);
-               copyNode(dn, ni3->theNode); dnodes.push_back(dn);
                VELaSSCoSM::Triangle t;
-               t.__set_nodes(dnodes);
+               vector<NodeID> nodes;
+               nodes.push_back(ni1->theNode->get_id()); nodes.push_back(ni2->theNode->get_id()); nodes.push_back(ni3->theNode->get_id());
+               t.__set_nodes(nodes);
                elements.push_back(t);
             }
          }
@@ -1103,6 +1093,12 @@ void VELaSSCoHandler::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
 
 }
 
+
+void VELaSSCoHandler::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID)
+{
+
+}
+
 /**
 * Returns a list of meshes present for the given time-step of that analysis.
 * If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
@@ -1114,6 +1110,8 @@ void VELaSSCoHandler::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
 * @param analysisID
 * @param timeStep
 */
+
+
 void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep)
 {
    try {

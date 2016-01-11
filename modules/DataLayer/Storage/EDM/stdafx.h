@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <tchar.h>
 
+#define _CRT_SECURE_NO_WARNINGS 1
 
 #include "gen-cpp\VELaSSCoSM.h"
 #include <thrift/protocol/TBinaryProtocol.h>

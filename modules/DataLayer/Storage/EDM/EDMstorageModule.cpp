@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
       ourVELaSSCoHandler->cDEMrep = &demRepository;
       ourVELaSSCoHandler->cFEMrep = &femRepository;
 
-#ifdef Cluster
+#ifndef Cluster
       SdaiRepository repositoryId;
       CMemoryAllocator ma(0x100000);
       int rstat = edmiCreateRepository("EDMcluster", &repositoryId);
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
       }
       Repository clusterRepository(&VELaSSCo_db, "EDMcluster");
       Model clusterModel(&clusterRepository, &ma, &EDMcluster_SchemaObject);
-      //clusterModel.open("EDMcluster", sdaiRW);
+      clusterModel.open("EDMcluster", sdaiRW);
       VELaSSCoCluster ourCluster(&clusterModel);
       if (argc == 6) {
          ourCluster.initClusterModel(argv[5]);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
       ourCluster.startServices();
 
       VELaSSCoMethods findAllModels(&ourCluster);
-      findAllModels.buildServerContexts("superuser", "", "VELaSSCo");
+      findAllModels.buildServerContexts("superuser", "", "v");
       //findAllModels.ListModels();
       //findAllModels.ValidateModels();
       findAllModels.getBoundingBox();
