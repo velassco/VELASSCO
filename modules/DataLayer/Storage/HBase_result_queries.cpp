@@ -28,6 +28,8 @@
 #include "Extras.h"
 #include "Crono.h"
 
+#define WITH_PARSE_COMPONENTS
+
 #ifdef WITH_PARSE_COMPONENTS
 #include "BinarySerialization.h"
 #endif
