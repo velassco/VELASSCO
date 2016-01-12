@@ -652,8 +652,8 @@ void QueryManagerServer::ManageGetListOfResults( Query_Result &_return, const Se
 	oss << "NumberOfComponents: " <<  it->numberOfComponents << std::endl;
 	oss << "ComponentNames: ";
 	for ( size_t i = 0; i < it->componentNames.size(); i++) {
-	  if ( i) oss << ", ";
-	  oss << it->componentNames[ i];
+	  if ( i) oss << " ";
+	  oss << "{" << it->componentNames[ i] << "}";
 	}
 	oss << std::endl;
 	oss << "Location: " << it->location << std::endl;
