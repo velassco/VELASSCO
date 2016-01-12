@@ -71,16 +71,22 @@ namespace VELaSSCo
 					   const std::string &sessionID, const std::string &modelID, 
 					   const std::string &analysisID, const double stepValue, 
 					   const int32_t meshID);
-
-    std::string getResultOnVertices( const std::string &sessionID,  const std::string &modelID, 
-				     const std::string &analysisID, const double       timeStep,  
-				     const std::string &resultID,   const std::string &listOfVertices );
-    std::string getResultOnVertices_curl( const std::string &sessionID,  const std::string &modelID, 
+					   
+    bool getResultFromVerticesIDFromTables( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& table_name,
+           const std::string &sessionID,  const std::string &modelID,
+           const std::string &analysisID, const double       timeStep,  
+           const ResultInfo &resultInfo,  const std::vector<int64_t> &listOfVerticesID, const char *format = "%02x" );
+    std::string getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID );
+    std::string getResultFromVerticesID_curl( const std::string &sessionID,  const std::string &modelID, 
 					  const std::string &analysisID, const double       timeStep,  
 					  const std::string &resultID,   const std::string &listOfVertices );
-    std::string getResultOnVertices_thrift( const std::string &sessionID,  const std::string &modelID, 
-					    const std::string &analysisID, const double       timeStep,  
-					    const std::string &resultID,   const std::string &listOfVertices );
+	std::string getResultFromVerticesID_thrift( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID );
 					    
 	// GetCoordinatesAndElementsFromMesh
 	std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID,

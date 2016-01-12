@@ -44,11 +44,17 @@ void VELaSSCoHandler::FindModel( rvOpenModel &_return, const std::string &sessio
   _return.__set_model_info( model_info);
 }
 
-void VELaSSCoHandler::GetResultFromVerticesID(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const std::string &resultID, const std::string &listOfVertices)
+void VELaSSCoHandler::GetResultFromVerticesID( rvGetResultFromVerticesID &_return, 
+				  const std::string &sessionID, const std::string &modelID, 
+				  const std::string &analysisID, const double timeStep,
+				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
 {
-    
-    _return = storageModule::Instance()->getResultOnVertices (sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
-    // _return = storageModule::Instance()->checkIfAllVerticesArePresent(listOfVertices, _return);
+  std::string report;
+  std::vector< ResultOnVertex > listOfResults;
+  std::string status  = storageModule::Instance()->getResultFromVerticesID (report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
+  _return.__set_status( status );
+  _return.__set_report( report );
+  _return.__set_result_list( listOfResults );
 }
 
 void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(std::string &_return, const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const int32_t partitionID)

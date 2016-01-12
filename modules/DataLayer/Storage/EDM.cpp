@@ -70,12 +70,10 @@ std::string EDM::findModel( std::string &report, std::string &modelID,
   return "Error";
 }
 
-std::string EDM::getResultOnVertices( const std::string &sessionID,
-                                      const std::string &modelID,
-                                      const std::string &analysisID,
-                                      const double       timeStep,
-                                      const std::string &resultID,
-                                      const std::string &listOfVertices )
+std::string EDM::getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
 {
 
 #ifdef _WIN32

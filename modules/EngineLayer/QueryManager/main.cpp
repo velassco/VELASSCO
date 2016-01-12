@@ -58,7 +58,7 @@ void parse(string cmd)
 	// rvOpenModel om_return;
 	// DataLayerAccess::Instance()->openModel( om_return, sessionID, model_name, "rw");
 	// const string &modelID = om_return.modelID;
-        DataLayerAccess::Instance()->getResultFromVerticesID( _return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+    //    DataLayerAccess::Instance()->getResultFromVerticesID( _return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
 	// DataLayerAccess::Instance()->closeModel();
         cout<<"#### /Query ####"<<endl;
         

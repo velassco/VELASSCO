@@ -59,12 +59,10 @@ public:
   std::string findModel( std::string &report, std::string &modelID, FullyQualifiedModelName &model_info,
 		    const std::string &sessionID, const std::string &unique_model_name_pattern, 
 		    const std::string &requested_access);
-  string getResultOnVertices( std::string sessionID,
-			      std::string modelID,
-			      std::string analysisID,
-			      double timeStep,
-			      std::string resultID,
-			      std::string listOfVertices);
+  std::string getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID );
   std::string getCoordinatesAndElementsFromMesh( std::string sessionID, 
 				  std::string modelID,
 				  std::string analysisID,

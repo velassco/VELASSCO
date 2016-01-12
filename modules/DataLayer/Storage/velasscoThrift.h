@@ -50,10 +50,10 @@ public:
    * 					with the attached list of double
    * 					if errors occur the contect is also returned here?
    */
-  void GetResultFromVerticesID(std::string &_return, 
-			       const std::string &sessionID, const std::string &modelID, 
-			       const std::string &analysisID, const double timeStep, 
-			       const std::string &resultID, const std::string &listOfVertices) ;
+   void GetResultFromVerticesID( rvGetResultFromVerticesID &_return, 
+				  const std::string &sessionID, const std::string &modelID, 
+				  const std::string &analysisID, const double timeStep,
+				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ); 
 			       
   void GetCoordinatesAndElementsFromMesh(std::string& _return, 
 				   const std::string& sessionID, const std::string& modelID, 

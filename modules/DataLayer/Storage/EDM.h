@@ -63,12 +63,10 @@ namespace VELaSSCo
       return resultString;
     }
     
-    std::string getResultOnVertices( const std::string &sessionID,
-                                     const std::string &modelID,
-                                     const std::string &analysisID,
-                                     const double       timeStep,
-                                     const std::string &resultID,
-                                     const std::string &listOfVertices );
+    std::string getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID );    
                                      
     std::string getCoordinatesAndElementsFromMesh( const std::string &sessionID,
                                      const std::string &modelID,

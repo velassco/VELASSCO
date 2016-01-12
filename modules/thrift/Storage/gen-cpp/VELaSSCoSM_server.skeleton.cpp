@@ -62,7 +62,7 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
    * @param resultID
    * @param listOfVertices
    */
-  void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices) {
+  void GetResultFromVerticesID(rvGetResultFromVerticesID& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices) {
     // Your implementation goes here
     printf("GetResultFromVerticesID\n");
   }

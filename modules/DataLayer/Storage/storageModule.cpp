@@ -62,9 +62,12 @@ std::string storageModule::findModel( std::string &report, std::string &modelID,
   return _db->findModel( report, modelID, model_info, sessionID, unique_model_name_pattern, requested_access);
 }
 
-std::string storageModule::getResultOnVertices( std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
-{ 	
-  return _db->getResultOnVertices(sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
+std::string storageModule::getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
+{
+	return _db->getResultFromVerticesID(report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID);	
 }
 
 std::string storageModule::getCoordinatesAndElementsFromMesh(std::string sessionID, std::string modelID, std::string analysisID, double timeStep, unsigned partitionID)

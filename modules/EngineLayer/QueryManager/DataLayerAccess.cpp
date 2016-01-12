@@ -112,12 +112,14 @@ void DataLayerAccess::closeModel( std::string &_return,
   }
 }
 
-void DataLayerAccess::getResultFromVerticesID(std::string& _return,  std::string sessionID,  std::string modelID,  std::string analysisID,  double timeStep,  std::string resultID,  std::string listOfVertices)
-{
+void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_return, 
+				  const std::string &sessionID, const std::string &modelID, 
+				  const std::string &analysisID, const double timeStep,
+				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ){
     try
     {
         
-        cli->GetResultFromVerticesID(_return, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
+        cli->GetResultFromVerticesID( _return, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
         cout << "########## getResultFromVerticesID - " << _return << endl;
     }
     catch (TException& tx)

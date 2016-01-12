@@ -54,6 +54,8 @@ class Mesh;
 
 class ResultInfo;
 
+class ResultOnVertex;
+
 class Triangle;
 
 class rvGetElementOfPointsInSpace;
@@ -85,6 +87,8 @@ class rvGetListOfMeshes;
 class rvGetListOfResults;
 
 class rvGetListOfVerticesFromMesh;
+
+class rvGetResultFromVerticesID;
 
 typedef struct _ElementType__isset {
   _ElementType__isset() : shape(false), num_nodes(false) {}
@@ -548,6 +552,55 @@ class ResultInfo {
 };
 
 void swap(ResultInfo &a, ResultInfo &b);
+
+typedef struct _ResultOnVertex__isset {
+  _ResultOnVertex__isset() : id(false), value(false) {}
+  bool id :1;
+  bool value :1;
+} _ResultOnVertex__isset;
+
+class ResultOnVertex {
+ public:
+
+  static const char* ascii_fingerprint; // = "1CB61EEDEC70E44B3B75F0C0C76D5496";
+  static const uint8_t binary_fingerprint[16]; // = {0x1C,0xB6,0x1E,0xED,0xEC,0x70,0xE4,0x4B,0x3B,0x75,0xF0,0xC0,0xC7,0x6D,0x54,0x96};
+
+  ResultOnVertex(const ResultOnVertex&);
+  ResultOnVertex& operator=(const ResultOnVertex&);
+  ResultOnVertex() : id(0) {
+  }
+
+  virtual ~ResultOnVertex() throw();
+  int64_t id;
+  std::vector<double>  value;
+
+  _ResultOnVertex__isset __isset;
+
+  void __set_id(const int64_t val);
+
+  void __set_value(const std::vector<double> & val);
+
+  bool operator == (const ResultOnVertex & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (!(value == rhs.value))
+      return false;
+    return true;
+  }
+  bool operator != (const ResultOnVertex &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ResultOnVertex & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ResultOnVertex& obj);
+};
+
+void swap(ResultOnVertex &a, ResultOnVertex &b);
 
 typedef struct _Triangle__isset {
   _Triangle__isset() : nodes(false) {}
@@ -1488,6 +1541,61 @@ class rvGetListOfVerticesFromMesh {
 };
 
 void swap(rvGetListOfVerticesFromMesh &a, rvGetListOfVerticesFromMesh &b);
+
+typedef struct _rvGetResultFromVerticesID__isset {
+  _rvGetResultFromVerticesID__isset() : status(false), report(false), result_list(false) {}
+  bool status :1;
+  bool report :1;
+  bool result_list :1;
+} _rvGetResultFromVerticesID__isset;
+
+class rvGetResultFromVerticesID {
+ public:
+
+  static const char* ascii_fingerprint; // = "7D7F6E03D85558681F4AC69C1B4F3FC4";
+  static const uint8_t binary_fingerprint[16]; // = {0x7D,0x7F,0x6E,0x03,0xD8,0x55,0x58,0x68,0x1F,0x4A,0xC6,0x9C,0x1B,0x4F,0x3F,0xC4};
+
+  rvGetResultFromVerticesID(const rvGetResultFromVerticesID&);
+  rvGetResultFromVerticesID& operator=(const rvGetResultFromVerticesID&);
+  rvGetResultFromVerticesID() : status(), report() {
+  }
+
+  virtual ~rvGetResultFromVerticesID() throw();
+  std::string status;
+  std::string report;
+  std::vector<ResultOnVertex>  result_list;
+
+  _rvGetResultFromVerticesID__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_result_list(const std::vector<ResultOnVertex> & val);
+
+  bool operator == (const rvGetResultFromVerticesID & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(result_list == rhs.result_list))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetResultFromVerticesID &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetResultFromVerticesID & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID& obj);
+};
+
+void swap(rvGetResultFromVerticesID &a, rvGetResultFromVerticesID &b);
 
 } // namespace
 

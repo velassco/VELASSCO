@@ -63,18 +63,37 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   std::string modelID    = pt.get<std::string>("modelID");
   std::string resultID   = pt.get<std::string>("resultID");
   std::string analysisID = pt.get<std::string>("analysisID");
-  std::string vertexIDs  = as_string< size_t>( pt, "vertexIDs");
+  std::string vertexIDs  = as_string<int64_t>( pt, "vertexIDs");
   double      timeStep   = pt.get<double>("timeStep");
   
-  stringstream listOfVertices;
-  listOfVertices << "{\"id\":" << "[]" /*vertexIDs*/ << "}";
+  std::vector<int64_t> listOfVertices;
+  std::cout << "Vertex IDs = " << vertexIDs << std::endl;
   
-  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
-
-  // std::cout << "S   " << sessionID        << std::endl;
-  // std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::string tmp_buf;
+  for(size_t i = 0; i < vertexIDs.size(); i++){
+	  if(vertexIDs[i] == '[') continue;
+	  else if(vertexIDs[i]==','){
+		  istringstream tmp_buf_stream(tmp_buf);
+		  int64_t vertexID;
+		  tmp_buf_stream >> vertexID;
+		  listOfVertices.push_back(vertexID);
+		  tmp_buf = "";
+	  } else if(vertexIDs[i] == ']'){
+		  istringstream tmp_buf_stream(tmp_buf);
+		  int64_t vertexID;
+		  tmp_buf_stream >> vertexID;
+		  listOfVertices.push_back(vertexID);
+		  tmp_buf = "";
+		  break;
+	  } else {
+		  tmp_buf += vertexIDs[i];
+	  }
+  }
+    
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
   
-  std::string _return_;
+  rvGetResultFromVerticesID _return_;
   
   //std::cout << "S " << sessionID  << std::endl;
   //std::cout << "M " << modelID    << std::endl;
@@ -83,37 +102,36 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   //std::cout << "V " << vertexIDs  << std::endl;
   //std::cout << "T " << timeStep   << std::endl;
   
-  DataLayerAccess::Instance()->getResultFromVerticesID(_return_ , dl_sessionID,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+  DataLayerAccess::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices);
   
   std::vector<int64_t> resultVertexIDs;
   std::vector<double>  resultValues;
 		  
   std::cout << _return_ << std::endl;
 		  
-  std::istringstream iss(_return_);
-  while (iss)
-    {
-      int64_t id;
-      double  value[3];
-		      
-      std::string line;
-      std::getline(iss, line);
-      std::istringstream(line) >> id >> value[0] >> value[1] >> value[2];
-		      
-      resultVertexIDs.push_back(id);
-      resultValues.push_back(value[0]);
-      resultValues.push_back(value[1]);
-      resultValues.push_back(value[2]);
-    }
+  for(size_t i = 0; i < _return_.result_list.size(); i++){
+	  resultVertexIDs.push_back(_return_.result_list[i].id);
+	  for(size_t j = 0; j < _return_.result_list[i].value.size(); j++)
+	    resultValues.push_back(_return_.result_list[i].value[j]);
+  }
 		  
   // Pack into string
-  std::string result;
-  std::ostringstream oss;
-  oss << (resultValues.size() / 3) << " 3" << "\n";
-  result += oss.str();
-  result += std::string((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
-  result += std::string((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
-  _return.__set_data(result); 
+  if(_return_.result_list.size() > 0){
+	std::string result;
+    std::ostringstream oss;
+    oss << _return_.result_list.size() << " " << _return_.result_list[0].value.size() << "\n";
+    result += oss.str();
+    result += std::string((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
+    result += std::string((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
+    _return.__set_data(result); 
+  } else {
+	std::string result;
+    std::ostringstream oss;
+    int64_t zero = 0;
+    oss << zero << " " << zero << "\n";
+    result += oss.str();
+    _return.__set_data(result); 
+  }
 		  
   // Generate example result data
   if (0)
@@ -180,8 +198,8 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
   
   const bool test = false;
   if(test){
-	  int nFaces = 12;
-	  int nVertices = 8;
+	  //int nFaces = 12;
+	  //int nVertices = 8;
 
 	  float vertices[] = 
 	  {

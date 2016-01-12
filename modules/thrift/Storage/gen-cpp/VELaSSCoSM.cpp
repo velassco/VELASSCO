@@ -675,8 +675,20 @@ uint32_t VELaSSCoSM_GetResultFromVerticesID_args::read(::apache::thrift::protoco
         }
         break;
       case 6:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->listOfVertices);
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->listOfVertices.clear();
+            uint32_t _size165;
+            ::apache::thrift::protocol::TType _etype168;
+            xfer += iprot->readListBegin(_etype168, _size165);
+            this->listOfVertices.resize(_size165);
+            uint32_t _i169;
+            for (_i169 = 0; _i169 < _size165; ++_i169)
+            {
+              xfer += iprot->readI64(this->listOfVertices[_i169]);
+            }
+            xfer += iprot->readListEnd();
+          }
           this->__isset.listOfVertices = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -719,8 +731,16 @@ uint32_t VELaSSCoSM_GetResultFromVerticesID_args::write(::apache::thrift::protoc
   xfer += oprot->writeString(this->resultID);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("listOfVertices", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString(this->listOfVertices);
+  xfer += oprot->writeFieldBegin("listOfVertices", ::apache::thrift::protocol::T_LIST, 6);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->listOfVertices.size()));
+    std::vector<int64_t> ::const_iterator _iter170;
+    for (_iter170 = this->listOfVertices.begin(); _iter170 != this->listOfVertices.end(); ++_iter170)
+    {
+      xfer += oprot->writeI64((*_iter170));
+    }
+    xfer += oprot->writeListEnd();
+  }
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -759,8 +779,16 @@ uint32_t VELaSSCoSM_GetResultFromVerticesID_pargs::write(::apache::thrift::proto
   xfer += oprot->writeString((*(this->resultID)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("listOfVertices", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString((*(this->listOfVertices)));
+  xfer += oprot->writeFieldBegin("listOfVertices", ::apache::thrift::protocol::T_LIST, 6);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>((*(this->listOfVertices)).size()));
+    std::vector<int64_t> ::const_iterator _iter171;
+    for (_iter171 = (*(this->listOfVertices)).begin(); _iter171 != (*(this->listOfVertices)).end(); ++_iter171)
+    {
+      xfer += oprot->writeI64((*_iter171));
+    }
+    xfer += oprot->writeListEnd();
+  }
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -795,8 +823,8 @@ uint32_t VELaSSCoSM_GetResultFromVerticesID_result::read(::apache::thrift::proto
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->success);
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -821,8 +849,8 @@ uint32_t VELaSSCoSM_GetResultFromVerticesID_result::write(::apache::thrift::prot
   xfer += oprot->writeStructBegin("VELaSSCoSM_GetResultFromVerticesID_result");
 
   if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRING, 0);
-    xfer += oprot->writeString(this->success);
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -856,8 +884,8 @@ uint32_t VELaSSCoSM_GetResultFromVerticesID_presult::read(::apache::thrift::prot
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString((*(this->success)));
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3468,14 +3496,14 @@ uint32_t VELaSSCoSM_GetElementOfPointsInSpace_args::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->points.clear();
-            uint32_t _size149;
-            ::apache::thrift::protocol::TType _etype152;
-            xfer += iprot->readListBegin(_etype152, _size149);
-            this->points.resize(_size149);
-            uint32_t _i153;
-            for (_i153 = 0; _i153 < _size149; ++_i153)
+            uint32_t _size172;
+            ::apache::thrift::protocol::TType _etype175;
+            xfer += iprot->readListBegin(_etype175, _size172);
+            this->points.resize(_size172);
+            uint32_t _i176;
+            for (_i176 = 0; _i176 < _size172; ++_i176)
             {
-              xfer += this->points[_i153].read(iprot);
+              xfer += this->points[_i176].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3512,10 +3540,10 @@ uint32_t VELaSSCoSM_GetElementOfPointsInSpace_args::write(::apache::thrift::prot
   xfer += oprot->writeFieldBegin("points", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->points.size()));
-    std::vector<Point> ::const_iterator _iter154;
-    for (_iter154 = this->points.begin(); _iter154 != this->points.end(); ++_iter154)
+    std::vector<Point> ::const_iterator _iter177;
+    for (_iter177 = this->points.begin(); _iter177 != this->points.end(); ++_iter177)
     {
-      xfer += (*_iter154).write(oprot);
+      xfer += (*_iter177).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -3548,10 +3576,10 @@ uint32_t VELaSSCoSM_GetElementOfPointsInSpace_pargs::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("points", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->points)).size()));
-    std::vector<Point> ::const_iterator _iter155;
-    for (_iter155 = (*(this->points)).begin(); _iter155 != (*(this->points)).end(); ++_iter155)
+    std::vector<Point> ::const_iterator _iter178;
+    for (_iter178 = (*(this->points)).begin(); _iter178 != (*(this->points)).end(); ++_iter178)
     {
-      xfer += (*_iter155).write(oprot);
+      xfer += (*_iter178).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -4096,13 +4124,13 @@ void VELaSSCoSMClient::recv_FindModel(rvOpenModel& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "FindModel failed: unknown result");
 }
 
-void VELaSSCoSMClient::GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices)
+void VELaSSCoSMClient::GetResultFromVerticesID(rvGetResultFromVerticesID& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices)
 {
   send_GetResultFromVerticesID(sessionID, modelID, analysisID, timeStep, resultID, listOfVertices);
   recv_GetResultFromVerticesID(_return);
 }
 
-void VELaSSCoSMClient::send_GetResultFromVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices)
+void VELaSSCoSMClient::send_GetResultFromVerticesID(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("GetResultFromVerticesID", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -4121,7 +4149,7 @@ void VELaSSCoSMClient::send_GetResultFromVerticesID(const std::string& sessionID
   oprot_->getTransport()->flush();
 }
 
-void VELaSSCoSMClient::recv_GetResultFromVerticesID(std::string& _return)
+void VELaSSCoSMClient::recv_GetResultFromVerticesID(rvGetResultFromVerticesID& _return)
 {
 
   int32_t rseqid = 0;

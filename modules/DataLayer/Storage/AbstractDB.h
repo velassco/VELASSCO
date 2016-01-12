@@ -90,12 +90,10 @@ namespace VELaSSCo
      * describes two vertices with IDs 0 and 1. Here just one attribute per vertex is used.
      * 
      */
-    virtual std::string getResultOnVertices( const std::string &sessionID,
-                                             const std::string &modelID,
-                                             const std::string &analysisID,
-                                             const double       timeStep,
-                                             const std::string &resultID,
-                                             const std::string &listOfVertices ) = 0;
+     virtual std::string getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ) = 0;
                                              
     /*
      * Access the database and return a list o vertices, and elements which have created the mesh of a dataset.

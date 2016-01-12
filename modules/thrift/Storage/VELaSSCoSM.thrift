@@ -85,6 +85,11 @@ struct ResultInfo {
   9: i32           resultNumber // as of R:rXXXXXXnm
 }
 
+struct ResultOnVertex {
+  1: i64                                  id
+  2: list<double>                         value
+}
+
 struct Triangle {
    1: list<NodeID>                          nodes
 }
@@ -230,6 +235,11 @@ struct rvGetListOfVerticesFromMesh {
    3: list<Vertex>      vertex_list
 }
 
+struct rvGetResultFromVerticesID {
+  1: string status
+  2: string report
+  3: list<ResultOnVertex> result_list
+}
 
 // provides service VELaSSCo Storage Module
 service VELaSSCoSM
@@ -262,12 +272,14 @@ service VELaSSCoSM
    with the attached list of double 
    if errors occur the contect is also returned here?
    */
-  string	GetResultFromVerticesID(1: string sessionID,
-    2: string modelID,
-    3: string analysisID,
-    4: double timeStep,
-    5: string resultID,
-    6: string listOfVertices ),
+   rvGetResultFromVerticesID	GetResultFromVerticesID(
+     1: string sessionID
+     2: string modelID
+     3: string analysisID
+     4: double timeStep
+     5: string resultID
+     6: list<i64> listOfVertices ),
+  
   
   /**
    Return the coordinates and elements of a model's mesh.
