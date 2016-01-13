@@ -14,15 +14,15 @@ namespace EDMVD {
    enum ModelType { mtFEM, mtDEM, mtAP209, mtUnknown };
 }
 
-struct rvGetListOfAnalyses : public CppParameterClass
+struct nodervGetListOfAnalyses : public CppParameterClass
 {
-   tRemoteParameter                    *attrPointerArr[3];
-   tRemoteParameter                    *status;
-   tRemoteParameter                    *report;
-   tRemoteParameter                    *analysis_name_list;
+   cppRemoteParameter                    *attrPointerArr[3];
+   cppRemoteParameter                    *status;
+   cppRemoteParameter                    *report;
+   cppRemoteParameter                    *analysis_name_list;
 
    void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
-   rvGetListOfAnalyses(CMemoryAllocator *_ma, tRemoteParameter *inAttrPointerArr)
+   nodervGetListOfAnalyses(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
       : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
       addAddribute(&status, rptSTRING);
       addAddribute(&report, rptSTRING);

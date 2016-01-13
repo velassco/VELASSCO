@@ -62,6 +62,8 @@ using namespace fem;
 using namespace std;
 using namespace ecl;
 
+#include "CppParameterClass.h"
+
 #include "EDMclusterServices.h"
 
 

@@ -8,7 +8,11 @@
 #include "VELaSSCoHandler.h"
 #include "VELaSSCoMethods.h"
 
+/*    Deliverables
+      3.5 - Jotne
+      Deadline:   Feb. 15.
 
+*/
 int main(int argc, char* argv[])
 {
    int rstat;

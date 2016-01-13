@@ -1,17 +1,11 @@
 
 #include "stdafx.h"
 #include "VELaSSCoMethods.h"
+#include "modules/DataLayer/Storage/EDM_server_dll/EDM_server_dll.h"
 #include <omp.h>
 
 
 
-
-/*===============================================================================================*/
-void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& _return,  const std::string& modelID)
-/*===============================================================================================*/
-{
-
-}
 
 /*===============================================================================================*/
 void VELaSSCoMethods::ListModels()
@@ -68,7 +62,29 @@ void VELaSSCoMethods::getBoundingBox()
 #pragma omp parallel for
       for (int i = 0; i < nsc; i++) {
          SdaiInteger        warnings, errors;
-         int rstat = edmiRemoteGetEdmSystemType(scs[i], &edmSystemType, NULL);
+         //CHECK(edmiRemoteExecuteCppMethod(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", "cpp_plugins", "VELaSSCo", "getBoundingBox",
+         //   0, 0, NULL, NULL, &returnValue, NULL));
+      }
+   }
+   int endTime = GetTickCount();
+   printf("Elapsed time is %d milliseconds\n", endTime - startTime);
+}
+
+
+
+/*===============================================================================================*/
+void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& modelID)
+/*===============================================================================================*/
+{
+   int startTime = GetTickCount();
+   if (serverContexts) {
+      SdaiServerContext *scs = serverContexts->getElementArray();
+      EDMULONG nsc = serverContexts->size();
+      SdaiInteger          edmSystemType;
+
+#pragma omp parallel for
+      for (int i = 0; i < nsc; i++) {
+         SdaiInteger        warnings, errors;
          //CHECK(edmiRemoteExecuteCppMethod(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", "cpp_plugins", "VELaSSCo", "getBoundingBox",
          //   0, 0, NULL, NULL, &returnValue, NULL));
       }

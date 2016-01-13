@@ -6,6 +6,23 @@
 
 
 
+
+CMemoryAllocator dllMa(0x100000);
+
+/*=============================================================================================================================*/
+char *handleError(CedmError *e)
+/*=============================================================================================================================*/
+{
+   char *errMsg;
+   if (e->message) {
+      errMsg = e->message;
+   } else {
+      errMsg = edmiGetErrorText(e->rstat);
+   }
+   delete e;
+   return dllMa.allocString(errMsg);
+}
+
 /*===============================================================================================*/
 EDMVD::ModelType getModelType(SdaiModel sdaiModelID)
 /*===============================================================================================*/
@@ -36,44 +53,44 @@ EDMVD::ModelType getModelType(SdaiModel sdaiModelID)
 }
 
 
-CMemoryAllocator dllMa(0x100000);
-
-
-EDMLONG GetListOfAnalyses(Model *theModel, rvGetListOfAnalyses *retVal)
+EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, rvGetListOfAnalyses *retVal)
 {
    EdmiError rstat = OK;
+   char *emsg = NULL;
 
-   //try {
-   //   CHECK(edmiChangeOpenMode(modelId, sdaiRO));
-   //   if (getModelType(modelId) == mtDEM) {
-   //      Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
-   //      for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
-   //         analysisNames.push_back(s->get_name());
-   //      }
-   //      _return.__set_status("OK"); _return.__set_analyses(analysisNames);
-   //   } else if (emc->type == mtFEM) {
-   //      FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-   //      Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
-   //      map<string, int> names;
-   //      for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
-   //         char *name = rh->get_analysis();
-   //         if (names[rh->get_analysis()] == NULL) {
-   //            names[rh->get_analysis()] = 1; analysisNames.push_back(rh->get_analysis());
-   //         }
-   //      }
-   //      _return.__set_status("OK"); _return.__set_analyses(analysisNames);
-   //      thelog->logg(0, "status=OK\n\n");
-   //   }
-   //   } else {
-   //      char *emsg = "Model does not exist.";
-   //      _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
-   //   }
-   //} catch (CedmError *e) {
-   //   string errMsg;
-   //   handleError(errMsg, e);
-   //   _return.__set_status("Error"); _return.__set_report(errMsg);
-   //}
+   try {
+      char* np;
 
+      Collection<char*> *nameList = new(&dllMa)Collection<char*>(&dllMa);
+      if (mt == mtDEM) {
+         Iterator<dem::Simulation*, dem::entityType> simIter(theModel->getObjectSet(dem::et_Simulation), theModel);
+         for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
+            nameList->add(dllMa.allocString(s->get_name()));
+         }
+         nameList->initRemoteParameterFromStringCollection((tRemoteParameter*)retVal->analysis_name_list);
+      } else if (mt == mtFEM) {
+         Iterator<fem::ResultHeader*, fem::entityType> rhIter(theModel->getObjectSet(fem::et_ResultHeader), theModel);
+         for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+            char* anName = rh->get_analysis();
+            for (np = nameList->first(); np && strNEQ(anName, np); np = nameList->next());
+            if (np == NULL) {
+               nameList->add(dllMa.allocString(anName));
+            }
+         }
+         nameList->initRemoteParameterFromStringCollection((tRemoteParameter*)retVal->analysis_name_list);
+      } else {
+         emsg = "Model does not exist.";
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+   }
+   if (emsg) {
+      retVal->status->putString("Error"); retVal->report->putString(emsg);
+      retVal->analysis_name_list->type = rptINTEGER;
+   } else {
+      retVal->status->putString("OK");
+      retVal->report->type = rptINTEGER;
+   }
    return rstat;
 }
 
@@ -81,26 +98,32 @@ EDMLONG GetListOfAnalyses(Model *theModel, rvGetListOfAnalyses *retVal)
 
 
 extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *modelName, char *methodName,
-   EDMLONG nOfParameters, tRemoteParameter *parameters, EDMLONG nOfReturnValues, tRemoteParameter *returnValues)
+   EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues)
 {
    EdmiError rstat = OK;
 
-   Database VELaSSCo_db("", "", "");
-   Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName);
-   Model VELaSSCo_model(&VELaSSCo_Repository, &dllMa, NULL);
-   VELaSSCo_model.open(modelName, sdaiRO);
-   ModelType vmt = getModelType(VELaSSCo_model.modelId);
-   VELaSSCo_model.defineSchema(vmt == mtFEM ? (dbSchema*)&fem_schema_velassco_SchemaObject : (dbSchema*)&dem_schema_velassco_SchemaObject);
+   try {
+      Database VELaSSCo_db("", "", "");
+      Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName);
+      Model VELaSSCo_model(&VELaSSCo_Repository, &dllMa, NULL);
+      VELaSSCo_model.open(modelName, sdaiRO);
+      ModelType vmt = getModelType(VELaSSCo_model.modelId);
+      VELaSSCo_model.defineSchema(vmt == mtFEM ? (dbSchema*)&fem_schema_velassco_SchemaObject : (dbSchema*)&dem_schema_velassco_SchemaObject);
 
-   if (strEQL(methodName, "GetListOfAnalyses")) {
-      if (nOfParameters != 0 || nOfReturnValues != 3) {
-         rstat = -2;
+      if (strEQL(methodName, "GetListOfAnalyses")) {
+         if (nOfParameters != 0 || nOfReturnValues != 3) {
+            rstat = -2;
+         } else {
+            rvGetListOfAnalyses *results = new(&dllMa)rvGetListOfAnalyses(NULL, returnValues);
+            rstat = GetListOfAnalyses(&VELaSSCo_model, vmt, results);
+         }
       } else {
-         rvGetListOfAnalyses *results = new(&dllMa)rvGetListOfAnalyses(NULL, returnValues);
-         rstat = GetListOfAnalyses(&VELaSSCo_model, results);
+         rstat = -1;
       }
-   } else {
-      rstat = -1;
+   } catch (CedmError *e) {
+      rstat = e->rstat; delete e;
+   } catch (...) {
+      rstat = sdaiESYSTEM;
    }
    return rstat;
 }

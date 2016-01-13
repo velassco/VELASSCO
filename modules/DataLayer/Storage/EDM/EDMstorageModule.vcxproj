@@ -96,7 +96,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_EDMI;_WINDOWS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src;..\gen-cpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src;..\gen-cpp;O:/projects/VELaSSCo/SVN_src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
