@@ -598,7 +598,8 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
       	    // coordinates are of the form rXXXXXXvl_ID, where ID is binary indes ...
       	    int64_t node_id;
       	    std::vector<double> result_values;
-      	    pinfo+= 3; // the 'vl_'
+	    if ( *pinfo == '_') pinfo++; // some data only is r000001_nodeId
+	    else pinfo+= 3; // the 'vl_'
       	    node_id = byteSwap< int64_t>( *( int64_t *)pinfo );
       	    double *coords = ( double *)it->second.value.data();
             for(int i = 0; i < resultInfo.numberOfComponents; i++)
