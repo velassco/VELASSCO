@@ -1,0 +1,49 @@
+
+/**************************************************************************
+ Wed Jan 13 13:51:29 2016
+ EDMsix auto generated command script.
+***************************************************************************
+
+     Jotne EPM Technology AS
+
+     EDMsix Supervisor
+
+     EDMstandAlone & EDMremoteClient version.
+     Version 1.0100.16 : 25 Nov 2015
+
+     Jotne EPM Technology a.s
+     Grenseveien 107
+     NO-0663 Oslo
+     Norway
+
+     Voice:   +47 23 17 17 00
+     Fax:     +47 23 17 17 01
+     e-mail:  support@jotne.com
+     Website: http://www.jotne.com/it
+
+     License information:
+        ProductName:                    EDMsdk Advanced
+        Version:                        6.00.0100
+        License ID:                     10161
+        License type:                   Project license
+        Expiry date:                    1 Dec 2016
+        Operating system:               WINDOWS
+        License options:                EDMexpressXcompiler, EDMmodelConverter, EDMmodelChecker,
+                                        EDMqueryEngine, EDMdebugger
+
+        ProductName:                    EDMvisualExpress
+        Version:                        6.00.0100
+        License ID:                     10162
+        License type:                   Project license
+        Expiry date:                    1 Dec 2016
+        Operating system:               WINDOWS
+        License options:                
+
+**************************************************************************/
+
+
+RemoteSystems>Servercontext>DefineContext(sc0, superuser, $, v, tcp, localhost, 9090, $, $, $, $, $, $, $, $)
+RemoteSystems>Server>Terminate(sc0, v, $, "ALL_SERVERS,FORCE_TO_TERMINATE,CLOSE_SERVER_OUTPUT_WINDOW")
+RemoteSystems>Servercontext>DefineContext(sc1, superuser, $, v, tcp, localhost, 9080, $, $, $, $, $, $, $, $)
+RemoteSystems>Server>Terminate(sc1, v, $, "ALL_SERVERS,FORCE_TO_TERMINATE,CLOSE_SERVER_OUTPUT_WINDOW")
+Exit>Exit()
