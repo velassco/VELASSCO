@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <utility>
 
 // Curl
 #include <curl/curl.h>
@@ -606,8 +607,13 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
       	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
       	      
       	    std::cout << node_id << std::endl;
+#if __cplusplus < 201103L
+	    // c++ < c++11
       	    resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
-      	    
+#else
+	    // c++ <= c++98
+      	    resultOnVertexListMap.insert (std::pair< int64_t, std::vector< double > >(node_id, result_values));  
+#endif
       	  }
       	}
       }
