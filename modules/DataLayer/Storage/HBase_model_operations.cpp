@@ -236,15 +236,33 @@ std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector<
 
   string table_name;
   bool scan_ok = true;
+  bool print_existing_tables = false;
+  std::vector< Text> lst_tables;
+  _hbase_client->getTableNames(lst_tables);
+
   if ( !model_group_qualifier.size() || ( model_group_qualifier == "*")) {
     table_name = "VELaSSCo_Models";
     // loop through all 4 tables:
-    std::vector< std::string> lst_tables = getModelListTables();
-    for ( std::vector< std::string>::const_iterator it = lst_tables.begin(); it != lst_tables.end(); it++) {
-      scan_ok = getListOfModelInfoFromTables( report, listOfModelNames, *it, model_name_pattern);
-      if ( !scan_ok)
-	break;
+    std::vector< std::string> lst_model_tables = getModelListTables();
+    for ( std::vector< std::string>::const_iterator it = lst_model_tables.begin(); it != lst_model_tables.end(); it++) {
+      // check if it exists and it is enabled:
+      bool found = false;
+      const std::string &model_table = *it;
+      for ( std::vector< Text>::const_iterator itbl = lst_tables.begin(); itbl != lst_tables.end(); itbl++) {
+	if ( model_table.compare( *itbl) == 0) {
+	  // check if enabled:
+	  if ( _hbase_client->isTableEnabled( model_table)) {
+	    found = true;
+	    break;
+	  }
+	}
+      }
+      if ( !found)
+	continue;
+      bool my_scan_ok = getListOfModelInfoFromTables( report, listOfModelNames, *it, model_name_pattern);
+      scan_ok |= my_scan_ok;
     }
+    print_existing_tables = true;
   } else {
     table_name = model_group_qualifier;
     scan_ok = getListOfModelInfoFromTables( report, listOfModelNames, table_name, model_name_pattern);
@@ -264,6 +282,14 @@ std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector<
     std::cout << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfModelNames THRIFT could not scan.";
+    if ( print_existing_tables) {
+      // report tables found:
+      std::cout << "Tables found:" << std::endl;
+      for ( std::vector< Text>::const_iterator it = lst_tables.begin(); it != lst_tables.end(); it++) {
+	std::cout << " " << *it << ",";
+      }
+      std::cout << std::endl;
+    }
   }
 
   return result;
