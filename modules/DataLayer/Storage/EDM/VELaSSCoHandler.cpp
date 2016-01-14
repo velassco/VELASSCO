@@ -717,51 +717,72 @@ void VELaSSCoHandler::GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _r
 * @param options
 */
 //void GetListOfModelNames             (rvGetListOfModels& _return, const std::string& sessionID, const std::string& model_group_qualifier, const std::string& model_name_pattern);
-
+#define nOfResults 1
 void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern)
 {
    char *modelName, *repositoryName, *schemaName;
    SdaiBoolean userDefined;
-   SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 10, numberOfHits = 1, nModels = 0;
-   SdaiInstance resultBuffer[1], repositoryID, schemaID;
+   SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 0, numberOfHits = 1, nModels = 0;
+   SdaiInstance resultBuffer[nOfResults], repositoryID, schemaID;
    VELaSSCoSM::FullyQualifiedModelName fqmn;
    std::vector<VELaSSCoSM::FullyQualifiedModelName>  infoList;
-   char nameBuf[2048];
+   char nameBuf[2048], condition[1024];
+   EdmiError  rstat;
 
    try {
       thelog->logg(3, "-->GetListOfModelNames\nsessionID=%s\ngroupQualifier=%s\nmodelNamePattern=%s\n\n", sessionID.data(), groupQualifier.data(), modelNamePattern.data());
+
+
+
+
+      sprintf(condition, "(name like '%s*') and (belongs_to.name like '%s*')", modelNamePattern.data(), groupQualifier.data());
       do {
-         edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
-            maxBufferSize, &index, &numberOfHits, resultBuffer);
-         index++;
-         if (numberOfHits > 0) {
-            void *sp = sdaiGetAttrBN(resultBuffer[0], "Repository", sdaiINSTANCE, &repositoryID);
-            if (sp) {
-               sp = sdaiGetAttrBN(repositoryID, "USER_DEFINED", sdaiBOOLEAN, &userDefined);
-               sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
-               if (sp) {
-                  if (strEQL(repositoryName, "DataRepository") || userDefined) {
-                     sp = sdaiGetAttrBN(resultBuffer[0], "Schema", sdaiINSTANCE, &schemaID);
-                     sp = sdaiGetAttrBN(schemaID, "Name", sdaiSTRING, &schemaName);
-                     if (sp) {
-                        if (strEQL(schemaName, "DEM_SCHEMA_VELASSCO") || strEQL(schemaName, "FEM_SCHEMA_VELASSCO")) {
-                           sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
-                           if (sp) {
-                              fqmn.__set_name(modelName); nModels++;
-                              sprintf(nameBuf, "%s.%s", repositoryName, modelName); fqmn.__set_full_path(nameBuf);
-                              sprintf(nameBuf, "%llu", resultBuffer[0]); fqmn.__set_modelID(nameBuf);
-                              infoList.push_back(fqmn);
-                              edmiFree(modelName);
-                           }
-                        }
-                        edmiFree(schemaName);
-                     }
-                  }
-                  edmiFree(repositoryName);
-               }
-            }
+         if (rstat = edmiSelectInstancesBN(theCluster->clusterModel->modelId, "ClusterModel", condition, 0,
+            maxBufferSize, &index, &numberOfHits, resultBuffer)) {
+            _return.__set_status("Error"); _return.__set_report(getErrorMsg(rstat));
+            break;
+         } else if (numberOfHits > 0) {
+            tEdmiInstData cmd;
+            ecl::ClusterModel cm(theCluster->clusterModel, theCluster->clusterModel->initInstData(ecl::et_ClusterModel, &cmd));
+            cm.setInstanceId(resultBuffer[0]);
+            char *nn = cm.get_name();
+            nn = NULL;
          }
-      } while (numberOfHits > 0);
+      } while (numberOfHits == nOfResults);
+
+      //do {            tEdmiEntityData *ed = &schema->theEntities[new_objectClassIndex];
+
+      //   edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
+      //      maxBufferSize, &index, &numberOfHits, resultBuffer);
+      //   index++;
+      //   if (numberOfHits > 0) {
+      //      void *sp = sdaiGetAttrBN(resultBuffer[0], "Repository", sdaiINSTANCE, &repositoryID);
+      //      if (sp) {
+      //         sp = sdaiGetAttrBN(repositoryID, "USER_DEFINED", sdaiBOOLEAN, &userDefined);
+      //         sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
+      //         if (sp) {
+      //            if (strEQL(repositoryName, "DataRepository") || userDefined) {
+      //               sp = sdaiGetAttrBN(resultBuffer[0], "Schema", sdaiINSTANCE, &schemaID);
+      //               sp = sdaiGetAttrBN(schemaID, "Name", sdaiSTRING, &schemaName);
+      //               if (sp) {
+      //                  if (strEQL(schemaName, "DEM_SCHEMA_VELASSCO") || strEQL(schemaName, "FEM_SCHEMA_VELASSCO")) {
+      //                     sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
+      //                     if (sp) {
+      //                        fqmn.__set_name(modelName); nModels++;
+      //                        sprintf(nameBuf, "%s.%s", repositoryName, modelName); fqmn.__set_full_path(nameBuf);
+      //                        sprintf(nameBuf, "%llu", resultBuffer[0]); fqmn.__set_modelID(nameBuf);
+      //                        infoList.push_back(fqmn);
+      //                        edmiFree(modelName);
+      //                     }
+      //                  }
+      //                  edmiFree(schemaName);
+      //               }
+      //            }
+      //            edmiFree(repositoryName);
+      //         }
+      //      }
+      //   }
+      //} while (numberOfHits > 0);
       _return.__set_status("OK");
       thelog->logg(1, "status=OK\nNumber of models=%llu\n\n\n", nModels);
       _return.__set_models(infoList);
@@ -784,7 +805,7 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
 
 void VELaSSCoHandler::FindModel(rvOpenModel& _return, const std::string& sessionID, const std::string& modelName, const std::string& requestedAccess)
 {
-   SdaiInteger  maxBufferSize = sizeof(SdaiInstance) * 2, index = 10, numberOfHits = 2;
+   SdaiInteger  maxBufferSize = sizeof(SdaiInstance) * 2, index = 0, numberOfHits = 2;
    SdaiInstance resultBuffer[2], sdaiModelID;
    bool notFound = true;
    int rstat;
@@ -792,27 +813,16 @@ void VELaSSCoHandler::FindModel(rvOpenModel& _return, const std::string& session
 
    try {
       thelog->logg(3, "-->FindModel\nsessionID=%s\nmodelName=%s\nrequestedAccess=%s\n\n", sessionID.data(), modelName.data(), requestedAccess.data());
-      sprintf(condition, "name like '%s'", modelName.data());
-      if (rstat = edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", condition, 0,
+      sprintf(condition, "(name like '%s*') and (belongs_to.name = 'DataRepository')", modelName.data());
+      if (rstat = edmiSelectInstancesBN(theCluster->clusterModel->modelId, "ClusterModel", condition, 0,
          maxBufferSize, &index, &numberOfHits, resultBuffer)) {
          _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
       } else if (numberOfHits == 0) {
          _return.__set_modelID("0"); _return.__set_report("No model match the given model name pattern");
       } else if (numberOfHits == 1) {
-         void *sp = sdaiGetAttrBN(resultBuffer[0], "Sdai_Model", sdaiINSTANCE, &sdaiModelID);
-         if (sp) {
-            if (sdaiOpenModel(sdaiModelID, strEQL(requestedAccess.data(), "read") ? sdaiRO : sdaiRW)) {
-               char smodelID[512];
-               sprintf(smodelID, "%llu", sdaiModelID);
-               _return.__set_modelID(smodelID); _return.__set_report("");
-            } else {
-               _return.__set_modelID("0"); _return.__set_report(getErrorMsg(sdaiErrorQuery()));
-            }
-         } else {
-            _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
-         }
-      } else {
-         _return.__set_modelID("0"); _return.__set_report("Several models match the given model name pattern.");
+         char smodelID[512];
+         sprintf(smodelID, "%llu", resultBuffer[0]);
+         _return.__set_modelID(smodelID); _return.__set_report("");
       }
       if (strEQL(_return.modelID.data(), "0")) {
          thelog->logg(1, "status=Error\nerror report=%s\n\n", _return.report.data());

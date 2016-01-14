@@ -5,7 +5,7 @@
 #include "random_points.h"
 #include "elementID_of_random_points.h"
 #include "..\..\..\EngineLayer\QueryManager\analytics.h"
-#include "EDManalytics.h"
+//#include "EDManalytics.h"
 
 
 VELaSSCoSMClient *clp = NULL;
@@ -111,7 +111,7 @@ Command can eiter be "all" or any of the querynames.
    int err = WSAStartup(wVersionRequested, &wsaData);
 #endif
 
-   AnalyticsModule *theAnalyst = new EDManalytics(&client);
+   //AnalyticsModule *theAnalyst = new EDManalytics(&client);
    try {
       transport->open();
 
@@ -127,8 +127,8 @@ Command can eiter be "all" or any of the querynames.
       printf("User logged on with session ID: %s\n", sessionID.data());
       rvOpenModel rvOM;
 
-      printf("\n--->OpenModel - \"VELaSSCo_HbaseBasicTest_part_1\"\n");
-      client.FindModel(rvOM, sessionID, "VELaSSCo_HbaseBasicTest_part_1", "read");
+      printf("\n--->OpenModel - \"telescope\"\n");
+      client.FindModel(rvOM, sessionID, "telescope", "read");
       printf("Returned modelID: %s\n", rvOM.modelID.data());
       printf("Comments: %s\n", rvOM.report.data());
       modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
@@ -213,7 +213,7 @@ Command can eiter be "all" or any of the querynames.
          //printf("Comments: %s\n", rvB.report.data());
       }
 
-      if (strEQL(command, "all") || strEQL(command, "GetListOfModels")) {
+      if (strEQL(command, "multi") || strEQL(command, "GetListOfModels")) {
          rvGetListOfModels modelsInfo;
          rvOpenModel rvOM;
 

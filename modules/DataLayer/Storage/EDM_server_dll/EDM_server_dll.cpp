@@ -53,7 +53,7 @@ EDMVD::ModelType getModelType(SdaiModel sdaiModelID)
 }
 
 
-EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, rvGetListOfAnalyses *retVal)
+EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, nodervGetListOfAnalyses *retVal)
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
@@ -67,7 +67,7 @@ EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, rvGetListOfAnalyses *re
          for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
             nameList->add(dllMa.allocString(s->get_name()));
          }
-         nameList->initRemoteParameterFromStringCollection((tRemoteParameter*)retVal->analysis_name_list);
+         retVal->analysis_name_list->putStringCollection(nameList);
       } else if (mt == mtFEM) {
          Iterator<fem::ResultHeader*, fem::entityType> rhIter(theModel->getObjectSet(fem::et_ResultHeader), theModel);
          for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
@@ -77,7 +77,7 @@ EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, rvGetListOfAnalyses *re
                nameList->add(dllMa.allocString(anName));
             }
          }
-         nameList->initRemoteParameterFromStringCollection((tRemoteParameter*)retVal->analysis_name_list);
+         retVal->analysis_name_list->putStringCollection(nameList);
       } else {
          emsg = "Model does not exist.";
       }
@@ -114,7 +114,7 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
          if (nOfParameters != 0 || nOfReturnValues != 3) {
             rstat = -2;
          } else {
-            rvGetListOfAnalyses *results = new(&dllMa)rvGetListOfAnalyses(NULL, returnValues);
+            nodervGetListOfAnalyses *results = new(&dllMa)nodervGetListOfAnalyses(NULL, returnValues);
             rstat = GetListOfAnalyses(&VELaSSCo_model, vmt, results);
          }
       } else {

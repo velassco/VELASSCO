@@ -98,12 +98,12 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
          } else if (strEQL(command, "ClusterRepository")) {
             cClusterRepository = newObject(ecl::ClusterRepository); cClusterRepository->put_name(ma->allocString(param1));
             if (ourCluster) {
-               ourCluster->put_repositories_element(cClusterRepository);
+               cClusterRepository->put_platform(ourCluster);
             }
          } else if (strEQL(command, "ClusterModel")) {
             cClusterModel = newObject(ecl::ClusterModel); cClusterModel->put_name(ma->allocString(param1));
             if (cClusterRepository) {
-               cClusterRepository->put_models_element(cClusterModel);
+               cClusterModel->put_belongs_to(cClusterRepository);
             }
          } else if (strEQL(command, "EDMrepository")) {
             cEDMrepository = newObject(ecl::EDMrepository); cEDMrepository->put_name(ma->allocString(param1));
@@ -115,7 +115,7 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
             cEDMmodel = newObject(ecl::EDMmodel); cEDMmodel->put_name(ma->allocString(cEDMmodelName));
             ecl::ClusterModel *ccm = getClusterModel(cClusterModelName, cClusterRepositoryName);
             if (ccm) {
-               ccm->put_consists_of_element(cEDMmodel);
+               cEDMmodel->put_clusterModel(ccm);
             }
             if (cEDMrepository) {
                cEDMmodel->put_repository(cEDMrepository);
