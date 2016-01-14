@@ -503,7 +503,7 @@ std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
   std::cout << "V " << listOfVertices << std::endl;
   std::cout << "T " << timeStep       << std::endl;
 
-  string cmd = "http://pez001:8880/";
+  string cmd = "http://" + _db_host + ":8880/";
   // cmd += "Simulations_Data";
   // cmd += "Test_VELaSSCo_Models";
   cmd += "T_Simulations_Data";
@@ -575,6 +575,261 @@ std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
   }
   return result;
 }
+
+// ==============================================
+// ==== Thrift + Filters
+// ==============================================
+
+/* GetListOfVerticesFromMesh */
+static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const int64_t& vertexID ) {
+  int num_results = 0;
+  unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
+  for ( CellMap::const_iterator it = rowResult.columns.begin(); 
+	it != rowResult.columns.end(); ++it) {
+    const char *cq_str = it->first.c_str();
+    std::cout << cq_str << it->second.value.data() << std::endl;
+    const char CF = cq_str[ 0];
+    // cq_str[ 1] should be ':'
+    const char subC = cq_str[ 2];
+    if ( CF == 'R') {
+      if ( it->first.length() > 3) { // for c1xxxx
+      	int result_number = 0;
+      	int n = sscanf( &cq_str[ 3], "%d", &result_number);
+      	if ( n == 1 && resultInfo.resultNumber == result_number ) {
+      	  // in fact not needed as it should always be meshID ( == coordsID)
+      	  const char *pinfo = &cq_str[ 3];
+      	  while ( *pinfo && isdigit( *pinfo))
+      	    pinfo++;
+      	  if ( subC == 'r') { // right qualifier, coordinates
+      	    // coordinates are of the form rXXXXXXvl_ID, where ID is binary indes ...
+      	    int64_t node_id;
+      	    std::vector<double> result_values;
+      	    pinfo+= 3; // the 'vl_'
+      	    node_id = byteSwap< int64_t>( *( int64_t *)pinfo );
+      	    double *coords = ( double *)it->second.value.data();
+            for(int i = 0; i < 3/*resultInfo.numberOfComponents*/; i++)
+      	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
+      	      
+      	    //std::cout << node_id << std::endl;
+      	    resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
+      	    
+      	  }
+      	}
+      }
+    }
+  }
+  
+	  std::unordered_map< int64_t,std::vector< double > >::const_iterator resultOnVertex = resultOnVertexListMap.find (vertexID);
+
+	  if ( resultOnVertex == resultOnVertexListMap.end() ){
+		std::cout << "not found";
+		//continue;
+	  } else {
+		  std::cout << "found";
+		ResultOnVertex result;
+		result.__set_id( resultOnVertex->first );
+		result.__set_value( resultOnVertex->second );
+		listOfResults.push_back( result );
+		num_results++;	  
+	  }
+  
+  return num_results;
+}
+
+bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& data_table,
+           const std::string &sessionID,  const std::string &modelID,
+           const std::string &analysisID, const double       timeStep,  
+           const ResultInfo &resultInfo,  const int64_t &vertexID, const char *format ){
+  
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  
+  char resultNum_str[10];
+  sprintf(resultNum_str, "%06d", resultInfo.resultNumber);
+  
+  int64_t nodeNum = vertexID;
+  nodeNum = byteSwap(nodeNum);  
+  
+  double my_stepValue = ( analysisID == "") ? 0.0 : timeStep; // rowkeys for static meshes have stepValue == 0.0
+  std::string prefixRowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
+  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, 0, format); // partitionID = 0
+  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, ( int)2, format); // partitionID = biggest ever
+  const size_t len_prefix_rowkey = prefixRowKey.length();
+  
+  TScan ts;
+  std::cout << "Starting scanner with scan..." << std::endl;
+  std::stringstream filter;
+  filter << "(";
+  filter << "(RowFilter (>=, 'binary:";
+  filter << startRowKey;
+  filter << "')) AND (RowFilter (<=, 'binary:";
+  filter << stopRowKey;
+  filter << "')) AND ";
+  filter << "(FamilyFilter (=, 'substring:R'))";// AND (QualifierFilter (=, 'binaryprefix:r" << resultNum_str << "vl_')) AND ";
+  //filter << "(QualifierFilter (=, 'binary:r" << resultNum_str << "vl_";
+  //filter.write((const char*)&nodeNum, 8);
+  //filter << "'))";
+  //filter << "SingleColumnValue(=, 'regexstring:*', 'substring:R', 'substring:r"
+  //       << resultNum_str
+  //       << "vl_*";
+  //filter.write((const char*)&nodeNum, 8);
+  //filter << "')";
+  filter << ")";
+
+  std::cout << "filter = " << filter.str() << std::endl;
+  ts.__set_filterString(filter.str());
+  ScannerID scan_id = _hbase_client->scannerOpenWithScan(data_table, ts, m); 
+  std::cout << "The scanner id is " << scan_id << std::endl;
+  
+  std::cout << "\tAccessing table '" << data_table << "' with";
+  std::cout << "\t startRowKey = " << startRowKey << std::endl;
+  std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+
+  bool scan_ok = true;
+  try {
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+		rowsResult.clear();
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0){
+		  // std::cout << "No Row Results\n";
+		  break;
+	  }
+	  
+	  if(rowsResult.size() <= 1){
+		// process rowsResult
+		  for ( size_t i = 0; i < rowsResult.size(); i++) {
+		// convert to return type
+		// check if the rowkey is our's ... should be ....
+		if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
+		  continue; // break;
+		bool ok = getResultsFromRow_filter( listOfResults, rowsResult[ i ], resultInfo, vertexID );
+		if ( ok) {
+			
+	#define DEBUG_RESULTS
+	#ifdef  DEBUG_RESULTS
+			for(size_t i = 0; i < listOfResults.size(); i++){
+				std::cout << listOfResults[i].id << "\t";
+				for(size_t j = 0; j < listOfResults[i].value.size(); j++)
+				  std::cout << listOfResults[i].value[j] << " ";
+				std::cout << std::endl;
+			}
+	#endif
+			
+		  // getMeshInfoFromRow.push_back( model_info);
+		  // getMeshInfoFromRow( tmp_lst_meshes, rowsResult[ i]);
+		} else {
+		  // nothing read? 
+		  // eventually provide an error
+		}
+		// several rows = partitions so don't quit yet,
+		  
+		  }
+	  }
+      //break;
+    } // while ( true)
+  
+    if ( listOfResults.size() == 0) {
+      // nothing found
+      // scan_ok = false; // scan was ok but nothing found ...
+      std::stringstream tmp;
+      if ( analysisID != "") {
+	tmp << "Not found: Result for Dynamic Mesh" 
+	    << " for Analysis = '" << analysisID << "'"
+	    << " and stepValue = " << timeStep;
+      } else {
+	tmp << "Not found: Results for Static Mesh" ;
+      }
+      report = tmp.str();
+    }
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    report = tmp.str();
+  }
+  
+  _hbase_client->scannerClose( scan_id);
+  
+  return scan_ok;
+}
+
+std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
+{
+  std::cout << "getResultOnVertices THRIFT: =====" << std::endl;
+  std::cout << "S " << sessionID      << std::endl;
+  std::cout << "M " << modelID        << std::endl;
+  std::cout << "R " << resultID       << std::endl;
+  std::cout << "A " << analysisID     << std::endl;
+  std::cout << "V " << /*listOfVerticesID*/ "..." << std::endl;
+  std::cout << "T " << timeStep       << std::endl;
+
+  string table_name;
+  bool scan_ok = true;
+
+  // look into the modelInfo table to get the correct table name
+  TableModelEntry table_set;
+  bool found = getTableNames( sessionID, modelID, table_set);
+  if ( found) {
+	
+	std::string report;
+    std::vector<ResultInfo> listOfResultInfos;
+    getListOfResults( report, listOfResultInfos, sessionID, modelID, analysisID, timeStep );
+    
+    ResultInfo& resultInfo = listOfResultInfos[0];
+    size_t i = 0;
+    for(; i < listOfResultInfos.size(); i++)
+      if(listOfResultInfos[i].name == resultID){
+		  resultInfo = listOfResultInfos[i];
+		  break;
+	  }
+	if( i == listOfResultInfos.size() ){
+		std::cout << resultID << " is not found." << std::endl;
+		return "Error";
+	}
+	  
+    // by default hexstrings are lower case but some data has been injected as upper case !!!
+    
+    for(size_t i = 0; i < listOfVerticesID.size(); i++){
+      scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, "Simulations_Data_V4CIMNE"/*table_set._data*/, sessionID, modelID, analysisID, timeStep, resultInfo, listOfVerticesID[i]);
+      if ( scan_ok && ( listOfVerticesID.size() == 0)) {
+        // try with uppercase
+        scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, listOfVerticesID[i], "%02X");
+      }
+    }
+  } else {
+    scan_ok = false;
+  }
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    bool there_are_results = listOfResults.size();
+    if ( there_are_results) {
+      result = "Ok";
+    } else {
+      result = "Error";
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
+  }
+
+  return result;
+}
+
+
+// ==============================================
+// ==== Thrift
+// ==============================================
 
 /* GetListOfVerticesFromMesh */
 static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t>& listOfVerticesID) {

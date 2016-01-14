@@ -76,6 +76,10 @@ namespace VELaSSCo
            const std::string &sessionID,  const std::string &modelID,
            const std::string &analysisID, const double       timeStep,  
            const ResultInfo &resultInfo,  const std::vector<int64_t> &listOfVerticesID, const char *format = "%02x" );
+    bool getResultFromVerticesIDFromTables_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& table_name,
+           const std::string &sessionID,  const std::string &modelID,
+           const std::string &analysisID, const double       timeStep,  
+           const ResultInfo &resultInfo,  const int64_t& listOfVerticesID, const char *format = "%02x" );
     std::string getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
 					 const std::string &sessionID, const std::string &modelID,
     			     const std::string &analysisID, const double       timeStep,  
@@ -87,6 +91,10 @@ namespace VELaSSCo
 					 const std::string &sessionID, const std::string &modelID,
     			     const std::string &analysisID, const double       timeStep,  
 				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID );
+	std::string getResultFromVerticesID_thrift_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults,
+					 const std::string &sessionID, const std::string &modelID,
+    			     const std::string &analysisID, const double       timeStep,  
+				     const std::string &resultID,   const std::vector<int64_t>& listOfVerticesID );
 					    
 	// GetCoordinatesAndElementsFromMesh
 	std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID,
