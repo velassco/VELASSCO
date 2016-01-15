@@ -91,6 +91,9 @@ extern "C" {
 	      *resultValues      = NULL;//nullptr;
 	      *resultNumVertices = 0;
 	    }
+
+      *result_status = "Ok";
+
 	  }
   else 
   {
