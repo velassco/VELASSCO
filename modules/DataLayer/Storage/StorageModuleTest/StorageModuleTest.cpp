@@ -222,7 +222,7 @@ Command can eiter be "all" or any of the querynames.
          printf("Return status: %s\n", modelsInfo.status.data());
          printf("Comments: %s\nModels:\n", modelsInfo.report.data());
          for (std::vector<VELaSSCoSM::FullyQualifiedModelName>::iterator modelIter = modelsInfo.models.begin(); modelIter != modelsInfo.models.end(); modelIter++) {
-            printf("%s\n", modelIter->name.data());
+            printf("%s - %s\n", modelIter->name.data(), modelIter->full_path.data());
          }
       }
       if (strEQL(command, "all") || strEQL(command, "FindModel_DEM_b*")) {

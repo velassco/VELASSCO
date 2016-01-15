@@ -114,8 +114,20 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
          if (nOfParameters != 0 || nOfReturnValues != 3) {
             rstat = -2;
          } else {
-            nodervGetListOfAnalyses *results = new(&dllMa)nodervGetListOfAnalyses(NULL, returnValues);
-            rstat = GetListOfAnalyses(&VELaSSCo_model, vmt, results);
+            //nodervGetListOfAnalyses *results = new(&dllMa)nodervGetListOfAnalyses(NULL, returnValues);
+            //rstat = GetListOfAnalyses(&VELaSSCo_model, vmt, results);
+
+
+            //Collection<char*> *nameList = new(&dllMa)Collection<char*>(&dllMa);
+            //results->analysis_name_list->putStringCollection(nameList);
+            //results->status->putString("OK");
+            //results->report->type = rptINTEGER;
+            returnValues[0].putInteger(0);
+            returnValues[1].putInteger(1);
+            returnValues[2].putInteger(2);
+
+
+
          }
       } else {
          rstat = -1;
@@ -138,7 +150,8 @@ extern "C" void  __declspec(dllexport) *dll_malloc(char *methodName, EDMLONG buf
    return dllMa.alloc(bufSize);
 }
 
-extern "C" void  __declspec(dllexport) dll_freeAll(char *methodName)
+extern "C" EDMLONG  __declspec(dllexport) dll_freeAll(char *methodName)
 {
    dllMa.freeAllMemory();
+   return OK;
 }

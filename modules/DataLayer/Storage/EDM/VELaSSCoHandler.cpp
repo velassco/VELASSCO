@@ -720,7 +720,7 @@ void VELaSSCoHandler::GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _r
 #define nOfResults 1
 void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std::string& sessionID, const std::string& groupQualifier, const std::string& modelNamePattern)
 {
-   char *modelName, *repositoryName, *schemaName;
+   char *modelName, *repositoryName = "", *schemaName;
    SdaiBoolean userDefined;
    SdaiInteger  maxBufferSize = sizeof(SdaiInstance), index = 0, numberOfHits = 1, nModels = 0;
    SdaiInstance resultBuffer[nOfResults], repositoryID, schemaID;
@@ -732,9 +732,6 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
    try {
       thelog->logg(3, "-->GetListOfModelNames\nsessionID=%s\ngroupQualifier=%s\nmodelNamePattern=%s\n\n", sessionID.data(), groupQualifier.data(), modelNamePattern.data());
 
-
-
-
       sprintf(condition, "(name like '%s*') and (belongs_to.name like '%s*')", modelNamePattern.data(), groupQualifier.data());
       do {
          if (rstat = edmiSelectInstancesBN(theCluster->clusterModel->modelId, "ClusterModel", condition, 0,
@@ -744,45 +741,21 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
          } else if (numberOfHits > 0) {
             tEdmiInstData cmd;
             ecl::ClusterModel cm(theCluster->clusterModel, theCluster->clusterModel->initInstData(ecl::et_ClusterModel, &cmd));
-            cm.setInstanceId(resultBuffer[0]);
-            char *nn = cm.get_name();
-            nn = NULL;
+            for (int i = 0; i < numberOfHits; i++) {
+               cm.setInstanceId(resultBuffer[i]);
+               modelName = cm.get_name();
+               if (modelName) {
+                  ecl::ClusterRepository *cr = cm.get_belongs_to();
+                  if (cr) repositoryName = cr->get_name();
+                  fqmn.__set_name(modelName);
+                  sprintf(nameBuf, "%s.%s", repositoryName ? repositoryName : "", modelName); fqmn.__set_full_path(nameBuf);
+                  sprintf(nameBuf, "%llu", resultBuffer[i]); fqmn.__set_modelID(nameBuf);
+                  infoList.push_back(fqmn); nModels++;
+               }
+            }
          }
+         index++;
       } while (numberOfHits == nOfResults);
-
-      //do {            tEdmiEntityData *ed = &schema->theEntities[new_objectClassIndex];
-
-      //   edmiSelectInstancesBN(edmiGetModelBN("SystemRepository", "ExpressDataManager"), "edm_model", NULL, 0,
-      //      maxBufferSize, &index, &numberOfHits, resultBuffer);
-      //   index++;
-      //   if (numberOfHits > 0) {
-      //      void *sp = sdaiGetAttrBN(resultBuffer[0], "Repository", sdaiINSTANCE, &repositoryID);
-      //      if (sp) {
-      //         sp = sdaiGetAttrBN(repositoryID, "USER_DEFINED", sdaiBOOLEAN, &userDefined);
-      //         sp = sdaiGetAttrBN(repositoryID, "Name", sdaiSTRING, &repositoryName);
-      //         if (sp) {
-      //            if (strEQL(repositoryName, "DataRepository") || userDefined) {
-      //               sp = sdaiGetAttrBN(resultBuffer[0], "Schema", sdaiINSTANCE, &schemaID);
-      //               sp = sdaiGetAttrBN(schemaID, "Name", sdaiSTRING, &schemaName);
-      //               if (sp) {
-      //                  if (strEQL(schemaName, "DEM_SCHEMA_VELASSCO") || strEQL(schemaName, "FEM_SCHEMA_VELASSCO")) {
-      //                     sp = sdaiGetAttrBN(resultBuffer[0], "Name", sdaiSTRING, &modelName);
-      //                     if (sp) {
-      //                        fqmn.__set_name(modelName); nModels++;
-      //                        sprintf(nameBuf, "%s.%s", repositoryName, modelName); fqmn.__set_full_path(nameBuf);
-      //                        sprintf(nameBuf, "%llu", resultBuffer[0]); fqmn.__set_modelID(nameBuf);
-      //                        infoList.push_back(fqmn);
-      //                        edmiFree(modelName);
-      //                     }
-      //                  }
-      //                  edmiFree(schemaName);
-      //               }
-      //            }
-      //            edmiFree(repositoryName);
-      //         }
-      //      }
-      //   }
-      //} while (numberOfHits > 0);
       _return.__set_status("OK");
       thelog->logg(1, "status=OK\nNumber of models=%llu\n\n\n", nModels);
       _return.__set_models(infoList);
