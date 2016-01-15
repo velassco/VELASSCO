@@ -79,7 +79,7 @@ namespace VELaSSCo
     bool getResultFromVerticesIDFromTables_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& table_name,
            const std::string &sessionID,  const std::string &modelID,
            const std::string &analysisID, const double       timeStep,  
-           const ResultInfo &resultInfo,  const int64_t& listOfVerticesID, const char *format = "%02x" );
+           const ResultInfo &resultInfo,  const int64_t &minVertexID, const int64_t &maxVertexID, const char *format = "%02x" );
     std::string getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
 					 const std::string &sessionID, const std::string &modelID,
     			     const std::string &analysisID, const double       timeStep,  
