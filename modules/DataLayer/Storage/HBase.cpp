@@ -653,8 +653,8 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
            const ResultInfo &resultInfo,  const int64_t &minVertexID, const int64_t &maxVertexID, const char *format ){
   bool scan_ok = true;  
 #ifdef READ_GROUPED_ROWS_FILTERS
-  int chunk_size = 4;
-  for(int rowIdx = 0; rowIdx <= 1000; rowIdx+=chunk_size){
+  int chunk_size = 30;
+  for(int rowIdx = 0; rowIdx <= 128; rowIdx+=chunk_size){
 #endif
   
   vector< TRowResult> rowsResult;
@@ -719,9 +719,9 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   ScannerID scan_id = _hbase_client->scannerOpenWithScan(data_table, ts, m); 
   //std::cout << "The scanner id is " << scan_id << std::endl;
   
-  //std::cout << "\tAccessing table '" << data_table << "' with";
-  //std::cout << "\t startRowKey = " << startRowKey << std::endl;
-  //std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+  std::cout << "\tAccessing table '" << data_table << "' with";
+  std::cout << "\t startRowKey = " << startRowKey << std::endl;
+  std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
 
   try {
     // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
@@ -887,6 +887,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 // ==============================================
 // ==== Thrift
 // ==============================================
+#define READ_GROUPED_ROWS
 
 /* GetResultsFromVerticesID */
 static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t>& listOfVerticesID) {
@@ -953,7 +954,6 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
   return num_results;
 }
 
-//#define READ_GROUPED_ROWS
 bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& data_table,
            const std::string &sessionID,  const std::string &modelID,
            const std::string &analysisID, const double       timeStep,  
