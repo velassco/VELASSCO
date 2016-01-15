@@ -667,7 +667,19 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
               while( pos < it->second.value.length() )
                 {
                 std::string str;
-                pos = deser.Read( it->second.value, str, pos );
+                try 
+                  {
+                  pos = deser.Read( it->second.value, str, pos );
+                  }
+                catch( ... )
+                  {
+                  std::cout << "Exception caught!" << std::endl;
+                  std::cout << BinarySerializer::BinToHex( it->second.value ) 
+                            << std::endl;
+                  lst_components.clear( );
+                  lst_components.push_back( it->second.value );
+                  break;
+                  }
                 lst_components.push_back( str );
                 }
 #else
