@@ -29,6 +29,7 @@ extern "C" {
 						double          timeStep,
 
 						/* out */
+            const char*    *result_status,
 						const int64_t* *resultVertexIDs,
 						const double*  *resultValues,
 						size_t         *resultNumVertices )
@@ -41,6 +42,7 @@ extern "C" {
     CHECK_QUERY_POINTER( resultVertexIDs );
     CHECK_QUERY_POINTER( resultValues );
     CHECK_QUERY_POINTER( resultNumVertices );
+    CHECK_QUERY_POINTER( result_status ); 
 
     API_TRACE;
     try
@@ -90,6 +92,10 @@ extern "C" {
 	      *resultNumVertices = 0;
 	    }
 	  }
+  else 
+  {
+	  *result_status = queryData->c_str();
+  }
 	
 	return result;
       }

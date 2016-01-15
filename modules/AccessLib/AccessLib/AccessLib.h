@@ -191,7 +191,7 @@ extern "C" {
    * given type of result for each vertex id of the list.
    */
   VAL_Result VAL_API valGetResultFromVerticesID( /* in */
-	                                           VAL_SessionID   sessionID,
+	             VAL_SessionID   sessionID,
 						   const char*     modelID,
 						   const char*     resultID,
 						   const char*     analysisID,
@@ -199,6 +199,7 @@ extern "C" {
 						   double          timeStep,
 						   
 						   /* out */
+               const char*    *result_status,
 						   const int64_t* *resultVertexIDs,
 						   const double*  *resultValues,
 						   size_t         *resultNumVertices );
