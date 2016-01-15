@@ -27,6 +27,12 @@ AnalyticsModule *AnalyticsModule::getInstance() {
   return m_pInstance;
 }
 
+// on acuario:
+//#define HADOOP_HOME "/localfs/home/velassco/common/hadoop/bin/"
+#define HADOOP_HOME 
+#define HADOOP_YARN std::string( HADOOP_HOME"yarn")
+#define HADOOP_HDFS std::string( HADOOP_HOME"hdfs")
+
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 500
 #endif
@@ -74,10 +80,6 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   std::string output_folder = ToLower( "bbox_" + sessionID + "_" + cli_modelID);
   recursive_rmdir( output_folder.c_str());
 
-  // Yarn path
-  std::string hadoop_home = "/localfs/home/velassco/common";
-  std::string hadoop_bin = hadoop_home + "/hadoop/bin";
-
   bool use_yarn = true;
   // running java:
   int ret_cmd = 0;
@@ -90,7 +92,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetBoundingBoxOfAModel.jar " + 
+    std::string cmd_line = HADOOP_YARN + " jar ../Analytics/GetBoundingBoxOfAModel.jar " + 
       sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -98,8 +100,11 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // error in '../bbox_sessionID_modelID/error.txt'
     // copy it to local:
     // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
-    cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal " + output_folder + " .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + output_folder + " .";
     ret_cmd = system( cmd_line.c_str());
+    if ( ret_cmd == -1) {
+      DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
+    }
   }
 
   // ret_cmd is -1 on error
@@ -128,6 +133,9 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+      if ( use_yarn) {
+	*return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
     }
     return;
   }
@@ -167,11 +175,14 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " results.");
+      if ( use_yarn) {
+	*return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
     }
   }
 
   if ( use_yarn) {
-    std::string cmd_line = hadoop_bin + "/hdfs dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
     ret_cmd = system( cmd_line.c_str());
   }
   // delete local tmp files ...
@@ -188,8 +199,6 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
   bool use_yarn = true;
   
   if (use_yarn) {
-    std::string hadoop_home = "/localfs/home/velassco/common";
-    std::string hadoop_bin = hadoop_home + "/hadoop/bin";
 	
     std::string parameters = modelID + " " + analysisID + " " + staticMeshID + " " + stepOptions + " ";
     
@@ -230,10 +239,14 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
 
     parameters+= cGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + temporalAVGOptions + " " + s_deltaT.str();
     
-    std::string cmd_line = hadoop_bin + "/yarn jar ../Analytics/GetDiscrete2ContinuumOfAModel.jar " + parameters;
+    std::string cmd_line = HADOOP_YARN + " jar ../Analytics/GetDiscrete2ContinuumOfAModel.jar " + parameters;
     
     int ret = 0;
     ret = system(cmd_line.c_str());
+    DEBUG( cmd_line.c_str());
+    if ( ret == -1) {
+      DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
+    }
     
     //result stored in HBase and outcome in a file
     FILE *fi = fopen( "D2C/queryOutcome", "r");
@@ -255,6 +268,9 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
       if ( !errorfile_read) {
 	*return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	  ( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+	if ( use_yarn) {
+	  *return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+	}
       }
       return;
     }
@@ -349,10 +365,6 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   std::string output_folder = ToLower( "list_vertices_" + sessionID + "_" + cli_modelID);
   recursive_rmdir( output_folder.c_str());
 
-  // Yarn path
-  std::string hadoop_home = "/localfs/home/velassco/common";
-  std::string hadoop_bin = hadoop_home + "/hadoop/bin";
-
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 static
   std::string analytics_program = "../Analytics/GetListOfVerticesFromMesh.jar";
 
@@ -368,7 +380,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
     ret_cmd = system( cmd_line.c_str());
   } else { 
     // Using yarn: execute and copy to localdir the result's files
-    std::string cmd_line = hadoop_bin + "/yarn jar " + analytics_program + " " +
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " +
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -376,8 +388,11 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
     // error in '../list_vertices_sessionID_modelID/error.txt'
     // copy it to local:
     // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
-    cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal " + output_folder + " .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + output_folder + " .";
     ret_cmd = system( cmd_line.c_str());
+    if ( ret_cmd == -1) {
+      DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
+    }
   }
 
   // ret_cmd is -1 on error
@@ -407,6 +422,9 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
     if ( !errorfile_read) {
       return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+      if ( use_yarn) {
+	return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
     }
     return return_error_str;
   }
@@ -428,7 +446,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   }
   
   if ( use_yarn) {
-    std::string cmd_line = hadoop_bin + "/hdfs dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + "hdfs dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
     ret_cmd = system( cmd_line.c_str());
   }
   
@@ -609,14 +627,10 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   std::string output_folder = ToLower( "boundary_mesh_" + sessionID + "_" + cli_modelID);
   recursive_rmdir( output_folder.c_str());
 
-  // Yarn path
-  std::string hadoop_home = "/localfs/home/velassco/common";
-  std::string hadoop_bin = hadoop_home + "/hadoop/bin";
-
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
   std::string analytics_program = "../Analytics/GetBoundaryOfAMesh.jar";
 
-  bool use_yarn = false;
+  bool use_yarn = false;//true;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
@@ -630,7 +644,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-    std::string cmd_line = hadoop_bin + "/yarn jar " + analytics_program + " " +
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " +
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -638,8 +652,11 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     // error in '../boundary_mesh_sessionID_modelID/error.txt'
     // copy it to local:
     // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal boundary_mesh .";
-    cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal " + output_folder + " .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + output_folder + " .";
     ret_cmd = system( cmd_line.c_str());
+    if ( ret_cmd == -1) {
+      DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
+    }
   }
 
   // ret_cmd is -1 on error
@@ -668,6 +685,9 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+      if ( use_yarn) {
+	*return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
     }
     return;
   }
@@ -753,6 +773,9 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " results:\n");
+      if ( use_yarn) {
+	*return_error_str += std::string( "Is 'yarn' and 'hdfs' in the path?\n");
+      }
       if ( !ok) {
 	*return_error_str += "\treading analytics output file\n";
 	*return_error_str += "\tSTEP " + step_error + "\n";
@@ -771,7 +794,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   }
 
   if ( use_yarn) {
-    std::string cmd_line = hadoop_bin + "/hdfs dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
     ret_cmd = system( cmd_line.c_str());
   }
 
