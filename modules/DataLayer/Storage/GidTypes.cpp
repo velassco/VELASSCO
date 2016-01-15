@@ -51,7 +51,7 @@ bool CheckElementSize( ElementType et, UInt32 size )
 {
   _InitElementTypeMap( );
   const ElementTypeInfo &e = _mapEType[ et ];
-  for( int i = 0; i < e.sizes.size( ); i++ )
+  for( size_t i = 0; i < e.sizes.size( ); i++ )
     {
     if ( e.sizes[ i ] == size )
       {
