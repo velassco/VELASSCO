@@ -171,11 +171,11 @@ extern "C" {
 					   );
   
   VAL_Result VAL_API valGetMeshDrawData( /* in */
-						VAL_SessionID   sessionID,
-						const char*     modelID,
-						const char*     analysisID,
-						double          timeStep,
-						const char*     meshID,
+						VAL_SessionID     sessionID,
+						const char*       modelID,
+						const char*       analysisID,
+						double            timeStep,
+						const int32_t     meshID,
 
 						/* out */
             const char                      **result_status,

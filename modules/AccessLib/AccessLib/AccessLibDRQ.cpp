@@ -26,7 +26,7 @@ extern "C" {
 						//const char*     resultID,
 						const char*     analysisID,
 						double          timeStep,
-						const char*     meshID,
+						const int32_t   meshID,
 
 						/* out */
             const char                        **result_status,
@@ -39,7 +39,6 @@ extern "C" {
     CHECK_QUERY_POINTER( analysisID );
     CHECK_QUERY_POINTER( result_status );
     CHECK_QUERY_POINTER( result_mesh_draw_data );
-    CHECK_QUERY_POINTER( meshID );
 
 	API_TRACE;
     try
