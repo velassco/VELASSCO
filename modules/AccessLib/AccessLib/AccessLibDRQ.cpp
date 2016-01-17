@@ -53,7 +53,7 @@ extern "C" {
 				//<< "  \"resultID\"   : \"" << resultID          << "\",\n"
 				<< "  \"analysisID\" : \"" << analysisID        << "\",\n"
 				<< "  \"timeStep\"   : "   << timeStep 			<< ",\n"
-				<< "  \"meshID\": \""        << meshID       << "\"\n"
+				<< "  \"meshID\": "        << meshID       << "\n"
 				<< "}\n";
 
 	// Send command string and get back result data
