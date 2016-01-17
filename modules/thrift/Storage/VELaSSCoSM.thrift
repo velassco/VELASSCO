@@ -52,6 +52,17 @@ struct Element {
    // 2: list<i64>                           nodes_ids
 }
 
+struct ElementAttrib {
+   1: i64                                 id
+   2: string                              name
+   3: list<double>                        value
+}
+
+struct ElementGroup {
+   1: i64                                 id
+   2: i64                                 group_id
+}
+
 struct MeshInfo {
    1: string                              name
    2: ElementType                         elementType // to avoid ambiguity meshinfo.type.type
@@ -69,7 +80,7 @@ struct Mesh {
    2: i64                                 numberOfVertices
    3: i64                                 dimension
    4: ElementType                         type
-   5: list<Vertex>                          nodes
+   5: list<Vertex>                        nodes
    6: list<Element>                       elements
 }
 
@@ -241,6 +252,16 @@ struct rvGetResultFromVerticesID {
   3: list<ResultOnVertex> result_list
 }
 
+struct rvGetCoordinatesAndElementsFromMesh {
+  1: string status
+  2: string report
+  3: MeshInfo meshInfo
+  4: list<Vertex>        vertex_list
+  5: list<Element>       element_list
+  6: list<ElementAttrib> element_attrib_list
+  7: list<ElementGroup>  element_group_info_list
+}
+
 // provides service VELaSSCo Storage Module
 service VELaSSCoSM
 {
@@ -286,12 +307,12 @@ service VELaSSCoSM
    @return string - returns a structured list of vertices and elements of a model's mesh.
    if errors occur the contect is also returned here?
    */  
-  string 	GetCoordinatesAndElementsFromMesh(
+  rvGetCoordinatesAndElementsFromMesh 	GetCoordinatesAndElementsFromMesh(
 	1: string sessionID, 
 	2: string modelID, 
 	3: string analysisID, 
 	4: double timeStep, 
-	5: i32 partitionID),
+	5: i32    meshID),
     
     /**
      Stop Data Layer

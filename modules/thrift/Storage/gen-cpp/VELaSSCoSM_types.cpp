@@ -566,6 +566,266 @@ std::ostream& operator<<(std::ostream& out, const Element& obj) {
 }
 
 
+ElementAttrib::~ElementAttrib() throw() {
+}
+
+
+void ElementAttrib::__set_id(const int64_t val) {
+  this->id = val;
+}
+
+void ElementAttrib::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void ElementAttrib::__set_value(const std::vector<double> & val) {
+  this->value = val;
+}
+
+const char* ElementAttrib::ascii_fingerprint = "1A4DCF2658CC4E78D1F7CDC432563CBB";
+const uint8_t ElementAttrib::binary_fingerprint[16] = {0x1A,0x4D,0xCF,0x26,0x58,0xCC,0x4E,0x78,0xD1,0xF7,0xCD,0xC4,0x32,0x56,0x3C,0xBB};
+
+uint32_t ElementAttrib::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->value.clear();
+            uint32_t _size15;
+            ::apache::thrift::protocol::TType _etype18;
+            xfer += iprot->readListBegin(_etype18, _size15);
+            this->value.resize(_size15);
+            uint32_t _i19;
+            for (_i19 = 0; _i19 < _size15; ++_i19)
+            {
+              xfer += iprot->readDouble(this->value[_i19]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.value = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ElementAttrib::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("ElementAttrib");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->value.size()));
+    std::vector<double> ::const_iterator _iter20;
+    for (_iter20 = this->value.begin(); _iter20 != this->value.end(); ++_iter20)
+    {
+      xfer += oprot->writeDouble((*_iter20));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(ElementAttrib &a, ElementAttrib &b) {
+  using ::std::swap;
+  swap(a.id, b.id);
+  swap(a.name, b.name);
+  swap(a.value, b.value);
+  swap(a.__isset, b.__isset);
+}
+
+ElementAttrib::ElementAttrib(const ElementAttrib& other21) {
+  id = other21.id;
+  name = other21.name;
+  value = other21.value;
+  __isset = other21.__isset;
+}
+ElementAttrib& ElementAttrib::operator=(const ElementAttrib& other22) {
+  id = other22.id;
+  name = other22.name;
+  value = other22.value;
+  __isset = other22.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const ElementAttrib& obj) {
+  using apache::thrift::to_string;
+  out << "ElementAttrib(";
+  out << "id=" << to_string(obj.id);
+  out << ", " << "name=" << to_string(obj.name);
+  out << ", " << "value=" << to_string(obj.value);
+  out << ")";
+  return out;
+}
+
+
+ElementGroup::~ElementGroup() throw() {
+}
+
+
+void ElementGroup::__set_id(const int64_t val) {
+  this->id = val;
+}
+
+void ElementGroup::__set_group_id(const int64_t val) {
+  this->group_id = val;
+}
+
+const char* ElementGroup::ascii_fingerprint = "F33135321253DAEB67B0E79E416CA831";
+const uint8_t ElementGroup::binary_fingerprint[16] = {0xF3,0x31,0x35,0x32,0x12,0x53,0xDA,0xEB,0x67,0xB0,0xE7,0x9E,0x41,0x6C,0xA8,0x31};
+
+uint32_t ElementGroup::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->group_id);
+          this->__isset.group_id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ElementGroup::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("ElementGroup");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("group_id", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->group_id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(ElementGroup &a, ElementGroup &b) {
+  using ::std::swap;
+  swap(a.id, b.id);
+  swap(a.group_id, b.group_id);
+  swap(a.__isset, b.__isset);
+}
+
+ElementGroup::ElementGroup(const ElementGroup& other23) {
+  id = other23.id;
+  group_id = other23.group_id;
+  __isset = other23.__isset;
+}
+ElementGroup& ElementGroup::operator=(const ElementGroup& other24) {
+  id = other24.id;
+  group_id = other24.group_id;
+  __isset = other24.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const ElementGroup& obj) {
+  using apache::thrift::to_string;
+  out << "ElementGroup(";
+  out << "id=" << to_string(obj.id);
+  out << ", " << "group_id=" << to_string(obj.group_id);
+  out << ")";
+  return out;
+}
+
+
 MeshInfo::~MeshInfo() throw() {
 }
 
@@ -757,27 +1017,27 @@ void swap(MeshInfo &a, MeshInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-MeshInfo::MeshInfo(const MeshInfo& other15) {
-  name = other15.name;
-  elementType = other15.elementType;
-  nVertices = other15.nVertices;
-  nElements = other15.nElements;
-  meshUnits = other15.meshUnits;
-  meshColor = other15.meshColor;
-  meshNumber = other15.meshNumber;
-  coordsName = other15.coordsName;
-  __isset = other15.__isset;
+MeshInfo::MeshInfo(const MeshInfo& other25) {
+  name = other25.name;
+  elementType = other25.elementType;
+  nVertices = other25.nVertices;
+  nElements = other25.nElements;
+  meshUnits = other25.meshUnits;
+  meshColor = other25.meshColor;
+  meshNumber = other25.meshNumber;
+  coordsName = other25.coordsName;
+  __isset = other25.__isset;
 }
-MeshInfo& MeshInfo::operator=(const MeshInfo& other16) {
-  name = other16.name;
-  elementType = other16.elementType;
-  nVertices = other16.nVertices;
-  nElements = other16.nElements;
-  meshUnits = other16.meshUnits;
-  meshColor = other16.meshColor;
-  meshNumber = other16.meshNumber;
-  coordsName = other16.coordsName;
-  __isset = other16.__isset;
+MeshInfo& MeshInfo::operator=(const MeshInfo& other26) {
+  name = other26.name;
+  elementType = other26.elementType;
+  nVertices = other26.nVertices;
+  nElements = other26.nElements;
+  meshUnits = other26.meshUnits;
+  meshColor = other26.meshColor;
+  meshNumber = other26.meshNumber;
+  coordsName = other26.coordsName;
+  __isset = other26.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const MeshInfo& obj) {
@@ -883,14 +1143,14 @@ uint32_t Mesh::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->nodes.clear();
-            uint32_t _size17;
-            ::apache::thrift::protocol::TType _etype20;
-            xfer += iprot->readListBegin(_etype20, _size17);
-            this->nodes.resize(_size17);
-            uint32_t _i21;
-            for (_i21 = 0; _i21 < _size17; ++_i21)
+            uint32_t _size27;
+            ::apache::thrift::protocol::TType _etype30;
+            xfer += iprot->readListBegin(_etype30, _size27);
+            this->nodes.resize(_size27);
+            uint32_t _i31;
+            for (_i31 = 0; _i31 < _size27; ++_i31)
             {
-              xfer += this->nodes[_i21].read(iprot);
+              xfer += this->nodes[_i31].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -903,14 +1163,14 @@ uint32_t Mesh::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->elements.clear();
-            uint32_t _size22;
-            ::apache::thrift::protocol::TType _etype25;
-            xfer += iprot->readListBegin(_etype25, _size22);
-            this->elements.resize(_size22);
-            uint32_t _i26;
-            for (_i26 = 0; _i26 < _size22; ++_i26)
+            uint32_t _size32;
+            ::apache::thrift::protocol::TType _etype35;
+            xfer += iprot->readListBegin(_etype35, _size32);
+            this->elements.resize(_size32);
+            uint32_t _i36;
+            for (_i36 = 0; _i36 < _size32; ++_i36)
             {
-              xfer += this->elements[_i26].read(iprot);
+              xfer += this->elements[_i36].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -955,10 +1215,10 @@ uint32_t Mesh::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("nodes", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->nodes.size()));
-    std::vector<Vertex> ::const_iterator _iter27;
-    for (_iter27 = this->nodes.begin(); _iter27 != this->nodes.end(); ++_iter27)
+    std::vector<Vertex> ::const_iterator _iter37;
+    for (_iter37 = this->nodes.begin(); _iter37 != this->nodes.end(); ++_iter37)
     {
-      xfer += (*_iter27).write(oprot);
+      xfer += (*_iter37).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -967,10 +1227,10 @@ uint32_t Mesh::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("elements", ::apache::thrift::protocol::T_LIST, 6);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->elements.size()));
-    std::vector<Element> ::const_iterator _iter28;
-    for (_iter28 = this->elements.begin(); _iter28 != this->elements.end(); ++_iter28)
+    std::vector<Element> ::const_iterator _iter38;
+    for (_iter38 = this->elements.begin(); _iter38 != this->elements.end(); ++_iter38)
     {
-      xfer += (*_iter28).write(oprot);
+      xfer += (*_iter38).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -993,23 +1253,23 @@ void swap(Mesh &a, Mesh &b) {
   swap(a.__isset, b.__isset);
 }
 
-Mesh::Mesh(const Mesh& other29) {
-  name = other29.name;
-  numberOfVertices = other29.numberOfVertices;
-  dimension = other29.dimension;
-  type = other29.type;
-  nodes = other29.nodes;
-  elements = other29.elements;
-  __isset = other29.__isset;
+Mesh::Mesh(const Mesh& other39) {
+  name = other39.name;
+  numberOfVertices = other39.numberOfVertices;
+  dimension = other39.dimension;
+  type = other39.type;
+  nodes = other39.nodes;
+  elements = other39.elements;
+  __isset = other39.__isset;
 }
-Mesh& Mesh::operator=(const Mesh& other30) {
-  name = other30.name;
-  numberOfVertices = other30.numberOfVertices;
-  dimension = other30.dimension;
-  type = other30.type;
-  nodes = other30.nodes;
-  elements = other30.elements;
-  __isset = other30.__isset;
+Mesh& Mesh::operator=(const Mesh& other40) {
+  name = other40.name;
+  numberOfVertices = other40.numberOfVertices;
+  dimension = other40.dimension;
+  type = other40.type;
+  nodes = other40.nodes;
+  elements = other40.elements;
+  __isset = other40.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const Mesh& obj) {
@@ -1117,14 +1377,14 @@ uint32_t ResultInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->componentNames.clear();
-            uint32_t _size31;
-            ::apache::thrift::protocol::TType _etype34;
-            xfer += iprot->readListBegin(_etype34, _size31);
-            this->componentNames.resize(_size31);
-            uint32_t _i35;
-            for (_i35 = 0; _i35 < _size31; ++_i35)
+            uint32_t _size41;
+            ::apache::thrift::protocol::TType _etype44;
+            xfer += iprot->readListBegin(_etype44, _size41);
+            this->componentNames.resize(_size41);
+            uint32_t _i45;
+            for (_i45 = 0; _i45 < _size41; ++_i45)
             {
-              xfer += iprot->readString(this->componentNames[_i35]);
+              xfer += iprot->readString(this->componentNames[_i45]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1205,10 +1465,10 @@ uint32_t ResultInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("componentNames", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->componentNames.size()));
-    std::vector<std::string> ::const_iterator _iter36;
-    for (_iter36 = this->componentNames.begin(); _iter36 != this->componentNames.end(); ++_iter36)
+    std::vector<std::string> ::const_iterator _iter46;
+    for (_iter46 = this->componentNames.begin(); _iter46 != this->componentNames.end(); ++_iter46)
     {
-      xfer += oprot->writeString((*_iter36));
+      xfer += oprot->writeString((*_iter46));
     }
     xfer += oprot->writeListEnd();
   }
@@ -1254,29 +1514,29 @@ void swap(ResultInfo &a, ResultInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-ResultInfo::ResultInfo(const ResultInfo& other37) {
-  name = other37.name;
-  type = other37.type;
-  numberOfComponents = other37.numberOfComponents;
-  componentNames = other37.componentNames;
-  location = other37.location;
-  gaussPointName = other37.gaussPointName;
-  coordinatesName = other37.coordinatesName;
-  units = other37.units;
-  resultNumber = other37.resultNumber;
-  __isset = other37.__isset;
+ResultInfo::ResultInfo(const ResultInfo& other47) {
+  name = other47.name;
+  type = other47.type;
+  numberOfComponents = other47.numberOfComponents;
+  componentNames = other47.componentNames;
+  location = other47.location;
+  gaussPointName = other47.gaussPointName;
+  coordinatesName = other47.coordinatesName;
+  units = other47.units;
+  resultNumber = other47.resultNumber;
+  __isset = other47.__isset;
 }
-ResultInfo& ResultInfo::operator=(const ResultInfo& other38) {
-  name = other38.name;
-  type = other38.type;
-  numberOfComponents = other38.numberOfComponents;
-  componentNames = other38.componentNames;
-  location = other38.location;
-  gaussPointName = other38.gaussPointName;
-  coordinatesName = other38.coordinatesName;
-  units = other38.units;
-  resultNumber = other38.resultNumber;
-  __isset = other38.__isset;
+ResultInfo& ResultInfo::operator=(const ResultInfo& other48) {
+  name = other48.name;
+  type = other48.type;
+  numberOfComponents = other48.numberOfComponents;
+  componentNames = other48.componentNames;
+  location = other48.location;
+  gaussPointName = other48.gaussPointName;
+  coordinatesName = other48.coordinatesName;
+  units = other48.units;
+  resultNumber = other48.resultNumber;
+  __isset = other48.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const ResultInfo& obj) {
@@ -1343,14 +1603,14 @@ uint32_t ResultOnVertex::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->value.clear();
-            uint32_t _size39;
-            ::apache::thrift::protocol::TType _etype42;
-            xfer += iprot->readListBegin(_etype42, _size39);
-            this->value.resize(_size39);
-            uint32_t _i43;
-            for (_i43 = 0; _i43 < _size39; ++_i43)
+            uint32_t _size49;
+            ::apache::thrift::protocol::TType _etype52;
+            xfer += iprot->readListBegin(_etype52, _size49);
+            this->value.resize(_size49);
+            uint32_t _i53;
+            for (_i53 = 0; _i53 < _size49; ++_i53)
             {
-              xfer += iprot->readDouble(this->value[_i43]);
+              xfer += iprot->readDouble(this->value[_i53]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1383,10 +1643,10 @@ uint32_t ResultOnVertex::write(::apache::thrift::protocol::TProtocol* oprot) con
   xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->value.size()));
-    std::vector<double> ::const_iterator _iter44;
-    for (_iter44 = this->value.begin(); _iter44 != this->value.end(); ++_iter44)
+    std::vector<double> ::const_iterator _iter54;
+    for (_iter54 = this->value.begin(); _iter54 != this->value.end(); ++_iter54)
     {
-      xfer += oprot->writeDouble((*_iter44));
+      xfer += oprot->writeDouble((*_iter54));
     }
     xfer += oprot->writeListEnd();
   }
@@ -1405,15 +1665,15 @@ void swap(ResultOnVertex &a, ResultOnVertex &b) {
   swap(a.__isset, b.__isset);
 }
 
-ResultOnVertex::ResultOnVertex(const ResultOnVertex& other45) {
-  id = other45.id;
-  value = other45.value;
-  __isset = other45.__isset;
+ResultOnVertex::ResultOnVertex(const ResultOnVertex& other55) {
+  id = other55.id;
+  value = other55.value;
+  __isset = other55.__isset;
 }
-ResultOnVertex& ResultOnVertex::operator=(const ResultOnVertex& other46) {
-  id = other46.id;
-  value = other46.value;
-  __isset = other46.__isset;
+ResultOnVertex& ResultOnVertex::operator=(const ResultOnVertex& other56) {
+  id = other56.id;
+  value = other56.value;
+  __isset = other56.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const ResultOnVertex& obj) {
@@ -1461,14 +1721,14 @@ uint32_t Triangle::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->nodes.clear();
-            uint32_t _size47;
-            ::apache::thrift::protocol::TType _etype50;
-            xfer += iprot->readListBegin(_etype50, _size47);
-            this->nodes.resize(_size47);
-            uint32_t _i51;
-            for (_i51 = 0; _i51 < _size47; ++_i51)
+            uint32_t _size57;
+            ::apache::thrift::protocol::TType _etype60;
+            xfer += iprot->readListBegin(_etype60, _size57);
+            this->nodes.resize(_size57);
+            uint32_t _i61;
+            for (_i61 = 0; _i61 < _size57; ++_i61)
             {
-              xfer += iprot->readI64(this->nodes[_i51]);
+              xfer += iprot->readI64(this->nodes[_i61]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1497,10 +1757,10 @@ uint32_t Triangle::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("nodes", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->nodes.size()));
-    std::vector<NodeID> ::const_iterator _iter52;
-    for (_iter52 = this->nodes.begin(); _iter52 != this->nodes.end(); ++_iter52)
+    std::vector<NodeID> ::const_iterator _iter62;
+    for (_iter62 = this->nodes.begin(); _iter62 != this->nodes.end(); ++_iter62)
     {
-      xfer += oprot->writeI64((*_iter52));
+      xfer += oprot->writeI64((*_iter62));
     }
     xfer += oprot->writeListEnd();
   }
@@ -1518,13 +1778,13 @@ void swap(Triangle &a, Triangle &b) {
   swap(a.__isset, b.__isset);
 }
 
-Triangle::Triangle(const Triangle& other53) {
-  nodes = other53.nodes;
-  __isset = other53.__isset;
+Triangle::Triangle(const Triangle& other63) {
+  nodes = other63.nodes;
+  __isset = other63.__isset;
 }
-Triangle& Triangle::operator=(const Triangle& other54) {
-  nodes = other54.nodes;
-  __isset = other54.__isset;
+Triangle& Triangle::operator=(const Triangle& other64) {
+  nodes = other64.nodes;
+  __isset = other64.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const Triangle& obj) {
@@ -1595,14 +1855,14 @@ uint32_t rvGetElementOfPointsInSpace::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->elements.clear();
-            uint32_t _size55;
-            ::apache::thrift::protocol::TType _etype58;
-            xfer += iprot->readListBegin(_etype58, _size55);
-            this->elements.resize(_size55);
-            uint32_t _i59;
-            for (_i59 = 0; _i59 < _size55; ++_i59)
+            uint32_t _size65;
+            ::apache::thrift::protocol::TType _etype68;
+            xfer += iprot->readListBegin(_etype68, _size65);
+            this->elements.resize(_size65);
+            uint32_t _i69;
+            for (_i69 = 0; _i69 < _size65; ++_i69)
             {
-              xfer += this->elements[_i59].read(iprot);
+              xfer += this->elements[_i69].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -1639,10 +1899,10 @@ uint32_t rvGetElementOfPointsInSpace::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("elements", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->elements.size()));
-    std::vector<Element> ::const_iterator _iter60;
-    for (_iter60 = this->elements.begin(); _iter60 != this->elements.end(); ++_iter60)
+    std::vector<Element> ::const_iterator _iter70;
+    for (_iter70 = this->elements.begin(); _iter70 != this->elements.end(); ++_iter70)
     {
-      xfer += (*_iter60).write(oprot);
+      xfer += (*_iter70).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -1662,17 +1922,17 @@ void swap(rvGetElementOfPointsInSpace &a, rvGetElementOfPointsInSpace &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetElementOfPointsInSpace::rvGetElementOfPointsInSpace(const rvGetElementOfPointsInSpace& other61) {
-  status = other61.status;
-  report = other61.report;
-  elements = other61.elements;
-  __isset = other61.__isset;
+rvGetElementOfPointsInSpace::rvGetElementOfPointsInSpace(const rvGetElementOfPointsInSpace& other71) {
+  status = other71.status;
+  report = other71.report;
+  elements = other71.elements;
+  __isset = other71.__isset;
 }
-rvGetElementOfPointsInSpace& rvGetElementOfPointsInSpace::operator=(const rvGetElementOfPointsInSpace& other62) {
-  status = other62.status;
-  report = other62.report;
-  elements = other62.elements;
-  __isset = other62.__isset;
+rvGetElementOfPointsInSpace& rvGetElementOfPointsInSpace::operator=(const rvGetElementOfPointsInSpace& other72) {
+  status = other72.status;
+  report = other72.report;
+  elements = other72.elements;
+  __isset = other72.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetElementOfPointsInSpace& obj) {
@@ -1745,14 +2005,14 @@ uint32_t rvGetBoundaryOfLocalMesh::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->elements.clear();
-            uint32_t _size63;
-            ::apache::thrift::protocol::TType _etype66;
-            xfer += iprot->readListBegin(_etype66, _size63);
-            this->elements.resize(_size63);
-            uint32_t _i67;
-            for (_i67 = 0; _i67 < _size63; ++_i67)
+            uint32_t _size73;
+            ::apache::thrift::protocol::TType _etype76;
+            xfer += iprot->readListBegin(_etype76, _size73);
+            this->elements.resize(_size73);
+            uint32_t _i77;
+            for (_i77 = 0; _i77 < _size73; ++_i77)
             {
-              xfer += this->elements[_i67].read(iprot);
+              xfer += this->elements[_i77].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -1789,10 +2049,10 @@ uint32_t rvGetBoundaryOfLocalMesh::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldBegin("elements", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->elements.size()));
-    std::vector<Triangle> ::const_iterator _iter68;
-    for (_iter68 = this->elements.begin(); _iter68 != this->elements.end(); ++_iter68)
+    std::vector<Triangle> ::const_iterator _iter78;
+    for (_iter78 = this->elements.begin(); _iter78 != this->elements.end(); ++_iter78)
     {
-      xfer += (*_iter68).write(oprot);
+      xfer += (*_iter78).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -1812,17 +2072,17 @@ void swap(rvGetBoundaryOfLocalMesh &a, rvGetBoundaryOfLocalMesh &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetBoundaryOfLocalMesh::rvGetBoundaryOfLocalMesh(const rvGetBoundaryOfLocalMesh& other69) {
-  status = other69.status;
-  report = other69.report;
-  elements = other69.elements;
-  __isset = other69.__isset;
+rvGetBoundaryOfLocalMesh::rvGetBoundaryOfLocalMesh(const rvGetBoundaryOfLocalMesh& other79) {
+  status = other79.status;
+  report = other79.report;
+  elements = other79.elements;
+  __isset = other79.__isset;
 }
-rvGetBoundaryOfLocalMesh& rvGetBoundaryOfLocalMesh::operator=(const rvGetBoundaryOfLocalMesh& other70) {
-  status = other70.status;
-  report = other70.report;
-  elements = other70.elements;
-  __isset = other70.__isset;
+rvGetBoundaryOfLocalMesh& rvGetBoundaryOfLocalMesh::operator=(const rvGetBoundaryOfLocalMesh& other80) {
+  status = other80.status;
+  report = other80.report;
+  elements = other80.elements;
+  __isset = other80.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetBoundaryOfLocalMesh& obj) {
@@ -1923,14 +2183,14 @@ uint32_t rvGetResultFromVerticesID_A::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vertexIDs.clear();
-            uint32_t _size71;
-            ::apache::thrift::protocol::TType _etype74;
-            xfer += iprot->readListBegin(_etype74, _size71);
-            this->vertexIDs.resize(_size71);
-            uint32_t _i75;
-            for (_i75 = 0; _i75 < _size71; ++_i75)
+            uint32_t _size81;
+            ::apache::thrift::protocol::TType _etype84;
+            xfer += iprot->readListBegin(_etype84, _size81);
+            this->vertexIDs.resize(_size81);
+            uint32_t _i85;
+            for (_i85 = 0; _i85 < _size81; ++_i85)
             {
-              xfer += iprot->readI64(this->vertexIDs[_i75]);
+              xfer += iprot->readI64(this->vertexIDs[_i85]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1943,14 +2203,14 @@ uint32_t rvGetResultFromVerticesID_A::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->resultValues.clear();
-            uint32_t _size76;
-            ::apache::thrift::protocol::TType _etype79;
-            xfer += iprot->readListBegin(_etype79, _size76);
-            this->resultValues.resize(_size76);
-            uint32_t _i80;
-            for (_i80 = 0; _i80 < _size76; ++_i80)
+            uint32_t _size86;
+            ::apache::thrift::protocol::TType _etype89;
+            xfer += iprot->readListBegin(_etype89, _size86);
+            this->resultValues.resize(_size86);
+            uint32_t _i90;
+            for (_i90 = 0; _i90 < _size86; ++_i90)
             {
-              xfer += iprot->readDouble(this->resultValues[_i80]);
+              xfer += iprot->readDouble(this->resultValues[_i90]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1995,10 +2255,10 @@ uint32_t rvGetResultFromVerticesID_A::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("vertexIDs", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->vertexIDs.size()));
-    std::vector<int64_t> ::const_iterator _iter81;
-    for (_iter81 = this->vertexIDs.begin(); _iter81 != this->vertexIDs.end(); ++_iter81)
+    std::vector<int64_t> ::const_iterator _iter91;
+    for (_iter91 = this->vertexIDs.begin(); _iter91 != this->vertexIDs.end(); ++_iter91)
     {
-      xfer += oprot->writeI64((*_iter81));
+      xfer += oprot->writeI64((*_iter91));
     }
     xfer += oprot->writeListEnd();
   }
@@ -2007,10 +2267,10 @@ uint32_t rvGetResultFromVerticesID_A::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("resultValues", ::apache::thrift::protocol::T_LIST, 6);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->resultValues.size()));
-    std::vector<double> ::const_iterator _iter82;
-    for (_iter82 = this->resultValues.begin(); _iter82 != this->resultValues.end(); ++_iter82)
+    std::vector<double> ::const_iterator _iter92;
+    for (_iter92 = this->resultValues.begin(); _iter92 != this->resultValues.end(); ++_iter92)
     {
-      xfer += oprot->writeDouble((*_iter82));
+      xfer += oprot->writeDouble((*_iter92));
     }
     xfer += oprot->writeListEnd();
   }
@@ -2033,23 +2293,23 @@ void swap(rvGetResultFromVerticesID_A &a, rvGetResultFromVerticesID_A &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetResultFromVerticesID_A::rvGetResultFromVerticesID_A(const rvGetResultFromVerticesID_A& other83) {
-  status = other83.status;
-  report = other83.report;
-  nVertices = other83.nVertices;
-  nValuesPrVertex = other83.nValuesPrVertex;
-  vertexIDs = other83.vertexIDs;
-  resultValues = other83.resultValues;
-  __isset = other83.__isset;
+rvGetResultFromVerticesID_A::rvGetResultFromVerticesID_A(const rvGetResultFromVerticesID_A& other93) {
+  status = other93.status;
+  report = other93.report;
+  nVertices = other93.nVertices;
+  nValuesPrVertex = other93.nValuesPrVertex;
+  vertexIDs = other93.vertexIDs;
+  resultValues = other93.resultValues;
+  __isset = other93.__isset;
 }
-rvGetResultFromVerticesID_A& rvGetResultFromVerticesID_A::operator=(const rvGetResultFromVerticesID_A& other84) {
-  status = other84.status;
-  report = other84.report;
-  nVertices = other84.nVertices;
-  nValuesPrVertex = other84.nValuesPrVertex;
-  vertexIDs = other84.vertexIDs;
-  resultValues = other84.resultValues;
-  __isset = other84.__isset;
+rvGetResultFromVerticesID_A& rvGetResultFromVerticesID_A::operator=(const rvGetResultFromVerticesID_A& other94) {
+  status = other94.status;
+  report = other94.report;
+  nVertices = other94.nVertices;
+  nValuesPrVertex = other94.nValuesPrVertex;
+  vertexIDs = other94.vertexIDs;
+  resultValues = other94.resultValues;
+  __isset = other94.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID_A& obj) {
@@ -2113,14 +2373,14 @@ uint32_t VertexResult::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->resuls.clear();
-            uint32_t _size85;
-            ::apache::thrift::protocol::TType _etype88;
-            xfer += iprot->readListBegin(_etype88, _size85);
-            this->resuls.resize(_size85);
-            uint32_t _i89;
-            for (_i89 = 0; _i89 < _size85; ++_i89)
+            uint32_t _size95;
+            ::apache::thrift::protocol::TType _etype98;
+            xfer += iprot->readListBegin(_etype98, _size95);
+            this->resuls.resize(_size95);
+            uint32_t _i99;
+            for (_i99 = 0; _i99 < _size95; ++_i99)
             {
-              xfer += iprot->readDouble(this->resuls[_i89]);
+              xfer += iprot->readDouble(this->resuls[_i99]);
             }
             xfer += iprot->readListEnd();
           }
@@ -2153,10 +2413,10 @@ uint32_t VertexResult::write(::apache::thrift::protocol::TProtocol* oprot) const
   xfer += oprot->writeFieldBegin("resuls", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->resuls.size()));
-    std::vector<double> ::const_iterator _iter90;
-    for (_iter90 = this->resuls.begin(); _iter90 != this->resuls.end(); ++_iter90)
+    std::vector<double> ::const_iterator _iter100;
+    for (_iter100 = this->resuls.begin(); _iter100 != this->resuls.end(); ++_iter100)
     {
-      xfer += oprot->writeDouble((*_iter90));
+      xfer += oprot->writeDouble((*_iter100));
     }
     xfer += oprot->writeListEnd();
   }
@@ -2175,15 +2435,15 @@ void swap(VertexResult &a, VertexResult &b) {
   swap(a.__isset, b.__isset);
 }
 
-VertexResult::VertexResult(const VertexResult& other91) {
-  vertexID = other91.vertexID;
-  resuls = other91.resuls;
-  __isset = other91.__isset;
+VertexResult::VertexResult(const VertexResult& other101) {
+  vertexID = other101.vertexID;
+  resuls = other101.resuls;
+  __isset = other101.__isset;
 }
-VertexResult& VertexResult::operator=(const VertexResult& other92) {
-  vertexID = other92.vertexID;
-  resuls = other92.resuls;
-  __isset = other92.__isset;
+VertexResult& VertexResult::operator=(const VertexResult& other102) {
+  vertexID = other102.vertexID;
+  resuls = other102.resuls;
+  __isset = other102.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const VertexResult& obj) {
@@ -2255,14 +2515,14 @@ uint32_t rvGetResultFromVerticesID_B::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vertexResults.clear();
-            uint32_t _size93;
-            ::apache::thrift::protocol::TType _etype96;
-            xfer += iprot->readListBegin(_etype96, _size93);
-            this->vertexResults.resize(_size93);
-            uint32_t _i97;
-            for (_i97 = 0; _i97 < _size93; ++_i97)
+            uint32_t _size103;
+            ::apache::thrift::protocol::TType _etype106;
+            xfer += iprot->readListBegin(_etype106, _size103);
+            this->vertexResults.resize(_size103);
+            uint32_t _i107;
+            for (_i107 = 0; _i107 < _size103; ++_i107)
             {
-              xfer += this->vertexResults[_i97].read(iprot);
+              xfer += this->vertexResults[_i107].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -2299,10 +2559,10 @@ uint32_t rvGetResultFromVerticesID_B::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("vertexResults", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->vertexResults.size()));
-    std::vector<VertexResult> ::const_iterator _iter98;
-    for (_iter98 = this->vertexResults.begin(); _iter98 != this->vertexResults.end(); ++_iter98)
+    std::vector<VertexResult> ::const_iterator _iter108;
+    for (_iter108 = this->vertexResults.begin(); _iter108 != this->vertexResults.end(); ++_iter108)
     {
-      xfer += (*_iter98).write(oprot);
+      xfer += (*_iter108).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -2322,17 +2582,17 @@ void swap(rvGetResultFromVerticesID_B &a, rvGetResultFromVerticesID_B &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetResultFromVerticesID_B::rvGetResultFromVerticesID_B(const rvGetResultFromVerticesID_B& other99) {
-  status = other99.status;
-  report = other99.report;
-  vertexResults = other99.vertexResults;
-  __isset = other99.__isset;
+rvGetResultFromVerticesID_B::rvGetResultFromVerticesID_B(const rvGetResultFromVerticesID_B& other109) {
+  status = other109.status;
+  report = other109.report;
+  vertexResults = other109.vertexResults;
+  __isset = other109.__isset;
 }
-rvGetResultFromVerticesID_B& rvGetResultFromVerticesID_B::operator=(const rvGetResultFromVerticesID_B& other100) {
-  status = other100.status;
-  report = other100.report;
-  vertexResults = other100.vertexResults;
-  __isset = other100.__isset;
+rvGetResultFromVerticesID_B& rvGetResultFromVerticesID_B::operator=(const rvGetResultFromVerticesID_B& other110) {
+  status = other110.status;
+  report = other110.report;
+  vertexResults = other110.vertexResults;
+  __isset = other110.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID_B& obj) {
@@ -2588,33 +2848,33 @@ void swap(ModelInfo &a, ModelInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-ModelInfo::ModelInfo(const ModelInfo& other101) {
-  name = other101.name;
-  repository = other101.repository;
-  owner = other101.owner;
-  created = other101.created;
-  accessRights = other101.accessRights;
-  administrators = other101.administrators;
-  underlyingSchema = other101.underlyingSchema;
-  nObjectsInModel = other101.nObjectsInModel;
-  dataSize = other101.dataSize;
-  stringEncoding = other101.stringEncoding;
-  options = other101.options;
-  __isset = other101.__isset;
+ModelInfo::ModelInfo(const ModelInfo& other111) {
+  name = other111.name;
+  repository = other111.repository;
+  owner = other111.owner;
+  created = other111.created;
+  accessRights = other111.accessRights;
+  administrators = other111.administrators;
+  underlyingSchema = other111.underlyingSchema;
+  nObjectsInModel = other111.nObjectsInModel;
+  dataSize = other111.dataSize;
+  stringEncoding = other111.stringEncoding;
+  options = other111.options;
+  __isset = other111.__isset;
 }
-ModelInfo& ModelInfo::operator=(const ModelInfo& other102) {
-  name = other102.name;
-  repository = other102.repository;
-  owner = other102.owner;
-  created = other102.created;
-  accessRights = other102.accessRights;
-  administrators = other102.administrators;
-  underlyingSchema = other102.underlyingSchema;
-  nObjectsInModel = other102.nObjectsInModel;
-  dataSize = other102.dataSize;
-  stringEncoding = other102.stringEncoding;
-  options = other102.options;
-  __isset = other102.__isset;
+ModelInfo& ModelInfo::operator=(const ModelInfo& other112) {
+  name = other112.name;
+  repository = other112.repository;
+  owner = other112.owner;
+  created = other112.created;
+  accessRights = other112.accessRights;
+  administrators = other112.administrators;
+  underlyingSchema = other112.underlyingSchema;
+  nObjectsInModel = other112.nObjectsInModel;
+  dataSize = other112.dataSize;
+  stringEncoding = other112.stringEncoding;
+  options = other112.options;
+  __isset = other112.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const ModelInfo& obj) {
@@ -2759,19 +3019,19 @@ void swap(FullyQualifiedModelName &a, FullyQualifiedModelName &b) {
   swap(a.__isset, b.__isset);
 }
 
-FullyQualifiedModelName::FullyQualifiedModelName(const FullyQualifiedModelName& other103) {
-  name = other103.name;
-  full_path = other103.full_path;
-  modelID = other103.modelID;
-  location = other103.location;
-  __isset = other103.__isset;
+FullyQualifiedModelName::FullyQualifiedModelName(const FullyQualifiedModelName& other113) {
+  name = other113.name;
+  full_path = other113.full_path;
+  modelID = other113.modelID;
+  location = other113.location;
+  __isset = other113.__isset;
 }
-FullyQualifiedModelName& FullyQualifiedModelName::operator=(const FullyQualifiedModelName& other104) {
-  name = other104.name;
-  full_path = other104.full_path;
-  modelID = other104.modelID;
-  location = other104.location;
-  __isset = other104.__isset;
+FullyQualifiedModelName& FullyQualifiedModelName::operator=(const FullyQualifiedModelName& other114) {
+  name = other114.name;
+  full_path = other114.full_path;
+  modelID = other114.modelID;
+  location = other114.location;
+  __isset = other114.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const FullyQualifiedModelName& obj) {
@@ -2845,14 +3105,14 @@ uint32_t rvGetListOfModels::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->models.clear();
-            uint32_t _size105;
-            ::apache::thrift::protocol::TType _etype108;
-            xfer += iprot->readListBegin(_etype108, _size105);
-            this->models.resize(_size105);
-            uint32_t _i109;
-            for (_i109 = 0; _i109 < _size105; ++_i109)
+            uint32_t _size115;
+            ::apache::thrift::protocol::TType _etype118;
+            xfer += iprot->readListBegin(_etype118, _size115);
+            this->models.resize(_size115);
+            uint32_t _i119;
+            for (_i119 = 0; _i119 < _size115; ++_i119)
             {
-              xfer += this->models[_i109].read(iprot);
+              xfer += this->models[_i119].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -2889,10 +3149,10 @@ uint32_t rvGetListOfModels::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("models", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->models.size()));
-    std::vector<FullyQualifiedModelName> ::const_iterator _iter110;
-    for (_iter110 = this->models.begin(); _iter110 != this->models.end(); ++_iter110)
+    std::vector<FullyQualifiedModelName> ::const_iterator _iter120;
+    for (_iter120 = this->models.begin(); _iter120 != this->models.end(); ++_iter120)
     {
-      xfer += (*_iter110).write(oprot);
+      xfer += (*_iter120).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -2912,17 +3172,17 @@ void swap(rvGetListOfModels &a, rvGetListOfModels &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetListOfModels::rvGetListOfModels(const rvGetListOfModels& other111) {
-  status = other111.status;
-  report = other111.report;
-  models = other111.models;
-  __isset = other111.__isset;
+rvGetListOfModels::rvGetListOfModels(const rvGetListOfModels& other121) {
+  status = other121.status;
+  report = other121.report;
+  models = other121.models;
+  __isset = other121.__isset;
 }
-rvGetListOfModels& rvGetListOfModels::operator=(const rvGetListOfModels& other112) {
-  status = other112.status;
-  report = other112.report;
-  models = other112.models;
-  __isset = other112.__isset;
+rvGetListOfModels& rvGetListOfModels::operator=(const rvGetListOfModels& other122) {
+  status = other122.status;
+  report = other122.report;
+  models = other122.models;
+  __isset = other122.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetListOfModels& obj) {
@@ -3042,17 +3302,17 @@ void swap(rvGetThumbnailOfAModel &a, rvGetThumbnailOfAModel &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetThumbnailOfAModel::rvGetThumbnailOfAModel(const rvGetThumbnailOfAModel& other113) {
-  status = other113.status;
-  report = other113.report;
-  imageFile = other113.imageFile;
-  __isset = other113.__isset;
+rvGetThumbnailOfAModel::rvGetThumbnailOfAModel(const rvGetThumbnailOfAModel& other123) {
+  status = other123.status;
+  report = other123.report;
+  imageFile = other123.imageFile;
+  __isset = other123.__isset;
 }
-rvGetThumbnailOfAModel& rvGetThumbnailOfAModel::operator=(const rvGetThumbnailOfAModel& other114) {
-  status = other114.status;
-  report = other114.report;
-  imageFile = other114.imageFile;
-  __isset = other114.__isset;
+rvGetThumbnailOfAModel& rvGetThumbnailOfAModel::operator=(const rvGetThumbnailOfAModel& other124) {
+  status = other124.status;
+  report = other124.report;
+  imageFile = other124.imageFile;
+  __isset = other124.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetThumbnailOfAModel& obj) {
@@ -3189,19 +3449,19 @@ void swap(rvOpenModel &a, rvOpenModel &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvOpenModel::rvOpenModel(const rvOpenModel& other115) {
-  status = other115.status;
-  report = other115.report;
-  modelID = other115.modelID;
-  model_info = other115.model_info;
-  __isset = other115.__isset;
+rvOpenModel::rvOpenModel(const rvOpenModel& other125) {
+  status = other125.status;
+  report = other125.report;
+  modelID = other125.modelID;
+  model_info = other125.model_info;
+  __isset = other125.__isset;
 }
-rvOpenModel& rvOpenModel::operator=(const rvOpenModel& other116) {
-  status = other116.status;
-  report = other116.report;
-  modelID = other116.modelID;
-  model_info = other116.model_info;
-  __isset = other116.__isset;
+rvOpenModel& rvOpenModel::operator=(const rvOpenModel& other126) {
+  status = other126.status;
+  report = other126.report;
+  modelID = other126.modelID;
+  model_info = other126.model_info;
+  __isset = other126.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvOpenModel& obj) {
@@ -3275,14 +3535,14 @@ uint32_t rvGetListOfAnalyses::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->analyses.clear();
-            uint32_t _size117;
-            ::apache::thrift::protocol::TType _etype120;
-            xfer += iprot->readListBegin(_etype120, _size117);
-            this->analyses.resize(_size117);
-            uint32_t _i121;
-            for (_i121 = 0; _i121 < _size117; ++_i121)
+            uint32_t _size127;
+            ::apache::thrift::protocol::TType _etype130;
+            xfer += iprot->readListBegin(_etype130, _size127);
+            this->analyses.resize(_size127);
+            uint32_t _i131;
+            for (_i131 = 0; _i131 < _size127; ++_i131)
             {
-              xfer += iprot->readString(this->analyses[_i121]);
+              xfer += iprot->readString(this->analyses[_i131]);
             }
             xfer += iprot->readListEnd();
           }
@@ -3319,10 +3579,10 @@ uint32_t rvGetListOfAnalyses::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("analyses", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->analyses.size()));
-    std::vector<std::string> ::const_iterator _iter122;
-    for (_iter122 = this->analyses.begin(); _iter122 != this->analyses.end(); ++_iter122)
+    std::vector<std::string> ::const_iterator _iter132;
+    for (_iter132 = this->analyses.begin(); _iter132 != this->analyses.end(); ++_iter132)
     {
-      xfer += oprot->writeString((*_iter122));
+      xfer += oprot->writeString((*_iter132));
     }
     xfer += oprot->writeListEnd();
   }
@@ -3342,17 +3602,17 @@ void swap(rvGetListOfAnalyses &a, rvGetListOfAnalyses &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetListOfAnalyses::rvGetListOfAnalyses(const rvGetListOfAnalyses& other123) {
-  status = other123.status;
-  report = other123.report;
-  analyses = other123.analyses;
-  __isset = other123.__isset;
+rvGetListOfAnalyses::rvGetListOfAnalyses(const rvGetListOfAnalyses& other133) {
+  status = other133.status;
+  report = other133.report;
+  analyses = other133.analyses;
+  __isset = other133.__isset;
 }
-rvGetListOfAnalyses& rvGetListOfAnalyses::operator=(const rvGetListOfAnalyses& other124) {
-  status = other124.status;
-  report = other124.report;
-  analyses = other124.analyses;
-  __isset = other124.__isset;
+rvGetListOfAnalyses& rvGetListOfAnalyses::operator=(const rvGetListOfAnalyses& other134) {
+  status = other134.status;
+  report = other134.report;
+  analyses = other134.analyses;
+  __isset = other134.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetListOfAnalyses& obj) {
@@ -3425,14 +3685,14 @@ uint32_t rvGetListOfTimeSteps::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->time_steps.clear();
-            uint32_t _size125;
-            ::apache::thrift::protocol::TType _etype128;
-            xfer += iprot->readListBegin(_etype128, _size125);
-            this->time_steps.resize(_size125);
-            uint32_t _i129;
-            for (_i129 = 0; _i129 < _size125; ++_i129)
+            uint32_t _size135;
+            ::apache::thrift::protocol::TType _etype138;
+            xfer += iprot->readListBegin(_etype138, _size135);
+            this->time_steps.resize(_size135);
+            uint32_t _i139;
+            for (_i139 = 0; _i139 < _size135; ++_i139)
             {
-              xfer += iprot->readDouble(this->time_steps[_i129]);
+              xfer += iprot->readDouble(this->time_steps[_i139]);
             }
             xfer += iprot->readListEnd();
           }
@@ -3469,10 +3729,10 @@ uint32_t rvGetListOfTimeSteps::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldBegin("time_steps", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->time_steps.size()));
-    std::vector<double> ::const_iterator _iter130;
-    for (_iter130 = this->time_steps.begin(); _iter130 != this->time_steps.end(); ++_iter130)
+    std::vector<double> ::const_iterator _iter140;
+    for (_iter140 = this->time_steps.begin(); _iter140 != this->time_steps.end(); ++_iter140)
     {
-      xfer += oprot->writeDouble((*_iter130));
+      xfer += oprot->writeDouble((*_iter140));
     }
     xfer += oprot->writeListEnd();
   }
@@ -3492,17 +3752,17 @@ void swap(rvGetListOfTimeSteps &a, rvGetListOfTimeSteps &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetListOfTimeSteps::rvGetListOfTimeSteps(const rvGetListOfTimeSteps& other131) {
-  status = other131.status;
-  report = other131.report;
-  time_steps = other131.time_steps;
-  __isset = other131.__isset;
+rvGetListOfTimeSteps::rvGetListOfTimeSteps(const rvGetListOfTimeSteps& other141) {
+  status = other141.status;
+  report = other141.report;
+  time_steps = other141.time_steps;
+  __isset = other141.__isset;
 }
-rvGetListOfTimeSteps& rvGetListOfTimeSteps::operator=(const rvGetListOfTimeSteps& other132) {
-  status = other132.status;
-  report = other132.report;
-  time_steps = other132.time_steps;
-  __isset = other132.__isset;
+rvGetListOfTimeSteps& rvGetListOfTimeSteps::operator=(const rvGetListOfTimeSteps& other142) {
+  status = other142.status;
+  report = other142.report;
+  time_steps = other142.time_steps;
+  __isset = other142.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetListOfTimeSteps& obj) {
@@ -3575,14 +3835,14 @@ uint32_t rvGetListOfMeshes::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->meshInfos.clear();
-            uint32_t _size133;
-            ::apache::thrift::protocol::TType _etype136;
-            xfer += iprot->readListBegin(_etype136, _size133);
-            this->meshInfos.resize(_size133);
-            uint32_t _i137;
-            for (_i137 = 0; _i137 < _size133; ++_i137)
+            uint32_t _size143;
+            ::apache::thrift::protocol::TType _etype146;
+            xfer += iprot->readListBegin(_etype146, _size143);
+            this->meshInfos.resize(_size143);
+            uint32_t _i147;
+            for (_i147 = 0; _i147 < _size143; ++_i147)
             {
-              xfer += this->meshInfos[_i137].read(iprot);
+              xfer += this->meshInfos[_i147].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3619,10 +3879,10 @@ uint32_t rvGetListOfMeshes::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("meshInfos", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->meshInfos.size()));
-    std::vector<MeshInfo> ::const_iterator _iter138;
-    for (_iter138 = this->meshInfos.begin(); _iter138 != this->meshInfos.end(); ++_iter138)
+    std::vector<MeshInfo> ::const_iterator _iter148;
+    for (_iter148 = this->meshInfos.begin(); _iter148 != this->meshInfos.end(); ++_iter148)
     {
-      xfer += (*_iter138).write(oprot);
+      xfer += (*_iter148).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -3642,17 +3902,17 @@ void swap(rvGetListOfMeshes &a, rvGetListOfMeshes &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetListOfMeshes::rvGetListOfMeshes(const rvGetListOfMeshes& other139) {
-  status = other139.status;
-  report = other139.report;
-  meshInfos = other139.meshInfos;
-  __isset = other139.__isset;
+rvGetListOfMeshes::rvGetListOfMeshes(const rvGetListOfMeshes& other149) {
+  status = other149.status;
+  report = other149.report;
+  meshInfos = other149.meshInfos;
+  __isset = other149.__isset;
 }
-rvGetListOfMeshes& rvGetListOfMeshes::operator=(const rvGetListOfMeshes& other140) {
-  status = other140.status;
-  report = other140.report;
-  meshInfos = other140.meshInfos;
-  __isset = other140.__isset;
+rvGetListOfMeshes& rvGetListOfMeshes::operator=(const rvGetListOfMeshes& other150) {
+  status = other150.status;
+  report = other150.report;
+  meshInfos = other150.meshInfos;
+  __isset = other150.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetListOfMeshes& obj) {
@@ -3725,14 +3985,14 @@ uint32_t rvGetListOfResults::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->result_list.clear();
-            uint32_t _size141;
-            ::apache::thrift::protocol::TType _etype144;
-            xfer += iprot->readListBegin(_etype144, _size141);
-            this->result_list.resize(_size141);
-            uint32_t _i145;
-            for (_i145 = 0; _i145 < _size141; ++_i145)
+            uint32_t _size151;
+            ::apache::thrift::protocol::TType _etype154;
+            xfer += iprot->readListBegin(_etype154, _size151);
+            this->result_list.resize(_size151);
+            uint32_t _i155;
+            for (_i155 = 0; _i155 < _size151; ++_i155)
             {
-              xfer += this->result_list[_i145].read(iprot);
+              xfer += this->result_list[_i155].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3769,10 +4029,10 @@ uint32_t rvGetListOfResults::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("result_list", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->result_list.size()));
-    std::vector<ResultInfo> ::const_iterator _iter146;
-    for (_iter146 = this->result_list.begin(); _iter146 != this->result_list.end(); ++_iter146)
+    std::vector<ResultInfo> ::const_iterator _iter156;
+    for (_iter156 = this->result_list.begin(); _iter156 != this->result_list.end(); ++_iter156)
     {
-      xfer += (*_iter146).write(oprot);
+      xfer += (*_iter156).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -3792,17 +4052,17 @@ void swap(rvGetListOfResults &a, rvGetListOfResults &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetListOfResults::rvGetListOfResults(const rvGetListOfResults& other147) {
-  status = other147.status;
-  report = other147.report;
-  result_list = other147.result_list;
-  __isset = other147.__isset;
+rvGetListOfResults::rvGetListOfResults(const rvGetListOfResults& other157) {
+  status = other157.status;
+  report = other157.report;
+  result_list = other157.result_list;
+  __isset = other157.__isset;
 }
-rvGetListOfResults& rvGetListOfResults::operator=(const rvGetListOfResults& other148) {
-  status = other148.status;
-  report = other148.report;
-  result_list = other148.result_list;
-  __isset = other148.__isset;
+rvGetListOfResults& rvGetListOfResults::operator=(const rvGetListOfResults& other158) {
+  status = other158.status;
+  report = other158.report;
+  result_list = other158.result_list;
+  __isset = other158.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetListOfResults& obj) {
@@ -3875,14 +4135,14 @@ uint32_t rvGetListOfVerticesFromMesh::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vertex_list.clear();
-            uint32_t _size149;
-            ::apache::thrift::protocol::TType _etype152;
-            xfer += iprot->readListBegin(_etype152, _size149);
-            this->vertex_list.resize(_size149);
-            uint32_t _i153;
-            for (_i153 = 0; _i153 < _size149; ++_i153)
+            uint32_t _size159;
+            ::apache::thrift::protocol::TType _etype162;
+            xfer += iprot->readListBegin(_etype162, _size159);
+            this->vertex_list.resize(_size159);
+            uint32_t _i163;
+            for (_i163 = 0; _i163 < _size159; ++_i163)
             {
-              xfer += this->vertex_list[_i153].read(iprot);
+              xfer += this->vertex_list[_i163].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3919,10 +4179,10 @@ uint32_t rvGetListOfVerticesFromMesh::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("vertex_list", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->vertex_list.size()));
-    std::vector<Vertex> ::const_iterator _iter154;
-    for (_iter154 = this->vertex_list.begin(); _iter154 != this->vertex_list.end(); ++_iter154)
+    std::vector<Vertex> ::const_iterator _iter164;
+    for (_iter164 = this->vertex_list.begin(); _iter164 != this->vertex_list.end(); ++_iter164)
     {
-      xfer += (*_iter154).write(oprot);
+      xfer += (*_iter164).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -3942,17 +4202,17 @@ void swap(rvGetListOfVerticesFromMesh &a, rvGetListOfVerticesFromMesh &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetListOfVerticesFromMesh::rvGetListOfVerticesFromMesh(const rvGetListOfVerticesFromMesh& other155) {
-  status = other155.status;
-  report = other155.report;
-  vertex_list = other155.vertex_list;
-  __isset = other155.__isset;
+rvGetListOfVerticesFromMesh::rvGetListOfVerticesFromMesh(const rvGetListOfVerticesFromMesh& other165) {
+  status = other165.status;
+  report = other165.report;
+  vertex_list = other165.vertex_list;
+  __isset = other165.__isset;
 }
-rvGetListOfVerticesFromMesh& rvGetListOfVerticesFromMesh::operator=(const rvGetListOfVerticesFromMesh& other156) {
-  status = other156.status;
-  report = other156.report;
-  vertex_list = other156.vertex_list;
-  __isset = other156.__isset;
+rvGetListOfVerticesFromMesh& rvGetListOfVerticesFromMesh::operator=(const rvGetListOfVerticesFromMesh& other166) {
+  status = other166.status;
+  report = other166.report;
+  vertex_list = other166.vertex_list;
+  __isset = other166.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetListOfVerticesFromMesh& obj) {
@@ -4025,14 +4285,14 @@ uint32_t rvGetResultFromVerticesID::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->result_list.clear();
-            uint32_t _size157;
-            ::apache::thrift::protocol::TType _etype160;
-            xfer += iprot->readListBegin(_etype160, _size157);
-            this->result_list.resize(_size157);
-            uint32_t _i161;
-            for (_i161 = 0; _i161 < _size157; ++_i161)
+            uint32_t _size167;
+            ::apache::thrift::protocol::TType _etype170;
+            xfer += iprot->readListBegin(_etype170, _size167);
+            this->result_list.resize(_size167);
+            uint32_t _i171;
+            for (_i171 = 0; _i171 < _size167; ++_i171)
             {
-              xfer += this->result_list[_i161].read(iprot);
+              xfer += this->result_list[_i171].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4069,10 +4329,10 @@ uint32_t rvGetResultFromVerticesID::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("result_list", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->result_list.size()));
-    std::vector<ResultOnVertex> ::const_iterator _iter162;
-    for (_iter162 = this->result_list.begin(); _iter162 != this->result_list.end(); ++_iter162)
+    std::vector<ResultOnVertex> ::const_iterator _iter172;
+    for (_iter172 = this->result_list.begin(); _iter172 != this->result_list.end(); ++_iter172)
     {
-      xfer += (*_iter162).write(oprot);
+      xfer += (*_iter172).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -4092,17 +4352,17 @@ void swap(rvGetResultFromVerticesID &a, rvGetResultFromVerticesID &b) {
   swap(a.__isset, b.__isset);
 }
 
-rvGetResultFromVerticesID::rvGetResultFromVerticesID(const rvGetResultFromVerticesID& other163) {
-  status = other163.status;
-  report = other163.report;
-  result_list = other163.result_list;
-  __isset = other163.__isset;
+rvGetResultFromVerticesID::rvGetResultFromVerticesID(const rvGetResultFromVerticesID& other173) {
+  status = other173.status;
+  report = other173.report;
+  result_list = other173.result_list;
+  __isset = other173.__isset;
 }
-rvGetResultFromVerticesID& rvGetResultFromVerticesID::operator=(const rvGetResultFromVerticesID& other164) {
-  status = other164.status;
-  report = other164.report;
-  result_list = other164.result_list;
-  __isset = other164.__isset;
+rvGetResultFromVerticesID& rvGetResultFromVerticesID::operator=(const rvGetResultFromVerticesID& other174) {
+  status = other174.status;
+  report = other174.report;
+  result_list = other174.result_list;
+  __isset = other174.__isset;
   return *this;
 }
 std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID& obj) {
@@ -4111,6 +4371,296 @@ std::ostream& operator<<(std::ostream& out, const rvGetResultFromVerticesID& obj
   out << "status=" << to_string(obj.status);
   out << ", " << "report=" << to_string(obj.report);
   out << ", " << "result_list=" << to_string(obj.result_list);
+  out << ")";
+  return out;
+}
+
+
+rvGetCoordinatesAndElementsFromMesh::~rvGetCoordinatesAndElementsFromMesh() throw() {
+}
+
+
+void rvGetCoordinatesAndElementsFromMesh::__set_status(const std::string& val) {
+  this->status = val;
+}
+
+void rvGetCoordinatesAndElementsFromMesh::__set_report(const std::string& val) {
+  this->report = val;
+}
+
+void rvGetCoordinatesAndElementsFromMesh::__set_meshInfo(const MeshInfo& val) {
+  this->meshInfo = val;
+}
+
+void rvGetCoordinatesAndElementsFromMesh::__set_vertex_list(const std::vector<Vertex> & val) {
+  this->vertex_list = val;
+}
+
+void rvGetCoordinatesAndElementsFromMesh::__set_element_list(const std::vector<Element> & val) {
+  this->element_list = val;
+}
+
+void rvGetCoordinatesAndElementsFromMesh::__set_element_attrib_list(const std::vector<ElementAttrib> & val) {
+  this->element_attrib_list = val;
+}
+
+void rvGetCoordinatesAndElementsFromMesh::__set_element_group_info_list(const std::vector<ElementGroup> & val) {
+  this->element_group_info_list = val;
+}
+
+const char* rvGetCoordinatesAndElementsFromMesh::ascii_fingerprint = "CD1EBAFAFBFAAF3487DB8E933D69479C";
+const uint8_t rvGetCoordinatesAndElementsFromMesh::binary_fingerprint[16] = {0xCD,0x1E,0xBA,0xFA,0xFB,0xFA,0xAF,0x34,0x87,0xDB,0x8E,0x93,0x3D,0x69,0x47,0x9C};
+
+uint32_t rvGetCoordinatesAndElementsFromMesh::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->status);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->report);
+          this->__isset.report = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->meshInfo.read(iprot);
+          this->__isset.meshInfo = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->vertex_list.clear();
+            uint32_t _size175;
+            ::apache::thrift::protocol::TType _etype178;
+            xfer += iprot->readListBegin(_etype178, _size175);
+            this->vertex_list.resize(_size175);
+            uint32_t _i179;
+            for (_i179 = 0; _i179 < _size175; ++_i179)
+            {
+              xfer += this->vertex_list[_i179].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.vertex_list = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->element_list.clear();
+            uint32_t _size180;
+            ::apache::thrift::protocol::TType _etype183;
+            xfer += iprot->readListBegin(_etype183, _size180);
+            this->element_list.resize(_size180);
+            uint32_t _i184;
+            for (_i184 = 0; _i184 < _size180; ++_i184)
+            {
+              xfer += this->element_list[_i184].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.element_list = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->element_attrib_list.clear();
+            uint32_t _size185;
+            ::apache::thrift::protocol::TType _etype188;
+            xfer += iprot->readListBegin(_etype188, _size185);
+            this->element_attrib_list.resize(_size185);
+            uint32_t _i189;
+            for (_i189 = 0; _i189 < _size185; ++_i189)
+            {
+              xfer += this->element_attrib_list[_i189].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.element_attrib_list = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->element_group_info_list.clear();
+            uint32_t _size190;
+            ::apache::thrift::protocol::TType _etype193;
+            xfer += iprot->readListBegin(_etype193, _size190);
+            this->element_group_info_list.resize(_size190);
+            uint32_t _i194;
+            for (_i194 = 0; _i194 < _size190; ++_i194)
+            {
+              xfer += this->element_group_info_list[_i194].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.element_group_info_list = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t rvGetCoordinatesAndElementsFromMesh::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  oprot->incrementRecursionDepth();
+  xfer += oprot->writeStructBegin("rvGetCoordinatesAndElementsFromMesh");
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("report", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->report);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("meshInfo", ::apache::thrift::protocol::T_STRUCT, 3);
+  xfer += this->meshInfo.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("vertex_list", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->vertex_list.size()));
+    std::vector<Vertex> ::const_iterator _iter195;
+    for (_iter195 = this->vertex_list.begin(); _iter195 != this->vertex_list.end(); ++_iter195)
+    {
+      xfer += (*_iter195).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("element_list", ::apache::thrift::protocol::T_LIST, 5);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->element_list.size()));
+    std::vector<Element> ::const_iterator _iter196;
+    for (_iter196 = this->element_list.begin(); _iter196 != this->element_list.end(); ++_iter196)
+    {
+      xfer += (*_iter196).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("element_attrib_list", ::apache::thrift::protocol::T_LIST, 6);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->element_attrib_list.size()));
+    std::vector<ElementAttrib> ::const_iterator _iter197;
+    for (_iter197 = this->element_attrib_list.begin(); _iter197 != this->element_attrib_list.end(); ++_iter197)
+    {
+      xfer += (*_iter197).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("element_group_info_list", ::apache::thrift::protocol::T_LIST, 7);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->element_group_info_list.size()));
+    std::vector<ElementGroup> ::const_iterator _iter198;
+    for (_iter198 = this->element_group_info_list.begin(); _iter198 != this->element_group_info_list.end(); ++_iter198)
+    {
+      xfer += (*_iter198).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  oprot->decrementRecursionDepth();
+  return xfer;
+}
+
+void swap(rvGetCoordinatesAndElementsFromMesh &a, rvGetCoordinatesAndElementsFromMesh &b) {
+  using ::std::swap;
+  swap(a.status, b.status);
+  swap(a.report, b.report);
+  swap(a.meshInfo, b.meshInfo);
+  swap(a.vertex_list, b.vertex_list);
+  swap(a.element_list, b.element_list);
+  swap(a.element_attrib_list, b.element_attrib_list);
+  swap(a.element_group_info_list, b.element_group_info_list);
+  swap(a.__isset, b.__isset);
+}
+
+rvGetCoordinatesAndElementsFromMesh::rvGetCoordinatesAndElementsFromMesh(const rvGetCoordinatesAndElementsFromMesh& other199) {
+  status = other199.status;
+  report = other199.report;
+  meshInfo = other199.meshInfo;
+  vertex_list = other199.vertex_list;
+  element_list = other199.element_list;
+  element_attrib_list = other199.element_attrib_list;
+  element_group_info_list = other199.element_group_info_list;
+  __isset = other199.__isset;
+}
+rvGetCoordinatesAndElementsFromMesh& rvGetCoordinatesAndElementsFromMesh::operator=(const rvGetCoordinatesAndElementsFromMesh& other200) {
+  status = other200.status;
+  report = other200.report;
+  meshInfo = other200.meshInfo;
+  vertex_list = other200.vertex_list;
+  element_list = other200.element_list;
+  element_attrib_list = other200.element_attrib_list;
+  element_group_info_list = other200.element_group_info_list;
+  __isset = other200.__isset;
+  return *this;
+}
+std::ostream& operator<<(std::ostream& out, const rvGetCoordinatesAndElementsFromMesh& obj) {
+  using apache::thrift::to_string;
+  out << "rvGetCoordinatesAndElementsFromMesh(";
+  out << "status=" << to_string(obj.status);
+  out << ", " << "report=" << to_string(obj.report);
+  out << ", " << "meshInfo=" << to_string(obj.meshInfo);
+  out << ", " << "vertex_list=" << to_string(obj.vertex_list);
+  out << ", " << "element_list=" << to_string(obj.element_list);
+  out << ", " << "element_attrib_list=" << to_string(obj.element_attrib_list);
+  out << ", " << "element_group_info_list=" << to_string(obj.element_group_info_list);
   out << ")";
   return out;
 }

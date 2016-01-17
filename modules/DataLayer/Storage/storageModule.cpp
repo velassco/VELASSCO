@@ -70,9 +70,14 @@ std::string storageModule::getResultFromVerticesID( std::string& report, std::ve
 	return _db->getResultFromVerticesID(report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID);	
 }
 
-std::string storageModule::getCoordinatesAndElementsFromMesh(std::string sessionID, std::string modelID, std::string analysisID, double timeStep, unsigned partitionID)
+std::string storageModule::getCoordinatesAndElementsFromMesh( std::string& report,
+					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const int32_t& meshID)
 {
-	return _db->getCoordinatesAndElementsFromMesh(sessionID, modelID, analysisID, timeStep, partitionID);	
+	return _db->getCoordinatesAndElementsFromMesh(report, meshInfo, vertices, listOfElements, listOfElementAttribs, listOfElementInfoGroups, sessionID, modelID, analysisID, timeStep, meshID);	
 }
 
 std::string storageModule::getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,

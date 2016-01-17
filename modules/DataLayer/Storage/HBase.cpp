@@ -788,7 +788,7 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
 #endif
 
 			
-#define DEBUG_RESULTS
+//#define DEBUG_RESULTS
 #ifdef  DEBUG_RESULTS
 	size_t n_debug_results = listOfResults.size() < 10 ? listOfResults.size() : 10;
 		for(size_t i = 0; i < n_debug_results; i++){
@@ -1056,7 +1056,7 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
   }
 #endif
   
-  	#define DEBUG_RESULTS
+ // 	#define DEBUG_RESULTS
 	#ifdef  DEBUG_RESULTS
 	size_t n_debug_results = listOfResults.size() < 10 ? listOfResults.size() : 10;
 			for(size_t i = 0; i < n_debug_results; i++){
@@ -1278,9 +1278,14 @@ std::string HBase::parse1FEM(std::string b)
     return result.str();
 }
 
-std::string HBase::getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const int32_t partitionID) {
-  return getCoordinatesAndElementsFromMesh_curl( sessionID, modelID, analysisID, timeStep, partitionID );		
-  //return getCoordinatesAndElementsFromMesh_thrift( sessionID, modelID, analysisID, timeStep, resultID, coords, elements );		
+std::string HBase::getCoordinatesAndElementsFromMesh( std::string& report,
+					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const int32_t& meshID) {
+  //return getCoordinatesAndElementsFromMesh_curl( sessionID, modelID, analysisID, timeStep, partitionID );		
+  return getCoordinatesAndElementsFromMesh_thrift( report, meshInfo, vertices, listOfElements, listOfElementAttribs, listOfElementInfoGroups, sessionID, modelID, analysisID, timeStep, meshID );		
 }
 
 std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const unsigned partitionID) {
@@ -1348,118 +1353,276 @@ std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &ses
   return result;
 }
 
-std::string HBase::getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const unsigned partitionID) {
+
+
+// ==============================================
+// ==== Thrift
+// ==============================================
+//#define READ_MESH_GROUPED_ROWS
+
+/* GetMeshDrawData */
+static bool getIndicesFromRow( std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, std::vector< ElementGroup > &listOfElementInfoGroups, const TRowResult &rowResult, const MeshInfo &meshInfo) {
+  int num_elements = 0;
+  
+  //  UnknownElement = 0,
+  //  PointElement = 1,
+  //  LineElement = 2,
+  //  TriangleElement = 3,
+  //  QuadrilateralElement = 4,
+  //  TetrahedraElement = 5,
+  //  HexahedraElement = 6,
+  //  PrismElement = 7,
+  //  PyramidElement = 8,
+  //  SphereElement = 9,
+  //  CircleElement = 10,
+  //  ComplexParticleElement = 11
+  
+  for ( CellMap::const_iterator it = rowResult.columns.begin(); 
+	it != rowResult.columns.end(); ++it) {
+    const char *cq_str = it->first.c_str();
+    //std::cout << cq_str << *(( int64_t *)it->second.value.data()) << std::endl;
+    const char CF = cq_str[ 0];
+    // cq_str[ 1] should be ':'
+    const char subC = cq_str[ 2];
+    if ( CF == 'M') {
+      if ( it->first.length() > 3) { // for c1xxxx
+      	int mesh_number = 0;
+      	int n = sscanf( &cq_str[ 3], "%d", &mesh_number);
+      	if ( n == 1 && meshInfo.meshNumber == mesh_number ) {
+      	  // in fact not needed as it should always be meshID ( == coordsID)
+      	  const char *pinfo = &cq_str[ 3];
+      	  while ( *pinfo && isdigit( *pinfo))
+      	    pinfo++;
+      	  if ( subC == 'm') { // right qualifier, coordinates
+      	    // coordinates are of the form mMMMMMM##_ID, where ID is binary indes ...
+      	    const char column_qualifier[2] = { pinfo[0], pinfo[1] };
+      	    pinfo += 3; // ##_
+      	    
+      	    int64_t element_id = byteSwap< int64_t>( *( int64_t *)pinfo );
+      	    //std::cout << element_id << std::endl;
+      	    if(meshInfo.elementType.shape == ElementShapeType::type::SphereElement){
+			  Element element;
+			  element.id = element_id;
+      	      if(column_qualifier[0] == 'c' && column_qualifier[1] == 'n'){
+				std::vector<NodeID> node_ids;
+			    int64_t *indices = ( int64_t *)it->second.value.data();
+                node_ids.push_back( byteSwap< int64_t>( indices[ 0 ] ) );
+      	        element.nodes_ids = node_ids;
+      	        listOfElements.push_back(element);        
+			  }
+			  else if(column_qualifier[0] == 'r' && column_qualifier[1] == 'd'){
+				ElementAttrib element_attrib;
+				element_attrib.id   = element_id;
+				element_attrib.name = "Radius";
+			    double radius = *(( double *)it->second.value.data());
+			    std::vector<double> element_attrib_value;
+			    element_attrib_value.push_back(radius);
+			    element_attrib.value = element_attrib_value;
+			    listOfElementAttribs.push_back(element_attrib);     	        
+			  }
+		    }
+      	    
+      	    if(column_qualifier[0] == 'g' && column_qualifier[1] == 'r'){
+				ElementGroup element_group;
+				element_group.id       = element_id;
+				int64_t group_id = *(( int64_t *)it->second.value.data());
+				element_group.group_id = group_id;
+				listOfElementInfoGroups.push_back(element_group);
+			}
+      	  }
+      	}
+      }
+    }
+  }
+  
+  return num_elements;
+}
+
+bool HBase::getMeshElementsFromTable(std::string& report,
+                    std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, std::vector< ElementGroup > &listOfElementInfoGroups,
+                    const std::string& table_name,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo,  const char *format) {
+  bool scan_ok = true;
+#ifdef READ_MESH_GROUPED_ROWS
+  int chunk_size = 4;
+  for(int rowIdx = 0; rowIdx <= 1000; rowIdx+=chunk_size){
+#endif
+	  vector< TRowResult> rowsResult;
+	  std::map<std::string,std::string> m;
+	  // TScan ts;
+	  // std::stringstream filter;
+	  // filter.str("");
+	  // ts.__set_filterString(filter.str());
+	  StrVec cols;
+	  
+	  cols.push_back( "M");
+	  
+	  double my_stepValue = ( analysisID == "") ? 0.0 : timeStep; // rowkeys for static meshes have stepValue == 0.0
+	  std::string prefixRowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
+#ifdef READ_MESH_GROUPED_ROWS
+	  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx/*0*/, format); // partitionID = 0
+	  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx+chunk_size-1/*( int)0x7fffffff*/, format); // partitionID = biggest ever
+#else
+	  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, 0, format); // partitionID = 0
+	  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, ( int)0x7fffffff, format); // partitionID = biggest ever
+#endif
+	  const size_t len_prefix_rowkey = prefixRowKey.length();
+	  ScannerID scan_id = _hbase_client->scannerOpenWithStop( table_name, startRowKey, stopRowKey, cols, m);
+	  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+
+	  //std::cout << "\tAccessing table '" << data_table << "' with";
+	  //std::cout << "\t startRowKey = " << startRowKey << std::endl;
+	  //std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+	  
+	  try {
+		// or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+		while ( true) {
+		  _hbase_client->scannerGet( rowsResult, scan_id);
+		  if ( rowsResult.size() == 0)
+		break;
+		  // process rowsResult
+		  for ( size_t i = 0; i < rowsResult.size(); i++) {
+		// convert to return type
+		// check if the rowkey is our's ... should be ....
+		if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
+		  continue; // break;
+		bool ok = getIndicesFromRow( listOfElements, listOfElementAttribs, listOfElementInfoGroups, rowsResult[ i ], meshInfo );
+		if ( ok) {
+			
+
+		  // getMeshInfoFromRow.push_back( model_info);
+		  // getMeshInfoFromRow( tmp_lst_meshes, rowsResult[ i]);
+		} else {
+		  // nothing read? 
+		  // eventually provide an error
+		}
+		// several rows = partitions so don't quit yet,
+		// break;
+		  }
+		} // while ( true)
+
+		if ( listOfElements.size() == 0) {
+		  // nothing found
+		  // scan_ok = false; // scan was ok but nothing found ...
+		  std::stringstream tmp;
+		  if ( analysisID != "") {
+		tmp << "Not found: Result for Dynamic Mesh" 
+			<< " for Analysis = '" << analysisID << "'"
+			<< " and stepValue = " << timeStep;
+		  } else {
+		tmp << "Not found: Results for Static Mesh" ;
+		  }
+		  report = tmp.str();
+		}
+	  } catch ( const IOError &ioe) {
+		scan_ok = false;
+		std::stringstream tmp;
+		tmp << "IOError = " << ioe.what();
+		report = tmp.str();
+	  } catch ( TException &tx) {
+		scan_ok = false;
+		std::stringstream tmp;
+		tmp << "TException = " << tx.what();
+		report = tmp.str();
+	  }
+	  _hbase_client->scannerClose( scan_id);
+#ifdef READ_MESH_GROUPED_ROWS
+  }
+#endif
+  
+  	//#define DEBUG_RESULTS
+	#ifdef  DEBUG_RESULTS
+	size_t n_debug_elements = listOfElements.size() < 10 ? listOfElements.size() : 10;
+			for(size_t i = 0; i < n_debug_elements; i++){
+				std::cout << listOfElements[i].id << "\t";
+				for(size_t j = 0; j < listOfElements[i].nodes_ids.size(); j++)
+				  std::cout << listOfElements[i].nodes_ids[j] << " ";
+				std::cout << std::endl;
+			}
+	#endif
+  
+  return scan_ok;
+}
+
+std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report,
+					MeshInfo& meshInfo, std::vector<Vertex>& vertices, 
+					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const int32_t& meshID )
+{
   std::cout << "getCoordinatesAndElementsFromMesh THRIFT: =====" << std::endl;
   std::cout << "S " << sessionID      << std::endl;
   std::cout << "M " << modelID        << std::endl;
-  //std::cout << "R " << resultID     << std::endl;
   std::cout << "A " << analysisID     << std::endl;
   std::cout << "T " << timeStep       << std::endl;
-  std::cout << "T " << partitionID    << std::endl;
+  std::cout << "M " << meshID         << std::endl;
 
-  string table_name = "Simulations_Data";
-  string result;
-
-  vector< TRowResult> rowsResult;
-  std::map<std::string,std::string> m;
-  // TScan ts;
-  // std::stringstream filter;
-  // filter.str("");
-  // ts.__set_filterString(filter.str());
-
-  StrVec cols;
-  cols.push_back( "M:"); // all qualifiers inside the M column family
-  const char *ascii_model_id = "1dfa14ef887d15415d62d3489c4ce41f";
-  char bin_row_key[ 20];
-  assert( strlen( ascii_model_id) == 32);
-  FromHexString( bin_row_key, 20, ascii_model_id, strlen( ascii_model_id));
-  std::string base64_key = base64_encode( bin_row_key, 16);
-  string start_row = base64_decode( base64_key); // decode base64 to binary string
-
-  for ( int i = 0; i < 16; i++) {
-    std::cout << ( int)bin_row_key[ i] << ", ";
-  }
-  std::cout << endl;
-  for ( int i = 0; i < 16; i++) {
-    std::cout << ( int)start_row.data()[ i] << ", ";
-  }
-  std::cout << endl;
-
-  ScannerID scan_id = _hbase_client->scannerOpen( table_name, start_row, cols, m);
-  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+  string table_name;
   bool scan_ok = true;
-  try {
-    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
-    while ( true) {
-      _hbase_client->scannerGet( rowsResult, scan_id);
-      if ( rowsResult.size() == 0)
-	break;
-      // process rowsResult
-      std::cout << "numberof rows = " << rowsResult.size() << endl;
-      for ( size_t i = 0; i < rowsResult.size(); i++) {
-	// convert to return type
-	// FullyQualifiedModelName model_info;
-	// bool ok = getModelInfoFromRow( model_info, rowsResult[ i]);
-	// if ( ok) {
-	//   listOfModelNames.push_back( model_info);
-	// }
-	printRow( rowsResult[ i]);
+
+  // look into the modelInfo table to get the correct table name
+  TableModelEntry table_set;
+  bool found = getTableNames( sessionID, modelID, table_set);
+  if ( found) {
+	
+	std::string report;
+    std::vector<MeshInfo> listOfMeshInfos;
+    getListOfMeshes( report, listOfMeshInfos, sessionID, modelID, analysisID, timeStep );
+
+    if(listOfMeshInfos.size() > 0){    
+      meshInfo = listOfMeshInfos[0];
+      size_t i = 0;
+      for(; i < listOfMeshInfos.size(); i++)
+        if(listOfMeshInfos[i].meshNumber == meshID){
+		  meshInfo = listOfMeshInfos[i];
+		  break;
+	    }
+	  if( i == listOfMeshInfos.size() ){
+		std::cout << meshID << " is not found." << std::endl;
+		return "Error";
+	  }
+	  
+	  std::string list_of_vertices_report;
+	  std::string list_of_vertices_result = 
+	    getListOfVerticesFromMesh(list_of_vertices_report, vertices, sessionID, modelID, analysisID, timeStep, meshInfo.meshNumber);
+	    
+	  std::cout << "Number of vertices = " << vertices.size() << std::endl;  
+
+      // by default hexstrings are lower case but some data has been injected as upper case !!!
+      scan_ok = getMeshElementsFromTable( report, listOfElements, listOfElementAttribs, listOfElementInfoGroups, table_set._data, sessionID, modelID, analysisID, timeStep, meshInfo);
+      if ( scan_ok && ( listOfElements.size() == 0)) {
+        // try with uppercase
+        scan_ok = getMeshElementsFromTable( report, listOfElements, listOfElementAttribs, listOfElementInfoGroups, table_set._data, sessionID, modelID, analysisID, timeStep, meshInfo, "%02X");
       }
+      
+      std::cout << "Number of elements = " << listOfElements.size() << std::endl;  
+      std::cout << "Number of element attributes = " << listOfElementAttribs.size() << std::endl;        
+      std::cout << "Number of element groups = " << listOfElementInfoGroups.size() << std::endl;
     }
-  } catch ( const IOError &ioe) {
+    else
+    {
+		std::cout << "model: " << modelID << ", analysis: " << analysisID << " at " << timeStep << " is not found." << std::endl;
+		return "Error";
+	}
+  } else {
     scan_ok = false;
-    std::stringstream tmp;
-    tmp << "IOError = " << ioe.what();
-    result = tmp.str();
-  } catch ( TException &tx) {
-    scan_ok = false;
-    std::stringstream tmp;
-    tmp << "TException = " << tx.what();
-    result = tmp.str();
-  } catch (...) {
-    result = "other error";
   }
-  _hbase_client->scannerClose( scan_id);
+  string result;
+  if ( scan_ok) {
+    std::cout << "**********\n";
+    bool there_are_results = listOfElements.size();
+    if ( there_are_results) {
+      result = "Ok";
+    } else {
+      result = "Error";
+    }
+  } else {
+    std::cout << "ERROR**********\n";
+    result = "Error";
+    report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
+  }
 
-  std::cout << "**********\n";
-  std::cout << result << endl;
-  std::cout << "**********\n";
-
-  return "Error";
-  // cmd += "/";
-  // std::stringstream key;
-  // //key << "0x";
-  // //key << modelID;
-  // //key << analysisID;
-  // //key << timeStep;
-  // //key << resultID;
-  // 
-  // //key << "643934636132396265353334636131656435373865393031323362376338636544454d383030303031/M";
-  // key << "&*"; // first row of Simulations_Data ingested by ATOS start with a 4, avoiding asking for ALL the table !
-  // 
-  // cmd += key.str();
-  // cout << cmd << endl;
-  // 
-  //   
-  // CurlCommand do_curl;
-  // string buffer;
-  //   
-  // bool ok = do_curl.Evaluate( buffer, cmd);
-  // 
-  // std::cout << "**********\n";    
-  // std::cout << buffer << std::endl;
-  // std::cout << "**********\n";    
-  //   
-  // //
-  // string result;
-  // if(analysisID.find("DEM") >= 0)
-  //   {
-  //     result = parse1DEM(buffer, listOfVertices);
-  //   }
-  // else if(analysisID.find("FEM") >= 0)
-  //   {
-  //     cout << buffer << endl;
-  //   }
-  // 
-  // return result;
+  return result;
 }

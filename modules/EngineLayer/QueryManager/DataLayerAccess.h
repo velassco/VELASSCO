@@ -35,8 +35,8 @@ public:
 				  const std::string &sessionID, const std::string &modelID, 
 				  const std::string &analysisID, const double timeStep,
 				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ); 
-	void getCoordinatesAndElementsFromMesh( std::string& _return, 
-                  std::string sessionID, std::string modelID, std::string analysisID, double timeStep, int32_t partitionID ) ;
+	void getCoordinatesAndElementsFromMesh( rvGetCoordinatesAndElementsFromMesh& _return,
+                  std::string sessionID, std::string modelID, std::string analysisID, double timeStep, int32_t meshID ) ;
   // session queries
   
     void userLogin( std::string &_return, const std::string &name, const std::string &role, const std::string &password);

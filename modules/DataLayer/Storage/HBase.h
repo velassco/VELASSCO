@@ -97,18 +97,28 @@ namespace VELaSSCo
 				     const std::string &resultID,   const std::vector<int64_t>& listOfVerticesID );
 					    
 	// GetCoordinatesAndElementsFromMesh
-	std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID, const std::string &modelID,
-                                             const std::string &analysisID,
-                                             const double       timeStep,
-                                             const int32_t     partitionID);
+	bool        getMeshElementsFromTable(std::string& report,
+					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string& table_name,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo, const char *format = "%02x" );
+	std::string getCoordinatesAndElementsFromMesh( std::string& report,
+					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const int32_t& meshID);
 	std::string getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID,
-                                             const std::string &analysisID,
-                                             const double       timeStep,
-                                             const unsigned     partitionID);
-	std::string getCoordinatesAndElementsFromMesh_thrift(const std::string &sessionID, const std::string &modelID,
-                                             const std::string &analysisID,
-                                             const double       timeStep,
-                                             const unsigned     partitionID);
+                    const std::string &analysisID,
+                    const double       timeStep,
+                    const unsigned     partitionID);
+    std::string getCoordinatesAndElementsFromMesh_thrift( std::string& report,
+					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const int32_t& meshID);
   private:
 
     double fRand(double fMin, double fMax);

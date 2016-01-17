@@ -48,6 +48,10 @@ class Vertex;
 
 class Element;
 
+class ElementAttrib;
+
+class ElementGroup;
+
 class MeshInfo;
 
 class Mesh;
@@ -89,6 +93,8 @@ class rvGetListOfResults;
 class rvGetListOfVerticesFromMesh;
 
 class rvGetResultFromVerticesID;
+
+class rvGetCoordinatesAndElementsFromMesh;
 
 typedef struct _ElementType__isset {
   _ElementType__isset() : shape(false), num_nodes(false) {}
@@ -303,6 +309,110 @@ class Element {
 };
 
 void swap(Element &a, Element &b);
+
+typedef struct _ElementAttrib__isset {
+  _ElementAttrib__isset() : id(false), name(false), value(false) {}
+  bool id :1;
+  bool name :1;
+  bool value :1;
+} _ElementAttrib__isset;
+
+class ElementAttrib {
+ public:
+
+  static const char* ascii_fingerprint; // = "1A4DCF2658CC4E78D1F7CDC432563CBB";
+  static const uint8_t binary_fingerprint[16]; // = {0x1A,0x4D,0xCF,0x26,0x58,0xCC,0x4E,0x78,0xD1,0xF7,0xCD,0xC4,0x32,0x56,0x3C,0xBB};
+
+  ElementAttrib(const ElementAttrib&);
+  ElementAttrib& operator=(const ElementAttrib&);
+  ElementAttrib() : id(0), name() {
+  }
+
+  virtual ~ElementAttrib() throw();
+  int64_t id;
+  std::string name;
+  std::vector<double>  value;
+
+  _ElementAttrib__isset __isset;
+
+  void __set_id(const int64_t val);
+
+  void __set_name(const std::string& val);
+
+  void __set_value(const std::vector<double> & val);
+
+  bool operator == (const ElementAttrib & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (!(name == rhs.name))
+      return false;
+    if (!(value == rhs.value))
+      return false;
+    return true;
+  }
+  bool operator != (const ElementAttrib &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ElementAttrib & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ElementAttrib& obj);
+};
+
+void swap(ElementAttrib &a, ElementAttrib &b);
+
+typedef struct _ElementGroup__isset {
+  _ElementGroup__isset() : id(false), group_id(false) {}
+  bool id :1;
+  bool group_id :1;
+} _ElementGroup__isset;
+
+class ElementGroup {
+ public:
+
+  static const char* ascii_fingerprint; // = "F33135321253DAEB67B0E79E416CA831";
+  static const uint8_t binary_fingerprint[16]; // = {0xF3,0x31,0x35,0x32,0x12,0x53,0xDA,0xEB,0x67,0xB0,0xE7,0x9E,0x41,0x6C,0xA8,0x31};
+
+  ElementGroup(const ElementGroup&);
+  ElementGroup& operator=(const ElementGroup&);
+  ElementGroup() : id(0), group_id(0) {
+  }
+
+  virtual ~ElementGroup() throw();
+  int64_t id;
+  int64_t group_id;
+
+  _ElementGroup__isset __isset;
+
+  void __set_id(const int64_t val);
+
+  void __set_group_id(const int64_t val);
+
+  bool operator == (const ElementGroup & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (!(group_id == rhs.group_id))
+      return false;
+    return true;
+  }
+  bool operator != (const ElementGroup &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ElementGroup & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ElementGroup& obj);
+};
+
+void swap(ElementGroup &a, ElementGroup &b);
 
 typedef struct _MeshInfo__isset {
   _MeshInfo__isset() : name(false), elementType(false), nVertices(false), nElements(false), meshUnits(false), meshColor(false), meshNumber(false), coordsName(false) {}
@@ -1596,6 +1706,85 @@ class rvGetResultFromVerticesID {
 };
 
 void swap(rvGetResultFromVerticesID &a, rvGetResultFromVerticesID &b);
+
+typedef struct _rvGetCoordinatesAndElementsFromMesh__isset {
+  _rvGetCoordinatesAndElementsFromMesh__isset() : status(false), report(false), meshInfo(false), vertex_list(false), element_list(false), element_attrib_list(false), element_group_info_list(false) {}
+  bool status :1;
+  bool report :1;
+  bool meshInfo :1;
+  bool vertex_list :1;
+  bool element_list :1;
+  bool element_attrib_list :1;
+  bool element_group_info_list :1;
+} _rvGetCoordinatesAndElementsFromMesh__isset;
+
+class rvGetCoordinatesAndElementsFromMesh {
+ public:
+
+  static const char* ascii_fingerprint; // = "CD1EBAFAFBFAAF3487DB8E933D69479C";
+  static const uint8_t binary_fingerprint[16]; // = {0xCD,0x1E,0xBA,0xFA,0xFB,0xFA,0xAF,0x34,0x87,0xDB,0x8E,0x93,0x3D,0x69,0x47,0x9C};
+
+  rvGetCoordinatesAndElementsFromMesh(const rvGetCoordinatesAndElementsFromMesh&);
+  rvGetCoordinatesAndElementsFromMesh& operator=(const rvGetCoordinatesAndElementsFromMesh&);
+  rvGetCoordinatesAndElementsFromMesh() : status(), report() {
+  }
+
+  virtual ~rvGetCoordinatesAndElementsFromMesh() throw();
+  std::string status;
+  std::string report;
+  MeshInfo meshInfo;
+  std::vector<Vertex>  vertex_list;
+  std::vector<Element>  element_list;
+  std::vector<ElementAttrib>  element_attrib_list;
+  std::vector<ElementGroup>  element_group_info_list;
+
+  _rvGetCoordinatesAndElementsFromMesh__isset __isset;
+
+  void __set_status(const std::string& val);
+
+  void __set_report(const std::string& val);
+
+  void __set_meshInfo(const MeshInfo& val);
+
+  void __set_vertex_list(const std::vector<Vertex> & val);
+
+  void __set_element_list(const std::vector<Element> & val);
+
+  void __set_element_attrib_list(const std::vector<ElementAttrib> & val);
+
+  void __set_element_group_info_list(const std::vector<ElementGroup> & val);
+
+  bool operator == (const rvGetCoordinatesAndElementsFromMesh & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(report == rhs.report))
+      return false;
+    if (!(meshInfo == rhs.meshInfo))
+      return false;
+    if (!(vertex_list == rhs.vertex_list))
+      return false;
+    if (!(element_list == rhs.element_list))
+      return false;
+    if (!(element_attrib_list == rhs.element_attrib_list))
+      return false;
+    if (!(element_group_info_list == rhs.element_group_info_list))
+      return false;
+    return true;
+  }
+  bool operator != (const rvGetCoordinatesAndElementsFromMesh &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const rvGetCoordinatesAndElementsFromMesh & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const rvGetCoordinatesAndElementsFromMesh& obj);
+};
+
+void swap(rvGetCoordinatesAndElementsFromMesh &a, rvGetCoordinatesAndElementsFromMesh &b);
 
 } // namespace
 

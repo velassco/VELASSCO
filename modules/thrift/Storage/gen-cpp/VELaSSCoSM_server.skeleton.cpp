@@ -76,9 +76,9 @@ class VELaSSCoSMHandler : virtual public VELaSSCoSMIf {
    * @param modelID
    * @param analysisID
    * @param timeStep
-   * @param partitionID
+   * @param meshID
    */
-  void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID) {
+  void GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t meshID) {
     // Your implementation goes here
     printf("GetCoordinatesAndElementsFromMesh\n");
   }

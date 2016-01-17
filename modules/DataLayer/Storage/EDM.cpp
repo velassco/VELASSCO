@@ -102,11 +102,12 @@ std::string EDM::getResultFromVerticesID( std::string& report, std::vector<Resul
  #endif
 }
 
-std::string EDM::getCoordinatesAndElementsFromMesh( const std::string &sessionID,
-                                     const std::string &modelID,
-                                     const std::string &analysisID,
-                                     const double       timeStep,
-                                     const int32_t     partitionID )
+std::string EDM::getCoordinatesAndElementsFromMesh( std::string& report,
+					VELaSSCoSM::MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector< VELaSSCoSM::Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const int32_t& meshID)
 {
 
 #ifdef _WIN32

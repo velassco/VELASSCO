@@ -109,11 +109,12 @@ namespace VELaSSCo
      * describes a plane made of 4 vertices, and 2 faces. -1 in the end declares end of TRIANGLE_STRIP.
      * 
      */                                         
-    virtual std::string getCoordinatesAndElementsFromMesh(const std::string &sessionID,
-                                             const std::string &modelID,
-                                             const std::string &analysisID,
-                                             const double      timeStep,
-                                             const int32_t     partitionID) = 0;
+    virtual std::string getCoordinatesAndElementsFromMesh( std::string& report,
+					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
+					std::vector< ElementGroup > &listOfElementInfoGroups,
+					const std::string &sessionID, const std::string &modelID,
+                    const std::string &analysisID,const double timeStep, const int32_t& meshID) = 0;
   };
   inline AbstractDB::~AbstractDB() {}
 }

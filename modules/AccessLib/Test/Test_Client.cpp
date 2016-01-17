@@ -118,105 +118,52 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   const char *status = NULL;
   char hex_string[ 1024];
   
+  std::cout << "=======================>>> Morteza <<<=====================\n";
+  
   //
   // Test GetMeshDrawData() 
   //
-  const char* fem_name 		= "VELaSSCo_HbaseBasicTest-part_" ; // "fine_mesh"; //"VELaSSCo_HbaseBasicTest";
-  const char* fem_fullpath 	= "/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM";//"/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";// "/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/";
-  const char* fem_tablename = "VELaSSCo_Models_V4CIMNE";// "VELaSSCo_Models"; //
+  const char* model_name 		= "FluidizedBed_small";
+  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";
+  const char* model_tablename   = "VELaSSCo_Models";
   
   //const char* fem_name 			=	"fine_mesh-ascii_";
   //const char* fem_fullpath    	=	"/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii";
   //const char* fem_tablename  	= 	"VELaSSCo_Models_V4CIMNE";
   
-  std::string fem_unique_name = fem_tablename;
-  fem_unique_name += ":";
-  fem_unique_name += fem_fullpath;
-  fem_unique_name += ":";
-  fem_unique_name += fem_name;
+  std::string model_unique_name = model_tablename;
+  model_unique_name += ":";
+  model_unique_name += model_fullpath;
+  model_unique_name += ":";
+  model_unique_name += model_name;
   
-  const char *fem_access = "";
-  const char *fem_return_modelID = NULL;
-  result = valOpenModel( sessionID, fem_unique_name.c_str(), fem_access, &status, &fem_return_modelID);
+  //model_unique_name.erase(remove(model_unique_name.begin(), model_unique_name.end(), ' '), model_unique_name.end());
+  
+  const char *access = "";
+  const char *return_modelID = NULL;
+  result = valOpenModel( sessionID, model_unique_name.c_str(), access, &status, &return_modelID);
   CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
   char fem_hex_string[ 1024];
-  if ( fem_return_modelID) {
-    std::cout << "   FEM model_modelID = " << ModelID_DoHexStringConversionIfNecesary( fem_return_modelID, fem_hex_string, 1024) << std::endl;
+  if ( return_modelID) {
+    std::cout << "   model_modelID = " << return_modelID << std::endl;
   } else {
     // logout as it is not valid ...
     std::cout << "   ERROR FEM model could not be opened, login out ..." << std::endl;
     return EXIT_SUCCESS;
   }
   
-  std::string fem_opened_modelID( fem_return_modelID );
-
-  bool get_fem_analysisIDs = true;
-  if(get_fem_analysisIDs){
-    const char *fem_return_list = NULL;
-    const char *fem_return_error_str = NULL;
-    std::cout << "doing valGetListOfAnalyses" << std::endl;
-    result = valGetListOfAnalyses( sessionID, fem_opened_modelID.c_str(), &fem_return_error_str, &fem_return_list);
-    CheckVALResult(result, getStringFromCharPointers( "valGetListOfAnalyses ", fem_return_error_str));
-    ModelID_DoHexStringConversionIfNecesary( fem_opened_modelID, fem_hex_string, 1024);
-    std::cout << "GetListOfAnalyses: " << fem_opened_modelID << 
-    ( ModelID_IsBinary( fem_opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
-    if (fem_return_list) {
-      std::cout << "   Analyses_list = " << fem_return_list << std::endl;
-    } else {
-      std::cout << "Error: " << fem_return_error_str << std::endl;
-    }
-  }
+  std::string modelID( return_modelID );
   
-  const char* fem_analysisID = "Kratos";
+  const char* analysisID = "DEM";
+  double      timeStep = 2939000.0;
+  int32_t     meshID = 1;
+   
+  const VELaSSCo::RTFormat::File* mesh_draw_data = NULL;
+  result = valGetMeshDrawData( sessionID, modelID.c_str(), analysisID, timeStep, meshID, &status, &mesh_draw_data );
+  std::cout << "status:  " << status;
   
-  bool get_fem_timesteps = false;
-  if(get_fem_timesteps){
-    const double *fem_steps_return_list = NULL;
-    size_t        fem_steps_return_num_steps = 0;
-    const char   *fem_steps_return_error_str = NULL;
-    std::cout << "doing valGetListOfTimeSteps" << std::endl;
-    result = valGetListOfTimeSteps( sessionID, fem_opened_modelID.c_str(),
-		fem_analysisID,
-		&fem_steps_return_error_str, 
-		&fem_steps_return_num_steps, &fem_steps_return_list);
-    CheckVALResult(result, getStringFromCharPointers( "valGetListOfTimeSteps ", fem_steps_return_error_str));
-    ModelID_DoHexStringConversionIfNecesary( fem_opened_modelID, hex_string, 1024);
-    std::cout << "GetListOfTimeSteps: " << fem_opened_modelID << 
-    ( ModelID_IsBinary( fem_opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
-    if ( fem_steps_return_list) {
-        std::cout << "   List_size = " << fem_steps_return_num_steps << std::endl;
-        std::cout << "   Step_list = " << Hexdump( std::string( ( char *)fem_steps_return_list, fem_steps_return_num_steps)) << std::endl;
-        bool show_all_time_steps = true;
-        size_t show_n_steps = fem_steps_return_num_steps;
-        if(!show_all_time_steps) show_n_steps = fem_steps_return_num_steps > 3 ? 3 : fem_steps_return_num_steps;
-        for(size_t i = 0; i < show_n_steps; i++){
-	  	  std::cout << "      Step " << i << " = " << fem_steps_return_list[ i] << std::endl;
-	    }
-    } else {
-      std::cout << "Error: " << fem_steps_return_error_str << std::endl;
-    }
-  }
-  std::cout << fem_opened_modelID << std::endl;
-  double fem_time_step = 21.0;
-  
-  const char* list_of_meshes = NULL;
-  result = valGetListOfMeshes( sessionID, fem_opened_modelID.c_str(), "", 0.0, &status, &list_of_meshes);
-  //CheckVALResult(result, getStringFromCharPointers( "valGetListOfMeshes ", fem_steps_return_error_str));
-  std::cout << "result: " << result << std::endl;
-  std::cout << "status: " << ( status ? status : "(null)") << std::endl;
-  std::cout << list_of_meshes << std::endl;
-  
-  const VELaSSCo::RTFormat::File* fem_mesh_draw_data = NULL;
-  result = valGetMeshDrawData( sessionID, fem_opened_modelID.c_str(), "", 0.0, 1, &status, &fem_mesh_draw_data );
-  if(fem_mesh_draw_data)
-  {
-  }
-  else
-  {
-  }
-
   return EXIT_SUCCESS;
 }
 
@@ -510,7 +457,7 @@ int main(int argc, char* argv[])
 
   char hostname_port[ 1024];
   int remote_port = 9990; // default port
-  int velassco_default_port  = 26267;
+  int velassco_default_port  = 26268;
   if ( argc == 2) {
     if ( askForHelp( argv[ 1])) {
       printf( "Usage: %s [ hostname [ port (default %d, VELaSSCo EngineLayer/QueryManager default port = %d)]]\n", 
@@ -554,8 +501,8 @@ int main(int argc, char* argv[])
   std::cout << "   model_list = " << return_list << std::endl;
 
   int ret = 0;
-  // ret = doTestMorteza( sessionID);
-  ret = doTestMiguel( sessionID); 
+  ret = doTestMorteza( sessionID);
+  //ret = doTestMiguel( sessionID); 
 
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  

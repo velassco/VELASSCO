@@ -4,10 +4,13 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 // may be i don't need this:
 #include "VELaSSCoSM.h"
 using namespace VELaSSCoSM;
+
+#include "RealTimeFormat.h"
 
 // handles connection to Storage Module:
 class GraphicsModule
@@ -16,11 +19,13 @@ public:
   static GraphicsModule *getInstance();
 
   // methods:
+  void fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, const std::vector<Vertex>& vertices, const std::vector<Element>& elements, const std::vector<ElementAttrib>& elementAttribs, const std::vector<ElementGroup>& elementGroupInfos) ;
 
 private:
   GraphicsModule() {};
   GraphicsModule( GraphicsModule const&) {};
   GraphicsModule &operator=( GraphicsModule const&) { return *this;};
+  
     
 private:
   static GraphicsModule *m_pInstance;

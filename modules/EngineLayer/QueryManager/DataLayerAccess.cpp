@@ -129,19 +129,23 @@ void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_retur
 
 }
 
-void DataLayerAccess::getCoordinatesAndElementsFromMesh( std::string& _return, std::string sessionID, std::string modelID, std::string analysisID, double timeStep, int32_t resultID)
+void DataLayerAccess::getCoordinatesAndElementsFromMesh( 
+	rvGetCoordinatesAndElementsFromMesh& _return, 
+	std::string sessionID, std::string modelID, std::string analysisID, 
+	double timeStep, int32_t meshID )
 {
-    try
+	try
     {
-      // cli->getCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, resultID );
-        cout << "########## getMeshDrawData - " << _return << endl;
+        
+        cli->GetCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, meshID );
+        //cout << "########## getCoordinatesAndElementsFromMesh - " << _return << endl;
     }
-    catch(TException& tx)
+    catch (TException& tx)
     {
         cout << "ERROR: " << tx.what() << endl;
     }
 }
-
+                  
 void DataLayerAccess::getListOfMeshes( rvGetListOfMeshes &_return,
 				       const std::string &sessionID,
 				       const std::string &modelID,
