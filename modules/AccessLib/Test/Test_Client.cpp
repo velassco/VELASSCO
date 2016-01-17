@@ -116,7 +116,6 @@ std::string getStringFromCharPointers( const char *str1, const char *str2) {
 int doTestMorteza( const VAL_SessionID sessionID) {
   VAL_Result    result;
   const char *status = NULL;
-  char hex_string[ 1024];
   
   std::cout << "=======================>>> Morteza <<<=====================\n";
   
@@ -145,7 +144,6 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
-  char fem_hex_string[ 1024];
   if ( return_modelID) {
     std::cout << "   model_modelID = " << return_modelID << std::endl;
   } else {

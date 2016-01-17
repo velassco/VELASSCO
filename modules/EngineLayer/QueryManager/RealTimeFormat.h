@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <iostream>
+#include <vector>
 
 namespace VELaSSCo
 {
@@ -99,7 +100,6 @@ inline std::istream& operator>>(std::istream& is, VELaSSCo::RTFormat::File& file
 }
 
 inline std::ostream& operator<<(std::ostream& os, const VELaSSCo::RTFormat::File& file){
-  std::cout << "=====> hi";
   os.write((char*)(&file.header),                  sizeof(VELaSSCo::RTFormat::Header));
   if( file.header.descriptionBytes       > 0 )    os.write((char*)(file.data.description.data()),        file.header.descriptionBytes);
   if( file.header.vertexDefinitionsBytes > 0 )    os.write((char*)(file.data.vertexDefinitions.data()),  file.header.vertexDefinitionsBytes);
@@ -110,6 +110,5 @@ inline std::ostream& operator<<(std::ostream& os, const VELaSSCo::RTFormat::File
   if( file.header.faceAttributesBytes    > 0 )    os.write((char*)(file.data.faceAttributes.data()),     file.header.faceAttributesBytes);
   if( file.header.cellDefinitionsBytes   > 0 )    os.write((char*)(file.data.cellDefinitions.data()),    file.header.cellDefinitionsBytes);
   if( file.header.cellAttributesBytes    > 0 )    os.write((char*)(file.data.cellAttributes.data()),     file.header.cellAttributesBytes);
-  std::cout << "=====> bye";
   return os;
 }
