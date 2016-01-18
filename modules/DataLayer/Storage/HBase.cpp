@@ -496,13 +496,13 @@ std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
 					     const std::string &resultID,
 					     const std::string &listOfVertices )
 {
-  std::cout << "getResultOnVertices CURL: =====" << std::endl;
-  std::cout << "S " << sessionID      << std::endl;
-  std::cout << "M " << modelID        << std::endl;
-  std::cout << "R " << resultID       << std::endl;
-  std::cout << "A " << analysisID     << std::endl;
-  std::cout << "V " << listOfVertices << std::endl;
-  std::cout << "T " << timeStep       << std::endl;
+  LOGGER << "getResultOnVertices CURL: =====" << std::endl;
+  LOGGER << "S " << sessionID      << std::endl;
+  LOGGER << "M " << modelID        << std::endl;
+  LOGGER << "R " << resultID       << std::endl;
+  LOGGER << "A " << analysisID     << std::endl;
+  LOGGER << "V " << listOfVertices << std::endl;
+  LOGGER << "T " << timeStep       << std::endl;
 
   string cmd = "http://" + _db_host + ":8880/";
   // cmd += "Simulations_Data";
@@ -547,9 +547,9 @@ std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
     
   bool ok = do_curl.Evaluate( buffer, cmd);
 
-  std::cout << "**********\n";    
-  std::cout << buffer << std::endl;
-  std::cout << "**********\n";    
+  LOGGER << "**********\n";    
+  LOGGER << buffer << std::endl;
+  LOGGER << "**********\n";    
     
   //
   string result( "");
@@ -589,7 +589,7 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
 	it != rowResult.columns.end(); ++it) {
     const char *cq_str = it->first.c_str();
-    std::cout << cq_str << it->second.value.data() << std::endl;
+    LOGGER << cq_str << it->second.value.data() << std::endl;
     const char CF = cq_str[ 0];
     // cq_str[ 1] should be ':'
     const char subC = cq_str[ 2];
@@ -613,7 +613,7 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
             for(int i = 0; i < resultInfo.numberOfComponents; i++)
       	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
       	      
-      	    //std::cout << node_id << " " << coords[0] << " " << coords[1] << " " << coords[2] << std::endl;
+      	    //LOGGER << node_id << " " << coords[0] << " " << coords[1] << " " << coords[2] << std::endl;
       	    resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
       	    
       	  }
@@ -622,16 +622,16 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
     }
   }
   
-  std::cout << "====> before unordered" << std::endl; 
+  LOGGER << "====> before unordered" << std::endl; 
   
       for(int64_t vertexID = minVertexID; vertexID <= maxVertexID; vertexID++){
 		std::unordered_map< int64_t,std::vector< double > >::const_iterator resultOnVertex = resultOnVertexListMap.find (vertexID);
 
 		if ( resultOnVertex == resultOnVertexListMap.end() ){
-			//std::cout << "not found";
+			//LOGGER << "not found";
 			//continue;
 		} else {
-		    //std::cout << "found";
+		    //LOGGER << "found";
 			ResultOnVertex result;
 			result.__set_id( resultOnVertex->first );
 			result.__set_value( resultOnVertex->second );
@@ -639,10 +639,10 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
 			num_results++;	  
 		}
 		
-		std::cout << num_results << std::endl;
+		LOGGER << num_results << std::endl;
 	}
   
-  std::cout << "Number of Results = " << num_results << std::endl; 
+  LOGGER << "Number of Results = " << num_results << std::endl; 
   
   return num_results;
 }
@@ -680,7 +680,7 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   const size_t len_prefix_rowkey = prefixRowKey.length();
   
   TScan ts;
-  //std::cout << "Starting scanner with scan..." << std::endl;
+  //LOGGER << "Starting scanner with scan..." << std::endl;
   std::stringstream filter;
   filter << "(";
   filter << "(RowFilter (>=, 'binary:";
@@ -714,14 +714,14 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   //filter << "')";
   filter << ")";
 
-  //std::cout << "filter = " << filter.str() << std::endl;
+  //LOGGER << "filter = " << filter.str() << std::endl;
   ts.__set_filterString(filter.str());
   ScannerID scan_id = _hbase_client->scannerOpenWithScan(data_table, ts, m); 
-  //std::cout << "The scanner id is " << scan_id << std::endl;
+  //LOGGER << "The scanner id is " << scan_id << std::endl;
   
-  std::cout << "\tAccessing table '" << data_table << "' with";
-  std::cout << "\t startRowKey = " << startRowKey << std::endl;
-  std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+  LOGGER << "\tAccessing table '" << data_table << "' with";
+  LOGGER << "\t startRowKey = " << startRowKey << std::endl;
+  LOGGER << "\t  stopRowKey = " << stopRowKey << std::endl;
 
   try {
     // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
@@ -729,7 +729,7 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
 		rowsResult.clear();
       _hbase_client->scannerGet( rowsResult, scan_id);
       if ( rowsResult.size() == 0){
-		  // std::cout << "No Row Results\n";
+		  // LOGGER << "No Row Results\n";
 		  break;
 	  }
 	  
@@ -807,13 +807,13 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
     			     const std::string &analysisID, const double       timeStep,  
 				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
 {
-  std::cout << "getResultOnVertices THRIFT: =====" << std::endl;
-  std::cout << "S " << sessionID      << std::endl;
-  std::cout << "M " << modelID        << std::endl;
-  std::cout << "R " << resultID       << std::endl;
-  std::cout << "A " << analysisID     << std::endl;
-  std::cout << "V " << /*listOfVerticesID*/ "..." << std::endl;
-  std::cout << "T " << timeStep       << std::endl;
+  LOGGER << "getResultOnVertices THRIFT: =====" << std::endl;
+  LOGGER << "S " << sessionID      << std::endl;
+  LOGGER << "M " << modelID        << std::endl;
+  LOGGER << "R " << resultID       << std::endl;
+  LOGGER << "A " << analysisID     << std::endl;
+  LOGGER << "V " << /*listOfVerticesID*/ "..." << std::endl;
+  LOGGER << "T " << timeStep       << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -835,7 +835,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 		  break;
 	  }
 	if( i == listOfResultInfos.size() ){
-		std::cout << resultID << " is not found." << std::endl;
+		LOGGER << resultID << " is not found." << std::endl;
 		return "Error";
 	}
 	  
@@ -853,7 +853,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 			  sorted_listOfVerticesID[j] >= (sorted_listOfVerticesID[j-1]-threshold) &&
 			  sorted_listOfVerticesID[j] <= (sorted_listOfVerticesID[j-1]+threshold)
 			)) break;
-		std::cout << "[" << i << ", " << j << "]\n";
+		LOGGER << "[" << i << ", " << j << "]\n";
 		scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1]);
 		if ( scan_ok && ( listOfVerticesID.size() == 0)) {
 			// try with uppercase
@@ -867,7 +867,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_results = listOfResults.size();
     if ( there_are_results) {
       result = "Ok";
@@ -875,7 +875,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
   }
@@ -937,10 +937,10 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
 	  std::unordered_map< int64_t,std::vector< double > >::const_iterator resultOnVertex = resultOnVertexListMap.find (listOfVerticesID[i]);
 
 	  if ( resultOnVertex == resultOnVertexListMap.end() ){
-		//std::cout << "not found";
+		//LOGGER << "not found";
 		continue;
 	  } else {
-		//  std::cout << "found";
+		//  LOGGER << "found";
 		ResultOnVertex result;
 		result.__set_id( resultOnVertex->first );
 		result.__set_value( resultOnVertex->second );
@@ -996,9 +996,9 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 	  ScannerID scan_id = _hbase_client->scannerOpenWithStop( data_table, startRowKey, stopRowKey, cols, m);
 	  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
-	  //std::cout << "\tAccessing table '" << data_table << "' with";
-	  //std::cout << "\t startRowKey = " << startRowKey << std::endl;
-	  //std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+	  //LOGGER << "\tAccessing table '" << data_table << "' with";
+	  //LOGGER << "\t startRowKey = " << startRowKey << std::endl;
+	  //LOGGER << "\t  stopRowKey = " << stopRowKey << std::endl;
 	  
 	  try {
 		// or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
@@ -1075,13 +1075,13 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
     			     const std::string &analysisID, const double       timeStep,  
 				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
 {
-  std::cout << "getResultOnVertices THRIFT: =====" << std::endl;
-  std::cout << "S " << sessionID      << std::endl;
-  std::cout << "M " << modelID        << std::endl;
-  std::cout << "R " << resultID       << std::endl;
-  std::cout << "A " << analysisID     << std::endl;
-  std::cout << "V " << /*listOfVerticesID*/ "..." << std::endl;
-  std::cout << "T " << timeStep       << std::endl;
+  LOGGER << "getResultOnVertices THRIFT: =====" << std::endl;
+  LOGGER << "S " << sessionID      << std::endl;
+  LOGGER << "M " << modelID        << std::endl;
+  LOGGER << "R " << resultID       << std::endl;
+  LOGGER << "A " << analysisID     << std::endl;
+  LOGGER << "V " << /*listOfVerticesID*/ "..." << std::endl;
+  LOGGER << "T " << timeStep       << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -1103,7 +1103,7 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
 		  break;
 	  }
 	if( i == listOfResultInfos.size() ){
-		std::cout << resultID << " is not found." << std::endl;
+		LOGGER << resultID << " is not found." << std::endl;
 		return "Error";
 	}
 	  
@@ -1118,7 +1118,7 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_results = listOfResults.size();
     if ( there_are_results) {
       result = "Ok";
@@ -1126,7 +1126,7 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
   }
@@ -1289,13 +1289,13 @@ std::string HBase::getCoordinatesAndElementsFromMesh( std::string& report,
 }
 
 std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID, const std::string &analysisID, const double timeStep, const unsigned partitionID) {
-  std::cout << "getCoordinatesAndElementsFromMesh CURL: =====" << std::endl;
-  std::cout << "S " << sessionID      << std::endl;
-  std::cout << "M " << modelID        << std::endl;
-  //std::cout << "R " << resultID     << std::endl;
-  std::cout << "A " << analysisID     << std::endl;
-  std::cout << "T " << timeStep       << std::endl;
-  std::cout << "P " << partitionID    << std::endl;
+  LOGGER << "getCoordinatesAndElementsFromMesh CURL: =====" << std::endl;
+  LOGGER << "S " << sessionID      << std::endl;
+  LOGGER << "M " << modelID        << std::endl;
+  //LOGGER << "R " << resultID     << std::endl;
+  LOGGER << "A " << analysisID     << std::endl;
+  LOGGER << "T " << timeStep       << std::endl;
+  LOGGER << "P " << partitionID    << std::endl;
 
   TableModelEntry tableModel;
   if(getTableNames(sessionID, modelID, tableModel) == false)
@@ -1331,9 +1331,9 @@ std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &ses
     
   //bool ok = do_curl.Evaluate( buffer, cmd);
 
-  std::cout << "**********\n";    
-  // std::cout << buffer << std::endl;
-  std::cout << "**********\n";    
+  LOGGER << "**********\n";    
+  // LOGGER << buffer << std::endl;
+  LOGGER << "**********\n";    
     
   //
   string result( "");
@@ -1471,9 +1471,9 @@ bool HBase::getMeshElementsFromTable(std::string& report,
 	  ScannerID scan_id = _hbase_client->scannerOpenWithStop( table_name, startRowKey, stopRowKey, cols, m);
 	  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
-	  //std::cout << "\tAccessing table '" << data_table << "' with";
-	  //std::cout << "\t startRowKey = " << startRowKey << std::endl;
-	  //std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+	  //LOGGER << "\tAccessing table '" << data_table << "' with";
+	  //LOGGER << "\t startRowKey = " << startRowKey << std::endl;
+	  //LOGGER << "\t  stopRowKey = " << stopRowKey << std::endl;
 	  
 	  try {
 		// or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
@@ -1559,12 +1559,12 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
 					const std::string &sessionID, const std::string &modelID,
                     const std::string &analysisID,const double timeStep, const int32_t& meshID )
 {
-  std::cout << "getCoordinatesAndElementsFromMesh THRIFT: =====" << std::endl;
-  std::cout << "S " << sessionID      << std::endl;
-  std::cout << "M " << modelID        << std::endl;
-  std::cout << "A " << analysisID     << std::endl;
-  std::cout << "T " << timeStep       << std::endl;
-  std::cout << "M " << meshID         << std::endl;
+  LOGGER << "getCoordinatesAndElementsFromMesh THRIFT: =====" << std::endl;
+  LOGGER << "S " << sessionID      << std::endl;
+  LOGGER << "M " << modelID        << std::endl;
+  LOGGER << "A " << analysisID     << std::endl;
+  LOGGER << "T " << timeStep       << std::endl;
+  LOGGER << "M " << meshID         << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -1587,7 +1587,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
 		  break;
 	    }
 	  if( i == listOfMeshInfos.size() ){
-		std::cout << meshID << " is not found." << std::endl;
+		LOGGER << meshID << " is not found." << std::endl;
 		return "Error";
 	  }
 	  
@@ -1595,7 +1595,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
 	  std::string list_of_vertices_result = 
 	    getListOfVerticesFromMesh(list_of_vertices_report, vertices, sessionID, modelID, analysisID, timeStep, meshInfo.meshNumber);
 	    
-	  std::cout << "Number of vertices = " << vertices.size() << std::endl;  
+	  LOGGER << "Number of vertices = " << vertices.size() << std::endl;  
 
       // by default hexstrings are lower case but some data has been injected as upper case !!!
       scan_ok = getMeshElementsFromTable( report, listOfElements, listOfElementAttribs, listOfElementInfoGroups, table_set._data, sessionID, modelID, analysisID, timeStep, meshInfo);
@@ -1604,13 +1604,13 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
         scan_ok = getMeshElementsFromTable( report, listOfElements, listOfElementAttribs, listOfElementInfoGroups, table_set._data, sessionID, modelID, analysisID, timeStep, meshInfo, "%02X");
       }
       
-      std::cout << "Number of elements = " << listOfElements.size() << std::endl;  
-      std::cout << "Number of element attributes = " << listOfElementAttribs.size() << std::endl;        
-      std::cout << "Number of element groups = " << listOfElementInfoGroups.size() << std::endl;
+      LOGGER << "Number of elements = " << listOfElements.size() << std::endl;  
+      LOGGER << "Number of element attributes = " << listOfElementAttribs.size() << std::endl;        
+      LOGGER << "Number of element groups = " << listOfElementInfoGroups.size() << std::endl;
     }
     else
     {
-		std::cout << "model: " << modelID << ", analysis: " << analysisID << " at " << timeStep << " is not found." << std::endl;
+		LOGGER << "model: " << modelID << ", analysis: " << analysisID << " at " << timeStep << " is not found." << std::endl;
 		return "Error";
 	}
   } else {
@@ -1618,7 +1618,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_results = listOfElements.size();
     if ( there_are_results) {
       result = "Ok";
@@ -1626,7 +1626,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
   }

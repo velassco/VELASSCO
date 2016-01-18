@@ -131,10 +131,10 @@ static bool getModelInfoFromRow( FullyQualifiedModelName &model_info, const TRow
 std::string HBase::getListOfModelNames_curl( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					     const std::string &sessionID, const std::string &model_group_qualifier, 
 					     const std::string &model_name_pattern) {
-  std::cout << "getListOfModelNames CURL : =====" << std::endl;
-  std::cout << "S " << sessionID              << std::endl;
-  std::cout << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
-  std::cout << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
+  LOGGER << "getListOfModelNames CURL : =====" << std::endl;
+  LOGGER << "S " << sessionID              << std::endl;
+  LOGGER << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
+  LOGGER << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
 
   string table_name;
   if ( !model_group_qualifier.size() || ( model_group_qualifier == "*")) {
@@ -157,10 +157,10 @@ std::string HBase::getListOfModelNames_curl( std::string &report, std::vector< F
   bool ok = do_curl.Evaluate( buffer, cmd);
   string result;
   if ( ok) {
-    std::cout << "**********\n";    
-    std::cout << buffer << std::endl;
-    std::cout << "**********\n";
-    std::cout << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
+    LOGGER << "**********\n";    
+    LOGGER << buffer << std::endl;
+    LOGGER << "**********\n";
+    LOGGER << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
     bool there_are_models = parseListOfModelNames( report, listOfModelNames, buffer, table_name);
     if ( there_are_models) {
       result = "Ok";
@@ -168,9 +168,9 @@ std::string HBase::getListOfModelNames_curl( std::string &report, std::vector< F
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";    
-    std::cout << buffer << std::endl;
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";    
+    LOGGER << buffer << std::endl;
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfModelNames CURL could not evaluate command.";
   }
@@ -199,7 +199,7 @@ bool HBase::getListOfModelInfoFromTables( std::string &report, std::vector< Full
       if ( rowsResult.size() == 0)
 	break;
       // process rowsResult
-      // std::cout << "number of rows = " << rowsResult.size() << endl;
+      // LOGGER << "number of rows = " << rowsResult.size() << endl;
       for ( size_t i = 0; i < rowsResult.size(); i++) {
 	// convert to return type
 	FullyQualifiedModelName model_info;
@@ -229,10 +229,10 @@ bool HBase::getListOfModelInfoFromTables( std::string &report, std::vector< Full
 std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					       const std::string &sessionID, const std::string &model_group_qualifier, 
 					       const std::string &model_name_pattern) {
-  std::cout << "getListOfModelNames THRIFT: =====" << std::endl;
-  std::cout << "S " << sessionID              << std::endl;
-  std::cout << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
-  std::cout << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
+  LOGGER << "getListOfModelNames THRIFT: =====" << std::endl;
+  LOGGER << "S " << sessionID              << std::endl;
+  LOGGER << "G " << model_group_qualifier  << std::endl; // in Hbase we use it as full_path_pattern ( Properties:fp)
+  LOGGER << "P " << model_name_pattern     << std::endl; // model name pattern ( Properties:nm)
 
   string table_name;
   bool scan_ok = true;
@@ -270,8 +270,8 @@ std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector<
 
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
-    std::cout << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
+    LOGGER << "**********\n";
+    LOGGER << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
     bool there_are_models = listOfModelNames.size();
     if ( there_are_models) {
       result = "Ok";
@@ -279,16 +279,16 @@ std::string HBase::getListOfModelNames_thrift( std::string &report, std::vector<
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfModelNames THRIFT could not scan.";
     if ( print_existing_tables) {
       // report tables found:
-      std::cout << "Tables found:" << std::endl;
+      LOGGER << "Tables found:" << std::endl;
       for ( std::vector< Text>::const_iterator it = lst_tables.begin(); it != lst_tables.end(); it++) {
-	std::cout << " " << *it << ",";
+	LOGGER << " " << *it << ",";
       }
-      std::cout << std::endl;
+      LOGGER << std::endl;
     }
   }
 
@@ -418,14 +418,14 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
 
   std::string modelID_to_return;
   FullyQualifiedModelName model_info_to_return;
-  std::cout << "findModel THRIFT: ====="       << std::endl;
-  std::cout << "S " << sessionID                 << std::endl;
-  std::cout << "U " << unique_model_name_pattern << std::endl;
-  std::cout << "A " << requested_access << std::endl;
-  std::cout << "T " << table_to_use                << std::endl; // table name
-  std::cout << "P " << path_to_search                << std::endl; // model path ( Properties:fp)
-  std::cout << "N " << name_to_search                << std::endl; // model name ( Properties:nm)
-  std::cout << "WARNING: StorageModule::FindModel requested_access not used at the moment." << std::endl;
+  LOGGER << "findModel THRIFT: ====="       << std::endl;
+  LOGGER << "S " << sessionID                 << std::endl;
+  LOGGER << "U " << unique_model_name_pattern << std::endl;
+  LOGGER << "A " << requested_access << std::endl;
+  LOGGER << "T " << table_to_use                << std::endl; // table name
+  LOGGER << "P " << path_to_search                << std::endl; // model path ( Properties:fp)
+  LOGGER << "N " << name_to_search                << std::endl; // model name ( Properties:nm)
+  LOGGER << "WARNING: StorageModule::FindModel requested_access not used at the moment." << std::endl;
 
   vector< TRowResult> rowsResult;
   std::map<std::string,std::string> m;
@@ -448,7 +448,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
       if ( rowsResult.size() == 0)
 	break;
       // process rowsResult
-      // std::cout << "number of rows = " << rowsResult.size() << endl;
+      // LOGGER << "number of rows = " << rowsResult.size() << endl;
       for ( size_t i = 0; i < rowsResult.size(); i++) {
 	// convert to return type
 	FullyQualifiedModelName model_info;
@@ -481,8 +481,8 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
 
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
-    std::cout << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
+    LOGGER << "**********\n";
+    LOGGER << "WARNING: the actual parsing of the name pattern is not being done !!!" << std::endl;
     if ( found) {
       // let's store the info and check if tablename is known to retrieve the data
       bool known_table_name = storeTableNames( sessionID, modelID_to_return, table_to_use);
@@ -504,7 +504,7 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
       }
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::findModel THRIFT could not scan.";
   }

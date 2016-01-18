@@ -39,24 +39,24 @@ StorageModuleClient *clp = NULL;
 using namespace VELaSSCo;
 
 bool EDM::startConnection( const char *DB_hostname, const int DB_port) {
-  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
+  LOGGER << FUNCTION_NAME << " not implemented yet" << std::endl;
   return true;
 }
 
 bool EDM::stopConnection() {
-  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
+  LOGGER << FUNCTION_NAME << " not implemented yet" << std::endl;
   return true;
 }
 
 std::string EDM::getStatusDB() {
-  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
+  LOGGER << FUNCTION_NAME << " not implemented yet" << std::endl;
   return "EDM::Status not implemented.";
 }
 
 std::string EDM::getListOfModelNames( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 				      const std::string &sessionID, const std::string &model_group_qualifier, 
 				      const std::string &model_name_pattern) {
-  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
+  LOGGER << FUNCTION_NAME << " not implemented yet" << std::endl;
   report = "EDM::getListOfModelNames not implemented.";
   return "Error";
 }
@@ -65,7 +65,7 @@ std::string EDM::findModel( std::string &report, std::string &modelID,
 			    FullyQualifiedModelName &model_info,
 			    const std::string &sessionID, 
 			    const std::string &unique_model_name_pattern, const std::string &requested_access) {
-  std::cout << FUNCTION_NAME << " not implemented yet" << std::endl;
+  LOGGER << FUNCTION_NAME << " not implemented yet" << std::endl;
   report = "EDM::findModel not implemented.";
   return "Error";
 }

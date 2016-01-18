@@ -193,7 +193,7 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
-  std::cout << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
+  LOGGER << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
 
   std::map< int, MeshInfo> map_mesh_info;
   bool scan_ok = true;
@@ -204,7 +204,7 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
       if ( rowsResult.size() == 0)
   	break;
       // process rowsResult
-      // std::cout << "number of rows = " << rowsResult.size() << endl;
+      // LOGGER << "number of rows = " << rowsResult.size() << endl;
       for ( size_t i = 0; i < rowsResult.size(); i++) {
   	// convert to return type
 	// if ( rowsResult[ i].row.compare( 0, len_rowkey, rowKey) != 0)
@@ -260,11 +260,11 @@ std::string HBase::getListOfMeshes( std::string &report, std::vector< MeshInfo> 
 				    const std::string &sessionID, const std::string &modelID,
 				    const std::string &analysisID, const double stepValue) {
 
-  std::cout << "getListOfMMeshes THRIFT: =====" << std::endl;
-  std::cout << "S  - " << sessionID              << std::endl;
-  std::cout << "M  - " << modelID                << std::endl;
-  std::cout << "An - " << analysisID              << std::endl;
-  std::cout << "Sv - " << stepValue              << std::endl;
+  LOGGER << "getListOfMMeshes THRIFT: =====" << std::endl;
+  LOGGER << "S  - " << sessionID              << std::endl;
+  LOGGER << "M  - " << modelID                << std::endl;
+  LOGGER << "An - " << analysisID              << std::endl;
+  LOGGER << "Sv - " << stepValue              << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -285,7 +285,7 @@ std::string HBase::getListOfMeshes( std::string &report, std::vector< MeshInfo> 
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_meshes = listOfMeshes.size();
     if ( there_are_meshes) {
       result = "Ok";
@@ -293,7 +293,7 @@ std::string HBase::getListOfMeshes( std::string &report, std::vector< MeshInfo> 
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfMeshes THRIFT could not scan.";
   }
@@ -366,8 +366,8 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
   // filter.str( "FirstKeyOnlyFilter()");
   // ts.__set_filterString(filter.str());
   // ts.__set_startRow( rowKeyPrefix);
-  // // std::cout << "start key = " << rowKeyPrefix << std::endl;
-  // // std::cout << " stop key = " << GetStopKeyFromModelID( rowKeyPrefix) << std::endl;
+  // // LOGGER << "start key = " << rowKeyPrefix << std::endl;
+  // // LOGGER << " stop key = " << GetStopKeyFromModelID( rowKeyPrefix) << std::endl;
   // ts.__set_stopRow( GetStopKeyFromModelID( rowKeyPrefix));
   // ScannerID scan_id = _hbase_client->scannerOpenWithScan( metadata_table, ts, m);
   std::set< std::string> analysisNames;
@@ -400,7 +400,7 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
 
     const bool do_crono = DO_CRONO;
     if ( do_crono)
-      std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
+      LOGGER << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
     if ( analysisNames.size() != 0) {
       listOfAnalyses = std::vector< std::string>( analysisNames.begin(), analysisNames.end());
     } else {
@@ -427,9 +427,9 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
 std::string HBase::getListOfAnalyses( std::string &report, std::vector< std::string> &listOfAnalyses,
 				      const std::string &sessionID, const std::string &modelID) {
 
-  std::cout << "getListOfAnalyses THRIFT: =====" << std::endl;
-  std::cout << "S  - " << sessionID              << std::endl;
-  std::cout << "M  - " << modelID                << std::endl;
+  LOGGER << "getListOfAnalyses THRIFT: =====" << std::endl;
+  LOGGER << "S  - " << sessionID              << std::endl;
+  LOGGER << "M  - " << modelID                << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -444,7 +444,7 @@ std::string HBase::getListOfAnalyses( std::string &report, std::vector< std::str
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_analyses = listOfAnalyses.size();
     if ( there_are_analyses) {
       result = "Ok";
@@ -452,7 +452,7 @@ std::string HBase::getListOfAnalyses( std::string &report, std::vector< std::str
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfAnalyses THRIFT could not scan.";
   }
@@ -539,7 +539,7 @@ bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> 
 
     const bool do_crono = DO_CRONO;
     if ( do_crono)
-      std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
+      LOGGER << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
     if ( stepValues_set.size() != 0) {
       listOfSteps = std::vector< double>( stepValues_set.begin(), stepValues_set.end());
     } else {
@@ -567,10 +567,10 @@ std::string HBase::getListOfSteps( std::string &report, std::vector< double> &li
 				   const std::string &sessionID, const std::string &modelID,
 				   const std::string &analysisID) {
 
-  std::cout << "getListOfSteps THRIFT: =====" << std::endl;
-  std::cout << "S  - " << sessionID              << std::endl;
-  std::cout << "M  - " << modelID                << std::endl;
-  std::cout << "An - " << analysisID              << std::endl;
+  LOGGER << "getListOfSteps THRIFT: =====" << std::endl;
+  LOGGER << "S  - " << sessionID              << std::endl;
+  LOGGER << "M  - " << modelID                << std::endl;
+  LOGGER << "An - " << analysisID              << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -585,7 +585,7 @@ std::string HBase::getListOfSteps( std::string &report, std::vector< double> &li
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_steps = listOfSteps.size();
     if ( there_are_steps) {
       result = "Ok";
@@ -593,7 +593,7 @@ std::string HBase::getListOfSteps( std::string &report, std::vector< double> &li
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfSteps THRIFT could not scan.";
   }
@@ -673,8 +673,8 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
                   }
                 catch( ... )
                   {
-                  std::cout << "Exception caught!" << std::endl;
-                  std::cout << GID::BinarySerializer::BinToHex( it->second.value ) 
+                  LOGGER << "Exception caught!" << std::endl;
+                  LOGGER << GID::BinarySerializer::BinToHex( it->second.value ) 
                             << std::endl;
                   lst_components.clear( );
                   lst_components.push_back( it->second.value );
@@ -736,7 +736,7 @@ bool HBase::getListOfResultsFromTables( std::string &report, std::vector< Result
   std::string rowKey = createMetaRowKey( modelID, analysisID, stepValue, format);
   const size_t len_rowkey = rowKey.length();
   
-  std::cout << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
+  LOGGER << "\tAccessing table '" << metadata_table << "' with rowkey = " << rowKey << std::endl;
   
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
@@ -770,7 +770,7 @@ bool HBase::getListOfResultsFromTables( std::string &report, std::vector< Result
 
     const bool do_crono = DO_CRONO;
     if ( do_crono)
-      std::cout << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
+      LOGGER << "Number of scanned rows = " << num_rows << " in " << clk.fin() << " s." << std::endl;
     if ( map_result_info.size() != 0) {
       // eventually pass the array-like tmp_lst_meshes to the list lst_mesh_info
       for ( std::map< int, ResultInfo>::const_iterator it = map_result_info.begin();
@@ -802,11 +802,11 @@ bool HBase::getListOfResultsFromTables( std::string &report, std::vector< Result
 std::string HBase::getListOfResults( std::string &report, std::vector< ResultInfo> &listOfResults,
 				     const std::string &sessionID, const std::string &modelID,
 				     const std::string &analysisID, const double stepValue) {
-  std::cout << "getListOfResults THRIFT: =====" << std::endl;
-  std::cout << "S  - " << sessionID              << std::endl;
-  std::cout << "M  - " << modelID                << std::endl;
-  std::cout << "An - " << analysisID              << std::endl;
-  std::cout << "Sv - " << stepValue              << std::endl;
+  LOGGER << "getListOfResults THRIFT: =====" << std::endl;
+  LOGGER << "S  - " << sessionID              << std::endl;
+  LOGGER << "M  - " << modelID                << std::endl;
+  LOGGER << "An - " << analysisID              << std::endl;
+  LOGGER << "Sv - " << stepValue              << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -826,7 +826,7 @@ std::string HBase::getListOfResults( std::string &report, std::vector< ResultInf
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_results = listOfResults.size();
     if ( there_are_results) {
       result = "Ok";
@@ -834,7 +834,7 @@ std::string HBase::getListOfResults( std::string &report, std::vector< ResultInf
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfResults THRIFT could not scan.";
   }
@@ -920,9 +920,9 @@ bool HBase::getListOfVerticesFromTables( std::string &report, std::vector< Verte
   ScannerID scan_id = _hbase_client->scannerOpenWithStop( data_table, startRowKey, stopRowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
-  std::cout << "\tAccessing table '" << data_table << "' with";
-  std::cout << "\t startRowKey = " << startRowKey << std::endl;
-  std::cout << "\t  stopRowKey = " << stopRowKey << std::endl;
+  LOGGER << "\tAccessing table '" << data_table << "' with";
+  LOGGER << "\t startRowKey = " << startRowKey << std::endl;
+  LOGGER << "\t  stopRowKey = " << stopRowKey << std::endl;
 
   bool scan_ok = true;
   try {
@@ -983,12 +983,12 @@ std::string HBase::getListOfVerticesFromMesh( std::string &report, std::vector< 
 					      const std::string &sessionID, const std::string &modelID, 
 					      const std::string &analysisID, const double stepValue, 
 					      const int32_t meshID) {
-  std::cout << "getListOfVerticesFromMesh THRIFT: =====" << std::endl;
-  std::cout << "S  - " << sessionID              << std::endl;
-  std::cout << "M  - " << modelID                << std::endl;
-  std::cout << "An - " << analysisID              << std::endl;
-  std::cout << "Sv - " << stepValue              << std::endl;
-  std::cout << "Msh- " << meshID                 << std::endl;
+  LOGGER << "getListOfVerticesFromMesh THRIFT: =====" << std::endl;
+  LOGGER << "S  - " << sessionID              << std::endl;
+  LOGGER << "M  - " << modelID                << std::endl;
+  LOGGER << "An - " << analysisID              << std::endl;
+  LOGGER << "Sv - " << stepValue              << std::endl;
+  LOGGER << "Msh- " << meshID                 << std::endl;
 
   string table_name;
   bool scan_ok = true;
@@ -1008,7 +1008,7 @@ std::string HBase::getListOfVerticesFromMesh( std::string &report, std::vector< 
   }
   string result;
   if ( scan_ok) {
-    std::cout << "**********\n";
+    LOGGER << "**********\n";
     bool there_are_vertices = listOfVertices.size();
     if ( there_are_vertices) {
       result = "Ok";
@@ -1016,7 +1016,7 @@ std::string HBase::getListOfVerticesFromMesh( std::string &report, std::vector< 
       result = "Error";
     }
   } else {
-    std::cout << "ERROR**********\n";
+    LOGGER << "ERROR**********\n";
     result = "Error";
     report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
   }

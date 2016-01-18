@@ -75,7 +75,7 @@ std::string HBase::parseStatusDB( std::string b) {
 std::string HBase::getStatusDB() {
   // return "HBase::Status\n";
   // http://pez001:8880/status/cluster
-  std::cout << "getStatusDB: =====" << std::endl;
+  LOGGER << "getStatusDB: =====" << std::endl;
   string cmd = "http://" + _db_host + ":8880/";
   cmd += "status/cluster";
   cout << cmd << endl;
@@ -87,15 +87,15 @@ std::string HBase::getStatusDB() {
   
   string result;
   if ( ok) {
-    // std::cout << "**********\n";    
-    // std::cout << buffer << std::endl;
-    // std::cout << "**********\n";    
+    // LOGGER << "**********\n";    
+    // LOGGER << buffer << std::endl;
+    // LOGGER << "**********\n";    
     
     result = parseStatusDB( buffer);
   } else {
-    std::cout << "ERROR**********\n";    
-    std::cout << buffer << std::endl;
-    std::cout << "ERROR**********\n";    
+    LOGGER << "ERROR**********\n";    
+    LOGGER << buffer << std::endl;
+    LOGGER << "ERROR**********\n";    
     result = buffer;
   }
   return result;
