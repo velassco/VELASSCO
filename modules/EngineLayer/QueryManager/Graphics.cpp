@@ -132,19 +132,19 @@ void GraphicsModule::fromatSphereMeshForDrawing(VELaSSCo::RTFormat::File& _retur
 	  _return_.header.cellDefinitionsBytes    = 0;
 	  _return_.header.cellAttributesBytes     = 0;
 
-	  _return_.data.description.resize( _return_.header.descriptionBytes );
-	  _return_.data.meta.resize(0);
-      _return_.data.vertexDefinitions.resize( _return_.header.vertexDefinitionsBytes );
-	  _return_.data.vertexAttributes.resize(0);
-	  _return_.data.edgeDefinitions.resize(0);
-	  _return_.data.edgeAttributes.resize(0);
-	  _return_.data.faceDefinitions.resize(0);
-	  _return_.data.faceAttributes.resize(0);
-	  _return_.data.cellDefinitions.resize(0);
-	  _return_.data.cellAttributes.resize(0);
+	  _return_.data.description       = new uint8_t[ _return_.header.descriptionBytes ];
+	  _return_.data.meta              = 0;
+      _return_.data.vertexDefinitions = new uint8_t[ _return_.header.vertexDefinitionsBytes ];
+	  _return_.data.vertexAttributes  = 0;
+	  _return_.data.edgeDefinitions   = 0;
+	  _return_.data.edgeAttributes    = 0;
+	  _return_.data.faceDefinitions   = 0;
+	  _return_.data.faceAttributes    = 0;
+	  _return_.data.cellDefinitions   = 0;
+	  _return_.data.cellAttributes    = 0;
 	  
-	  memcpy(_return_.data.description.data(), description, _return_.header.descriptionBytes);
-	  memcpy((char*)_return_.data.vertexDefinitions.data(), (const char*)ret_vertices.data(), _return_.header.vertexDefinitionsBytes);
+	  memcpy(_return_.data.description, description, _return_.header.descriptionBytes);
+	  memcpy(_return_.data.vertexDefinitions, (const char*)ret_vertices.data(), _return_.header.vertexDefinitionsBytes);
 	  
 	  for(size_t i = 0; i < 10; i++)
 	    std::cout << ret_vertices[i].x << " " << ret_vertices[i].y << " " << ret_vertices[i].z << " " << ret_vertices[i].radius << " " << ret_vertices[i].vertexID << std::endl;

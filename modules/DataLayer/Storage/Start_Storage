@@ -6,4 +6,4 @@ LD_LIBRARY_PATH=${PWD}/lib
 export LD_LIBRARY_PATH
 
 cd ./bin
-./Storage -port 26260
+./Storage -port 26264
