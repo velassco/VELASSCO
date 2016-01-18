@@ -12,16 +12,7 @@ using namespace VELaSSCoSM;
 
 #include "RealTimeFormat.h"
 
-namespace VELaSSCo{
-	namespace Graphics{
-		struct SphereElement
-		{
-			float     x, y, z;
-			float     radius;
-			int64_t   vertexID;	
-		};
-	}
-}
+#include "GraphicsElementTypes.h"
 
 // handles connection to Storage Module:
 class GraphicsModule
