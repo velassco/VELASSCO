@@ -661,7 +661,7 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
 	      // " kjkl", "l2kjlkj"  or { "klsadjfkls", "lkjkl"} or [] or ...
 	      std::vector<std::string> lst_components;
 #ifdef WITH_PARSE_COMPONENTS
-              boost::uint32_t pos = 0;
+              boost::uint32_t pos = 0, posNext;
               GID::BinaryDeserializerNative deser;
               deser.SetEndianness( GID::BigEndian );
               while( pos < it->second.value.length() )
@@ -669,13 +669,21 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
                 std::string str;
                 try 
                   {
-                  pos = deser.Read( it->second.value, str, pos );
+                  posNext = deser.Read( it->second.value, str, pos );
+                  if( posNext == pos )
+                    {
+                    LOGGER << "Bad component format. Unable to deserialize " << std << " at position " << pos << std::endl;
+                    lst_components.clear( );
+                    lst_components.push_back( it->second.value );
+                    break;
+                    }
+                  pos = posNext;
                   }
                 catch( ... )
                   {
-                  LOGGER << "Exception caught!" << std::endl;
+                  LOGGER << "Exception caught! Bad component format. While deserializing " << std::endl;
                   LOGGER << GID::BinarySerializer::BinToHex( it->second.value ) 
-                            << std::endl;
+                         << std::endl;
                   lst_components.clear( );
                   lst_components.push_back( it->second.value );
                   break;
