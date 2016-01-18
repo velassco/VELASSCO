@@ -498,20 +498,20 @@ void QM_DemoServer::ManageGetMeshDrawData( Query_Result &_return, const SessionI
   file.header.cellDefinitionsBytes    = 0;
   file.header.cellAttributesBytes     = 0;
 
-  file.data.description.resize(file.header.descriptionBytes);
-  file.data.meta.resize(0);
-  file.data.vertexDefinitions.resize(file.header.vertexDefinitionsBytes);
-  file.data.vertexAttributes.resize(0);
-  file.data.edgeDefinitions.resize(0);
-  file.data.edgeAttributes.resize(0);
-  file.data.faceDefinitions.resize(file.header.faceDefinitionsBytes);
-  file.data.faceAttributes.resize(0);
-  file.data.cellDefinitions.resize(0);
-  file.data.cellAttributes.resize(0);
+  file.data.description            = new uint8_t[ file.header.descriptionBytes ];
+  file.data.meta                   = 0;
+  file.data.vertexDefinitions      = new uint8_t[ file.header.vertexDefinitionsBytes ];
+  file.data.vertexAttributes       = 0;
+  file.data.edgeDefinitions        = 0;
+  file.data.edgeAttributes         = 0;
+  file.data.faceDefinitions        = new uint8_t[ file.header.faceDefinitionsBytes ];
+  file.data.faceAttributes         = 0;
+  file.data.cellDefinitions        = 0;
+  file.data.cellAttributes         = 0; 
 
-  memcpy( (char*)file.data.description.data(), (const char*)description, file.header.vertexDefinitionsBytes );
-  memcpy( (char*)file.data.vertexDefinitions.data(), (const char*)vertices, file.header.vertexDefinitionsBytes );
-  memcpy( (char*)file.data.faceDefinitions.data(), (const char*)faces, file.header.faceDefinitionsBytes );
+  memcpy( (char*)file.data.description, (const char*)description, file.header.vertexDefinitionsBytes );
+  memcpy( (char*)file.data.vertexDefinitions, (const char*)vertices, file.header.vertexDefinitionsBytes );
+  memcpy( (char*)file.data.faceDefinitions, (const char*)faces, file.header.faceDefinitionsBytes );
 
   // Pack into string
   oss << file;  
