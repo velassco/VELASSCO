@@ -119,12 +119,23 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   
   std::cout << "=======================>>> Morteza <<<=====================\n";
   
+  // Name: FluidizedBed_small
+  // FullPath: /localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/
+  // ModelID: d0279880beacc38c32c5ae849074c01e
+  // Location: Hbase:VELaSSCo_Models
+  
   //
   // Test GetMeshDrawData() 
   //
-  const char* model_name 		= "FluidizedBed_small";
-  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";
-  const char* model_tablename   = "VELaSSCo_Models";
+  
+  //Name: FluidizedBed_large
+  //FullPath: /localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/
+  //ModelID: 35c14b308febbaedd343e077d5e2c3ae
+  //Location: Hbase:Test_VELaSSCo_Models
+  
+  const char* model_name 		= "FluidizedBed_large";
+  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
+  const char* model_tablename   = "Test_VELaSSCo_Models";
   
   //const char* fem_name 			=	"fine_mesh-ascii_";
   //const char* fem_fullpath    	=	"/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii";
@@ -152,10 +163,18 @@ int doTestMorteza( const VAL_SessionID sessionID) {
     return EXIT_SUCCESS;
   }
   
+  const char* listOfMeshes = 0;
   std::string modelID( return_modelID );
   
   const char* analysisID = "DEM";
   double      timeStep = 2939000.0;
+  
+  result = valGetListOfMeshes( sessionID, modelID.c_str(), analysisID, timeStep, &status, &listOfMeshes ); 
+  CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
+  std::cout  << "GetListOfMeshes: "    << std::endl
+             << "   status = " << status << std::endl;
+  if(listOfMeshes) std::cout << "List Of Mesehes = \n" << listOfMeshes << std::endl;
+  
   int32_t     meshID = 1;
    
   const VELaSSCo::RTFormat::File* mesh_draw_data = NULL;

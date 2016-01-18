@@ -1531,13 +1531,20 @@ bool HBase::getMeshElementsFromTable(std::string& report,
   }
 #endif
   
-  	//#define DEBUG_RESULTS
+  	#define DEBUG_RESULTS
 	#ifdef  DEBUG_RESULTS
 	size_t n_debug_elements = listOfElements.size() < 10 ? listOfElements.size() : 10;
 			for(size_t i = 0; i < n_debug_elements; i++){
 				std::cout << listOfElements[i].id << "\t";
 				for(size_t j = 0; j < listOfElements[i].nodes_ids.size(); j++)
 				  std::cout << listOfElements[i].nodes_ids[j] << " ";
+				std::cout << std::endl;
+			}
+			
+			for(size_t i = 0; i < n_debug_elements; i++){
+				std::cout << listOfElementAttribs[i].id << "\t" << listOfElementAttribs[i].name << "\t";
+				for(size_t j = 0; j < listOfElementAttribs[i].value.size(); j++)
+				  std::cout << listOfElementAttribs[i].value[j] << " ";
 				std::cout << std::endl;
 			}
 	#endif

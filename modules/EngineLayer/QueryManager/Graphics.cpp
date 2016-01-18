@@ -27,6 +27,23 @@ void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, co
   const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
   const std::vector<ElementAttrib>& elementAttribs, const std::vector<ElementGroup>& elementGroupInfos)
 {	
+	
+	switch(meshInfo.elementType.shape){
+	case ElementShapeType::type::SphereElement:
+		fromatSphereMeshForDrawing(_return_, meshInfo, vertices, elements, elementAttribs);
+		break;
+	default:
+	    std::cout << "not implemented.\n";
+	    return;
+	}
+	
+	
+}
+
+void GraphicsModule::fromatSphereMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, 
+  const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
+  const std::vector<ElementAttrib>& elementAttribs)
+{
 	const size_t num_vertices    = vertices.size();
 	const size_t num_elements    = elements.size();
 	const size_t num_attribs     = elementAttribs.size();
@@ -70,7 +87,7 @@ void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, co
 		  ret_vertices[idx].x        = 0.0f;
 		  ret_vertices[idx].y        = 0.0f;
 		  ret_vertices[idx].z        = 0.0f;
-		  ret_vertices[idx].radius   = 0.0f;
+		  ret_vertices[idx].radius   = 1.0f;
 		  ret_vertices[idx].vertexID = 0;
 		}
 	}
@@ -79,7 +96,7 @@ void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, co
 		
 		size_t i = 0;
 		for(; i < elementAttribs.size(); i++){
-			if(elementAttribs[i].id == static_cast<int64_t>(idx)) break;
+			if(elementAttribs[i].name == "Radius" && elementAttribs[i].id == static_cast<int64_t>(idx)) break;
 		}
 		if(i == elementAttribs.size()) continue;
 		
@@ -128,4 +145,7 @@ void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, co
 	  
 	  memcpy(_return_.data.description.data(), description, _return_.header.descriptionBytes);
 	  memcpy((char*)_return_.data.vertexDefinitions.data(), (const char*)ret_vertices.data(), _return_.header.vertexDefinitionsBytes);
+	  
+	  for(size_t i = 0; i < 10; i++)
+	    std::cout << ret_vertices[i].x << " " << ret_vertices[i].y << " " << ret_vertices[i].z << " " << ret_vertices[i].radius << " " << ret_vertices[i].vertexID << std::endl;
 }

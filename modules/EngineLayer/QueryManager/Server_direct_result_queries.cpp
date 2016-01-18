@@ -273,17 +273,17 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 	  file.header.cellDefinitionsBytes    = 0;
 	  file.header.cellAttributesBytes     = 0;
 
-	  /*file.data.description       = (uint8_t*) description;
-	  file.data.meta              = 0;
+	  //file.data.description       = std::vector<uint8_t>((uint8_t*)description, sizeof(description));
+	  file.data.meta.resize(0);
 
-	  file.data.vertexDefinitions = (uint8_t*)vertices;
-	  file.data.vertexAttributes  = 0;
-	  file.data.edgeDefinitions   = 0;
-	  file.data.edgeAttributes    = 0;
-	  file.data.faceDefinitions   = (uint8_t*)faces;
-	  file.data.faceAttributes    = 0;
-	  file.data.cellDefinitions   = 0;
-	  file.data.cellAttributes    = 0;*/
+	  //file.data.vertexDefinitions = std::vector<uint8_t>((uint8_t*)vertices, sizeof(vertices));
+	  file.data.vertexAttributes.resize(0);
+	  file.data.edgeDefinitions.resize(0);
+	  file.data.edgeAttributes.resize(0);
+	  //file.data.faceDefinitions   = std::vector<uint8_t>((uint8_t*)faces, sizeof(faces));
+	  file.data.faceAttributes.resize(0);
+	  file.data.cellDefinitions.resize(0);
+	  file.data.cellAttributes.resize(0);
 
 	  // Pack into string
 	  std::ostringstream oss;
