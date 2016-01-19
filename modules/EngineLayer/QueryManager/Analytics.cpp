@@ -98,7 +98,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   recursive_rmdir( output_folder.c_str());
   std::string analytics_program = GetFullAnalyticsQualifier( "GetBoundingBoxOfAModel");
 
-  bool use_yarn = false;;
+  bool use_yarn = true;;
   // running java:
   int ret_cmd = 0;
   if ( !use_yarn) {
@@ -214,7 +214,7 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
 						  const std::string &cGMethod, const double width, const double cutoffFactor,
 						  const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGOptions,
 						  const double deltaT, std::string *returnQueryOutcome, std::string *return_error_str) {
-  bool use_yarn = false;;
+  bool use_yarn = true;;
   
   if (use_yarn) {
 	
