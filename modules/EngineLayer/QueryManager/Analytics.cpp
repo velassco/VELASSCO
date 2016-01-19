@@ -386,7 +386,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 static
   std::string analytics_program = GetFullAnalyticsQualifier( "GetListOfVerticesFromMesh");
 
-  bool use_yarn = true;
+  bool use_yarn = true;;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
@@ -648,7 +648,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
   std::string analytics_program = GetFullAnalyticsQualifier( "GetBoundaryOfAMesh");
 
-  bool use_yarn = false;//true;
+  bool use_yarn = true;;//true;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
