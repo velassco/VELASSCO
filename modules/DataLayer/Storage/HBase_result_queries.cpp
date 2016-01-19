@@ -37,6 +37,8 @@
 
 #define DO_CRONO   true
 
+#define DO_ALWAYS_BYTE_SWAP
+
 using namespace std;
 using namespace VELaSSCo;
 
@@ -114,8 +116,11 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
 	    if ( !strcmp( pinfo, "nc")) {
 	      // data is in binary format ...
 	      int64_t num = *( int64_t *)it->second.value.data();
-	      // current_mesh.__set_nVertices( byteSwap< int64_t>( num));
+#ifdef DO_ALWAYS_BYTE_SWAP
+	      current_mesh.__set_nVertices( byteSwap< int64_t>( num));
+#else // DO_ALWAYS_BYTE_SWAP
 	      current_mesh.__set_nVertices( byteSwapIfNeedPositive< int64_t>( num, MAXIMUM_ALLOWED_I64_NUMBER));
+#endif// DO_ALWAYS_BYTE_SWAP
 	      current_mesh.__set_meshNumber( mesh_number);
 	      // }
 	    }
@@ -132,14 +137,22 @@ static bool getMeshInfoFromRow( std::map< int, MeshInfo> &map_mesh_info, const T
 	      // data is in binary format ...
 	      int64_t num = *( int64_t *)it->second.value.data();
 	      // needs to be swapped !!!!!!!!
+#ifdef DO_ALWAYS_BYTE_SWAP
+	      current_mesh.__set_nElements( byteSwap< int64_t>( num));
+#else // DO_ALWAYS_BYTE_SWAP
 	      current_mesh.__set_nElements( byteSwapIfNeedPositive< int64_t>( num, MAXIMUM_ALLOWED_I64_NUMBER));
+#endif// DO_ALWAYS_BYTE_SWAP
 	      current_mesh.__set_meshNumber( mesh_number);
 	    } else if ( !strcmp( pinfo, "nn")) {
 	      // data is in binary format ...
 	      int num = *( int *)it->second.value.data();
 	      // needs to be swapped !!!!!!!!
 	      // maximum number of nodes per element ( around 27 for quadratic hexaedrons, but for the future...)
+#ifdef DO_ALWAYS_BYTE_SWAP
+	      current_mesh.elementType.__set_num_nodes( byteSwap< int>( num));
+#else // DO_ALWAYS_BYTE_SWAP
 	      current_mesh.elementType.__set_num_nodes( byteSwapIfNeedPositive< int>( num, 1000));
+#endif// DO_ALWAYS_BYTE_SWAP
 	      current_mesh.__set_meshNumber( mesh_number);
 	    } else if ( !strcmp( pinfo, "cl")) {
 	      current_mesh.__set_meshColor( it->second.value);
@@ -654,7 +667,11 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
 	      int num = *( int *)it->second.value.data();
 	      // needs to be swapped !!!!!!!!
 	      // maximum number of components are 6, but for the future ...
+#ifdef DO_ALWAYS_BYTE_SWAP
+	      current_result.__set_numberOfComponents( byteSwap< int>( num));
+#else // DO_ALWAYS_BYTE_SWAP
 	      current_result.__set_numberOfComponents( byteSwapIfNeedPositive< int>( num, 100));
+#endif// DO_ALWAYS_BYTE_SWAP
 	      current_result.__set_resultNumber( result_number);
 	    } else if ( !strcmp( pinfo, "cn")) {
 	      // component names, still we've to agree on the list format, as they are different:
@@ -672,7 +689,7 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
                   posNext = deser.Read( it->second.value, str, pos );
                   if( posNext == pos )
                     {
-                    LOGGER << "Bad component format. Unable to deserialize " << std << " at position " << pos << std::endl;
+                    LOGGER << "Bad component format. Unable to deserialize '" << str << "' at position " << pos << std::endl;
                     lst_components.clear( );
                     lst_components.push_back( it->second.value );
                     break;
