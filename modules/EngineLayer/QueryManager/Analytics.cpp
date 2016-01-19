@@ -33,6 +33,8 @@ AnalyticsModule *AnalyticsModule::getInstance() {
 #define HADOOP_YARN std::string( HADOOP_HOME"yarn")
 #define HADOOP_HDFS std::string( HADOOP_HOME"hdfs")
 
+#define USE_HOSTNAME_SUFFIX
+
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 500
 #endif
@@ -48,6 +50,21 @@ static int unlink_cb( const char *fpath, const struct stat *sb, int typeflag, st
 }
 static int recursive_rmdir( const char *path) {
   return nftw( path, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+}
+
+std::string GetFullAnalyticsQualifier( const std::string &jar_name_no_extension) {
+#ifdef USE_HOSTNAME_SUFFIX
+  const size_t max_buffer = 10240;
+  char buffer[ max_buffer];
+  int res = gethostname( buffer, max_buffer);
+  if ( res) {
+    strcpy( buffer, "NO_NAME");
+  }
+  std::string suffix = "_" + std::string( buffer);
+#else // USE_HOSTNAME_SUFFIX
+  std::string suffix = "";
+#endif // USE_HOSTNAME_SUFFIX
+  return "../Analytics/" + jar_name_no_extension + suffix + ".jar";
 }
 
 void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const std::string &modelID, 
@@ -79,12 +96,13 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // delete local temporary files
   std::string output_folder = ToLower( "bbox_" + sessionID + "_" + cli_modelID);
   recursive_rmdir( output_folder.c_str());
+  std::string analytics_program = GetFullAnalyticsQualifier( "GetBoundingBoxOfAModel");
 
-  bool use_yarn = true;
+  bool use_yarn = false;;
   // running java:
   int ret_cmd = 0;
   if ( !use_yarn) {
-    std::string cmd_line = "java -jar ../Analytics/GetBoundingBoxOfAModel.jar " + 
+  std::string cmd_line = "java -jar " + analytics_program + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -92,8 +110,8 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-    std::string cmd_line = HADOOP_YARN + " jar ../Analytics/GetBoundingBoxOfAModel.jar " + 
-      sessionID + " " + cli_modelID + " " + dataTableName;
+  std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + 
+    sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
     // output in '../bbox_sessionID_modelID/part-r-00000' but in hdfs
@@ -196,7 +214,7 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
 						  const std::string &cGMethod, const double width, const double cutoffFactor,
 						  const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGOptions,
 						  const double deltaT, std::string *returnQueryOutcome, std::string *return_error_str) {
-  bool use_yarn = true;
+  bool use_yarn = false;;
   
   if (use_yarn) {
 	
@@ -239,7 +257,7 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
 
     parameters+= cGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + temporalAVGOptions + " " + s_deltaT.str();
     
-    std::string cmd_line = HADOOP_YARN + " jar ../Analytics/GetDiscrete2ContinuumOfAModel.jar " + parameters;
+    std::string cmd_line = HADOOP_YARN + " jar " + GetFullAnalyticsQualifier( "GetDiscrete2ContinuumOfAModel") + " " + parameters;
     
     int ret = 0;
     ret = system(cmd_line.c_str());
@@ -366,7 +384,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   recursive_rmdir( output_folder.c_str());
 
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 static
-  std::string analytics_program = "../Analytics/GetListOfVerticesFromMesh.jar";
+  std::string analytics_program = GetFullAnalyticsQualifier( "GetListOfVerticesFromMesh");
 
   bool use_yarn = true;
   // running java:
@@ -628,7 +646,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   recursive_rmdir( output_folder.c_str());
 
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
-  std::string analytics_program = "../Analytics/GetBoundaryOfAMesh.jar";
+  std::string analytics_program = GetFullAnalyticsQualifier( "GetBoundaryOfAMesh");
 
   bool use_yarn = false;//true;
   // running java:
