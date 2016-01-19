@@ -1,0 +1,22 @@
+EDMcluster VELaSSCo
+ClusterRepository DEM_models
+ClusterRepository FEM_models
+ClusterRepository DataRepository
+ClusterModel telescope
+EDMdatabase "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_cluster\db0" VELaSSCo v localhost 9090
+EDMrepository DEM_models DEM_models
+EDMrepository FEM_models FEM_models
+EDMrepository DataRepository DataRepository
+EDMmodel DataRepository telescope Telescope_0
+EDMmodel DataRepository telescope Telescope_1
+EDMmodel DataRepository telescope Telescope_2
+EDMmodel DataRepository telescope Telescope_3
+EDMmodel DataRepository telescope Telescope_4
+EDMdatabase "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_cluster\db1" VELaSSCo v localhost 9080
+EDMrepository DEM_models DEM_models
+EDMrepository FEM_models FEM_models
+EDMrepository DataRepository DataRepository
+EDMmodel DataRepository telescope Telescope_5
+EDMmodel DataRepository telescope Telescope_6
+EDMmodel DataRepository telescope Telescope_7
+EDMmodel DataRepository telescope Telescope_8
