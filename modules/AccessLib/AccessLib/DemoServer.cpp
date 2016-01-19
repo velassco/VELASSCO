@@ -183,6 +183,8 @@ void QM_DemoServer::Query(Query_Result& _return, const SessionID sessionID, cons
     ManageGetListOfAnalyses( _return, sessionID, query);
   } else if ( name == "GetListOfTimeSteps") {
     ManageGetListOfTimeSteps( _return, sessionID, query);
+  } else if ( name == "GetListOfResults") {
+    ManageGetListOfResults( _return, sessionID, query);
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
   } else if ( name == "GetBoundaryOfAMesh") {
@@ -544,12 +546,18 @@ void QM_DemoServer::ManageGetListOfAnalyses( Query_Result &_return, const Sessio
 
 void QM_DemoServer::ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   /* will be: "TimeStep 1\nTimeStep 2\n...\nTimeStep N" */
-  std::ostringstream oss;
-  oss << "0.0" << std::endl;
-  oss << "10000" << std::endl;
-  oss << "20000" << std::endl;
-  oss << "30000" << std::endl;
-  _return.__set_data( oss.str());
+  // std::ostringstream oss;
+  // oss << "0.0" << std::endl;
+  // oss << "10000" << std::endl;
+  // oss << "20000" << std::endl;
+  // oss << "30000" << std::endl;
+  // _return.__set_data( oss.str());
+  std::vector< double> lstSteps;
+  lstSteps.push_back( 0.0);
+  lstSteps.push_back( 10000.0);
+  lstSteps.push_back( 20000.0);
+  lstSteps.push_back( 30000.0);
+  _return.__set_data( std::string( ( char *)lstSteps.data(), lstSteps.size() * sizeof( double)));
   _return.__set_result( (Result::type)VAL_SUCCESS );
 		  
   LOGGER                                             << std::endl;
@@ -571,13 +579,15 @@ void QM_DemoServer::ManageGetListOfResults( Query_Result &_return, const Session
   oss << "Location: OnNodes" << std::endl;
   oss << "GaussPointName: \"\"" << std::endl;
   oss << "Units: \"\"" << std::endl;
+  oss << "ResultNumber: 1" << std::endl;
   oss << "Name: Velocity" << std::endl;
   oss << "ResultType: Vector" << std::endl;
   oss << "NumberOfComponents: 3" << std::endl;
-  oss << "ComponentNames: \"v-x\", \"v-y\", \"v-z\"" << std::endl;
+  oss << "ComponentNames: {v-x} {v-y} {v-z}" << std::endl;
   oss << "Location: OnNodes" << std::endl;
   oss << "GaussPointName: \"\"" << std::endl;
   oss << "Units: \"m/s\"" << std::endl;
+  oss << "ResultNumber: 2" << std::endl;
   oss << "Name: Vorticity" << std::endl;
   oss << "ResultType: Scalar" << std::endl;
   oss << "NumberOfComponents: 1" << std::endl;
@@ -585,6 +595,7 @@ void QM_DemoServer::ManageGetListOfResults( Query_Result &_return, const Session
   oss << "Location: OnNodes" << std::endl;
   oss << "GaussPointName: \"\"" << std::endl;
   oss << "Units: \"1/s\"" << std::endl;
+  oss << "ResultNumber: 3" << std::endl;
   _return.__set_data( oss.str());
   _return.__set_result( (Result::type)VAL_SUCCESS );
 		  
