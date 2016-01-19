@@ -29,7 +29,7 @@ int main(int argc, char **argv)
    bool batchMode = false;
 
    try {
-      char *command, *dbFolder = "", *dbName = "", *dbPassword = "", *model = "";
+      char *command, *dbFolder = "", *dbName = "", *dbPassword = "", *model = "", *repository = NULL;
 
       if (argc > 2) {
          command = allocString(argv[1]);
@@ -37,13 +37,14 @@ int main(int argc, char **argv)
       if ((argc == 2 || argc == 3) && (paraMfile = fopen(argv[1], "r"))) {
          char line[2048], a[1024], b[1024];
 
-         for (int i = 0; i < 5 && fgets(line, sizeof(line), paraMfile); i++) {
+         for (int i = 0; i < 6 && fgets(line, sizeof(line), paraMfile); i++) {
             sscanf(line, "%s %s", a, b);
             if (strEQL(a, "command")) command = allocString(b);
             else if (strEQL(a, "dbFolder")) dbFolder = allocString(b);
             else if (strEQL(a, "dbName")) dbName = allocString(b);
             else if (strEQL(a, "dbPassword")) dbPassword = allocString(b);
             else if (strEQL(a, "model")) model = allocString(b);
+            else if (strEQL(a, "repository")) repository = allocString(b);
          }
          if (argc == 3 && strEQL(argv[2], "batchMode")) batchMode = true;
       } else if (argc >= 5 && (strEQL(command, "Server") || strEQL(command, "Files") || strEQL(command, "FEMfiles"))) {
@@ -60,7 +61,9 @@ int main(int argc, char **argv)
       int port = 9090;
       char *repositoryName;
 
-      if (strEQL(command, "FEMfiles")) {
+      if (repository) {
+         repositoryName = repository;
+      } else if (strEQL(command, "FEMfiles")) {
          repositoryName = "FEM_models";
       } else {
          repositoryName = "DEM_models";
