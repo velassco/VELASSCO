@@ -36,9 +36,13 @@ ecl::ClusterModel *EDMclusterServices::getClusterModel(const char *name, const c
 {
    Iterator<ecl::ClusterModel*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_ClusterModel), clusterModel);
    for (ecl::ClusterModel *cm = clIter.first(); cm; cm = clIter.next()) {
-      ClusterRepository *cr = (ClusterRepository *)cm->getFirstReferencing(ecl::et_ClusterRepository);
-      if (strEQL(cm->get_name(), name) && cr && strEQL(cr->get_name(), repositoryName)) {
-         return cm;
+      if (strEQL(cm->get_name(), name)) {
+         ClusterRepository *cr = cm->get_belongs_to();
+         if (cr) {
+            if (strEQL(cr->get_name(), repositoryName)) {
+               return cm;
+            }
+         }
       }
    }
    return NULL;
@@ -82,7 +86,7 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
    ecl::EDMrepository *cEDMrepository = NULL;
    ecl::EDMmodel *cEDMmodel = NULL;
    ecl::EDMdatabase *cEDMdatabase = NULL;
-   char *cClusterRepositoryName, *cClusterModelName, *cEDMrepositoryName, *cEDMmodelName;
+   char *cClusterRepositoryName, *cClusterModelName, *cEDMmodelName;
 
    if (serverListFileName && (serverListFile = fopen(serverListFileName, "r"))) {
       clusterModel->open("EDMcluster", sdaiRW);
@@ -173,3 +177,87 @@ void EDMclusterExecution::buildServerContexts(char *user, char *group, char *pas
       }
    }
 }
+
+/*==============================================================================================================================*/
+void* ourMemoryAllocator(SdaiVoid _ma, EDMLONG size)
+/*==============================================================================================================================*/
+{
+   CMemoryAllocator* ma = (CMemoryAllocator*)_ma;
+   return ma->alloc(size);
+}
+/*==============================================================================================================================*/
+void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters)
+/*==============================================================================================================================*/
+{
+   if (inputParameters && inputParameters->nOfAttributes) {
+      CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+         methodName, 0, inputParameters->nOfAttributes, (RemoteParameter*)inputParameters->attrPointerArr, NULL, execParams->returnValues->nOfAttributes,
+         (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
+   } else {
+      CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+         methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
+         (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
+   }
+}
+/*==============================================================================================================================*/
+bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string& modelID)
+/*
+   modelID is object id of the ClusterModel object retrn by the open model method.
+================================================================================================================================*/
+{
+   tEdmiInstData cmd;
+   ecl::ClusterModel cm(theServer->clusterModel, theServer->clusterModel->initInstData(ecl::et_ClusterModel, &cmd));
+   cm.setInstanceId(EDM_ATOI64(modelID.data()));
+   if (cm.getEntityType() == ecl::et_ClusterModel) {
+      Set<EDMmodel*> *theEDMmodels = cm.get_consists_of();
+      if (theEDMmodels) {
+         EDMLONG nOfEDMmodels = theEDMmodels->size();
+         if (nOfEDMmodels > 0) {
+            Iterator<EDMmodel*, ecl::entityType> modelIter(theEDMmodels, theServer->clusterModel);
+            EDMmodel*m = modelIter.first();
+            subQueries = new(&ma)Collection<EDMexecution>(&ma, nOfEDMmodels);
+            for (EDMLONG i = 0; m && i < nOfEDMmodels; i++) {
+               EDMexecution *exp = subQueries->createNext();
+               exp->modelName = m->get_name();
+               ecl::EDMrepository *r = m->get_repository();
+               exp->repositoryName = r ? r->get_name() : "";
+               exp->ema = new CMemoryAllocator(0x100000);
+               exp->srvCtxt = theServer->getServerContext("superuser", "", "v", m);
+
+               m = modelIter.next();
+            }
+            for (EDMexecution *e = subQueries->firstp(); e; e = subQueries->nextp()) {
+               e = NULL;
+            }
+            for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
+               EDMexecution *e = subQueries->getElementp(i);
+               e = NULL;
+            }
+            return true;
+         }
+      }
+      THROW("Empty model");
+   } else {
+      THROW("Invalid modelId");
+   }
+   return true;
+}
+
+
+/*==============================================================================================================================*/
+SdaiServerContext EDMclusterServices::getServerContext(char *user, char *group, char *password, EDMmodel *m)
+/*==============================================================================================================================*/
+{
+   char serverContextName[2048];
+   SdaiServerContext srvctxt = 0;
+
+   getUniqueServerContextID(serverContextName);
+   EDMrepository* r = m->get_repository();
+   EDMdatabase *db = r ? r->get_belongs_to() : NULL;
+   EDMServer *srv = db ? db->get_server() : NULL;
+   if (srv) {
+      CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", srv->get_Port(), srv->get_Host(), NULL, NULL, NULL, NULL, NULL, &srvctxt));
+   }
+   return srvctxt;
+}
+

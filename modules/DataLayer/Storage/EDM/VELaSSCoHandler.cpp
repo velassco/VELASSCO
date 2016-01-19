@@ -1,5 +1,6 @@
 
 #include "stdafx.h"
+#include "VELaSSCoMethods.h"
 
 
 //using namespace  ::dli;
@@ -873,32 +874,12 @@ void VELaSSCoHandler::GetThumbnailOfAModel(rvGetThumbnailOfAModel& _return, cons
 */
 void VELaSSCoHandler::GetListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID)
 {
+   VELaSSCoMethods theQuery(theCluster);
    try {
       thelog->logg(2, "-->GetListOfAnalyses\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
-      if (emc) {
-         vector<string> analysisNames;
-        if (emc->type == mtDEM) {
-            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
-            for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
-               analysisNames.push_back(s->get_name());
-            }
-            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
-         } else if (emc->type == mtFEM) {
-            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
-            map<string, int> names;
-            for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
-               char *name = rh->get_analysis();
-               if (names[rh->get_analysis()] == NULL) {
-                  names[rh->get_analysis()] = 1; analysisNames.push_back(rh->get_analysis());
-               }
-            }
-            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
-            thelog->logg(0, "status=OK\n\n");
-        }
+      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+         theQuery.GetListOfAnalyses(_return);
       } else {
          char *emsg = "Model does not exist.";
          _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
@@ -1022,35 +1003,12 @@ void VELaSSCoHandler::CalculateBoundingBox(rvGetListOfAnalyses& _return, const s
 */
 void VELaSSCoHandler::GetListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID)
 {
+   VELaSSCoMethods theQuery(theCluster);
    try {
-      thelog->logg(3, "-->GetListOfTimeSteps\nsessionID=%s\nmodelID=%s\nanalysisID=%s\n\n", sessionID.data(), modelID.data(), analysisID.data());
+      thelog->logg(2, "-->GetListOfAnalyses\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
-      if (emc) {
-         vector<double> timeSteps;
-         if (emc->type == mtDEM) {
-            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
-            for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
-               if (strEQL(s->get_name(), analysisID.data())) {
-                  Iterator<dem::Timestep*, dem::entityType> tsIter(s->get_consists_of(), dmc);
-                  for (dem::Timestep *ts = tsIter.first(); ts; ts = tsIter.next()) {
-                     timeSteps.push_back(ts->get_time_value());
-                  }
-               }
-            }
-            _return.__set_status("OK"); _return.__set_time_steps(timeSteps);
-         } else {
-            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::ResultHeader*, fem::entityType> rhIter(fmc->getObjectSet(fem::et_ResultHeader), fmc);
-            for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
-               if (strEQL(rh->get_analysis(), analysisID.data())) {
-                  timeSteps.push_back(rh->get_step());
-               }
-            }
-            _return.__set_status("OK"); _return.__set_time_steps(timeSteps);
-            thelog->logg(0, "status=OK\n\n");
-         }
+      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+         theQuery.GetListOfTimeSteps(_return, analysisID);
       } else {
          char *emsg = "Model does not exist.";
          _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
@@ -1077,9 +1035,23 @@ void VELaSSCoHandler::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
 }
 
 
-void VELaSSCoHandler::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID)
+void VELaSSCoHandler::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID)
 {
-
+   VELaSSCoMethods theQuery(theCluster);
+   try {
+      thelog->logg(2, "-->GetListOfVerticesFromMesh\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
+      setCurrentSession(sessionID.data());
+      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+         theQuery.GetListOfVerticesFromMesh(rv, analysisID, stepValue,meshID);
+      } else {
+         char *emsg = "Model does not exist.";
+         rv.__set_status("Error"); rv.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+      }
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      rv.__set_status("Error"); rv.__set_report(errMsg);
+   }
 }
 
 /**

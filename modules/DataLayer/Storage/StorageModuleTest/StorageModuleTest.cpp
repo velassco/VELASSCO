@@ -77,6 +77,12 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
       //   printf((i++) % 4 == 0 ? "\n   %lf" : " %lf", *tsIter);
       //}
    }
+
+   rvGetListOfVerticesFromMesh meshRV;
+   printf("\n--->GetListOfVerticesFromMesh - \"%s\"\n", modelName);
+   client.GetListOfVerticesFromMesh(meshRV, sessionID, FluidizedbedModelID, "", 0.0, 0);
+   printf("Return status: %s\n", meshRV.status.data());
+   printf("%s has %d vertices.\n", modelName, meshRV.vertex_list.size());
 }
 
 
@@ -243,11 +249,11 @@ Command can eiter be "all" or any of the querynames.
          //printf("Comments: %s\n", rvB.report.data());
       }
 
-      if (strEQL(command, "all") || strEQL(command, "testListAnalyses")) {
-         testListAnalyses(client, sessionID, "VELaSSCo_HbaseBasicTest_part_1");
-         testListAnalyses(client, sessionID, "Fluidizedbed");
-         testListAnalyses(client, sessionID, "DEM_box");
-         testListAnalyses(client, sessionID, "Telescope");
+      if (strEQL(command, "multi") || strEQL(command, "testListAnalyses")) {
+         testListAnalyses(client, sessionID, "telescope");
+         //testListAnalyses(client, sessionID, "VELaSSCo_HbaseBasicTest_part_1");
+         //testListAnalyses(client, sessionID, "Fluidizedbed");
+         //testListAnalyses(client, sessionID, "DEM_box");
       }
 
       transport->close();

@@ -102,7 +102,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\boost\boost_1_58_0\lib64-msvc-12.0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\x64\Debug;O:\edm\v6.0.xxx\output\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libthrift.lib;cpp10_edmi.lib;edmikit600.lib</AdditionalDependencies>
+      <AdditionalDependencies>libthrift.lib;cpp10_edmi.lib;edmikit600_multi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

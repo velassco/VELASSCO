@@ -1,5 +1,5 @@
 
-
+struct EDMexecution;
 
 #define MAX_PAR 20
 /*================================================================================================*/
@@ -38,6 +38,22 @@ public:
    SdaiModel                  getClusterModelID();
    ecl::ClusterModel          *getClusterModel(const char *name, const char *repositoryName);
    ecl::ClusterRepository     *getClusterRepository(const char *name);
+   SdaiServerContext          getServerContext(char *user, char *group, char *password, EDMmodel *m);
+
+};
+
+
+/*================================================================================================*/
+/*!
+EDMexecution contains all necessary data to execute one query on one edmappserver.exe.
+*/
+struct EDMexecution
+{
+   CMemoryAllocator                 *ema;
+   char                             *repositoryName;
+   char                             *modelName;
+   SdaiServerContext                srvCtxt;
+   CppParameterClass                *returnValues;
 };
 
 /*================================================================================================*/
@@ -54,6 +70,9 @@ protected:
    tRemoteParameter                 params[MAX_PAR];
    tRemoteParameter                 *paramAddresses[MAX_PAR];
    tRemoteParameter                 returnValue;
+   Collection<EDMexecution>         *subQueries;
+   virtual char                     *getPluginPath() { return ""; }
+   virtual char                     *getPluginName() { return ""; }
    void                             init()
    {
       nParameters = 0;
@@ -64,13 +83,17 @@ public:
    Execution on a ClusterModel
    */
    EDMclusterExecution(EDMclusterServices *cs);
+   bool                             OpenClusterModelAndPrepareExecution(const std::string& modelID);
    /*!
    addInputParameter.
    */
    void                             addInputParameter(SdaiPrimitiveType ptype, void *param);
    void                             buildServerContexts(char *user, char *group, char *password);
    void                             buildServerContexts(char *user, char *group, char *password, ClusterModel *cm);
+   void                             ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters);
+
 };
+
 
 
 #define newObject(className) new(clusterModel)className(clusterModel)
