@@ -614,8 +614,13 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
       	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
       	      
       	    //LOGGER << node_id << " " << coords[0] << " " << coords[1] << " " << coords[2] << std::endl;
+#if __cplusplus < 201103L
+	    // c++ < c++11
       	    resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
-      	    
+#else
+	    // c++ <= c++98
+      	    resultOnVertexListMap.insert (std::pair< int64_t, std::vector< double > >(node_id, result_values));  
+#endif
       	  }
       	}
       }
