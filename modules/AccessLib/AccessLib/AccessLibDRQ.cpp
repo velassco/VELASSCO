@@ -44,7 +44,7 @@ extern "C" {
     try
       {
 	std::stringstream  queryCommand;
-	const std::string* queryData;
+	const std::string* queryData = NULL;
 
 	// Build JSON command string
 	queryCommand << "{\n"
@@ -73,7 +73,7 @@ extern "C" {
   else
   {
     // in case of error queryData has the error message from the data layer
-	*result_status = queryData->c_str();
+    *result_status = queryData ? queryData->c_str() : "Error undefined";
   }
 
 	return result;
