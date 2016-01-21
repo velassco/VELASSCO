@@ -128,8 +128,9 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
 	std::string result;
     std::ostringstream oss;
     int64_t zero = 0;
-    oss << zero << " " << zero << "\n";
-    result += oss.str();
+    oss.write((char*)&zero, sizeof(size_t));
+    oss.write((char*)&zero, sizeof(size_t));
+    result = oss.str();
     _return.__set_data(result); 
   }
 		  
