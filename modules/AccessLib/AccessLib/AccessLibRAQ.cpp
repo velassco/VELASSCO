@@ -264,7 +264,7 @@ extern "C" {
 	    queryCommand << lstSteps[i];
 	  }
 	}
-	queryCommand << "]\n";
+	queryCommand << "],\n";
 	/* D2C parameters: */
 
 	queryCommand << "  \"coarseGrainingMethod\" : \"" << 	   CoarseGrainingMethod << "\",\n";	       
@@ -273,7 +273,7 @@ extern "C" {
 	queryCommand << "  \"processContacts\" : \"" <<    processContacts << "\",\n";    
 	queryCommand << "  \"doTemporalAVG\" : \"" <<      doTemporalAVG << "\",\n";      
 	queryCommand << "  \"temporalAVGOptions\" : \"" << TemporalAVGOptions << "\",\n"; 
-	queryCommand << "  \"deltaT\" : \"" << deltaT << "\",\n"; 
+	queryCommand << "  \"deltaT\" : \"" << deltaT << "\"\n"; 
 	queryCommand << "}\n";
 
 	// Send command string and get back result data
