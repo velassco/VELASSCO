@@ -184,6 +184,17 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   return EXIT_SUCCESS;
 }
 
+// eol = end of line
+bool is_eol( const char c) {
+  return ( c == '\f') || ( c == '\n') || ( c == '\r');
+}
+char *streol( const char *s) {
+  if ( !s) return NULL;
+  const char *r = s;
+  while ( *r && !is_eol( *r)) r++;
+  return *r ? ( char *)r : NULL;
+}
+
 int doTestMiguel( const VAL_SessionID sessionID) {
   VAL_Result    result;
   const char *status = NULL;
@@ -228,50 +239,6 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   const char*   analysisID  = "";
 
   //
-  // Test GetResultFromVerticesID()
-  //
-  bool do_GetResultFromVerticesID = false;
-  if ( do_GetResultFromVerticesID) {
-    const char*   vert_modelID     = "d94ca29be534ca1ed578e90123b7"; // current DEM_box example in VELaSSCo_Models as of 10.11.2015, two days ago there where two models !
-    const char*   resultID         = "MASS";
-    
-    analysisID  = "DEM";
-    const int64_t vertexIDs[] = { 1, 2, 3, 4, 5, 6, 7, 0 };
-    const double  timeStep    = 2799000.0; //10000.0;
-    
-    const int64_t* resultVertexIDs;
-    const double*  resultValues;
-    size_t         resultNumVertices;
-    const char*    status;
-    
-    // This call does not comply with the VQuery form, but in the meantime ...
-    result = valGetResultFromVerticesID(sessionID, vert_modelID,
-					resultID,
-					analysisID,
-					vertexIDs,
-					timeStep,
-          &status,
-					&resultVertexIDs,
-					&resultValues,
-					&resultNumVertices);
-    CheckVALResult(result, "valGetResultFromVerticesID");
-    
-    //
-    // Print received data
-    //
-    
-    for (size_t i=0; i<resultNumVertices; i++)
-      {
-	std::cout << "Vertex: " << i;
-	std::cout << "  ID: " << resultVertexIDs[i];
-	std::cout << "  Values: [";
-	for (size_t j=0; j<3; j++)
-	  std::cout << " " << resultValues[3*i+j];
-	std::cout << " ]" << std::endl;
-      }
-  }
-
-  //
   // Test GetListOfAnalyses
   //
   bool do_get_list_of_analyses = true;
@@ -291,7 +258,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
       /* list is of the form: "Analysis name 1\nAnalysis name 2\n...\nAnalysis name N" */
       // select first analysis:
       char *sel_an = strdup( return_list);
-      char *end = strchr( sel_an, '\n');
+      char *end = streol( sel_an);
       if ( end) {
   	*end = '\0';
       }
@@ -335,7 +302,10 @@ int doTestMiguel( const VAL_SessionID sessionID) {
       std::cout << "Error: " << return_error_str << std::endl;
     }
   }
-  
+
+  const char *res_name = NULL;
+  int num_comp = 0;
+
   //
   // Test GetListOfResults
   //
@@ -355,11 +325,77 @@ int doTestMiguel( const VAL_SessionID sessionID) {
       ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
     if ( return_list) {
       std::cout << "   result_list = " << return_list << std::endl;
+      const char *keyword = "Name:";
+      char *found = strdup( strstr( return_list, keyword));
+      if ( found) {
+	found += strlen( keyword) + 1; // the space inbetween
+	res_name = found;
+	char *end = streol( res_name);
+	if ( end) {
+	  *end = '\0';
+	}
+	end++;
+	keyword = "NumberOfComponents:";
+	found = strstr( end, keyword);
+	found += strlen( keyword) + 1; // the space inbetween
+	num_comp = 1;
+	if( found) {
+	  int n = sscanf( found, "%d", &num_comp);
+	  if ( n != 1) // there was some error...
+	    num_comp = 1;
+	}
+      }
     } else {
       std::cout << "Error: " << return_error_str << std::endl;
     }
   }
   
+  //
+  // Test GetResultFromVerticesID()
+  //
+  bool do_GetResultFromVerticesID = true;
+  if ( do_GetResultFromVerticesID && res_name && *res_name) {
+    // list needs to end with '0'
+    const int64_t vertexIDs[] = { 1, 2, 3, 0 };
+    
+    const int64_t* resultVertexIDs;
+    const double*  resultValues;
+    size_t         resultNumVertices;
+    const char*    status;
+
+    std::cout << "doing valGetResultFromVerticesID for " << std::endl;
+    std::cout << "\tanalysis = '" << analysisID << "', step = '" << step_value << "' and result = '" << res_name << "'." << std::endl;
+    
+    // This call does not comply with the VQuery form, but in the meantime ...
+    result = valGetResultFromVerticesID(sessionID, opened_modelID.c_str(),
+					res_name,
+					analysisID,
+					vertexIDs, 
+					step_value,
+          &status,
+					&resultVertexIDs,
+					&resultValues,
+					&resultNumVertices);
+    CheckVALResult(result, "valGetResultFromVerticesID");
+    
+    //
+    // Print received data
+    //
+    
+    for (size_t i=0; i<resultNumVertices; i++)
+      {
+	std::cout << "Vertex: " << i;
+	std::cout << "  ID: " << resultVertexIDs[i];
+	std::cout << "  Values: [";
+	for (size_t j=0; j< num_comp; j++)
+	  std::cout << " " << resultValues[num_comp*i+j];
+	std::cout << " ]" << std::endl;
+      }
+  } else {
+    if ( !res_name || !*res_name) {
+      std::cout << "There was no Result Name selected" << std::endl;
+    }
+  }
   
   //
   // Test GetListOfMeshes
@@ -427,7 +463,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // Test GetBoundaryOfAMesh()
   //
   
-  bool do_boundary = true;
+  bool do_boundary = false;
   if ( do_boundary) {
     const char *return_mesh = NULL;
     size_t return_mesh_size = 0;
@@ -519,7 +555,7 @@ int main(int argc, char* argv[])
 
   int ret = 0;
   ret = doTestMorteza( sessionID);
-  //ret = doTestMiguel( sessionID); 
+  // ret = doTestMiguel( sessionID); 
 
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  
