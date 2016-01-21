@@ -77,8 +77,10 @@ extern "C" {
 	    size_t numElements;
 	    
 	    std::istringstream in(*queryData);
-        in.read((char*)&numVertices, 8);
-        in.read((char*)&numElements, 8);
+	    // this is a worng corrections:
+	    // in.read((char*)&numVertices, 8);
+	    // in.read((char*)&numElements, 8);
+	    in >> numVertices >> numElements >> std::ws;
 	    
 	    if(numVertices > 0 && numElements > 0){
 	      const size_t offsetVertexIDs = (size_t)in.tellg();
