@@ -67,6 +67,22 @@ std::string GetFullAnalyticsQualifier( const std::string &jar_name_no_extension)
   return "../Analytics/" + jar_name_no_extension + suffix + ".jar";
 }
 
+std::string GetFullHBaseConfigurationFilename() {
+  const size_t max_buffer = 10240;
+  char buffer[ max_buffer];
+  int res = gethostname( buffer, max_buffer);
+  if ( res) {
+    strcpy( buffer, "NO_NAME");
+  }
+  std::string conf_file = "NotConfigured";
+  if ( !strcasecmp( buffer, "pez001")) {
+    conf_file = "/localfs/home/velassco/common/hbase/conf/hbase-site.xml";
+  } else {
+    // Eddie cluster
+  }
+  return conf_file;
+}
+
 void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const std::string &modelID, 
 					    const std::string &dataTableName,
 					    const std::string &analysisID, const int numSteps, const double *lstSteps,
@@ -102,7 +118,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // running java:
   int ret_cmd = 0;
   if ( !use_yarn) {
-  std::string cmd_line = "java -jar " + analytics_program + " " + 
+  std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -110,7 +126,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-  std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + 
+  std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
     sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -392,13 +408,13 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   char meshIDstr[ 100];
   sprintf( meshIDstr, "%d", meshID);
   if ( !use_yarn) {
-    std::string cmd_line = "java -jar " + analytics_program + " " +
+    std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
   } else { 
     // Using yarn: execute and copy to localdir the result's files
-    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " +
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -464,7 +480,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   }
   
   if ( use_yarn) {
-    std::string cmd_line = HADOOP_HDFS + "hdfs dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
     ret_cmd = system( cmd_line.c_str());
   }
   
@@ -654,7 +670,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   char meshIDstr[ 100];
   sprintf( meshIDstr, "%d", meshID);
   if ( !use_yarn) {
-    std::string cmd_line = "java -jar " + analytics_program + " " +
+    std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -662,7 +678,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " +
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
