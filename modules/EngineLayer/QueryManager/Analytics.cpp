@@ -77,8 +77,11 @@ std::string GetFullHBaseConfigurationFilename() {
   std::string conf_file = "NotConfigured";
   if ( !strcasecmp( buffer, "pez001")) {
     conf_file = "/localfs/home/velassco/common/hbase/conf/hbase-site.xml";
-  } else {
+  } else if ( !strcasecmp( buffer, "velassco-cluster01.ecdf.ed.ac.uk")) {
     // Eddie cluster
+    conf_file = "/exports/applications/apps/community/VELaSSCo/hbase-1.1.2/conf/hbase-site.xml";
+  } else {
+    LOGGER << "ERROR: Unable to get the HBase configuration file for host: " << buffer << std::endl;
   }
   return conf_file;
 }
@@ -402,7 +405,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 static
   std::string analytics_program = GetFullAnalyticsQualifier( "GetListOfVerticesFromMesh");
 
-  bool use_yarn = true;;
+  bool use_yarn = false; // true;;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
