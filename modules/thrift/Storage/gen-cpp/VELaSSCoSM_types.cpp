@@ -4388,10 +4388,6 @@ void rvGetCoordinatesAndElementsFromMesh::__set_report(const std::string& val) {
   this->report = val;
 }
 
-void rvGetCoordinatesAndElementsFromMesh::__set_meshInfo(const MeshInfo& val) {
-  this->meshInfo = val;
-}
-
 void rvGetCoordinatesAndElementsFromMesh::__set_vertex_list(const std::vector<Vertex> & val) {
   this->vertex_list = val;
 }
@@ -4408,8 +4404,8 @@ void rvGetCoordinatesAndElementsFromMesh::__set_element_group_info_list(const st
   this->element_group_info_list = val;
 }
 
-const char* rvGetCoordinatesAndElementsFromMesh::ascii_fingerprint = "CD1EBAFAFBFAAF3487DB8E933D69479C";
-const uint8_t rvGetCoordinatesAndElementsFromMesh::binary_fingerprint[16] = {0xCD,0x1E,0xBA,0xFA,0xFB,0xFA,0xAF,0x34,0x87,0xDB,0x8E,0x93,0x3D,0x69,0x47,0x9C};
+const char* rvGetCoordinatesAndElementsFromMesh::ascii_fingerprint = "25B126BCA9E8A39BD63C5D6F4F0B281E";
+const uint8_t rvGetCoordinatesAndElementsFromMesh::binary_fingerprint[16] = {0x25,0xB1,0x26,0xBC,0xA9,0xE8,0xA3,0x9B,0xD6,0x3C,0x5D,0x6F,0x4F,0x0B,0x28,0x1E};
 
 uint32_t rvGetCoordinatesAndElementsFromMesh::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4448,14 +4444,6 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::read(::apache::thrift::protocol::T
         }
         break;
       case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->meshInfo.read(iprot);
-          this->__isset.meshInfo = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vertex_list.clear();
@@ -4475,7 +4463,7 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::read(::apache::thrift::protocol::T
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->element_list.clear();
@@ -4495,7 +4483,7 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::read(::apache::thrift::protocol::T
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->element_attrib_list.clear();
@@ -4515,7 +4503,7 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::read(::apache::thrift::protocol::T
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->element_group_info_list.clear();
@@ -4560,11 +4548,7 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::write(::apache::thrift::protocol::
   xfer += oprot->writeString(this->report);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("meshInfo", ::apache::thrift::protocol::T_STRUCT, 3);
-  xfer += this->meshInfo.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("vertex_list", ::apache::thrift::protocol::T_LIST, 4);
+  xfer += oprot->writeFieldBegin("vertex_list", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->vertex_list.size()));
     std::vector<Vertex> ::const_iterator _iter195;
@@ -4576,7 +4560,7 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::write(::apache::thrift::protocol::
   }
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("element_list", ::apache::thrift::protocol::T_LIST, 5);
+  xfer += oprot->writeFieldBegin("element_list", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->element_list.size()));
     std::vector<Element> ::const_iterator _iter196;
@@ -4588,7 +4572,7 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::write(::apache::thrift::protocol::
   }
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("element_attrib_list", ::apache::thrift::protocol::T_LIST, 6);
+  xfer += oprot->writeFieldBegin("element_attrib_list", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->element_attrib_list.size()));
     std::vector<ElementAttrib> ::const_iterator _iter197;
@@ -4600,7 +4584,7 @@ uint32_t rvGetCoordinatesAndElementsFromMesh::write(::apache::thrift::protocol::
   }
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("element_group_info_list", ::apache::thrift::protocol::T_LIST, 7);
+  xfer += oprot->writeFieldBegin("element_group_info_list", ::apache::thrift::protocol::T_LIST, 6);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->element_group_info_list.size()));
     std::vector<ElementGroup> ::const_iterator _iter198;
@@ -4622,7 +4606,6 @@ void swap(rvGetCoordinatesAndElementsFromMesh &a, rvGetCoordinatesAndElementsFro
   using ::std::swap;
   swap(a.status, b.status);
   swap(a.report, b.report);
-  swap(a.meshInfo, b.meshInfo);
   swap(a.vertex_list, b.vertex_list);
   swap(a.element_list, b.element_list);
   swap(a.element_attrib_list, b.element_attrib_list);
@@ -4633,7 +4616,6 @@ void swap(rvGetCoordinatesAndElementsFromMesh &a, rvGetCoordinatesAndElementsFro
 rvGetCoordinatesAndElementsFromMesh::rvGetCoordinatesAndElementsFromMesh(const rvGetCoordinatesAndElementsFromMesh& other199) {
   status = other199.status;
   report = other199.report;
-  meshInfo = other199.meshInfo;
   vertex_list = other199.vertex_list;
   element_list = other199.element_list;
   element_attrib_list = other199.element_attrib_list;
@@ -4643,7 +4625,6 @@ rvGetCoordinatesAndElementsFromMesh::rvGetCoordinatesAndElementsFromMesh(const r
 rvGetCoordinatesAndElementsFromMesh& rvGetCoordinatesAndElementsFromMesh::operator=(const rvGetCoordinatesAndElementsFromMesh& other200) {
   status = other200.status;
   report = other200.report;
-  meshInfo = other200.meshInfo;
   vertex_list = other200.vertex_list;
   element_list = other200.element_list;
   element_attrib_list = other200.element_attrib_list;
@@ -4656,7 +4637,6 @@ std::ostream& operator<<(std::ostream& out, const rvGetCoordinatesAndElementsFro
   out << "rvGetCoordinatesAndElementsFromMesh(";
   out << "status=" << to_string(obj.status);
   out << ", " << "report=" << to_string(obj.report);
-  out << ", " << "meshInfo=" << to_string(obj.meshInfo);
   out << ", " << "vertex_list=" << to_string(obj.vertex_list);
   out << ", " << "element_list=" << to_string(obj.element_list);
   out << ", " << "element_attrib_list=" << to_string(obj.element_attrib_list);

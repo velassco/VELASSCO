@@ -112,7 +112,7 @@ void DataLayerAccess::closeModel( std::string &_return,
   }
 }
 
-void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_return, 
+void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_return,
 				  const std::string &sessionID, const std::string &modelID, 
 				  const std::string &analysisID, const double timeStep,
 				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ){
@@ -120,7 +120,7 @@ void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_retur
     {
         
         cli->GetResultFromVerticesID( _return, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
-        cout << "########## getResultFromVerticesID - " << _return << endl;
+        // cout << "########## getResultFromVerticesID - " << _return << endl;
     }
     catch (TException& tx)
     {
@@ -130,14 +130,14 @@ void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_retur
 }
 
 void DataLayerAccess::getCoordinatesAndElementsFromMesh( 
-	rvGetCoordinatesAndElementsFromMesh& _return, 
-	std::string sessionID, std::string modelID, std::string analysisID, 
-	double timeStep, int32_t meshID )
+	rvGetCoordinatesAndElementsFromMesh& _return,
+	const std::string& sessionID, const std::string& modelID, const std::string& analysisID, 
+	const double timeStep, const MeshInfo& meshInfo )
 {
 	try
     {
         
-        cli->GetCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, meshID );
+        cli->GetCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, meshInfo );
         //cout << "########## getCoordinatesAndElementsFromMesh - " << _return << endl;
     }
     catch (TException& tx)

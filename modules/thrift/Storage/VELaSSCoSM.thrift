@@ -255,11 +255,10 @@ struct rvGetResultFromVerticesID {
 struct rvGetCoordinatesAndElementsFromMesh {
   1: string status
   2: string report
-  3: MeshInfo meshInfo
-  4: list<Vertex>        vertex_list
-  5: list<Element>       element_list
-  6: list<ElementAttrib> element_attrib_list
-  7: list<ElementGroup>  element_group_info_list
+  3: list<Vertex>        vertex_list
+  4: list<Element>       element_list
+  5: list<ElementAttrib> element_attrib_list
+  6: list<ElementGroup>  element_group_info_list
 }
 
 // provides service VELaSSCo Storage Module
@@ -308,11 +307,11 @@ service VELaSSCoSM
    if errors occur the contect is also returned here?
    */  
   rvGetCoordinatesAndElementsFromMesh 	GetCoordinatesAndElementsFromMesh(
-	1: string sessionID, 
-	2: string modelID, 
-	3: string analysisID, 
-	4: double timeStep, 
-	5: i32    meshID),
+	1: string   sessionID, 
+	2: string   modelID, 
+	3: string   analysisID, 
+	4: double   timeStep, 
+	5: MeshInfo meshInfo),
     
     /**
      Stop Data Layer

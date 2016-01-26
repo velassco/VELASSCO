@@ -5,10 +5,16 @@
 
 namespace VELaSSCo{
 	namespace Graphics{
+		struct VertexElement
+		{
+			int64_t  vertexID;
+			double   x, y, z;
+		};
+		
 		struct SphereElement
 		{
-			float     x, y, z;
-			float     radius;
+			double    x, y, z;
+			double    radius;
 			int64_t   vertexID;	
 		};
 	}

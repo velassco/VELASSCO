@@ -64,7 +64,7 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   double      timeStep   = pt.get<double>("timeStep");
   
   std::vector<int64_t> listOfVertices;
-  std::cout << "Vertex IDs = " << vertexIDs << std::endl;
+  //std::cout << "Vertex IDs = " << vertexIDs << std::endl;
   
   std::string tmp_buf;
   for(size_t i = 0; i < vertexIDs.size(); i++){
@@ -91,20 +91,11 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   sessionIDStr << sessionID;
   
   rvGetResultFromVerticesID _return_;
-  
-  //std::cout << "S " << sessionID  << std::endl;
-  //std::cout << "M " << modelID    << std::endl;
-  //std::cout << "R " << resultID   << std::endl;
-  //std::cout << "A " << analysisID << std::endl;
-  //std::cout << "V " << vertexIDs  << std::endl;
-  //std::cout << "T " << timeStep   << std::endl;
-  
+
   DataLayerAccess::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices);
   
   std::vector<int64_t> resultVertexIDs;
   std::vector<double>  resultValues;
-		  
-  std::cout << _return_ << std::endl;
 		  
   for(size_t i = 0; i < _return_.result_list.size(); i++){
 	  resultVertexIDs.push_back(_return_.result_list[i].id);
@@ -164,7 +155,13 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   LOGGER                                             << std::endl;
   LOGGER << "Output:"                                << std::endl;
   LOGGER << "  result : "   << _return.result        << std::endl;
-  LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << Hexdump(_return.data, 128) << std::endl;
+}
+
+static bool isMeshTypeImplemented(MeshInfo& meshInfo) {
+	if(meshInfo.elementType.shape == ElementShapeType::type::SphereElement)
+	  return true;
+	return false;
 }
 
 void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const SessionID sessionID, const std::string& query ) {
@@ -175,22 +172,18 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 
   std::string name        = pt.get<std::string>("name");
   std::string modelID     = pt.get<std::string>("modelID");
-  //std::string resultID  = pt.get<std::string>("resultID");
   std::string analysisID  = pt.get<std::string>("analysisID");
   double      timeStep    = pt.get<double>("timeStep");
-  unsigned    meshID      = pt.get<unsigned>("meshID");
+  std::string meshName    = pt.get<std::string>("meshID");
   
   
   std::string dl_sessionID = GetDataLayerSessionID( sessionID);
 
-  // std::cout << "S   " << sessionID        << std::endl;
-  // std::cout << "dlS " << dl_sessionID     << std::endl;
-  
-  std::cout << "S " << sessionID  << std::endl;
+  /*std::cout << "S " << sessionID  << std::endl;
   std::cout << "M " << modelID    << std::endl;
   std::cout << "A " << analysisID << std::endl;
   std::cout << "T " << timeStep << std::endl;
-  std::cout << "M " << meshID << std::endl;
+  std::cout << "M " << meshName << std::endl;*/
   
   const bool test = false;
   if(test){
@@ -296,25 +289,78 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 	  _return.__set_data( oss.str() ); 
 	  _return.__set_result( (Result::type)VAL_SUCCESS );
   } else {
-	  rvGetCoordinatesAndElementsFromMesh _return_;
-	  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,analysisID ,timeStep ,meshID);
-	  
-	  VELaSSCo::RTFormat::File file;
+	  	  
+	  std::string error_str;
 
-	  GraphicsModule::getInstance()->fromatMeshForDrawing( file, _return_.meshInfo, _return_.vertex_list, _return_.element_list, _return_.element_attrib_list, _return_.element_group_info_list );
+	  // from the mesh name, get the Mesh number
+	  // eventually the Mesh information could have been cached ...
 
+	  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+	  rvGetListOfMeshes _return_;
+	  DataLayerAccess::Instance()->getListOfMeshes( _return_,
+							dl_sessionID, modelID, analysisID, timeStep);
+	  MeshInfo meshInfo;
+	  meshInfo.meshNumber = -1;      //<<< To mark the meshInfo as non-initalized.
+	  std::string elementType = "";
+	  if ( _return_.meshInfos.size() == 0) {
+		_return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+		error_str = "There is no mesh metadata.";
+	  } else {
+		for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+			  it != _return_.meshInfos.end(); it++) {
+		  if ( AreEqualNoCase( it->name, meshName)) {
+			meshInfo = (*it);
+			break;
+		  }
+		}
+		if ( meshInfo.meshNumber == -1 ) { // not found
+		  error_str = "Mesh name " + meshName + " not in metadata.";
+		  std::cout << error_str << std::endl;
+		}
+	  }
+	   
+	  VELaSSCo::RTFormat::File binaryMesh;
+	  if ( error_str.length() == 0) {
+		  
+		if( isMeshTypeImplemented(meshInfo) ){
+		  
+			try {
+			  rvGetCoordinatesAndElementsFromMesh _return_;
+			  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo );
+			  GraphicsModule::getInstance()->fromatMeshForDrawing( binaryMesh, meshInfo, _return_.vertex_list, _return_.element_list, _return_.element_attrib_list, _return_.element_group_info_list );
+			} catch ( TException &e) {
+			  std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+			} catch ( exception &e) {
+			  std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+			}
+			
+		} else {
+			error_str = "The mesh type is not implemented, yet!\n";
+		}
+	}
+
+	if ( error_str.length() == 0) {
 	  // Pack into string
 	  std::ostringstream oss;
-	  oss << file;
+	  oss << binaryMesh;
 
 	  _return.__set_data( oss.str() ); 
 	  _return.__set_result( (Result::type)VAL_SUCCESS );
+	} else {
+	  _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+	  _return.__set_data( error_str );
+	}
+			  
+	LOGGER                                             		<< std::endl;
+	LOGGER << "Output:"                                		<< std::endl;
+	LOGGER << "  result : "   << _return.result        		<< std::endl;
+	LOGGER << "  mesh = ( " << _return.data.length() 		<< " bytes)" << std::endl;
+	if ( error_str.length() == 0) {
+	  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+	} else {
+	  LOGGER << "  error  : \n" << Hexdump(_return.data, 128) << std::endl;
+	}
   }
-
-  LOGGER                                             << std::endl;
-  LOGGER << "Output:"                                << std::endl;
-  LOGGER << "  result : "   << _return.result        << std::endl;
-  LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
 }
 
 const char *QueryManagerServer::getStrFromElementType( const ElementShapeType::type &elem) {

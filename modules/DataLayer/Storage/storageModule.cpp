@@ -71,13 +71,13 @@ std::string storageModule::getResultFromVerticesID( std::string& report, std::ve
 }
 
 std::string storageModule::getCoordinatesAndElementsFromMesh( std::string& report,
-					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector<Vertex>& vertices,
 					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
 					std::vector< ElementGroup > &listOfElementInfoGroups,
 					const std::string &sessionID, const std::string &modelID,
-                    const std::string &analysisID,const double timeStep, const int32_t& meshID)
+                    const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo)
 {
-	return _db->getCoordinatesAndElementsFromMesh(report, meshInfo, vertices, listOfElements, listOfElementAttribs, listOfElementInfoGroups, sessionID, modelID, analysisID, timeStep, meshID);	
+	return _db->getCoordinatesAndElementsFromMesh(report, vertices, listOfElements, listOfElementAttribs, listOfElementInfoGroups, sessionID, modelID, analysisID, timeStep, meshInfo);	
 }
 
 std::string storageModule::getListOfMeshes( std::string &report, std::vector< MeshInfo> &listOfMeshes,

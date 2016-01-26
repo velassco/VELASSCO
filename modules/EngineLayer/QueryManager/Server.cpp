@@ -110,10 +110,10 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
   LOGGER                          << std::endl;
   LOGGER << "----- Query() -----" << std::endl;
 
-  LOGGER                                    << std::endl;
-  LOGGER << "Input:"                        << std::endl;
-  LOGGER << "  sessionID : "   << sessionID << std::endl;
-  LOGGER << "  query     : \n" << query     << std::endl;
+  LOGGER                                    				<< std::endl;
+  LOGGER << "Input:"                        				<< std::endl;
+  LOGGER << "  sessionID : "   << sessionID 				<< std::endl;
+  LOGGER << "  query     : \n" << Strdump(query, 1024)      << std::endl;
 
   // Check session ID
   if (!ValidSessionID(sessionID))

@@ -55,7 +55,7 @@ public:
 				  const std::string &analysisID, const double timeStep,
 				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ); 
 			       
-   void GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t meshID);
+   void GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const MeshInfo& meshID);
 
   void GetListOfMeshes( rvGetListOfMeshes &_return, 
 			const std::string &sessionID, const std::string &modelID, 

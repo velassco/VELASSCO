@@ -107,6 +107,23 @@
 
     return out.str();
   }
+  
+  /**
+   * Dumps std::string. It is used to cut the long std::string in a specific @max_len.
+   */ 
+
+  inline std::string Strdump(const std::string input, const size_t max_len = 80)
+  {
+	std::string output;
+    if(input.size() > max_len){
+		output = std::string(input.begin(), input.begin() + max_len);
+		output += "...\n";
+	} else {
+		output = input;
+	}
+	
+	return output;
+  }
 
 
 	template<typename T>

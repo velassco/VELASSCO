@@ -57,22 +57,20 @@ void VELaSSCoHandler::GetResultFromVerticesID( rvGetResultFromVerticesID &_retur
   _return.__set_result_list( listOfResults );
 }
  
-void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t meshID)
+void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const MeshInfo& meshInfo)
 {
 	std::string                  report;
-	MeshInfo                     meshInfo;
 	std::vector< Vertex        > listOfVertices;
 	std::vector< Element       > listOfElements;
 	std::vector< ElementAttrib > listOfElementAttribs;
 	std::vector< ElementGroup  > listOfElementGroupInfo;
 	std::string status = 
 	  storageModule::Instance()->getCoordinatesAndElementsFromMesh (
-		report, meshInfo, listOfVertices, listOfElements, listOfElementAttribs, listOfElementGroupInfo,
-	    sessionID, modelID, analysisID, timeStep, meshID
+		report, listOfVertices, listOfElements, listOfElementAttribs, listOfElementGroupInfo,
+	    sessionID, modelID, analysisID, timeStep, meshInfo
 	  );
 	_return.__set_status( status );
 	_return.__set_report( report );
-	_return.__set_meshInfo( meshInfo );
 	_return.__set_vertex_list ( listOfVertices );
 	_return.__set_element_list( listOfElements );
 	_return.__set_element_attrib_list( listOfElementAttribs );

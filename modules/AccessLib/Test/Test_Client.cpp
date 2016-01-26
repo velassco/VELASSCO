@@ -463,7 +463,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // Test GetBoundaryOfAMesh()
   //
   
-  bool do_boundary = false;
+  bool do_boundary = true;
   if ( do_boundary) {
     const char *return_mesh = NULL;
     size_t return_mesh_size = 0;
@@ -554,8 +554,8 @@ int main(int argc, char* argv[])
   std::cout << "   model_list = " << return_list << std::endl;
 
   int ret = 0;
-  ret = doTestMorteza( sessionID);
-  // ret = doTestMiguel( sessionID); 
+  //ret = doTestMorteza( sessionID);
+  ret = doTestMiguel( sessionID); 
 
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  

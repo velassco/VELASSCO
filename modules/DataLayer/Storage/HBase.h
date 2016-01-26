@@ -104,21 +104,21 @@ namespace VELaSSCo
 					const std::string &sessionID, const std::string &modelID,
                     const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo, const char *format = "%02x" );
 	std::string getCoordinatesAndElementsFromMesh( std::string& report,
-					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector<Vertex>& vertices,
 					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
 					std::vector< ElementGroup > &listOfElementInfoGroups,
 					const std::string &sessionID, const std::string &modelID,
-                    const std::string &analysisID,const double timeStep, const int32_t& meshID);
+                    const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo);
 	std::string getCoordinatesAndElementsFromMesh_curl(const std::string &sessionID, const std::string &modelID,
                     const std::string &analysisID,
                     const double       timeStep,
                     const unsigned     partitionID);
     std::string getCoordinatesAndElementsFromMesh_thrift( std::string& report,
-					MeshInfo& meshInfo, std::vector<Vertex>& vertices,
+					std::vector<Vertex>& vertices,
 					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
 					std::vector< ElementGroup > &listOfElementInfoGroups,
 					const std::string &sessionID, const std::string &modelID,
-                    const std::string &analysisID,const double timeStep, const int32_t& meshID);
+                    const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo);
   private:
 
     double fRand(double fMin, double fMax);

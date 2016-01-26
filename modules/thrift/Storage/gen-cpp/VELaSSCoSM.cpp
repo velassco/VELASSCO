@@ -961,9 +961,9 @@ uint32_t VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args::read(::apache::thrif
         }
         break;
       case 5:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->meshID);
-          this->__isset.meshID = true;
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->meshInfo.read(iprot);
+          this->__isset.meshInfo = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -1001,8 +1001,8 @@ uint32_t VELaSSCoSM_GetCoordinatesAndElementsFromMesh_args::write(::apache::thri
   xfer += oprot->writeDouble(this->timeStep);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("meshID", ::apache::thrift::protocol::T_I32, 5);
-  xfer += oprot->writeI32(this->meshID);
+  xfer += oprot->writeFieldBegin("meshInfo", ::apache::thrift::protocol::T_STRUCT, 5);
+  xfer += this->meshInfo.write(oprot);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -1037,8 +1037,8 @@ uint32_t VELaSSCoSM_GetCoordinatesAndElementsFromMesh_pargs::write(::apache::thr
   xfer += oprot->writeDouble((*(this->timeStep)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("meshID", ::apache::thrift::protocol::T_I32, 5);
-  xfer += oprot->writeI32((*(this->meshID)));
+  xfer += oprot->writeFieldBegin("meshInfo", ::apache::thrift::protocol::T_STRUCT, 5);
+  xfer += (*(this->meshInfo)).write(oprot);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -4187,13 +4187,13 @@ void VELaSSCoSMClient::recv_GetResultFromVerticesID(rvGetResultFromVerticesID& _
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "GetResultFromVerticesID failed: unknown result");
 }
 
-void VELaSSCoSMClient::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t meshID)
+void VELaSSCoSMClient::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const MeshInfo& meshInfo)
 {
-  send_GetCoordinatesAndElementsFromMesh(sessionID, modelID, analysisID, timeStep, meshID);
+  send_GetCoordinatesAndElementsFromMesh(sessionID, modelID, analysisID, timeStep, meshInfo);
   recv_GetCoordinatesAndElementsFromMesh(_return);
 }
 
-void VELaSSCoSMClient::send_GetCoordinatesAndElementsFromMesh(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t meshID)
+void VELaSSCoSMClient::send_GetCoordinatesAndElementsFromMesh(const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const MeshInfo& meshInfo)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("GetCoordinatesAndElementsFromMesh", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -4203,7 +4203,7 @@ void VELaSSCoSMClient::send_GetCoordinatesAndElementsFromMesh(const std::string&
   args.modelID = &modelID;
   args.analysisID = &analysisID;
   args.timeStep = &timeStep;
-  args.meshID = &meshID;
+  args.meshInfo = &meshInfo;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -5280,7 +5280,7 @@ void VELaSSCoSMProcessor::process_GetCoordinatesAndElementsFromMesh(int32_t seqi
 
   VELaSSCoSM_GetCoordinatesAndElementsFromMesh_result result;
   try {
-    iface_->GetCoordinatesAndElementsFromMesh(result.success, args.sessionID, args.modelID, args.analysisID, args.timeStep, args.meshID);
+    iface_->GetCoordinatesAndElementsFromMesh(result.success, args.sessionID, args.modelID, args.analysisID, args.timeStep, args.meshInfo);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {

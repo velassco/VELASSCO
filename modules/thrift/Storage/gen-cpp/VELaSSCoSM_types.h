@@ -1708,10 +1708,9 @@ class rvGetResultFromVerticesID {
 void swap(rvGetResultFromVerticesID &a, rvGetResultFromVerticesID &b);
 
 typedef struct _rvGetCoordinatesAndElementsFromMesh__isset {
-  _rvGetCoordinatesAndElementsFromMesh__isset() : status(false), report(false), meshInfo(false), vertex_list(false), element_list(false), element_attrib_list(false), element_group_info_list(false) {}
+  _rvGetCoordinatesAndElementsFromMesh__isset() : status(false), report(false), vertex_list(false), element_list(false), element_attrib_list(false), element_group_info_list(false) {}
   bool status :1;
   bool report :1;
-  bool meshInfo :1;
   bool vertex_list :1;
   bool element_list :1;
   bool element_attrib_list :1;
@@ -1721,8 +1720,8 @@ typedef struct _rvGetCoordinatesAndElementsFromMesh__isset {
 class rvGetCoordinatesAndElementsFromMesh {
  public:
 
-  static const char* ascii_fingerprint; // = "CD1EBAFAFBFAAF3487DB8E933D69479C";
-  static const uint8_t binary_fingerprint[16]; // = {0xCD,0x1E,0xBA,0xFA,0xFB,0xFA,0xAF,0x34,0x87,0xDB,0x8E,0x93,0x3D,0x69,0x47,0x9C};
+  static const char* ascii_fingerprint; // = "25B126BCA9E8A39BD63C5D6F4F0B281E";
+  static const uint8_t binary_fingerprint[16]; // = {0x25,0xB1,0x26,0xBC,0xA9,0xE8,0xA3,0x9B,0xD6,0x3C,0x5D,0x6F,0x4F,0x0B,0x28,0x1E};
 
   rvGetCoordinatesAndElementsFromMesh(const rvGetCoordinatesAndElementsFromMesh&);
   rvGetCoordinatesAndElementsFromMesh& operator=(const rvGetCoordinatesAndElementsFromMesh&);
@@ -1732,7 +1731,6 @@ class rvGetCoordinatesAndElementsFromMesh {
   virtual ~rvGetCoordinatesAndElementsFromMesh() throw();
   std::string status;
   std::string report;
-  MeshInfo meshInfo;
   std::vector<Vertex>  vertex_list;
   std::vector<Element>  element_list;
   std::vector<ElementAttrib>  element_attrib_list;
@@ -1743,8 +1741,6 @@ class rvGetCoordinatesAndElementsFromMesh {
   void __set_status(const std::string& val);
 
   void __set_report(const std::string& val);
-
-  void __set_meshInfo(const MeshInfo& val);
 
   void __set_vertex_list(const std::vector<Vertex> & val);
 
@@ -1759,8 +1755,6 @@ class rvGetCoordinatesAndElementsFromMesh {
     if (!(status == rhs.status))
       return false;
     if (!(report == rhs.report))
-      return false;
-    if (!(meshInfo == rhs.meshInfo))
       return false;
     if (!(vertex_list == rhs.vertex_list))
       return false;
