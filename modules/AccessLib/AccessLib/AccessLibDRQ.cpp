@@ -26,7 +26,7 @@ extern "C" {
 						//const char*     resultID,
 						const char*     analysisID,
 						double          timeStep,
-						const int32_t   meshID,
+						const char*     meshID,
 
 						/* out */
             const char                        **result_status,
@@ -37,6 +37,7 @@ extern "C" {
     CHECK_QUERY_POINTER( modelID );
     //CHECK_QUERY_POINTER( resultID );
     CHECK_QUERY_POINTER( analysisID );
+    CHECK_QUERY_POINTER( meshID );
     CHECK_QUERY_POINTER( result_status );
     CHECK_QUERY_POINTER( result_mesh_draw_data );
 
@@ -53,7 +54,7 @@ extern "C" {
 				//<< "  \"resultID\"   : \"" << resultID          << "\",\n"
 				<< "  \"analysisID\" : \"" << analysisID        << "\",\n"
 				<< "  \"timeStep\"   : "   << timeStep 			<< ",\n"
-				<< "  \"meshID\": "        << meshID       << "\n"
+				<< "  \"meshID\": \""        << meshID       << "\"\n"
 				<< "}\n";
 
 	// Send command string and get back result data

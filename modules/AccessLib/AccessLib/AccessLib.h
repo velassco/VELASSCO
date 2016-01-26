@@ -175,7 +175,7 @@ extern "C" {
 						const char*       modelID,
 						const char*       analysisID,
 						double            timeStep,
-						const int32_t     meshID,
+						const char*       meshID,
 
 						/* out */
             const char                      **result_status,
