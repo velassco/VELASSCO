@@ -175,7 +175,7 @@ int doTestMorteza( const VAL_SessionID sessionID) {
              << "   status = " << status << std::endl;
   if(listOfMeshes) std::cout << "List Of Mesehes = \n" << listOfMeshes << std::endl;
   
-  int32_t     meshID = 1;
+  const char* meshID = "particles";
    
   const VELaSSCo::RTFormat::File* mesh_draw_data = NULL;
   result = valGetMeshDrawData( sessionID, modelID.c_str(), analysisID, timeStep, meshID, &status, &mesh_draw_data );
