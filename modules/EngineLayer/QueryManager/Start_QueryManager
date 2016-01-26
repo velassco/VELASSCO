@@ -5,4 +5,4 @@ killall -9 QueryManager
 LD_LIBRARY_PATH=${PWD}/lib
 export LD_LIBRARY_PATH
 
-./bin/QueryManager -port 26268 -dl_host pez001 -dl_port 26260
+./bin/QueryManager -dl_port 26264
