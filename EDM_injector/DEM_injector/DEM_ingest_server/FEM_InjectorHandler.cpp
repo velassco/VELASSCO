@@ -5,7 +5,7 @@
 /*===================================================================================================================================================
 
    GiD ascii format for mesh and results files is explained at
-   http ://www.gidhome.com/component/manual/customizationmanual/postprocess_data_files
+   http://www.gidhome.com/component/manual/customizationmanual/postprocess_data_files
 
    In Ascii format there are two files :
    one for the mesh(es) http ://www.gidhome.com/component/manual/customizationmanual/postprocess_data_files/mesh_format-_modelnamepostmsh
@@ -41,7 +41,9 @@
    element_id node_1 ... node_Nnode group_id_optional
    element_id is a global id of the element
    node_1 ... node_Nnode depends on the element connectivity
-   for order of nodes check http ://www.gidhome.com/component/manual/customizationmanual/postprocess_data_files/mesh_format-_modelnamepostmsh
+   for order of nodes check http://www.gidhome.com/component/manual/customizationmanual/postprocess_data_files/mesh_format-_modelnamepostmsh
+
+   http://www.gidhome.com/documents/customizationmanual/POSTPROCESS%20DATA%20FILES/Mesh%20format:%20ModelName.post.msh
 
    any comment line begins with the character '#'.
    Optionally, between the the MESH header and the coordinates section, the color of the mesh can be specified with :
@@ -96,8 +98,8 @@ using namespace  ::DEM_Inject;
 
 double toDouble(char *s)
 {
-   double d;
-   sscanf(s, "%lf", &d); return d;
+   double d = strtod(s, NULL);
+   return d;
 }
 EDMULONG toEDMULONG(char *s)
 {
@@ -116,6 +118,36 @@ void FEM_InjectorHandler::InitiateFileInjection()
    //theSimulation->put_name("theSimulation");
 }
 
+///*=============================================================================================================================*/
+//fem::Analysis *FEM_InjectorHandler::getAnalysis(char *name)
+///*=============================================================================================================================*/
+//{
+//   //if (cAnalysis && strEQL(cAnalysis->get_name(), name)) {
+//   //   return cAnalysis;
+//   //} else {
+//      SdaiAggr agrID = m->getObjectSet(fem::et_Analysis);
+//      Iterator<fem::Analysis*, fem::entityType> anIter(agrID, m);
+//      for (fem::Analysis *a = anIter.first(); a; a = anIter.next()) {
+//         if (strEQL(a->get_name(), name)) {
+//            return a;
+//         }
+//      }
+//   }
+//   return NULL;
+//}
+///*=============================================================================================================================*/
+//fem::TimeStep *FEM_InjectorHandler::getTimeStep(fem::Analysis *a, double tstep)
+///*=============================================================================================================================*/
+//{
+//   Iterator<fem::TimeStep*, fem::entityType> tsIter(a->get_time_steps(), m);
+//   for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+//      if (ts->get_time_value() == tstep) {
+//         return ts;
+//      }
+//   }
+//   return NULL;
+//}
+
 //ResultType--> type of result, one of : SCalar, Vector, Matrix, PlainDeformationMatrix, MainMatrix, LocalAxes, ComplexScalar, ComplexVector
 /*=============================================================================================================================*/
 void FEM_InjectorHandler::InjectResultFile()
@@ -133,7 +165,10 @@ void FEM_InjectorHandler::InjectResultFile()
    EDMULONG dimension, elementID, nodeID;
    double stepValue;
    double nID[11];
-   
+   SdaiAggr agrID = m->getObjectSet(fem::et_Analysis);
+   Iterator<fem::Analysis*, fem::entityType> anIter(agrID, m);
+   Iterator<fem::TimeStep*, fem::entityType> tsIter(agrID, m);
+
    readNextLine();
    if (strEQL(line, "GiD Post Results File 1.0\n")) {
       while (readNextLine() > 0) {
@@ -143,9 +178,37 @@ void FEM_InjectorHandler::InjectResultFile()
             int nColumns = scanInputLine();
             if (nColumns == 6 || nColumns == 7) {
                cResultHeader = newObject(fem::ResultHeader); cResultHeader->put_name(col[1]); cResultHeader->put_analysis(col[2]);
-               cResultHeader->put_step(toDouble(col[3]));
-               cResultBlock = newObject(fem::ResultBlock); cResultBlock->put_header(cResultHeader);
+
+               if (cAnalysis && strNEQ(cAnalysis->get_name(), col[2])) {
+                  for (cAnalysis = anIter.first(); cAnalysis; cAnalysis = anIter.next()) {
+                     if (strEQL(cAnalysis->get_name(), col[2])) break;
+                  }
+               }
+               if (cAnalysis == NULL) {
+                  cAnalysis = newObject(fem::Analysis); cAnalysis->put_name(col[2]);
+               }
+               double thisTimeStep = toDouble(col[3]);
+               cResultHeader->put_step(thisTimeStep);
+               
+               if (cTimeStep && cTimeStep->get_time_value() != thisTimeStep) {
+                  tsIter.init(cAnalysis->get_time_steps(), m);
+                  for (cTimeStep = tsIter.first(); cTimeStep; cTimeStep = tsIter.next()) {
+                     if (cTimeStep->get_time_value() == thisTimeStep) break;
+                  }
+               }
+               if (cTimeStep == NULL) {
+                  cTimeStep = newObject(fem::TimeStep); cTimeStep->put_time_value(thisTimeStep);
+                  if (cMesh) cTimeStep->put_mesh(cMesh);
+                  if (cAnalysis) cTimeStep->put_analysis(cAnalysis);
+               }
+               cTimeStep->put_results_element(cResultHeader);
                readNextLine();
+               if (strnEQL(line, "ComponentNames", 14)) {
+                  int nComponentNames = scanInputLine();
+                  for (int i = 1; i < nComponentNames; i++) {
+                     cResultHeader->put_compName_element(col[i]);
+                  }
+               }
                if (strNEQ(line, "Values\n")) {
                   readNextLine();
                }
@@ -162,6 +225,7 @@ void FEM_InjectorHandler::InjectResultFile()
                         vr->put_values_element(nID[i]);
                      }
                   }
+                  r->put_result_header(cResultHeader);
                   fem::Node *n = nodes[nodeID];
                   if (n) {
                      r->put_result_for(n);
@@ -293,7 +357,7 @@ int FEM_InjectorHandler::scanInputLine()
    int i;
    char stopChar;
 
-   for (i = 0; i < MAX_COLUMNS && *bp; i++) {
+   for (i = 0; i < MAX_COLUMNS && *bp && *bp != '\n'; i++) {
       while (*bp == ' ') bp++;
       if (*bp == '\"') {
          stopChar = '\"'; bp++;

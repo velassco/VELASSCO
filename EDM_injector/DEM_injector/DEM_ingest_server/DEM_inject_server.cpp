@@ -68,105 +68,112 @@ int main(int argc, char **argv)
       } else {
          repositoryName = "DEM_models";
       }
-      DEM_InjectorHandler demInjector(&dem_schema_velassco_SchemaObject);
-      FEM_InjectorHandler femInjector(&fem_schema_velassco_SchemaObject);
-      Database VELaSSCo_db(dbFolder, dbName, dbPassword);
-      Repository demRepository(&VELaSSCo_db, repositoryName);
-      char commandline[2048], filecommand[1024], file_name[1024], param1[1024], param2[1024], param3[1024];
 
-      if (strEQL(command, "Server") || strEQL(command, "Files")) {
-         demInjector.setCurrentSchemaName("dem_schema_velassco");
-         demInjector.setDatabase(&VELaSSCo_db);
-         VELaSSCo_db.open();
-         demRepository.open(sdaiRW);
-         demInjector.setCurrentRepository(&demRepository);
-      } else if (strEQL(command, "FEMfiles")) {
-         femInjector.setCurrentSchemaName("fem_schema_velassco");
-         femInjector.setDatabase(&VELaSSCo_db);
-         VELaSSCo_db.open();
-         demRepository.open(sdaiRW);
-         femInjector.setCurrentRepository(&demRepository);
-      }
-      if (strEQL(command, "Server")) {
-         boost::shared_ptr<DEM_InjectorHandler> handler(&demInjector);
-         boost::shared_ptr<TProcessor> processor(new DEM_InjectorProcessor(handler));
-         boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-         boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-         boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+      if (strEQL(command, "RemoteInject")) {
+         /* Injection is done by the database server via the dll Injector_dll */
 
-         WSADATA wsaData = {};
-         WORD wVersionRequested = MAKEWORD(2, 2);
-         int err = WSAStartup(wVersionRequested, &wsaData);
- 
-         TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-         server.serve();
-      } else if (strEQL(command, "FEMfiles")) {
-         femInjector.setCurrentModel(model);
-         femInjector.DeleteCurrentModelContent();
-         if (paraMfile) {
-            while (fgets(commandline, sizeof(commandline), paraMfile)){
-               int nCoulmn = sscanf(commandline, "%s %s %s %s", filecommand, file_name, param2, param3);
-               if (strEQL(filecommand, "File")) {
-                  if (nCoulmn == 2){
-                     femInjector.injectorFileName = file_name;
-                     femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;
-                     if (femInjector.fp) {
-                        int extPos = strlen(file_name) - 9;
-                        if (extPos > 0 && strnEQL(file_name + extPos, ".post.msh", 9)) {
-                           femInjector.InjectMeshFile();
-                        } else if (extPos > 0 && strnEQL(file_name + extPos, ".post.res", 9)) {
-                           femInjector.InjectResultFile();
+      } else {
+         /* Injection is done to the standalone Database VELaSSCo_db */
+         DEM_InjectorHandler demInjector(&dem_schema_velassco_SchemaObject);
+         FEM_InjectorHandler femInjector(&fem_schema_velassco_SchemaObject);
+         Database VELaSSCo_db(dbFolder, dbName, dbPassword);
+         Repository demRepository(&VELaSSCo_db, repositoryName);
+         char commandline[2048], filecommand[1024], file_name[1024], param1[1024], param2[1024], param3[1024];
+
+         if (strEQL(command, "Server") || strEQL(command, "Files")) {
+            demInjector.setCurrentSchemaName("dem_schema_velassco");
+            demInjector.setDatabase(&VELaSSCo_db);
+            VELaSSCo_db.open();
+            demRepository.open(sdaiRW);
+            demInjector.setCurrentRepository(&demRepository);
+         } else if (strEQL(command, "FEMfiles")) {
+            femInjector.setCurrentSchemaName("fem_schema_velassco");
+            femInjector.setDatabase(&VELaSSCo_db);
+            VELaSSCo_db.open();
+            demRepository.open(sdaiRW);
+            femInjector.setCurrentRepository(&demRepository);
+         }
+         if (strEQL(command, "Server")) {
+            boost::shared_ptr<DEM_InjectorHandler> handler(&demInjector);
+            boost::shared_ptr<TProcessor> processor(new DEM_InjectorProcessor(handler));
+            boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+            boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+            boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
+            WSADATA wsaData = {};
+            WORD wVersionRequested = MAKEWORD(2, 2);
+            int err = WSAStartup(wVersionRequested, &wsaData);
+
+            TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+            server.serve();
+         } else if (strEQL(command, "FEMfiles")) {
+            femInjector.setCurrentModel(model);
+            femInjector.DeleteCurrentModelContent();
+            if (paraMfile) {
+               while (fgets(commandline, sizeof(commandline), paraMfile)){
+                  int nCoulmn = sscanf(commandline, "%s %s %s %s", filecommand, file_name, param2, param3);
+                  if (strEQL(filecommand, "File")) {
+                     if (nCoulmn == 2){
+                        femInjector.injectorFileName = file_name;
+                        femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;
+                        if (femInjector.fp) {
+                           int extPos = strlen(file_name) - 9;
+                           if (extPos > 0 && strnEQL(file_name + extPos, ".post.msh", 9)) {
+                              femInjector.InjectMeshFile();
+                           } else if (extPos > 0 && strnEQL(file_name + extPos, ".post.res", 9)) {
+                              femInjector.InjectResultFile();
+                           }
+                           fclose(femInjector.fp);
+                        } else {
+                           femInjector.printError("Illegal FEM file name");
                         }
-                        fclose(femInjector.fp);
                      } else {
-                        femInjector.printError("Illegal FEM file name");
+                        femInjector.printError("Illegal number of parameters in File command.");
                      }
-                  } else {
-                     femInjector.printError("Illegal number of parameters in File command.");
                   }
                }
+               fclose(paraMfile);
+               femInjector.flushObjectsAndClose();
             }
-            fclose(paraMfile);
-            femInjector.flushObjectsAndClose();
-         }
-      } else if (strEQL(command, "Files") || strEQL(command, "Client")) {
-         if (strEQL(command, "Files")) {
-            demInjector.setCurrentModel(model);
-            demInjector.DeleteCurrentModelContent();
-         } else {
-            demInjector.setRemoteModel(argv[2], "localhost", 9090);
-            paraMfile = fopen(argv[3], "r");
-         }
-         demInjector.InitiateFileInjection();
-
-         if (paraMfile) {
-            while (fgets(commandline, sizeof(commandline), paraMfile)){
-               int nCoulmn = sscanf(commandline, "%s %s %s %s", command, param1, param2, param3);
-               if (strEQL(command, "File")) {
-                  if (nCoulmn == 2){
-                     demInjector.InjectFile(param1);
-                  } else {
-                     printf("Illegal number of parameters in File command\n");
-                  }
-               } else if (strEQL(command, "Mesh")) {
-                  if (nCoulmn == 4){
-                     demInjector.InjectMesh(param1, param2, param3);
-                  } else {
-                     printf("Illegal number of parameters in Mesh command\n");
-                  }
-               }
-            }
-            fclose(paraMfile);
+         } else if (strEQL(command, "Files") || strEQL(command, "Client")) {
             if (strEQL(command, "Files")) {
-               demInjector.flushObjectsAndClose();
+               demInjector.setCurrentModel(model);
+               demInjector.DeleteCurrentModelContent();
             } else {
+               demInjector.setRemoteModel(argv[2], "localhost", 9090);
+               paraMfile = fopen(argv[3], "r");
+            }
+            demInjector.InitiateFileInjection();
+
+            if (paraMfile) {
+               while (fgets(commandline, sizeof(commandline), paraMfile)){
+                  int nCoulmn = sscanf(commandline, "%s %s %s %s", command, param1, param2, param3);
+                  if (strEQL(command, "File")) {
+                     if (nCoulmn == 2){
+                        demInjector.InjectFile(param1);
+                     } else {
+                        printf("Illegal number of parameters in File command\n");
+                     }
+                  } else if (strEQL(command, "Mesh")) {
+                     if (nCoulmn == 4){
+                        demInjector.InjectMesh(param1, param2, param3);
+                     } else {
+                        printf("Illegal number of parameters in Mesh command\n");
+                     }
+                  }
+               }
+               fclose(paraMfile);
+               if (strEQL(command, "Files")) {
+                  demInjector.flushObjectsAndClose();
+               } else {
+                  demInjector.sendObjectsToServer();
+               }
+            } else {
+               for (int i = 6; i < argc; i++) {
+                  demInjector.InjectFile(argv[i]);
+               }
                demInjector.sendObjectsToServer();
             }
-         } else {
-            for (int i = 6; i < argc; i++) {
-               demInjector.InjectFile(argv[i]);
-            }
-            demInjector.sendObjectsToServer();
          }
       }
    } catch (CedmError *e) {

@@ -10,7 +10,8 @@ class FEM_InjectorHandler : public EDM_interface
    EDMULONG  nNodes;
    fem::Mesh                              *cMesh;
    fem::ResultHeader                      *cResultHeader;
-   fem::ResultBlock                       *cResultBlock;
+   fem::Analysis                          *cAnalysis;
+   fem::TimeStep                          *cTimeStep;
 
    // Data when injecting from files
    char                                   line[10240];
@@ -22,7 +23,7 @@ public:
    int                                    cLineno;
 
    FEM_InjectorHandler(dbSchema *s)  {
-      currentSchema = s; cLineno = 0;
+      currentSchema = s; cLineno = 0; cAnalysis = NULL; cTimeStep = NULL;
    }
    
    int scanInputLine();
@@ -35,4 +36,6 @@ public:
    void printError(char *msg) {
       printf("Error: %s\n   File: %s, line %d", msg, injectorFileName, cLineno);
    }
+   fem::Analysis                          *getAnalysis(char *name);
+   fem::TimeStep                          *getTimeStep(fem::Analysis *an, double ts);
 };
