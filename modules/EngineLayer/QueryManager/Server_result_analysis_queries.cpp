@@ -161,7 +161,7 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   std::cout << "SM -" << staticMeshID     << "-" << std::endl;
   std::cout << "TS -" << stepOptions   << "-" << std::endl;
   std::cout << "nTS  -" << numSteps      << "-" << std::endl;
-  std::cout << "TSt  -" << as_string<size_t>( pt, "lstSteps")      << "-" << std::endl;
+  //std::cout << "TSt  -" << as_string<size_t>( pt, "lstSteps")      << "-" << std::endl;
   std::cout << "CG  -" << coarseGrainingMethod        << "-" << std::endl;
   std::cout << "Wd -" << width << "-" << std::endl;
   std::cout << "Co -" << cutoffFactor << "-" << std::endl;
