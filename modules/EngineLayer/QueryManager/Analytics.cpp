@@ -29,7 +29,10 @@ AnalyticsModule *AnalyticsModule::getInstance() {
 
 // on acuario:
 //#define HADOOP_HOME "/localfs/home/velassco/common/hadoop/bin/"
-#define HADOOP_HOME 
+//on Eddie
+#define HADOOP_HOME "/exports/applications/apps/community/VELaSSCo/hadoop-2.7.0/bin/"
+
+//#define HADOOP_HOME 
 #define HADOOP_YARN std::string( HADOOP_HOME"yarn")
 #define HADOOP_HDFS std::string( HADOOP_HOME"hdfs")
 
