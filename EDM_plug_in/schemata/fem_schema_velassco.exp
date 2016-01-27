@@ -59,13 +59,19 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       nodes         : LIST [1:?] OF Node;
       elements      : LIST [1:?] OF Element;
       results       : OPTIONAL LIST [1:?] OF ResultHeader;
+      maxNodeID     : INTEGER;
+      minNodeID     : INTEGER;
+      minElementID  : INTEGER;
+      maxElementID  : INTEGER;
   END_ENTITY;
 
   ENTITY Node;
-      id : INTEGER;
-      x  : REAL;
-      y  : REAL;
-      z  : REAL;
+      id      : INTEGER;
+      x       : REAL;
+      y       : REAL;
+      z       : REAL;
+    INVERSE
+      results : Result FOR result_for;
   END_ENTITY;
 
   ENTITY Element;
@@ -74,25 +80,22 @@ SCHEMA FEM_SCHEMA_VELASSCO;
   END_ENTITY;
 
   ENTITY ResultHeader;
-      name       : STRING;
-      analysis   : STRING;
-      step       : REAL;
-      gpName     : STRING;
-      compName   : LIST [1:?] OF STRING;
-      indexMData : INTEGER;
-      rType      : ValueType;
-      location   : LocationType;
-  END_ENTITY;
-
-  ENTITY ResultBlock;
-      header       : ResultHeader;
-      values       : LIST [1:?] OF Result;
-      gauss_points : GaussPoint;
+      name         : STRING;
+      analysis     : STRING;
+      step         : REAL;
+      gpName       : STRING;
+      compName     : LIST [1:?] OF STRING;
+      rType        : ValueType;
+      location     : LocationType;
+      gauss_points : SET [1:?] OF GaussPoint;
+    INVERSE
+      values       : Result FOR result_header;
   END_ENTITY;
 
   ENTITY Result
     ABSTRACT SUPERTYPE;
-      result_for : Node;
+      result_for    : Node;
+      result_header : ResultHeader;
   END_ENTITY;
 
   ENTITY ScalarResult
@@ -126,10 +129,18 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       GPtype          : GaussPointType;
   END_ENTITY;
 
-  ENTITY CacheEntry;
-      cache_type      : string;
-      teh_file        : _FILE;
-	  size		      : INTEGER;
+  ENTITY Analysis;
+      name       : STRING;
+    INVERSE
+      time_steps : TimeStep FOR analysis;
+  END_ENTITY;
+
+  ENTITY TimeStep;
+      analysis   : Analysis;
+      time_value : REAL;
+      mesh       : Mesh;
+      results    : LIST OF ResultHeader;
+      name       : STRING;
   END_ENTITY;
 
 END_SCHEMA;
