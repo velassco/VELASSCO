@@ -29,7 +29,8 @@ void EDM_interface::setCurrentModel(const char *modelName)
    if (m == NULL) {
       m = new Model(currentRepository, &model_ma, currentSchema);
       models[modelName] = m;
-      SdaiModel modelID = sdaiCreateModelBN(currentRepository->getRepositoryId(), (char*)modelName, currentSchemaName);
+      SdaiModel modelID = edmiCreateModelBN(currentRepository->getRepositoryId(), (char*)modelName,
+         currentSchemaName, 0);
       m->open((char*)modelName, sdaiRW);
    }
 }

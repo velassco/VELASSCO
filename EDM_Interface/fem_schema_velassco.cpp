@@ -4,14 +4,30 @@
 namespace fem {
 
 EDMLONG dbInstance_AttributeLayout[] = {0};
-EDMLONG CacheEntry_AttributeLayout[] = {4, 15, 0, 0};
-tEdmiAttribute CacheEntry_Attributes[] = {
-   {"cache_type", 4, 0},
-   {"teh_file", 15, 0},
-   {"size", 0, 0},
+EDMLONG TimeStep_AttributeLayout[] = {8, 1, 8, 9, 4, 0};
+tEdmiAttribute TimeStep_Attributes[] = {
+   {"analysis", 8, 0},
+   {"time_value", 1, 0},
+   {"mesh", 8, 0},
+   {"results", 9, 0},
+   {"name", 4, 0},
    {NULL, 0, 0},
 };
-EDMLONG CacheEntry_Subtypes[] = {0};
+EDMLONG TimeStep_Subtypes[] = {0};
+EDMLONG Analysis_AttributeLayout[] = {4, 9, 0};
+tEdmiAttribute Analysis_Attributes[] = {
+   {"name", 4, 0},
+   {"time_steps", 9, 0},
+   {NULL, 0, 0},
+};
+EDMLONG Analysis_Subtypes[] = {0};
+EDMLONG Element_AttributeLayout[] = {9, 0, 0};
+tEdmiAttribute Element_Attributes[] = {
+   {"nodes", 9, 0},
+   {"id", 0, 0},
+   {NULL, 0, 0},
+};
+EDMLONG Element_Subtypes[] = {0};
 EDMLONG GaussPoint_AttributeLayout[] = {8, 9, 6, 0};
 tEdmiAttribute GaussPoint_Attributes[] = {
    {"gauss_point_for", 8, 0},
@@ -20,50 +36,38 @@ tEdmiAttribute GaussPoint_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG GaussPoint_Subtypes[] = {0};
-EDMLONG Result_AttributeLayout[] = {8, 0};
-tEdmiAttribute Result_Attributes[] = {
-   {"result_for", 8, 0},
-   {NULL, 0, 0},
-};
-EDMLONG Result_Subtypes[] = {et_ScalarResult, et_VectorResult, et_Matrix_2D, et_Matrix_3D, et_Matrix_Deformated, 0};
-EDMLONG ResultBlock_AttributeLayout[] = {8, 9, 8, 0};
-tEdmiAttribute ResultBlock_Attributes[] = {
-   {"header", 8, 0},
-   {"values", 9, 0},
-   {"gauss_points", 8, 0},
-   {NULL, 0, 0},
-};
-EDMLONG ResultBlock_Subtypes[] = {0};
-EDMLONG ResultHeader_AttributeLayout[] = {4, 4, 1, 4, 9, 0, 6, 6, 0};
+EDMLONG ResultHeader_AttributeLayout[] = {4, 4, 1, 4, 9, 6, 6, 9, 9, 0};
 tEdmiAttribute ResultHeader_Attributes[] = {
    {"name", 4, 0},
    {"analysis", 4, 0},
    {"step", 1, 0},
    {"gpName", 4, 0},
    {"compName", 9, 0},
-   {"indexMData", 0, 0},
    {"rType", 6, 0},
    {"location", 6, 0},
+   {"gauss_points", 9, 0},
+   {"values", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG ResultHeader_Subtypes[] = {0};
-EDMLONG Element_AttributeLayout[] = {9, 0, 0};
-tEdmiAttribute Element_Attributes[] = {
-   {"nodes", 9, 0},
-   {"id", 0, 0},
+EDMLONG Result_AttributeLayout[] = {8, 8, 0};
+tEdmiAttribute Result_Attributes[] = {
+   {"result_for", 8, 0},
+   {"result_header", 8, 0},
    {NULL, 0, 0},
 };
-EDMLONG Element_Subtypes[] = {0};
-EDMLONG Node_AttributeLayout[] = {0, 1, 1, 1, 0};
+EDMLONG Result_Subtypes[] = {et_ScalarResult, et_VectorResult, et_Matrix_2D, et_Matrix_3D, et_Matrix_Deformated, 0};
+EDMLONG Node_AttributeLayout[] = {0, 1, 1, 1, 9, 0};
 tEdmiAttribute Node_Attributes[] = {
    {"id", 0, 0},
    {"x", 1, 0},
    {"y", 1, 0},
    {"z", 1, 0},
+   {"results", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG Node_Subtypes[] = {0};
-EDMLONG Mesh_AttributeLayout[] = {4, 0, 0, 6, 9, 9, 9, 0};
+EDMLONG Mesh_AttributeLayout[] = {4, 0, 0, 6, 9, 9, 9, 0, 0, 0, 0, 0};
 tEdmiAttribute Mesh_Attributes[] = {
    {"name", 4, 0},
    {"dimension", 0, 0},
@@ -72,40 +76,49 @@ tEdmiAttribute Mesh_Attributes[] = {
    {"nodes", 9, 0},
    {"elements", 9, 0},
    {"results", 9, 0},
+   {"maxNodeID", 0, 0},
+   {"minNodeID", 0, 0},
+   {"minElementID", 0, 0},
+   {"maxElementID", 0, 0},
    {NULL, 0, 0},
 };
 EDMLONG Mesh_Subtypes[] = {0};
-EDMLONG ScalarResult_AttributeLayout[] = {8, 1, 0};
+EDMLONG ScalarResult_AttributeLayout[] = {8, 8, 1, 0};
 tEdmiAttribute ScalarResult_Attributes[] = {
    {"result_for", 8, 0},
+   {"result_header", 8, 0},
    {"val", 1, 0},
    {NULL, 0, 0},
 };
 EDMLONG ScalarResult_Subtypes[] = {0};
-EDMLONG VectorResult_AttributeLayout[] = {8, 9, 0};
+EDMLONG VectorResult_AttributeLayout[] = {8, 8, 9, 0};
 tEdmiAttribute VectorResult_Attributes[] = {
    {"result_for", 8, 0},
+   {"result_header", 8, 0},
    {"values", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG VectorResult_Subtypes[] = {0};
-EDMLONG Matrix_2D_AttributeLayout[] = {8, 9, 0};
+EDMLONG Matrix_2D_AttributeLayout[] = {8, 8, 9, 0};
 tEdmiAttribute Matrix_2D_Attributes[] = {
    {"result_for", 8, 0},
+   {"result_header", 8, 0},
    {"values", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG Matrix_2D_Subtypes[] = {0};
-EDMLONG Matrix_3D_AttributeLayout[] = {8, 9, 0};
+EDMLONG Matrix_3D_AttributeLayout[] = {8, 8, 9, 0};
 tEdmiAttribute Matrix_3D_Attributes[] = {
    {"result_for", 8, 0},
+   {"result_header", 8, 0},
    {"values", 9, 0},
    {NULL, 0, 0},
 };
 EDMLONG Matrix_3D_Subtypes[] = {0};
-EDMLONG Matrix_Deformated_AttributeLayout[] = {8, 9, 0};
+EDMLONG Matrix_Deformated_AttributeLayout[] = {8, 8, 9, 0};
 tEdmiAttribute Matrix_Deformated_Attributes[] = {
    {"result_for", 8, 0},
+   {"result_header", 8, 0},
    {"values", 9, 0},
    {NULL, 0, 0},
 };
@@ -119,31 +132,66 @@ NULL
 };
 tEdmiEntityData fem_schema_velassco_Entities[] = {
 {"indeterminate"},
-{"CacheEntry", 3, 663, 8, 40, 12, et_CacheEntry, CacheEntry_AttributeLayout, CacheEntry_Subtypes, NULL, CacheEntry_Attributes},
-{"GaussPoint", 3, 661, 8, 40, 11, et_GaussPoint, GaussPoint_AttributeLayout, GaussPoint_Subtypes, NULL, GaussPoint_Attributes},
-{"Result", 1, 649, 8, 24, 5, et_Result, Result_AttributeLayout, Result_Subtypes, NULL, Result_Attributes},
-{"ResultBlock", 3, 647, 8, 40, 4, et_ResultBlock, ResultBlock_AttributeLayout, ResultBlock_Subtypes, NULL, ResultBlock_Attributes},
-{"ResultHeader", 8, 645, 8, 80, 3, et_ResultHeader, ResultHeader_AttributeLayout, ResultHeader_Subtypes, NULL, ResultHeader_Attributes},
+{"TimeStep", 5, 663, 8, 56, 12, et_TimeStep, TimeStep_AttributeLayout, TimeStep_Subtypes, NULL, TimeStep_Attributes},
+{"Analysis", 2, 661, 8, 32, 11, et_Analysis, Analysis_AttributeLayout, Analysis_Subtypes, NULL, Analysis_Attributes},
 {"Element", 2, 643, 8, 32, 2, et_Element, Element_AttributeLayout, Element_Subtypes, NULL, Element_Attributes},
-{"Node", 4, 641, 8, 48, 1, et_Node, Node_AttributeLayout, Node_Subtypes, NULL, Node_Attributes},
-{"Mesh", 7, 639, 8, 72, 0, et_Mesh, Mesh_AttributeLayout, Mesh_Subtypes, NULL, Mesh_Attributes},
-{"ScalarResult", 2, 651, 8, 32, 6, et_ScalarResult, ScalarResult_AttributeLayout, ScalarResult_Subtypes, NULL, ScalarResult_Attributes},
-{"VectorResult", 2, 653, 8, 32, 7, et_VectorResult, VectorResult_AttributeLayout, VectorResult_Subtypes, NULL, VectorResult_Attributes},
-{"Matrix_2D", 2, 655, 8, 32, 8, et_Matrix_2D, Matrix_2D_AttributeLayout, Matrix_2D_Subtypes, NULL, Matrix_2D_Attributes},
-{"Matrix_3D", 2, 657, 8, 32, 9, et_Matrix_3D, Matrix_3D_AttributeLayout, Matrix_3D_Subtypes, NULL, Matrix_3D_Attributes},
-{"Matrix_Deformated", 2, 659, 8, 32, 10, et_Matrix_Deformated, Matrix_Deformated_AttributeLayout, Matrix_Deformated_Subtypes, NULL, Matrix_Deformated_Attributes},
+{"GaussPoint", 3, 659, 8, 40, 10, et_GaussPoint, GaussPoint_AttributeLayout, GaussPoint_Subtypes, NULL, GaussPoint_Attributes},
+{"ResultHeader", 9, 645, 16, 104, 3, et_ResultHeader, ResultHeader_AttributeLayout, ResultHeader_Subtypes, NULL, ResultHeader_Attributes},
+{"Result", 2, 647, 8, 32, 4, et_Result, Result_AttributeLayout, Result_Subtypes, NULL, Result_Attributes},
+{"Node", 5, 641, 8, 56, 1, et_Node, Node_AttributeLayout, Node_Subtypes, NULL, Node_Attributes},
+{"Mesh", 11, 639, 16, 120, 0, et_Mesh, Mesh_AttributeLayout, Mesh_Subtypes, NULL, Mesh_Attributes},
+{"ScalarResult", 3, 649, 8, 40, 5, et_ScalarResult, ScalarResult_AttributeLayout, ScalarResult_Subtypes, NULL, ScalarResult_Attributes},
+{"VectorResult", 3, 651, 8, 40, 6, et_VectorResult, VectorResult_AttributeLayout, VectorResult_Subtypes, NULL, VectorResult_Attributes},
+{"Matrix_2D", 3, 653, 8, 40, 7, et_Matrix_2D, Matrix_2D_AttributeLayout, Matrix_2D_Subtypes, NULL, Matrix_2D_Attributes},
+{"Matrix_3D", 3, 655, 8, 40, 8, et_Matrix_3D, Matrix_3D_AttributeLayout, Matrix_3D_Subtypes, NULL, Matrix_3D_Attributes},
+{"Matrix_Deformated", 3, 657, 8, 40, 9, et_Matrix_Deformated, Matrix_Deformated_AttributeLayout, Matrix_Deformated_Subtypes, NULL, Matrix_Deformated_Attributes},
 {NULL},
 };
 
 /*====================================================================================================
-   CacheEntry
+   TimeStep
 ====================================================================================================*/
-char * CacheEntry::get_cache_type() { return getATTRIBUTE(0, char *, 0); }
-void CacheEntry::put_cache_type(char * v) { putATTRIBUTE(0, char *, v, cache_type, 0, 4); }
-int CacheEntry::get_teh_file() { return getATTRIBUTE(8, int, 1); }
-void CacheEntry::put_teh_file(int v) { putATTRIBUTE(8, int, v, teh_file, 1, 15); }
-int CacheEntry::get_size() { return getATTRIBUTE(16, int, 2); }
-void CacheEntry::put_size(int v) { putATTRIBUTE(16, int, v, size, 2, 0); }
+Analysis* TimeStep::get_analysis() { return getInstance(0, Analysis*, 0); }
+void TimeStep::put_analysis(Analysis* v) { putInstance(0, Analysis*, v, analysis, 0, 8); v->addToUsedIn(c); }
+double TimeStep::get_time_value() { return getREAL(8, double, 1); }
+void TimeStep::put_time_value(double v) { putREAL(8, double, v, time_value, 1, 1); }
+Mesh* TimeStep::get_mesh() { return getInstance(16, Mesh*, 2); }
+void TimeStep::put_mesh(Mesh* v) { putInstance(16, Mesh*, v, mesh, 2, 8); v->addToUsedIn(c); }
+List<ResultHeader*>* TimeStep::get_results() { return getAGGREGATE(24, List<ResultHeader*>*, 3); }
+void TimeStep::put_results(List<ResultHeader*>* v) { putAGGREGATE(24, List<ResultHeader*>*, v, results, 3, 9); }
+SdaiAggr  TimeStep::get_results_aggrId() { return getAGGRID(3); }
+void TimeStep::put_results_element(ResultHeader* element) {
+   SdaiAggr agId = get_results_aggrId();
+   List<ResultHeader*> aggregate(m, agId);
+   if (agId == 0) {
+      put_results(&aggregate);
+   }
+   aggregate.add(element);
+}
+char * TimeStep::get_name() { return getATTRIBUTE(32, char *, 4); }
+void TimeStep::put_name(char * v) { putATTRIBUTE(32, char *, v, name, 4, 4); }
+/*====================================================================================================
+   Analysis
+====================================================================================================*/
+char * Analysis::get_name() { return getATTRIBUTE(0, char *, 0); }
+void Analysis::put_name(char * v) { putATTRIBUTE(0, char *, v, name, 0, 4); }
+Set<TimeStep*>* Analysis::get_time_steps() { return getAGGREGATE(8, Set<TimeStep*>*, 1); }
+/*====================================================================================================
+   Element
+====================================================================================================*/
+List<Node*>* Element::get_nodes() { return getAGGREGATE(0, List<Node*>*, 0); }
+void Element::put_nodes(List<Node*>* v) { putAGGREGATE(0, List<Node*>*, v, nodes, 0, 9); }
+SdaiAggr  Element::get_nodes_aggrId() { return getAGGRID(0); }
+void Element::put_nodes_element(Node* element) {
+   SdaiAggr agId = get_nodes_aggrId();
+   List<Node*> aggregate(m, agId);
+   if (agId == 0) {
+      put_nodes(&aggregate);
+   }
+   aggregate.add(element);
+}
+int Element::get_id() { return getATTRIBUTE(8, int, 1); }
+void Element::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
 /*====================================================================================================
    GaussPoint
 ====================================================================================================*/
@@ -162,29 +210,6 @@ void GaussPoint::put_values_element(REAL element) {
 }
 GaussPointType GaussPoint::get_GPtype() { return getATTRIBUTE(16, GaussPointType, 2); }
 void GaussPoint::put_GPtype(GaussPointType v) { putATTRIBUTE(16, GaussPointType, v, GPtype, 2, 6); }
-/*====================================================================================================
-   Result
-====================================================================================================*/
-Node* Result::get_result_for() { return getInstance(0, Node*, 0); }
-void Result::put_result_for(Node* v) { putInstance(0, Node*, v, result_for, 0, 8); v->addToUsedIn(c); }
-/*====================================================================================================
-   ResultBlock
-====================================================================================================*/
-ResultHeader* ResultBlock::get_header() { return getInstance(0, ResultHeader*, 0); }
-void ResultBlock::put_header(ResultHeader* v) { putInstance(0, ResultHeader*, v, header, 0, 8); v->addToUsedIn(c); }
-List<Result*>* ResultBlock::get_values() { return getAGGREGATE(8, List<Result*>*, 1); }
-void ResultBlock::put_values(List<Result*>* v) { putAGGREGATE(8, List<Result*>*, v, values, 1, 9); }
-SdaiAggr  ResultBlock::get_values_aggrId() { return getAGGRID(1); }
-void ResultBlock::put_values_element(Result* element) {
-   SdaiAggr agId = get_values_aggrId();
-   List<Result*> aggregate(m, agId);
-   if (agId == 0) {
-      put_values(&aggregate);
-   }
-   aggregate.add(element);
-}
-GaussPoint* ResultBlock::get_gauss_points() { return getInstance(16, GaussPoint*, 2); }
-void ResultBlock::put_gauss_points(GaussPoint* v) { putInstance(16, GaussPoint*, v, gauss_points, 2, 8); v->addToUsedIn(c); }
 /*====================================================================================================
    ResultHeader
 ====================================================================================================*/
@@ -207,28 +232,29 @@ void ResultHeader::put_compName_element(STRING element) {
    }
    aggregate.add(element);
 }
-int ResultHeader::get_indexMData() { return getATTRIBUTE(40, int, 5); }
-void ResultHeader::put_indexMData(int v) { putATTRIBUTE(40, int, v, indexMData, 5, 0); }
-ValueType ResultHeader::get_rType() { return getATTRIBUTE(48, ValueType, 6); }
-void ResultHeader::put_rType(ValueType v) { putATTRIBUTE(48, ValueType, v, rType, 6, 6); }
-LocationType ResultHeader::get_location() { return getATTRIBUTE(56, LocationType, 7); }
-void ResultHeader::put_location(LocationType v) { putATTRIBUTE(56, LocationType, v, location, 7, 6); }
-/*====================================================================================================
-   Element
-====================================================================================================*/
-List<Node*>* Element::get_nodes() { return getAGGREGATE(0, List<Node*>*, 0); }
-void Element::put_nodes(List<Node*>* v) { putAGGREGATE(0, List<Node*>*, v, nodes, 0, 9); }
-SdaiAggr  Element::get_nodes_aggrId() { return getAGGRID(0); }
-void Element::put_nodes_element(Node* element) {
-   SdaiAggr agId = get_nodes_aggrId();
-   List<Node*> aggregate(m, agId);
+ValueType ResultHeader::get_rType() { return getATTRIBUTE(40, ValueType, 5); }
+void ResultHeader::put_rType(ValueType v) { putATTRIBUTE(40, ValueType, v, rType, 5, 6); }
+LocationType ResultHeader::get_location() { return getATTRIBUTE(48, LocationType, 6); }
+void ResultHeader::put_location(LocationType v) { putATTRIBUTE(48, LocationType, v, location, 6, 6); }
+Set<GaussPoint*>* ResultHeader::get_gauss_points() { return getAGGREGATE(56, Set<GaussPoint*>*, 7); }
+void ResultHeader::put_gauss_points(Set<GaussPoint*>* v) { putAGGREGATE(56, Set<GaussPoint*>*, v, gauss_points, 7, 9); }
+SdaiAggr  ResultHeader::get_gauss_points_aggrId() { return getAGGRID(7); }
+void ResultHeader::put_gauss_points_element(GaussPoint* element) {
+   SdaiAggr agId = get_gauss_points_aggrId();
+   Set<GaussPoint*> aggregate(m, agId);
    if (agId == 0) {
-      put_nodes(&aggregate);
+      put_gauss_points(&aggregate);
    }
    aggregate.add(element);
 }
-int Element::get_id() { return getATTRIBUTE(8, int, 1); }
-void Element::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
+Set<Result*>* ResultHeader::get_values() { return getAGGREGATE(64, Set<Result*>*, 8); }
+/*====================================================================================================
+   Result
+====================================================================================================*/
+Node* Result::get_result_for() { return getInstance(0, Node*, 0); }
+void Result::put_result_for(Node* v) { putInstance(0, Node*, v, result_for, 0, 8); v->addToUsedIn(c); }
+ResultHeader* Result::get_result_header() { return getInstance(8, ResultHeader*, 1); }
+void Result::put_result_header(ResultHeader* v) { putInstance(8, ResultHeader*, v, result_header, 1, 8); v->addToUsedIn(c); }
 /*====================================================================================================
    Node
 ====================================================================================================*/
@@ -240,6 +266,7 @@ double Node::get_y() { return getREAL(16, double, 2); }
 void Node::put_y(double v) { putREAL(16, double, v, y, 2, 1); }
 double Node::get_z() { return getREAL(24, double, 3); }
 void Node::put_z(double v) { putREAL(24, double, v, z, 3, 1); }
+Set<Result*>* Node::get_results() { return getAGGREGATE(32, Set<Result*>*, 4); }
 /*====================================================================================================
    Mesh
 ====================================================================================================*/
@@ -284,17 +311,25 @@ void Mesh::put_results_element(ResultHeader* element) {
    }
    aggregate.add(element);
 }
+int Mesh::get_maxNodeID() { return getATTRIBUTE(56, int, 7); }
+void Mesh::put_maxNodeID(int v) { putATTRIBUTE(56, int, v, maxNodeID, 7, 0); }
+int Mesh::get_minNodeID() { return getATTRIBUTE(64, int, 8); }
+void Mesh::put_minNodeID(int v) { putATTRIBUTE(64, int, v, minNodeID, 8, 0); }
+int Mesh::get_minElementID() { return getATTRIBUTE(72, int, 9); }
+void Mesh::put_minElementID(int v) { putATTRIBUTE(72, int, v, minElementID, 9, 0); }
+int Mesh::get_maxElementID() { return getATTRIBUTE(80, int, 10); }
+void Mesh::put_maxElementID(int v) { putATTRIBUTE(80, int, v, maxElementID, 10, 0); }
 /*====================================================================================================
    ScalarResult
 ====================================================================================================*/
-double ScalarResult::get_val() { return getREAL(8, double, 1); }
-void ScalarResult::put_val(double v) { putREAL(8, double, v, val, 1, 1); }
+double ScalarResult::get_val() { return getREAL(16, double, 2); }
+void ScalarResult::put_val(double v) { putREAL(16, double, v, val, 2, 1); }
 /*====================================================================================================
    VectorResult
 ====================================================================================================*/
-List<REAL>* VectorResult::get_values() { return getAGGREGATE(8, List<REAL>*, 1); }
-void VectorResult::put_values(List<REAL>* v) { putAGGREGATE(8, List<REAL>*, v, values, 1, 9); }
-SdaiAggr  VectorResult::get_values_aggrId() { return getAGGRID(1); }
+List<REAL>* VectorResult::get_values() { return getAGGREGATE(16, List<REAL>*, 2); }
+void VectorResult::put_values(List<REAL>* v) { putAGGREGATE(16, List<REAL>*, v, values, 2, 9); }
+SdaiAggr  VectorResult::get_values_aggrId() { return getAGGRID(2); }
 void VectorResult::put_values_element(REAL element) {
    SdaiAggr agId = get_values_aggrId();
    List<REAL> aggregate(m, agId);
@@ -306,9 +341,9 @@ void VectorResult::put_values_element(REAL element) {
 /*====================================================================================================
    Matrix_2D
 ====================================================================================================*/
-Array<REAL>* Matrix_2D::get_values() { return getAGGREGATE(8, Array<REAL>*, 1); }
-void Matrix_2D::put_values(Array<REAL>* v) { putAGGREGATE(8, Array<REAL>*, v, values, 1, 9); }
-SdaiAggr  Matrix_2D::get_values_aggrId() { return getAGGRID(1); }
+Array<REAL>* Matrix_2D::get_values() { return getAGGREGATE(16, Array<REAL>*, 2); }
+void Matrix_2D::put_values(Array<REAL>* v) { putAGGREGATE(16, Array<REAL>*, v, values, 2, 9); }
+SdaiAggr  Matrix_2D::get_values_aggrId() { return getAGGRID(2); }
 void Matrix_2D::put_values_element(int index, REAL element) {
    SdaiAggr agId = get_values_aggrId();
    Array<REAL> aggregate(m, agId);
@@ -320,9 +355,9 @@ void Matrix_2D::put_values_element(int index, REAL element) {
 /*====================================================================================================
    Matrix_3D
 ====================================================================================================*/
-Array<REAL>* Matrix_3D::get_values() { return getAGGREGATE(8, Array<REAL>*, 1); }
-void Matrix_3D::put_values(Array<REAL>* v) { putAGGREGATE(8, Array<REAL>*, v, values, 1, 9); }
-SdaiAggr  Matrix_3D::get_values_aggrId() { return getAGGRID(1); }
+Array<REAL>* Matrix_3D::get_values() { return getAGGREGATE(16, Array<REAL>*, 2); }
+void Matrix_3D::put_values(Array<REAL>* v) { putAGGREGATE(16, Array<REAL>*, v, values, 2, 9); }
+SdaiAggr  Matrix_3D::get_values_aggrId() { return getAGGRID(2); }
 void Matrix_3D::put_values_element(int index, REAL element) {
    SdaiAggr agId = get_values_aggrId();
    Array<REAL> aggregate(m, agId);
@@ -334,9 +369,9 @@ void Matrix_3D::put_values_element(int index, REAL element) {
 /*====================================================================================================
    Matrix_Deformated
 ====================================================================================================*/
-Array<REAL>* Matrix_Deformated::get_values() { return getAGGREGATE(8, Array<REAL>*, 1); }
-void Matrix_Deformated::put_values(Array<REAL>* v) { putAGGREGATE(8, Array<REAL>*, v, values, 1, 9); }
-SdaiAggr  Matrix_Deformated::get_values_aggrId() { return getAGGRID(1); }
+Array<REAL>* Matrix_Deformated::get_values() { return getAGGREGATE(16, Array<REAL>*, 2); }
+void Matrix_Deformated::put_values(Array<REAL>* v) { putAGGREGATE(16, Array<REAL>*, v, values, 2, 9); }
+SdaiAggr  Matrix_Deformated::get_values_aggrId() { return getAGGRID(2); }
 void Matrix_Deformated::put_values_element(int index, REAL element) {
    SdaiAggr agId = get_values_aggrId();
    Array<REAL> aggregate(m, agId);
@@ -350,12 +385,12 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
 {
    void* theObject = NULL;
 
-   CacheEntry* p_CacheEntry;
-   GaussPoint* p_GaussPoint;
-   Result* p_Result;
-   ResultBlock* p_ResultBlock;
-   ResultHeader* p_ResultHeader;
+   TimeStep* p_TimeStep;
+   Analysis* p_Analysis;
    Element* p_Element;
+   GaussPoint* p_GaussPoint;
+   ResultHeader* p_ResultHeader;
+   Result* p_Result;
    Node* p_Node;
    Mesh* p_Mesh;
    ScalarResult* p_ScalarResult;
@@ -367,29 +402,29 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
    *entityTypep = entityType;
    instData->entityData = &theEntities[entityType];
    switch(entityType) {
-         case et_CacheEntry:
-            p_CacheEntry = new(ma) CacheEntry(ma, instData);
-            theObject = (void*)p_CacheEntry;
+         case et_TimeStep:
+            p_TimeStep = new(ma) TimeStep(ma, instData);
+            theObject = (void*)p_TimeStep;
+            break;
+         case et_Analysis:
+            p_Analysis = new(ma) Analysis(ma, instData);
+            theObject = (void*)p_Analysis;
+            break;
+         case et_Element:
+            p_Element = new(ma) Element(ma, instData);
+            theObject = (void*)p_Element;
             break;
          case et_GaussPoint:
             p_GaussPoint = new(ma) GaussPoint(ma, instData);
             theObject = (void*)p_GaussPoint;
             break;
-         case et_Result:
-            p_Result = new(ma) Result(ma, instData);
-            theObject = (void*)p_Result;
-            break;
-         case et_ResultBlock:
-            p_ResultBlock = new(ma) ResultBlock(ma, instData);
-            theObject = (void*)p_ResultBlock;
-            break;
          case et_ResultHeader:
             p_ResultHeader = new(ma) ResultHeader(ma, instData);
             theObject = (void*)p_ResultHeader;
             break;
-         case et_Element:
-            p_Element = new(ma) Element(ma, instData);
-            theObject = (void*)p_Element;
+         case et_Result:
+            p_Result = new(ma) Result(ma, instData);
+            theObject = (void*)p_Result;
             break;
          case et_Node:
             p_Node = new(ma) Node(ma, instData);
@@ -435,12 +470,12 @@ tEdmiDefinedTypeData fem_schema_velassco_definedTypes[] = {
 
 fem_Schema fem_schema_velassco_SchemaObject(fem_schema_velassco_Entities, fem_schema_velassco_definedTypes, fem_schema_velassco_DefinedTypeNames);
 
-static bool supertypeOf_CacheEntry(entityType wantedSuperType, void **p);
-static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **p);
-static bool supertypeOf_Result(entityType wantedSuperType, void **p);
-static bool supertypeOf_ResultBlock(entityType wantedSuperType, void **p);
-static bool supertypeOf_ResultHeader(entityType wantedSuperType, void **p);
+static bool supertypeOf_TimeStep(entityType wantedSuperType, void **p);
+static bool supertypeOf_Analysis(entityType wantedSuperType, void **p);
 static bool supertypeOf_Element(entityType wantedSuperType, void **p);
+static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **p);
+static bool supertypeOf_ResultHeader(entityType wantedSuperType, void **p);
+static bool supertypeOf_Result(entityType wantedSuperType, void **p);
 static bool supertypeOf_Node(entityType wantedSuperType, void **p);
 static bool supertypeOf_Mesh(entityType wantedSuperType, void **p);
 static bool supertypeOf_ScalarResult(entityType wantedSuperType, void **p);
@@ -448,11 +483,25 @@ static bool supertypeOf_VectorResult(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_2D(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_3D(entityType wantedSuperType, void **p);
 static bool supertypeOf_Matrix_Deformated(entityType wantedSuperType, void **p);
-static dbInstance *dbInstanceOf_CacheEntry(void *obj) { CacheEntry *p = (CacheEntry*)obj; dbInstance *dbi = p; return dbi;}
+static dbInstance *dbInstanceOf_TimeStep(void *obj) { TimeStep *p = (TimeStep*)obj; dbInstance *dbi = p; return dbi;}
 
-static bool supertypeOf_CacheEntry(entityType wantedSuperType, void **)
+static bool supertypeOf_TimeStep(entityType wantedSuperType, void **)
 {
-   return wantedSuperType == et_CacheEntry;
+   return wantedSuperType == et_TimeStep;
+}
+
+static dbInstance *dbInstanceOf_Analysis(void *obj) { Analysis *p = (Analysis*)obj; dbInstance *dbi = p; return dbi;}
+
+static bool supertypeOf_Analysis(entityType wantedSuperType, void **)
+{
+   return wantedSuperType == et_Analysis;
+}
+
+static dbInstance *dbInstanceOf_Element(void *obj) { Element *p = (Element*)obj; dbInstance *dbi = p; return dbi;}
+
+static bool supertypeOf_Element(entityType wantedSuperType, void **)
+{
+   return wantedSuperType == et_Element;
 }
 
 static dbInstance *dbInstanceOf_GaussPoint(void *obj) { GaussPoint *p = (GaussPoint*)obj; dbInstance *dbi = p; return dbi;}
@@ -462,20 +511,6 @@ static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **)
    return wantedSuperType == et_GaussPoint;
 }
 
-static dbInstance *dbInstanceOf_Result(void *obj) { Result *p = (Result*)obj; dbInstance *dbi = p; return dbi;}
-
-static bool supertypeOf_Result(entityType wantedSuperType, void **)
-{
-   return wantedSuperType == et_Result;
-}
-
-static dbInstance *dbInstanceOf_ResultBlock(void *obj) { ResultBlock *p = (ResultBlock*)obj; dbInstance *dbi = p; return dbi;}
-
-static bool supertypeOf_ResultBlock(entityType wantedSuperType, void **)
-{
-   return wantedSuperType == et_ResultBlock;
-}
-
 static dbInstance *dbInstanceOf_ResultHeader(void *obj) { ResultHeader *p = (ResultHeader*)obj; dbInstance *dbi = p; return dbi;}
 
 static bool supertypeOf_ResultHeader(entityType wantedSuperType, void **)
@@ -483,11 +518,11 @@ static bool supertypeOf_ResultHeader(entityType wantedSuperType, void **)
    return wantedSuperType == et_ResultHeader;
 }
 
-static dbInstance *dbInstanceOf_Element(void *obj) { Element *p = (Element*)obj; dbInstance *dbi = p; return dbi;}
+static dbInstance *dbInstanceOf_Result(void *obj) { Result *p = (Result*)obj; dbInstance *dbi = p; return dbi;}
 
-static bool supertypeOf_Element(entityType wantedSuperType, void **)
+static bool supertypeOf_Result(entityType wantedSuperType, void **)
 {
-   return wantedSuperType == et_Element;
+   return wantedSuperType == et_Result;
 }
 
 static dbInstance *dbInstanceOf_Node(void *obj) { Node *p = (Node*)obj; dbInstance *dbi = p; return dbi;}
@@ -592,12 +627,12 @@ static bool supertypeOf_indeterminate(entityType, void **)
 
 static supertypeCastingFunc castingFunctions[] = {
 &supertypeOf_indeterminate,
-   &supertypeOf_CacheEntry,
-   &supertypeOf_GaussPoint,
-   &supertypeOf_Result,
-   &supertypeOf_ResultBlock,
-   &supertypeOf_ResultHeader,
+   &supertypeOf_TimeStep,
+   &supertypeOf_Analysis,
    &supertypeOf_Element,
+   &supertypeOf_GaussPoint,
+   &supertypeOf_ResultHeader,
+   &supertypeOf_Result,
    &supertypeOf_Node,
    &supertypeOf_Mesh,
    &supertypeOf_ScalarResult,
@@ -624,12 +659,12 @@ static dbInstance *dbInstanceOf_indeterminate(void *)
 
 static dbInstanceCastingFunc dbInstanceCastingFunctions[] = {
 &dbInstanceOf_indeterminate,
-   &dbInstanceOf_CacheEntry,
-   &dbInstanceOf_GaussPoint,
-   &dbInstanceOf_Result,
-   &dbInstanceOf_ResultBlock,
-   &dbInstanceOf_ResultHeader,
+   &dbInstanceOf_TimeStep,
+   &dbInstanceOf_Analysis,
    &dbInstanceOf_Element,
+   &dbInstanceOf_GaussPoint,
+   &dbInstanceOf_ResultHeader,
+   &dbInstanceOf_Result,
    &dbInstanceOf_Node,
    &dbInstanceOf_Mesh,
    &dbInstanceOf_ScalarResult,
