@@ -60,7 +60,7 @@ extern std::ofstream       g_apiTraceFile;
 #define CHECK_VALUE( val, cte )			     \
 	do                                           \
 	{                                            \
-		if (val == cte)                         \
+		if (val != cte)                         \
 			return VAL_INVALID_QUERY_PARAMETERS; \
 	}                                            \
 	while (0)
