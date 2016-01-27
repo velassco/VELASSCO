@@ -109,8 +109,8 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
     std::ostringstream oss;
     size_t nVertices = _return_.result_list.size();
     size_t nElements = _return_.result_list[0].value.size();
-    oss.write((char*)&nVertices, sizeof(size_t));
-    oss.write((char*)&nElements, sizeof(size_t));
+    oss.write((char*)&nVertices, sizeof(int64_t));
+    oss.write((char*)&nElements, sizeof(int64_t));
     oss.write((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
     oss.write((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
     result = oss.str();
@@ -159,9 +159,14 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
 }
 
 static bool isMeshTypeImplemented(MeshInfo& meshInfo) {
-	if(meshInfo.elementType.shape == ElementShapeType::type::SphereElement)
-	  return true;
-	return false;
+	switch(meshInfo.elementType.shape){
+	case ElementShapeType::type::SphereElement:
+	case ElementShapeType::type::TetrahedraElement:
+		return true;
+	  
+	default:
+		return false;
+	}
 }
 
 void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const SessionID sessionID, const std::string& query ) {

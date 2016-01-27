@@ -64,16 +64,28 @@ void GraphicsModule::fromatTetrahedraMeshForDrawing(VELaSSCo::RTFormat::File& _r
 	const size_t num_attribs     = elementAttribs.size();
 	//size_t num_groupInfos  = elementInfos.size();
 	
+	std::map<int64_t, int64_t> vertexIdx_map;
+	
+	std::vector<VertexElement> vertexElements( vertices.size() );
+	for(int64_t i = 0; i < vertices.size(); i++){
+		vertexElements[i].x = vertices[i].x;
+		vertexElements[i].y = vertices[i].y;
+		vertexElements[i].z = vertices[i].z;
+		vertexElements[i].vertexID = vertices[i].id;
+		vertexIdx_map[ vertexElements[i].vertexID ] = i;
+	}
+	
+	
 	std::vector<int64_t> triangle_strips( num_elements * 7 );
 
 	for(size_t idx = 0; idx < elements.size(); idx++){
 		
-		triangle_strips[idx * 7 + 0] = elements[idx].nodes_ids[0];
-		triangle_strips[idx * 7 + 1] = elements[idx].nodes_ids[1];
-		triangle_strips[idx * 7 + 2] = elements[idx].nodes_ids[3];
-		triangle_strips[idx * 7 + 3] = elements[idx].nodes_ids[2];
-		triangle_strips[idx * 7 + 4] = elements[idx].nodes_ids[0];
-		triangle_strips[idx * 7 + 5] = elements[idx].nodes_ids[1];
+		triangle_strips[idx * 7 + 0] = vertexIdx_map[ elements[idx].nodes_ids[0] ];
+		triangle_strips[idx * 7 + 1] = vertexIdx_map[ elements[idx].nodes_ids[1] ];
+		triangle_strips[idx * 7 + 2] = vertexIdx_map[ elements[idx].nodes_ids[3] ];
+		triangle_strips[idx * 7 + 3] = vertexIdx_map[ elements[idx].nodes_ids[2] ];
+		triangle_strips[idx * 7 + 4] = vertexIdx_map[ elements[idx].nodes_ids[0] ];
+		triangle_strips[idx * 7 + 5] = vertexIdx_map[ elements[idx].nodes_ids[1] ];
 		triangle_strips[idx * 7 + 6] = -1;
 		
 	}
@@ -98,7 +110,7 @@ void GraphicsModule::fromatTetrahedraMeshForDrawing(VELaSSCo::RTFormat::File& _r
 
 	  _return_.header.metaBytes = 0;
 
-	  _return_.header.vertexDefinitionsBytes  = static_cast<uint64_t>(vertices.size() * sizeof(VertexElement));
+	  _return_.header.vertexDefinitionsBytes  = static_cast<uint64_t>(vertexElements.size() * sizeof(VertexElement));
 	  _return_.header.vertexAttributesBytes   = 0;
 	  _return_.header.edgeDefinitionsBytes    = 0;
 	  _return_.header.edgeAttributesBytes     = 0;
@@ -119,7 +131,7 @@ void GraphicsModule::fromatTetrahedraMeshForDrawing(VELaSSCo::RTFormat::File& _r
 	  _return_.data.cellAttributes    = 0;
 	  
 	  memcpy(_return_.data.description, description, _return_.header.descriptionBytes);
-	  memcpy(_return_.data.vertexDefinitions, (const char*)vertices.data(), _return_.header.vertexDefinitionsBytes);
+	  memcpy(_return_.data.vertexDefinitions, (const char*)vertexElements.data(), _return_.header.vertexDefinitionsBytes);
 	  memcpy(_return_.data.faceDefinitions, (const char*)triangle_strips.data(), _return_.header.faceDefinitionsBytes);
 }
 

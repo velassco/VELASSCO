@@ -895,7 +895,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 #define READ_GROUPED_ROWS
 
 /* GetResultsFromVerticesID */
-static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t>& listOfVerticesID) {
+static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, std::vector<bool>& foundFlags, const std::vector<int64_t>& listOfVerticesID) {
   int num_results = 0;
   unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
@@ -939,12 +939,18 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
   
   for(size_t i = 0; i < listOfVerticesID.size(); i++){
 	  
+	  // already a value is found.
+	  if(foundFlags[i]) continue;
+	  
 	  std::unordered_map< int64_t,std::vector< double > >::const_iterator resultOnVertex = resultOnVertexListMap.find (listOfVerticesID[i]);
 
 	  if ( resultOnVertex == resultOnVertexListMap.end() ){
 		//LOGGER << "not found";
 		continue;
 	  } else {
+		
+		foundFlags[i] = true;
+		  
 		//  LOGGER << "found";
 		ResultOnVertex result;
 		result.__set_id( resultOnVertex->first );
@@ -964,6 +970,9 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
            const std::string &analysisID, const double       timeStep,  
            const ResultInfo &resultInfo,  const std::vector<int64_t> &listOfVerticesID, const char *format ){
   bool scan_ok = true;
+  
+  std::vector<bool> foundFlags(listOfVerticesID.size(), false);
+  
 #ifdef READ_GROUPED_ROWS
   int chunk_size = 4;
   for(int rowIdx = 0; rowIdx <= 1000; rowIdx+=chunk_size){
@@ -1007,7 +1016,8 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 	  
 	  try {
 		// or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
-		while ( true) {
+		bool done = false;
+		while ( !done ) {
 		  _hbase_client->scannerGet( rowsResult, scan_id);
 		  if ( rowsResult.size() == 0)
 		break;
@@ -1017,9 +1027,13 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 		// check if the rowkey is our's ... should be ....
 		if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
 		  continue; // break;
-		bool ok = getResultsFromRow( listOfResults, rowsResult[ i ], resultInfo, listOfVerticesID );
+		bool ok = getResultsFromRow( listOfResults, rowsResult[ i ], resultInfo, foundFlags, listOfVerticesID );
 		if ( ok) {
 			
+			size_t i = 0;
+			for(; i < foundFlags.size(); i++)
+			  if(!foundFlags[i]) break;
+			if(i == foundFlags.size()) done = true;
 
 		  // getMeshInfoFromRow.push_back( model_info);
 		  // getMeshInfoFromRow( tmp_lst_meshes, rowsResult[ i]);
@@ -1701,6 +1715,7 @@ bool HBase::getMeshElementsFromTable(std::string& report,
 				std::cout << std::endl;
 			}
 			
+			n_debug_elements = listOfElementAttribs.size() < 10 ? listOfElementAttribs.size() : 10;
 			for(size_t i = 0; i < n_debug_elements; i++){
 				std::cout << listOfElementAttribs[i].id << "\t" << listOfElementAttribs[i].name << "\t";
 				for(size_t j = 0; j < listOfElementAttribs[i].value.size(); j++)
