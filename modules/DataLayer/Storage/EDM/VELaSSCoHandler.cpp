@@ -195,9 +195,23 @@ void VELaSSCoHandler::UserLogout(std::string& _return, const std::string& sessio
 * with the attached list of double
 * if errors occur the contect is also returned here?
 */
-void VELaSSCoHandler::GetResultFromVerticesID(rvGetResultFromVerticesID& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices)
+void VELaSSCoHandler::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices)
 {
-   //--------------------->
+   VELaSSCoMethods theQuery(theCluster);
+   try {
+      thelog->logg(2, "-->GetResultFromVerticesID\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
+      setCurrentSession(sessionID.data());
+      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+         theQuery.GetResultFromVerticesID(rv, analysisID, timeStep, resultID, listOfVertices);
+      } else {
+         char *emsg = "Model does not exist.";
+         rv.__set_status("Error"); rv.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+      }
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      rv.__set_status("Error"); rv.__set_report(errMsg);
+   }
 }
 
 

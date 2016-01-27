@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "random_points.h"
 #include "elementID_of_random_points.h"
-#include "..\..\..\EngineLayer\QueryManager\analytics.h"
+//#include "..\..\..\EngineLayer\QueryManager\analytics.h"
 //#include "EDManalytics.h"
 
 
@@ -89,6 +89,7 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    printf("%s has %d vertices.\n", modelName, meshRV.vertex_list.size());
    
    rvGetListOfResults resultRV;
+   printf("\n--->GetListOfResultsFromTimeStepAndAnalysis - \"%s\"\n", modelName);
    startTime = GetTickCount();
    client.GetListOfResultsFromTimeStepAndAnalysis(resultRV, sessionID, FluidizedbedModelID, "Kratos", 21);
    endTime = GetTickCount();
@@ -96,11 +97,34 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    printf("Return status: %s\n", resultRV.status.data());
    printf("%s has %d result headers.\n", modelName, resultRV.result_list.size());
    int nRes = 0;
-   for (vector<ResultInfo>::iterator resIter = resultRV.result_list.begin(); resIter != resultRV.result_list.end(); resIter++) {
-      if (nRes++ > 6) break;
-      printf("%20s %10s\n", (char*)resIter->name.data(), (char*)resIter->type.data());
+   if (strncmp(resultRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", resultRV.report.data());
+   } else {
+      for (vector<ResultInfo>::iterator resIter = resultRV.result_list.begin(); resIter != resultRV.result_list.end(); resIter++) {
+         if (nRes++ > 16) break;
+         printf("%20s %10s\n", (char*)resIter->name.data(), (char*)resIter->type.data());
+      }
    }
    
+   rvGetResultFromVerticesID verticesResultRV;
+   vector<int64_t> listOfVertices;
+   printf("\n--->GetResultFromVerticesID - \"%s\"\n", modelName);
+   startTime = GetTickCount();
+   client.GetResultFromVerticesID(verticesResultRV, sessionID, FluidizedbedModelID, "Kratos", 21, "PRESSURE", listOfVertices);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetResultFromVerticesID is %d milliseconds\n", endTime - startTime);
+   printf("Return status: %s\n", verticesResultRV.status.data());
+   if (strncmp(verticesResultRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", verticesResultRV.report.data());
+   } else {
+      printf("%s has %d results.\n", modelName, verticesResultRV.result_list.size());
+      nRes = 0;
+      for (vector<ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
+         vector<double>::iterator valuesIter = resIter->value.begin();
+         if (nRes++ > 16) break;
+         printf("%10llu %10lf\n", resIter->id, valuesIter);
+      }
+   }
 
 }
 

@@ -285,7 +285,6 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
-         EDMULONG nDuplicates = 0;
          vector<VELaSSCoSM::ResultInfo>  result_list;
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
@@ -347,6 +346,68 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
       } else {
          rv.__set_status("OK");
          rv.__set_report("");
+      }
+   }
+}
+/*=============================================================================================================================*/
+void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, const std::string& analysisID, const double timeStep,
+   const std::string& resultID, const std::vector<int64_t> & listOfVertices)
+/*=============================================================================================================================*/
+{
+   int startTime, endTime;
+   if (subQueries) {
+      EDMULONG nexec = subQueries->size();
+      nodeInGetResultFromVerticesID *inParams = new(&ma)nodeInGetResultFromVerticesID(&ma, NULL);
+      inParams->analysisID->putString((char*)analysisID.data());
+      inParams->timeStep->putReal(timeStep);
+      inParams->resultID->putString((char*)analysisID.data());
+      inParams->listOfVertices->putInteger(1);
+
+      startTime = GetTickCount();
+#pragma omp parallel for
+      for (int i = 0; i < nexec; i++) {
+         EDMexecution *e = subQueries->getElementp(i);
+         nodeRvGetResultFromVerticesID *retVal = new(e->ema)nodeRvGetResultFromVerticesID(e->ema, NULL);
+         e->returnValues = retVal;
+         ExecuteRemoteCppMethod(e, "GetListOfResultsFromTimeStepAndAnalysis", inParams);
+      }
+      endTime = GetTickCount();
+      printf("Elapsed time for parallel execiution is %d milliseconds\n", endTime - startTime);
+      nodeRvGetResultFromVerticesID *retValueWithError = NULL;
+
+      EDMULONG maxID = 0, minID = 0xfffffffffffffff;
+      for (int i = 0; i < nexec; i++) {
+         EDMexecution *e = subQueries->getElementp(i);
+         nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
+         if (strNEQ(retVal->status->value.stringVal, "OK")) {
+            retValueWithError = retVal; break;
+         }
+         if (retVal->maxID->value.intVal > maxID) maxID = retVal->maxID->value.intVal;
+         if (retVal->minID->value.intVal < minID) minID = retVal->minID->value.intVal;
+      }
+      if (retValueWithError) {
+         rv.__set_status("Error");
+         rv.__set_report(retValueWithError->report->value.stringVal);
+      } else {
+         unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *)* (maxID + 1));
+         EDMULONG nDuplicates = 0;
+         vector<VELaSSCoSM::ResultOnVertex>  result_list;
+         for (int i = 0; i < nexec; i++) {
+            EDMexecution *e = subQueries->getElementp(i);
+            nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
+            Container<EDMVD::ResultOnVertex> resultList(&ma, retVal->result_list);
+            for (EDMVD::ResultOnVertex *rov = resultList.firstp(); rov; rov = resultList.nextp()) {
+               if (verticesExist[rov->id] == 0) {
+                  VELaSSCoSM::ResultOnVertex VELaSSCoSM_rov;
+                  result_list.push_back(VELaSSCoSM_rov); verticesExist[rov->id] = 1;
+               } else {
+                  nDuplicates++;
+               }
+            }
+         }
+         rv.__set_status("OK");
+         rv.__set_report("");
+         rv.__set_result_list(result_list);
       }
    }
 }

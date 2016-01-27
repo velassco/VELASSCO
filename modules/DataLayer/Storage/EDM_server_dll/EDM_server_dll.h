@@ -266,10 +266,12 @@ struct nodeInGetCoordinatesAndElementsFromMesh : public CppParameterClass
 /*===================================================================================================================*/
 struct nodeRvGetResultFromVerticesID : public CppParameterClass
 {
-   cppRemoteParameter                    *attrPointerArr[3];
+   cppRemoteParameter                    *attrPointerArr[5];
    cppRemoteParameter                    *status;
    cppRemoteParameter                    *report;
    cppRemoteParameter                    *result_list;
+   cppRemoteParameter                    *minID;
+   cppRemoteParameter                    *maxID;
 
    void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
    nodeRvGetResultFromVerticesID(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
@@ -277,6 +279,8 @@ struct nodeRvGetResultFromVerticesID : public CppParameterClass
       addAddribute(&status, rptSTRING);
       addAddribute(&report, rptSTRING);
       addAddribute(&result_list, rptCMemoryAllocator);
+      addAddribute(&minID, rptINTEGER);
+      addAddribute(&maxID, rptINTEGER);
    }
 };
 struct nodeInGetResultFromVerticesID : public CppParameterClass
@@ -295,6 +299,12 @@ struct nodeInGetResultFromVerticesID : public CppParameterClass
       addAddribute(&resultID, rptSTRING);
       addAddribute(&listOfVertices, rptContainer);
    }
+};
+
+
+struct relocateResultOnVertex : public RelocateInfo
+{
+   Container<EDMVD::ResultOnVertex> *vertexResults;
 };
 
 

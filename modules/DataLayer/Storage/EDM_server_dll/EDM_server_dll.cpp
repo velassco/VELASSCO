@@ -301,9 +301,10 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
 
    try {
       startTime = GetTickCount();
-
+      bool timeStepFound = false, resultIdFound = false;
 
       char *analysisID = inParam->analysisID->value.stringVal;
+      char *resultID = inParam->resultID->value.stringVal;
       Container<EDMVD::Vertex> vertices(&dllMa, 1024);
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
 
@@ -315,23 +316,55 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
          fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
          if (cAnalysis) {
             resultInfoMemory->freeAllMemory();
-            relocateResultInfo *relocateInfo = (relocateResultInfo *)resultInfoMemory->createRelocateInfo(sizeof(relocateResultInfo));
-            Container<EDMVD::ResultInfo> *resInfo = new(resultInfoMemory)Container<EDMVD::ResultInfo>(resultInfoMemory, 16);
-            relocateInfo->sResults = resInfo;
+            relocateResultOnVertex *relocateInfo = (relocateResultOnVertex *)resultInfoMemory->createRelocateInfo(sizeof(relocateResultOnVertex));
+            Container<EDMVD::ResultOnVertex> *resultsOnVertices = new(resultInfoMemory)Container<EDMVD::ResultOnVertex>(resultInfoMemory, 1024);
+            relocateInfo->vertexResults = resultsOnVertices;
 
             Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps(), theModel);
             for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
                if (ts->get_time_value() == inParam->timeStep->value.realVal) {
-                  Iterator<fem::ResultHeader*, fem::entityType> resultIter(ts->get_results(), theModel);
-                  for (fem::ResultHeader *rh = resultIter.first(); rh; rh = resultIter.next()) {
-                     ResultInfo *ri = resInfo->createNext();
-                 }
+                  timeStepFound = true;
+                  Iterator<fem::ResultHeader*, fem::entityType> resultHeaderIter(ts->get_results(), theModel);
+                  for (fem::ResultHeader *rh = resultHeaderIter.first(); rh; rh = resultHeaderIter.next()) {
+                     char *rhname = rh->get_name();
+                     if (rhname && strEQL(rhname, resultID)) {
+                        resultIdFound = true;
+                        int nOfValues = 3;
+                        Iterator<fem::Result*, fem::entityType> resultIter(rh->get_values(), theModel);
+                        fem::entityType resType;
+                        for (void *vres = resultIter.first(&resType); vres; vres = resultIter.next(&resType)) {
+                           ResultOnVertex *rov = resultsOnVertices->createNext();
+                           rov->value = new(resultInfoMemory)Container<double>(resultInfoMemory, nOfValues);
+                           fem::Result *res;
+                           if (resType == fem::et_ScalarResult) {
+                              fem::ScalarResult *scalar = (ScalarResult *)vres; res = scalar;
+                              rov->value->add(scalar->get_val()); nOfValues = 1;
+                           } else if (resType == fem::et_VectorResult) {
+                              fem::VectorResult *vector = (VectorResult *)vres; res = vector;
+                              SdaiAggr cnAID = vector->get_values_aggrId();
+                              nOfValues = sdaiGetMemberCount(cnAID);
+                              for (int vi = 0; vi < nOfValues; vi++) {
+                                 double d;
+                                 if (!edmiGetAggrElement(cnAID, vi, sdaiREAL, &d)) CHECK(sdaiErrorQuery());
+                                 rov->value->add(d);
+                              }
+                           } else {
+                              emsg = "Resulttype not supported in GetResultFromVerticesID.";
+                           }
+                           fem::Node *node = res->get_result_for();
+                           rov->id = node ? node->get_id() : 0;
+                           if (rov->id > maxID) maxID = rov->id;
+                           if (rov->id < minID) minID = rov->id;
+                        }
+                     }
+                  }
                }
             }
+            retVal->maxID->putInteger(maxID); retVal->minID->putInteger(minID);
             // Add info about the memory blocks within one memory block
             resultInfoMemory->prepareForRelocationBeforeTransfer();
             // Link the memory allocator to the return value.
-            //retVal->ResultInfoList->putCMemoryAllocator(resultInfoMemory);
+            retVal->result_list->putCMemoryAllocator(resultInfoMemory);
          } else {
             emsg = "Analysis with specified name does not exist.";
          }
@@ -340,7 +373,7 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
       emsg = handleError(e);
    }
    if (emsg) {
-      retVal->status->putString("Error3"); retVal->report->putString(emsg);
+      retVal->status->putString("Error4"); retVal->report->putString(emsg);
    } else {
       retVal->status->putString("OK");
       retVal->report->putString("");
