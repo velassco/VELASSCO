@@ -1051,11 +1051,12 @@ int InsertPartResult_Data( const std::string &host, int port,
                itV != itR->values.end( ); itV++ ) 
             {
             mutations.push_back( Mutation( ) );
-            status = EncodeColumn_Data( 'R', 'r', indexMData, "", itV->id, mutations.back().column );
+            status = EncodeColumn_Data( 'R', 'r', indexMData, "vl", itV->id, mutations.back().column );
             if ( status != SUCCESS )
               {
               break;
               }
+
             for( std::vector<double>::const_iterator itD = itV->values.begin( );
                  itD != itV->values.end( ); itD++ )
               {
