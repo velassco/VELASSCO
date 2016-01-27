@@ -161,7 +161,7 @@ void EDMclusterExecution::buildServerContexts(char *user, char *group, char *pas
    char serverContextName[2048];
 
    ma.reset();
-   serverContexts = new(&ma)Collection<SdaiServerContext>(&ma);
+   serverContexts = new(&ma)Container<SdaiServerContext>(&ma);
    EDMcluster *theCluster = theServer->getTheEDMcluster();
 
    //Iterator<ecl::EDMdatabase*, ecl::entityType>  dbIter(theCluster->get_databases(), theServer->clusterModel);
@@ -215,7 +215,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
          if (nOfEDMmodels > 0) {
             Iterator<EDMmodel*, ecl::entityType> modelIter(theEDMmodels, theServer->clusterModel);
             EDMmodel*m = modelIter.first();
-            subQueries = new(&ma)Collection<EDMexecution>(&ma, nOfEDMmodels);
+            subQueries = new(&ma)Container<EDMexecution>(&ma, nOfEDMmodels);
             for (EDMLONG i = 0; m && i < nOfEDMmodels; i++) {
                EDMexecution *exp = subQueries->createNext();
                exp->modelName = m->get_name();

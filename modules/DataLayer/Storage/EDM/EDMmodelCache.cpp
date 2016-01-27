@@ -103,13 +103,13 @@ void FEMmodelCache::initCache()
       nOf_x = dnx, nOf_y = dny, nOf_z = dnz;
       nOf_x++; nOf_y++; nOf_z++;
 
-      Matrix<Collection<InstanceId>*> *elemBoxMatrix = new(&cache_ma) Matrix<Collection<InstanceId>*>(nOf_x, nOf_y, nOf_z, sizeof(Collection<InstanceId>*), &cache_ma);
+      Matrix<Container<InstanceId>*> *elemBoxMatrix = new(&cache_ma) Matrix<Container<InstanceId>*>(nOf_x, nOf_y, nOf_z, sizeof(Container<InstanceId>*), &cache_ma);
       voidElemBoxMatrix = (void*)elemBoxMatrix;
 
       for (EDMULONG ix = 0; ix < nOf_x; ix++) {
          for (EDMULONG iy = 0; iy < nOf_y; iy++) {
             for (EDMULONG iz = 0; iz < nOf_z; iz++) {
-               elemBoxMatrix->setElement(ix, iy, iz, new(&cache_ma)Collection<InstanceId>(&cache_ma));
+               elemBoxMatrix->setElement(ix, iy, iz, new(&cache_ma)Container<InstanceId>(&cache_ma));
             }
          }
       }
@@ -129,7 +129,7 @@ void FEMmodelCache::initCache()
          for (int ix = min_ix; ix <= max_ix; ix++) {
             for (int iy = min_iy; iy <= max_iy; iy++) {
                for (int iz = min_iz; iz <= max_iz; iz++) {
-                  Collection<InstanceId> *elemBox = elemBoxMatrix->getElement(ix, iy, iz);
+                  Container<InstanceId> *elemBox = elemBoxMatrix->getElement(ix, iy, iz);
                   elemBox->add(ep->getInstanceId());
                   nElemInBox++;
                }

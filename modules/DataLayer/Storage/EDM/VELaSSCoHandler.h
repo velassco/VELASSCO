@@ -45,7 +45,7 @@ public:
    * @param resultID
    * @param listOfVertices
    */
-   void GetResultFromVerticesID(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::string& listOfVertices);
+   void GetResultFromVerticesID(rvGetResultFromVerticesID& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices);
 
    /**
    * Return the coordinates and elements of a model's mesh.
@@ -56,9 +56,9 @@ public:
    * @param modelID
    * @param analysisID
    * @param timeStep
-   * @param partitionID
+   * @param meshInfo
    */
-   virtual void GetCoordinatesAndElementsFromMesh(std::string& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const int32_t partitionID);
+   void GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const MeshInfo& meshInfo);
 
    /**
    * Stop Data Layer

@@ -43,6 +43,7 @@ std::string getResultOnVertices(std::string sessionID,
 
 void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelName)
 {
+   int endTime, startTime;
 
    rvOpenModel rvOM;
    string FluidizedbedModelID;
@@ -80,9 +81,27 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
 
    rvGetListOfVerticesFromMesh meshRV;
    printf("\n--->GetListOfVerticesFromMesh - \"%s\"\n", modelName);
+   startTime = GetTickCount();
    client.GetListOfVerticesFromMesh(meshRV, sessionID, FluidizedbedModelID, "", 0.0, 0);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetListOfVerticesFromMesh is %d milliseconds\n", endTime - startTime);
    printf("Return status: %s\n", meshRV.status.data());
    printf("%s has %d vertices.\n", modelName, meshRV.vertex_list.size());
+   
+   rvGetListOfResults resultRV;
+   startTime = GetTickCount();
+   client.GetListOfResultsFromTimeStepAndAnalysis(resultRV, sessionID, FluidizedbedModelID, "Kratos", 21);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetListOfResultsFromTimeStepAndAnalysis is %d milliseconds\n", endTime - startTime);
+   printf("Return status: %s\n", resultRV.status.data());
+   printf("%s has %d result headers.\n", modelName, resultRV.result_list.size());
+   int nRes = 0;
+   for (vector<ResultInfo>::iterator resIter = resultRV.result_list.begin(); resIter != resultRV.result_list.end(); resIter++) {
+      if (nRes++ > 6) break;
+      printf("%20s %10s\n", (char*)resIter->name.data(), (char*)resIter->type.data());
+   }
+   
+
 }
 
 

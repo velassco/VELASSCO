@@ -70,7 +70,7 @@ protected:
    tRemoteParameter                 params[MAX_PAR];
    tRemoteParameter                 *paramAddresses[MAX_PAR];
    tRemoteParameter                 returnValue;
-   Collection<EDMexecution>         *subQueries;
+   Container<EDMexecution>         *subQueries;
    virtual char                     *getPluginPath() { return ""; }
    virtual char                     *getPluginName() { return ""; }
    void                             init()
@@ -78,7 +78,7 @@ protected:
       nParameters = 0;
    }
 public:
-   Collection<SdaiServerContext>    *serverContexts;
+   Container<SdaiServerContext>    *serverContexts;
    /*!
    Execution on a ClusterModel
    */
