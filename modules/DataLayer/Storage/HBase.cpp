@@ -992,7 +992,7 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 	  std::string prefixRowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
 #ifdef READ_GROUPED_ROWS
 	  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx/*0*/, format); // partitionID = 0
-	  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx+chunk_size-1/*( int)0x7fffffff*/, format); // partitionID = biggest ever
+	  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx+chunk_size/*( int)0x7fffffff*/, format); // partitionID = biggest ever
 #else
 	  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, 0, format); // partitionID = 0
 	  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, ( int)0x7fffffff, format); // partitionID = biggest ever
