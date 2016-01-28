@@ -220,8 +220,8 @@ extern "C" {
     
     if ( !AreEqualNoCase(stepOptions, "ALL") ) {
       // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
-      CHECK_NON_ZERO_VALUE( numSteps);
-      CHECK_QUERY_POINTER( lstSteps);
+    //  CHECK_NON_ZERO_VALUE( numSteps);
+    //  CHECK_QUERY_POINTER( lstSteps);
     }
     // int numSteps = 0;
     if ( AreEqualNoCase( stepOptions, "SINGLE")) {
@@ -260,12 +260,12 @@ extern "C" {
 	queryCommand << "  \"numSteps\" : \"" << numSteps     << "\",\n";    
 	queryCommand << "  \"lstSteps\" : [";
 	// can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-	if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
+//	if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
 	  for ( int i = 0; i < numSteps; i++) {
 	    if (i) queryCommand << ",";
 	    queryCommand << lstSteps[i];
 	  }
-	}
+//	}
 	queryCommand << "],\n";
 	/* D2C parameters: */
 
