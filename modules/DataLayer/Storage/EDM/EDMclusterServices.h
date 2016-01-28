@@ -54,6 +54,7 @@ struct EDMexecution
    char                             *modelName;
    SdaiServerContext                srvCtxt;
    CppParameterClass                *returnValues;
+   CedmError                        *error;
 };
 
 /*================================================================================================*/
@@ -90,7 +91,8 @@ public:
    void                             addInputParameter(SdaiPrimitiveType ptype, void *param);
    void                             buildServerContexts(char *user, char *group, char *password);
    void                             buildServerContexts(char *user, char *group, char *password, ClusterModel *cm);
-   void                             ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters);
+   void                             ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters, bool *errorFound);
+   void                             writeErrorMessageForSubQueries(string &errMsg);
 
 };
 

@@ -106,25 +106,25 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
       }
    }
    
-   rvGetResultFromVerticesID verticesResultRV;
-   vector<int64_t> listOfVertices;
-   printf("\n--->GetResultFromVerticesID - \"%s\"\n", modelName);
-   startTime = GetTickCount();
-   client.GetResultFromVerticesID(verticesResultRV, sessionID, FluidizedbedModelID, "Kratos", 21, "PRESSURE", listOfVertices);
-   endTime = GetTickCount();
-   printf("Elapsed time for GetResultFromVerticesID is %d milliseconds\n", endTime - startTime);
-   printf("Return status: %s\n", verticesResultRV.status.data());
-   if (strncmp(verticesResultRV.status.data(), "Error", 5) == 0) {
-      printf("Error message: \"%s\"\n", verticesResultRV.report.data());
-   } else {
-      printf("%s has %d results.\n", modelName, verticesResultRV.result_list.size());
-      nRes = 0;
-      for (vector<ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
-         vector<double>::iterator valuesIter = resIter->value.begin();
-         if (nRes++ > 16) break;
-         printf("%10llu %10lf\n", resIter->id, valuesIter);
-      }
-   }
+   //rvGetResultFromVerticesID verticesResultRV;
+   //vector<int64_t> listOfVertices;
+   //printf("\n--->GetResultFromVerticesID - \"%s\"\n", modelName);
+   //startTime = GetTickCount();
+   //client.GetResultFromVerticesID(verticesResultRV, sessionID, FluidizedbedModelID, "Kratos", 21, "PRESSURE", listOfVertices);
+   //endTime = GetTickCount();
+   //printf("Elapsed time for GetResultFromVerticesID is %d milliseconds\n", endTime - startTime);
+   //printf("Return status: %s\n", verticesResultRV.status.data());
+   //if (strncmp(verticesResultRV.status.data(), "Error", 5) == 0) {
+   //   printf("Error message: \"%s\"\n", verticesResultRV.report.data());
+   //} else {
+   //   printf("%s has %d results.\n", modelName, verticesResultRV.result_list.size());
+   //   nRes = 0;
+   //   for (vector<ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
+   //      vector<double>::iterator valuesIter = resIter->value.begin();
+   //      if (nRes++ > 16) break;
+   //      printf("%10llu %10lf\n", resIter->id, valuesIter);
+   //   }
+   //}
 
 }
 

@@ -186,17 +186,43 @@ void* ourMemoryAllocator(SdaiVoid _ma, EDMLONG size)
    return ma->alloc(size);
 }
 /*==============================================================================================================================*/
-void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters)
+void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters,
+   bool *errorFound)
 /*==============================================================================================================================*/
 {
-   if (inputParameters && inputParameters->nOfAttributes) {
-      CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
-         methodName, 0, inputParameters->nOfAttributes, (RemoteParameter*)inputParameters->attrPointerArr, NULL, execParams->returnValues->nOfAttributes,
-         (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
-   } else {
-      CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
-         methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
-         (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
+   try {
+      if (inputParameters && inputParameters->nOfAttributes) {
+         CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+            methodName, 0, inputParameters->nOfAttributes, (RemoteParameter*)inputParameters->attrPointerArr, NULL, execParams->returnValues->nOfAttributes,
+            (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
+      } else {
+         CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+            methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
+            (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
+      }
+   } catch (CedmError *e) {
+      execParams->error = e; *errorFound = true;
+   }
+}
+/*==============================================================================================================================*/
+void EDMclusterExecution::writeErrorMessageForSubQueries(string &allMsg)
+/*==============================================================================================================================*/
+{
+   SdaiString              serverContextName, userName, groupName, password, communicationType, edmServerPortNumber;
+   SdaiString              edmServerHostName, edmiHttpTunnelName, edmiHttpTunnelPortNumber, edmiHttpTunnelHostName, proxyServerPortNumber, proxyServerName;
+
+
+   for (EDMexecution *execInfo = subQueries->firstp(); execInfo; execInfo = subQueries->nextp()) {
+      if (execInfo->error) {
+         edmiGetServerContextProperties(execInfo->srvCtxt, &serverContextName, &userName, &groupName, &password, &communicationType,
+            &edmServerPortNumber, &edmServerHostName, &edmiHttpTunnelName, &edmiHttpTunnelPortNumber, &edmiHttpTunnelHostName,
+            &proxyServerPortNumber, &proxyServerName);
+         char errMsg[0x4000]; 
+         char *exeptionMsg = execInfo->error->message ? execInfo->error->message : edmiGetErrorText(execInfo->error->rstat);
+         sprintf(errMsg, "On server %s:%s - error: %s\n", edmServerHostName, edmServerPortNumber, exeptionMsg);
+         allMsg += errMsg;
+         delete execInfo->error; execInfo->error = NULL;
+      }
    }
 }
 /*==============================================================================================================================*/
@@ -223,6 +249,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
                exp->repositoryName = r ? r->get_name() : "";
                exp->ema = new CMemoryAllocator(0x100000);
                exp->srvCtxt = theServer->getServerContext("superuser", "", "v", m);
+               exp->error = NULL;
 
                m = modelIter.next();
             }

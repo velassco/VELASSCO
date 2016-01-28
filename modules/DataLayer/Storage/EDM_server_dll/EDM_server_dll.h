@@ -56,14 +56,14 @@ namespace EDMVD {
 
 
    typedef struct MeshInfo {
-      char                                *name;
-      ElementType                         elementType;
-      EDMULONG                            nVertices;
-      EDMULONG                            nElements;
-      char                                *meshUnits;
-      char                                *meshColor;
-      EDMULONG32                          meshNumber;
-      char                                *coordsName;
+      char                                *name;        // will return mesh info about the mesh with the specified name - error message if specified mesh does not exist.
+      ElementType                         elementType;  // used to calculate number of nodes to be returned for each element
+      EDMULONG                            nVertices;    // used to calculate buffer sizes
+      EDMULONG                            nElements;    // used to calculate buffer sizes
+      char                                *meshUnits;   // not used yet
+      char                                *meshColor;   // not used yet
+      EDMULONG32                          meshNumber;   // not relevant for EDM
+      char                                *coordsName;  // not used yet
 
       void                                relocateThis(CMemoryAllocatorInfo *mai) {
          name = mai->relocatePointer(name);
@@ -82,18 +82,18 @@ namespace EDMVD {
       }
    } Element;
 
-
+   /*DEM Particel is vertex. - possibly not used for FEM */
    typedef struct ElementAttrib {
-      EDMULONG                            id;
-      char                                *name;
-      Container<double>                   *value;
+      EDMULONG                            id;      // DEM: particle id
+      char                                *name;   // DEM: 
+      Container<double>                   *value;  // DEM: f.ex. radius
       void                                relocateThis(CMemoryAllocatorInfo *mai) {
          name = mai->relocatePointer(name);
          if (value) value->relocateStructContainer(mai);
       }
    } ElementAttrib;
 
-
+   // DEM: link between particle id and group_id
    typedef struct ElementGroup {
       EDMULONG                            id;
       EDMULONG                            group_id;
@@ -285,7 +285,7 @@ struct nodeRvGetResultFromVerticesID : public CppParameterClass
 };
 struct nodeInGetResultFromVerticesID : public CppParameterClass
 {
-   cppRemoteParameter                    *attrPointerArr[3];
+   cppRemoteParameter                    *attrPointerArr[4];
    cppRemoteParameter                    *analysisID;
    cppRemoteParameter                    *timeStep;
    cppRemoteParameter                    *resultID;

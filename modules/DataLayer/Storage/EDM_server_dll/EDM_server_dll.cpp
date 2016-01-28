@@ -436,7 +436,7 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
       } else if (strEQL(methodName, "GetResultFromVerticesID")) {
          nodeRvGetResultFromVerticesID *results = new(&dllMa)nodeRvGetResultFromVerticesID(NULL, returnValues);
          nodeInGetResultFromVerticesID *inParams = new(&dllMa)nodeInGetResultFromVerticesID(NULL, parameters);
-         if (nOfParameters != 3 || nOfReturnValues != 3) {
+         if (nOfParameters != 4 || nOfReturnValues != 5) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->result_list->type = rptUndefined;
