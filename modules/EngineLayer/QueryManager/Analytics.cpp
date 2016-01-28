@@ -30,9 +30,20 @@ AnalyticsModule *AnalyticsModule::getInstance() {
 // on acuario:
 //#define HADOOP_HOME "/localfs/home/velassco/common/hadoop/bin/"
 //on Eddie
-#define HADOOP_HOME "/exports/applications/apps/community/VELaSSCo/hadoop-2.7.0/bin/"
 
-//#define HADOOP_HOME 
+// yarn and hdfs should be in the $PATH !!! and not hard coded in the source. 
+// We'll need a configuration file eventually: $HOME/.velassco
+#ifdef ACUARIO
+#define HADOOP_HOME
+#else
+#define HADOOP_HOME "/exports/applications/apps/community/VELaSSCo/hadoop-2.7.0/bin/"
+#endif
+
+#pragma message( "WARNING: ")
+#pragma message( "WARNING: yarn and hdfs should be in the $PATH and not hard coded in the source.")
+#pragma message( "WARNING: ")
+
+
 #define HADOOP_YARN std::string( HADOOP_HOME"yarn")
 #define HADOOP_HDFS std::string( HADOOP_HOME"hdfs")
 
@@ -246,10 +257,9 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
     
     // numSteps can be 0 or n
     if ( numSteps == 1)
-      s << " " << lstSteps[0];	
+      s << " " << lstSteps[0] << " ";
     else 
       s  << lstSteps[0] << "," << lstSteps[1] << " ";
-    
     parameters+= s.str();
     
     std::stringstream s_width;
