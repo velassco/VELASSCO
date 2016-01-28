@@ -9,6 +9,14 @@ EXTRA_FLAGS = -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs
 #   -Wconversion  --> warnings in boost
 #  -Wextra
 
+HOSTNAME = $(shell hostname)
+
+ifeq ($(HOSTNAME),pez001)
+  EXTRA_FLAGS += -DACUARIO
+else ifeq ($(HOSTNAME),acuario)
+  EXTRA_FLAGS += -DACUARIO
+endif
+
 CPP_FLAGS = $(EXTRA_FLAGS)
 C_FLAGS = $(EXTRA_FLAGS)
 
