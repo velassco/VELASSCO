@@ -167,9 +167,19 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     LOGGER                                    << std::endl;
     LOGGER << "Output:"                       << std::endl;
     LOGGER << "  result : " << _return.result << std::endl;
-    
-    return;
   }
+  size_t num_bytes = sizeof( _return.result) + _return.data.size();
+  // Human readable form:
+  const char *units[] = { "Bytes", "KBytes", "MBytes", "GBytes", "TBytes", NULL};
+  int idx = 0;
+  double scaled_size = num_bytes;
+  // make printable number between 0...1024 and have a valid unit suffix
+  while ( ( scaled_size > 1024.0) && units[ idx + 1]) {
+    scaled_size /= 1024.0;
+    idx++;
+  }
+  LOGGER << "  --> result size: " << num_bytes << " Bytes." << std::endl;
+  LOGGER << "  --> scaled size: " << scaled_size << " " << units[ idx] << " to send back." << std::endl << std::endl;
 }
 
 TSimpleServer *QueryManagerServer::m_simpleServer = NULL;
