@@ -99,6 +99,7 @@ struct ResultInfo {
 struct ResultOnVertex {
   1: i64                                  id
   2: list<double>                         value
+  3: binary                               bvalue
 }
 
 struct Triangle {
@@ -246,10 +247,26 @@ struct rvGetListOfVerticesFromMesh {
    3: list<Vertex>      vertex_list
 }
 
+/*
+   rvGetResultFromVerticesID
+   The binary result_array is an array of result_record. A result_record is declared
+   as follows in C++ like fasion:
+   
+   struct result_record {
+      EDMULONG                            id;
+      double                              value[n_values_pr_record];
+   };
+   
+   The query must set the values so that:
+   n_result_records * result_record_size == sizeof(result_array) 
+*/
 struct rvGetResultFromVerticesID {
-  1: string status
-  2: string report
-  3: list<ResultOnVertex> result_list
+  1: string             status
+  2: string             report
+  3: i64                n_values_pr_record
+  4: i64                result_record_size
+  5: i64                n_result_records
+  6: binary             result_array
 }
 
 struct rvGetCoordinatesAndElementsFromMesh {
