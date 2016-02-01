@@ -58,6 +58,8 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    //printf("Comments: %s\n", rvOM.report.data());
    FluidizedbedModelID = rvOM.modelID;
 
+#ifdef ALLEHER
+
    printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
    client.GetListOfMeshes(rvMeshes, sessionID, FluidizedbedModelID, "", 0.0);
    printf("Return status: %s\n", rvMeshes.status.data());
@@ -138,6 +140,14 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
       printf(verticesResultRV.report.data());
    }
 
+#endif
+
+   rvGetCoordinatesAndElementsFromMesh meshInfoRV;
+   printf("\n--->GetCoordinatesAndElementsFromMesh - \"%s\"\n", modelName);
+   VELaSSCoSM::MeshInfo meshInfo;
+   startTime = GetTickCount();
+   client.GetCoordinatesAndElementsFromMesh(meshInfoRV, sessionID, FluidizedbedModelID, "Kratos", 21, meshInfo);
+   endTime = GetTickCount();
 }
 
 

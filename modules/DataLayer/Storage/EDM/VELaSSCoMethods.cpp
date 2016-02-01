@@ -351,6 +351,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
       nodeInGetCoordinatesAndElementsFromMesh *inParams = new(&ma)nodeInGetCoordinatesAndElementsFromMesh(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->timeStep->putReal(stepValue);
+      inParams->meshName->putString("");
       bool errorFound = false;
 
       startTime = GetTickCount();
@@ -359,7 +360,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetCoordinatesAndElementsFromMesh *retVal = new(e->ema)nodeRvGetCoordinatesAndElementsFromMesh(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetListOfResultsFromTimeStepAndAnalysis", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetCoordinatesAndElementsFromMesh", inParams, &errorFound);
       }
       if (errorFound) {
          string errorMsg;
@@ -369,18 +370,45 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
       endTime = GetTickCount();
       //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
       nodeRvGetCoordinatesAndElementsFromMesh *retValueWithError = NULL;
+      EDMULONG maxNodeID = 0, minNodeID = 0xfffffffffffffff, maxElementID = 0, minElementID = 0xfffffffffffffff;
 
       for (int i = 0; i < nexec; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
+         ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)retVal->returned_mesh_info;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
+         if (metaData->maxNodeID > maxNodeID) maxNodeID = metaData->maxNodeID;
+         if (metaData->minNodeID < minNodeID) minNodeID = metaData->minNodeID;
+         if (metaData->maxElementID > maxElementID) maxElementID = metaData->maxElementID;
+         if (metaData->minElementID < minElementID) minElementID = metaData->minElementID;
       }
       if (retValueWithError) {
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
+         unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *)* (maxNodeID + 1));
+         EDMULONG nDuplicates = 0, n_vertices = 0, n_elements = 0;
+         Container<EDMVD::ResultOnVertex> **vertexResultsArr = (Container<EDMVD::ResultOnVertex> **)ma.alloc(sizeof(Container<EDMVD::ResultOnVertex> *) * nexec);
+         startTime = GetTickCount();
+         for (int i = 0; i < nexec; i++) {
+            EDMexecution *e = subQueries->getElementp(i);
+            nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
+
+            Container<EDMVD::Vertex> *vertices = (Container<EDMVD::Vertex>*)retVal->node_array->value.blobVal;
+            for (EDMVD::Vertex *v = vertices->firstp(); v; v = vertices->nextp()) {
+               if (verticesExist[v->id] == 0) {
+                  verticesExist[v->id] = 1; n_vertices++;
+               } else {
+                  nDuplicates++;
+               }
+            }
+            Container<EDMVD::FEMelement> *elements = (Container<EDMVD::FEMelement>*)retVal->elemnt_array->value.blobVal;
+
+
+         }
+         
          rv.__set_status("OK");
          rv.__set_report("");
       }
@@ -445,7 +473,6 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
-            //Container<EDMVD::ResultOnVertex> resultList(&ma, retVal->result_list);
             CMemoryAllocator result_ma(retVal->result_list, false);
 
 

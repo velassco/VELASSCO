@@ -259,7 +259,7 @@ EDMLONG GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, n
                      sdaiErrorQuery();
                      ri->componentNames = new(resultInfoMemory)Container<char*>(resultInfoMemory);
                      SdaiAggr cnAID = rh->get_compName_aggrId();
-                     ri->nOfComponents = sdaiGetMemberCount(cnAID);
+                     ri->nOfComponents = (int)sdaiGetMemberCount(cnAID);
                      for (int ci = 0; ci < ri->nOfComponents; ci++) {
                         char *cn;
                         if (!edmiGetAggrElement(cnAID, ci, sdaiSTRING, &cn)) CHECK(sdaiErrorQuery());
@@ -286,6 +286,7 @@ EDMLONG GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, n
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
+   endTime = GetTickCount();
    return rstat;
 }
 
@@ -305,6 +306,7 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
 
       char *analysisID = inParam->analysisID->value.stringVal;
       char *resultID = inParam->resultID->value.stringVal;
+      //listOfVertices
       Container<EDMVD::Vertex> vertices(&dllMa, 1024);
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
 
@@ -336,7 +338,7 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
                            } else {
                               fem::VectorResult *vector = (VectorResult *)vres;
                               SdaiAggr cnAID = vector->get_values_aggrId();
-                              nOfValuesPrVertex = sdaiGetMemberCount(cnAID);
+                              nOfValuesPrVertex = (int)sdaiGetMemberCount(cnAID);
                            }
                            retVal->nOfValuesPrVertex->putInteger(nOfValuesPrVertex);
                            
@@ -395,6 +397,95 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
    }
    return rstat;
 }
+//typedef enum { ElementType_POINT, ElementType_LINE, ElementType_TRIANGLE, ElementType_QUADRILATERAL, ElementType_TETRAHEDRA, ElementType_HEXAHEDRA, ElementType_PRISM, ElementType_PYRAMID, ElementType_SPHERE, ElementType_CIRCLE } ElementType;
+
+static ElementShapeType elementTypeConvert[] = {PointElement, LineElement,  TriangleElement, QuadrilateralElement, TetrahedraElement, HexahedraElement, PrismElement, PyramidElement, SphereElement, CircleElement, ComplexParticleElement};
+/*===================================================================================================================*/
+EDMLONG GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam,
+   nodeRvGetCoordinatesAndElementsFromMesh *retVal)
+/*===================================================================================================================*/
+{
+   EdmiError rstat = OK;
+   char *emsg = NULL;
+   int startTime, endTime;
+
+   try {
+      bool timeStepFound = false, resultIdFound = false;
+      char *analysisID = inParam->analysisID->value.stringVal;
+      char *meshName = inParam->meshName->value.stringVal;
+      Container<EDMVD::Vertex> vertices(&dllMa, 1024);
+      EDMULONG maxID = 0, minID = 0xfffffffffffffff;
+      ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)dllMa.alloc(sizeof(metaData));
+
+      startTime = GetTickCount();
+      if (mt == mtDEM) {
+         emsg = "GetCoordinatesAndElementsFromMesh is not implemented for DEM models.";
+      } else {
+         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+         fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
+         if (cAnalysis) {
+            emsg = "Specified time step not found.";
+            Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps(), theModel);
+            for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+               if (ts->get_time_value() == inParam->timeStep->value.realVal) {
+                  timeStepFound = true;
+                  fem::Mesh *mesh = ts->get_mesh();
+                  
+                  Container<EDMVD::Vertex> *vertices = new(&dllMa) Container<EDMVD::Vertex>(&dllMa, 0x10000);
+                  Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
+                  for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                     EDMVD::Vertex *v = vertices->createNext();
+                     v->id = n->get_id();
+                     v->x = n->get_x(); v->y = n->get_y(); v->z = n->get_z();
+                     if (v->id > maxID) maxID = v->id; if (v->id < minID) minID = v->id;
+                  }
+                  metaData->minNodeID = minID; metaData->maxNodeID = maxID;
+                  metaData->n_vertices = nodeIter.size();
+                  metaData->vertex_record_size = sizeof(EDMVD::Vertex);
+                  retVal->node_array->putContainer(vertices);
+
+                  EDMLONG n_vertices_pr_element = mesh->get_numberOfNodes();
+                  Container<EDMVD::FEMelement> *elements = new(&dllMa) Container<EDMVD::FEMelement>(&dllMa, 0x10000, sizeof(EDMULONG) * (n_vertices_pr_element - 1));
+                  Iterator<fem::Element*, fem::entityType> elemIter(mesh->get_elements(), theModel);
+                  for (fem::Element *e = elemIter.first(); e; e = elemIter.next()) {
+                     EDMVD::FEMelement *element = elements->createNext();
+                     element->id = e->get_id();
+                     if (element->id > maxID) maxID = element->id; if (element->id < minID) minID = element->id;
+                     Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
+                     int i = 0;
+                     for (fem::Node *n = nodeIter.first(); n && i < n_vertices_pr_element; n = nodeIter.next()) {
+                        element->nodes_ids[i++] = n->get_id();
+                     }
+                  }
+                  metaData->n_elements = elemIter.size();
+                  metaData->element_type = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
+                  metaData->element_record_size = sizeof(EDMVD::FEMelement);
+                  metaData->n_vertices_pr_element = n_vertices_pr_element;
+                  metaData->minElementID = minID; metaData->maxElementID = maxID;
+                  retVal->elemnt_array->putContainer(elements);
+                  retVal->returned_mesh_info->putBlob(metaData, sizeof(metaData));
+                  emsg = NULL;
+               }
+            }
+         } else {
+            emsg = "Analysis with specified name not found.";
+         }
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+   }
+   endTime = GetTickCount();
+   int execTime = endTime - startTime;
+   if (emsg) {
+      retVal->status->putString("Error"); retVal->report->putString(emsg);
+   } else {
+      retVal->status->putString("OK");
+      retVal->report->putString("");
+   }
+   return rstat;
+}
+
+
 
 extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *modelName, char *methodName,
    EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues)
@@ -457,6 +548,15 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
             results->result_list->type = rptUndefined;
          } else {
             rstat = GetResultFromVerticesID(&VELaSSCo_model, vmt, inParams, results);
+         }
+      } else if (strEQL(methodName, "GetCoordinatesAndElementsFromMesh")) {
+         nodeRvGetCoordinatesAndElementsFromMesh *results = new(&dllMa)nodeRvGetCoordinatesAndElementsFromMesh(NULL, returnValues);
+         nodeInGetCoordinatesAndElementsFromMesh *inParams = new(&dllMa)nodeInGetCoordinatesAndElementsFromMesh(NULL, parameters);
+         if (nOfParameters != 3 || nOfReturnValues != 5) {
+            results->status->putString("Error");
+            results->report->putString("Wrong number of input parameters or result values.");
+         } else {
+            rstat = GetCoordinatesAndElementsFromMesh(&VELaSSCo_model, vmt, inParams, results);
          }
       }
    } catch (CedmError *e) {
