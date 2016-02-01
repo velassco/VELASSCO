@@ -31,6 +31,15 @@ using namespace VELaSSCoSM;
 
 using namespace boost;
 
+extern "C" {
+#include "sdai.h"
+#include "cpp10_EDM_interface.h"
+}
+
+#include "container.h"
+
+#include "CppParameterClass.h"
+
 
 #define strEQL(a, b) ! strcmp(a, b)
 #define strnEQL(a, b, n) ! EDM_STRNCMP(a, b, n)

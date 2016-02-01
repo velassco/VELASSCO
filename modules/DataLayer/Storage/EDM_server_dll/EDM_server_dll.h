@@ -43,8 +43,10 @@ namespace EDMVD {
          gaussPointName = mai->relocatePointer(gaussPointName);
          coordinatesName = mai->relocatePointer(coordinatesName);
          units = mai->relocatePointer(units);
-         componentNames = (Container<char*>*)mai->relocatePointer((char*)componentNames);
-         if (componentNames) componentNames->relocatePointerContainer(mai);
+         if (componentNames) {
+            componentNames = (Container<char*>*)mai->relocatePointer((char*)componentNames);
+            componentNames->relocatePointerContainer(mai);
+         }
       }
    } ResultInfo;
 
@@ -78,7 +80,10 @@ namespace EDMVD {
       EDMULONG                            id;
       Container<EDMULONG>                 *nodes_ids;
       void                                relocateThis(CMemoryAllocatorInfo *mai) {
-         if (nodes_ids) nodes_ids->relocateStructContainer(mai);
+         if (nodes_ids) {
+            nodes_ids = (Container<EDMULONG>*)mai->relocatePointer((char*)nodes_ids);
+            nodes_ids->relocateStructContainer(mai);
+         }
       }
    } Element;
 
@@ -89,7 +94,10 @@ namespace EDMVD {
       Container<double>                   *value;  // DEM: f.ex. radius
       void                                relocateThis(CMemoryAllocatorInfo *mai) {
          name = mai->relocatePointer(name);
-         if (value) value->relocateStructContainer(mai);
+         if (value) {
+            value = (Container<double>*)mai->relocatePointer((char*)value);
+            value->relocateStructContainer(mai);
+         }
       }
    } ElementAttrib;
 
@@ -102,10 +110,7 @@ namespace EDMVD {
 
    typedef struct ResultOnVertex {
       EDMULONG                            id;
-      Container<double>                   *value;
-      void                                relocateThis(CMemoryAllocatorInfo *mai) {
-         if (value) value->relocateStructContainer(mai);
-      }
+      double                              value[1];
    } ResultOnVertex;
 
 
@@ -266,12 +271,13 @@ struct nodeInGetCoordinatesAndElementsFromMesh : public CppParameterClass
 /*===================================================================================================================*/
 struct nodeRvGetResultFromVerticesID : public CppParameterClass
 {
-   cppRemoteParameter                    *attrPointerArr[5];
+   cppRemoteParameter                    *attrPointerArr[6];
    cppRemoteParameter                    *status;
    cppRemoteParameter                    *report;
    cppRemoteParameter                    *result_list;
    cppRemoteParameter                    *minID;
    cppRemoteParameter                    *maxID;
+   cppRemoteParameter                    *nOfValuesPrVertex;
 
    void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
    nodeRvGetResultFromVerticesID(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
@@ -281,6 +287,7 @@ struct nodeRvGetResultFromVerticesID : public CppParameterClass
       addAddribute(&result_list, rptCMemoryAllocator);
       addAddribute(&minID, rptINTEGER);
       addAddribute(&maxID, rptINTEGER);
+      addAddribute(&nOfValuesPrVertex, rptINTEGER);
    }
 };
 struct nodeInGetResultFromVerticesID : public CppParameterClass

@@ -320,7 +320,7 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal = (nodeRvGetListOfResultsFromTimeStepAndAnalysis *)e->returnValues;
-            CMemoryAllocator resMa(retVal->ResultInfoList);
+            CMemoryAllocator resMa(retVal->ResultInfoList, false);
 
             relocateResultInfo *relocator = (relocateResultInfo *)resMa.getRelocateInfo();
             resMa.prepareForRelocationAfterTransfer();
@@ -391,7 +391,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
    const std::string& resultID, const std::vector<int64_t> & listOfVertices)
 /*=============================================================================================================================*/
 {
-   int startTime, endTime;
+   int startTime, endTime, timeSubQueryExecytion, timeCollectingReturnValues;
    if (subQueries) {
       EDMULONG nexec = subQueries->size();
       nodeInGetResultFromVerticesID *inParams = new(&ma)nodeInGetResultFromVerticesID(&ma, NULL);
@@ -414,16 +414,22 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          writeErrorMessageForSubQueries(errorMsg); rv.__set_status("Error"); rv.__set_report(errorMsg);
          return;
       }
-      endTime = GetTickCount();
+      endTime = GetTickCount(); timeSubQueryExecytion = endTime - startTime;
       //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
       nodeRvGetResultFromVerticesID *retValueWithError = NULL;
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
+      int nOfValuesPrVertex = 0;
       for (int i = 0; i < nexec; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
+         }
+         if (i == 0) {
+            nOfValuesPrVertex = retVal->nOfValuesPrVertex->value.intVal;
+         } else if (nOfValuesPrVertex != retVal->nOfValuesPrVertex->value.intVal) {
+            THROW("Different number of values pr vertex in Subqueries in GetResultFromVerticesID.")
          }
          if (retVal->maxID->value.intVal > maxID) maxID = retVal->maxID->value.intVal;
          if (retVal->minID->value.intVal < minID) minID = retVal->minID->value.intVal;
@@ -433,36 +439,79 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *)* (maxID + 1));
-         EDMULONG nDuplicates = 0;
-         vector<VELaSSCoSM::ResultOnVertex>  result_list;
+         EDMULONG nDuplicates = 0, n_result_records = 0;
+         Container<EDMVD::ResultOnVertex> **vertexResultsArr = (Container<EDMVD::ResultOnVertex> **)ma.alloc(sizeof(Container<EDMVD::ResultOnVertex> *) * nexec);
+         startTime = GetTickCount();
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
             //Container<EDMVD::ResultOnVertex> resultList(&ma, retVal->result_list);
-            CMemoryAllocator result_ma(retVal->result_list);
+            CMemoryAllocator result_ma(retVal->result_list, false);
 
 
             relocateResultOnVertex *relocateInfo = (relocateResultOnVertex *)result_ma.getRelocateInfo();
             result_ma.prepareForRelocationAfterTransfer();
             relocateInfo->vertexResults = (Container<EDMVD::ResultOnVertex>*)relocateInfo->bufferInfo->relocatePointer((char*)relocateInfo->vertexResults);
             Container<EDMVD::ResultOnVertex> *vertexResults = relocateInfo->vertexResults;
-            vertexResults->relocatePointerContainer(relocateInfo->bufferInfo);
-            for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
-               rov->relocateThis(relocateInfo->bufferInfo);
-            }
-
+            vertexResults->relocateStructContainer(relocateInfo->bufferInfo);
+            vertexResultsArr[i] = vertexResults;
             for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
                if (verticesExist[rov->id] == 0) {
-                  VELaSSCoSM::ResultOnVertex VELaSSCoSM_rov;
-                  result_list.push_back(VELaSSCoSM_rov); verticesExist[rov->id] = 1;
+                  verticesExist[rov->id] = 1;
+                  n_result_records++;
                } else {
                   nDuplicates++;
                }
             }
          }
+#define BLOB 1
+#ifdef BLOB
+         EDMLONG ResultOnVertexSize = sizeof(EDMVD::ResultOnVertex) + sizeof(double)* (nOfValuesPrVertex - 1);
+         std::string result_array;
+         EDMLONG blobSize = ResultOnVertexSize * n_result_records;
+         result_array.resize(blobSize);
+         char *cp = (char*)result_array.data();
+#else
+         vector<VELaSSCoSM::ResultOnVertex>  result_array;
+         EDMLONG resSize = result_array.size();
+         //result_array.reserve(n_result_records);
+         resSize = result_array.size();
+#endif
+         memset(verticesExist, 0, sizeof(unsigned char *)* (maxID + 1));
+
+         for (int i = 0; i < nexec; i++) {
+            Container<EDMVD::ResultOnVertex> *vertexResults = vertexResultsArr[i];
+            for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
+               if (verticesExist[rov->id] == 0) {
+#ifdef BLOB
+                  memmove(cp, rov, ResultOnVertexSize);
+                  cp += ResultOnVertexSize;
+#else
+                  vector<double> values;
+                  //values.reserve(nOfValuesPrVertex);
+                  VELaSSCoSM::ResultOnVertex VELaSSCoSM_rov;
+                  VELaSSCoSM_rov.__set_id(rov->id);
+                  for (int vi = 0; vi < nOfValuesPrVertex; vi++) {
+                     values.push_back(rov->value[vi]);
+                  }
+                  VELaSSCoSM_rov.__set_value(values); 
+                  result_array.push_back(VELaSSCoSM_rov);
+#endif
+                  verticesExist[rov->id] = 1;
+               }
+            }
+         }
+         endTime = GetTickCount();
+         timeCollectingReturnValues = endTime - startTime;
+         char msgBuffer[2048];
+         sprintf(msgBuffer, "Execution time subqueries: %d\nExecution time building return values: %d\nNumber of distinct results: %lld\nNumber of duplicates: %lld\n",
+            timeSubQueryExecytion, timeCollectingReturnValues, n_result_records, nDuplicates);
          rv.__set_status("OK");
-         rv.__set_report("");
-         rv.__set_result_list(result_list);
+         rv.__set_report(msgBuffer);
+         rv.__set_result_array(result_array);
+         rv.__set_n_values_pr_record(nOfValuesPrVertex);
+         rv.__set_result_record_size(ResultOnVertexSize);
+         rv.__set_n_result_records(n_result_records);
       }
    }
 }

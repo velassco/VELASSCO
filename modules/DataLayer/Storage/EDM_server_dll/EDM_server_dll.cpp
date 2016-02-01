@@ -316,10 +316,6 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
          fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
          if (cAnalysis) {
             resultInfoMemory->freeAllMemory();
-            relocateResultOnVertex *relocateInfo = (relocateResultOnVertex *)resultInfoMemory->createRelocateInfo(sizeof(relocateResultOnVertex));
-            Container<EDMVD::ResultOnVertex> *resultsOnVertices = new(resultInfoMemory)Container<EDMVD::ResultOnVertex>(resultInfoMemory, 1024);
-            relocateInfo->vertexResults = resultsOnVertices;
-
             Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps(), theModel);
             for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
                if (ts->get_time_value() == inParam->timeStep->value.realVal) {
@@ -328,43 +324,60 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
                   for (fem::ResultHeader *rh = resultHeaderIter.first(); rh; rh = resultHeaderIter.next()) {
                      char *rhname = rh->get_name();
                      if (rhname && strEQL(rhname, resultID)) {
-                        resultIdFound = true;
-                        int nOfValues = 3;
-                        Iterator<fem::Result*, fem::entityType> resultIter(rh->get_values(), theModel);
-                        fem::entityType resType;
-                        for (void *vres = resultIter.first(&resType); vres; vres = resultIter.next(&resType)) {
-                           ResultOnVertex *rov = resultsOnVertices->createNext();
-                           rov->value = new(resultInfoMemory)Container<double>(resultInfoMemory, nOfValues);
-                           fem::Result *res;
+                        if (!resultIdFound) {
+                           Iterator<fem::Result*, fem::entityType> resultIter(rh->get_values(), theModel);
+                           fem::entityType resType;
+                           resultIdFound = true;
+                           int nOfValuesPrVertex;
+                           
+                           void *vres = resultIter.first(&resType);
                            if (resType == fem::et_ScalarResult) {
-                              fem::ScalarResult *scalar = (ScalarResult *)vres; res = scalar;
-                              rov->value->add(scalar->get_val()); nOfValues = 1;
-                           } else if (resType == fem::et_VectorResult) {
-                              fem::VectorResult *vector = (VectorResult *)vres; res = vector;
-                              SdaiAggr cnAID = vector->get_values_aggrId();
-                              nOfValues = sdaiGetMemberCount(cnAID);
-                              for (int vi = 0; vi < nOfValues; vi++) {
-                                 double d;
-                                 if (!edmiGetAggrElement(cnAID, vi, sdaiREAL, &d)) CHECK(sdaiErrorQuery());
-                                 rov->value->add(d);
-                              }
+                              nOfValuesPrVertex = 1;
                            } else {
-                              emsg = "Resulttype not supported in GetResultFromVerticesID.";
+                              fem::VectorResult *vector = (VectorResult *)vres;
+                              SdaiAggr cnAID = vector->get_values_aggrId();
+                              nOfValuesPrVertex = sdaiGetMemberCount(cnAID);
                            }
-                           fem::Node *node = res->get_result_for();
-                           rov->id = node ? node->get_id() : 0;
-                           if (rov->id > maxID) maxID = rov->id;
-                           if (rov->id < minID) minID = rov->id;
+                           retVal->nOfValuesPrVertex->putInteger(nOfValuesPrVertex);
+                           
+                           relocateResultOnVertex *relocateInfo = (relocateResultOnVertex *)resultInfoMemory->createRelocateInfo(sizeof(relocateResultOnVertex));
+                           Container<EDMVD::ResultOnVertex> *resultsOnVertices = new(resultInfoMemory)Container<EDMVD::ResultOnVertex>(resultInfoMemory, 1024, (sizeof(double) * (nOfValuesPrVertex - 1)));
+                           relocateInfo->vertexResults = resultsOnVertices;
+
+                           for (void *vres = resultIter.first(&resType); vres; vres = resultIter.next(&resType)) {
+                              ResultOnVertex *rov = resultsOnVertices->createNext();
+                              fem::Result *res;
+                              if (resType == fem::et_ScalarResult) {
+                                 fem::ScalarResult *scalar = (ScalarResult *)vres; res = scalar;
+                                 rov->value[0] = scalar->get_val();
+                              } else if (resType == fem::et_VectorResult) {
+                                 fem::VectorResult *vector = (VectorResult *)vres; res = vector;
+                                 SdaiAggr cnAID = vector->get_values_aggrId();
+                                 for (int vi = 0; vi < nOfValuesPrVertex; vi++) {
+                                    double d;
+                                    if (!edmiGetAggrElement(cnAID, vi, sdaiREAL, &d)) CHECK(sdaiErrorQuery());
+                                    rov->value[vi] = d;
+                                 }
+                              } else {
+                                 emsg = "Resulttype not supported in GetResultFromVerticesID.";
+                              }
+                              fem::Node *node = res->get_result_for();
+                              rov->id = node ? node->get_id() : 0;
+                              if (rov->id > maxID) maxID = rov->id;
+                              if (rov->id < minID) minID = rov->id;
+                           }
+                           // Add info about the memory blocks within one memory block
+                           resultInfoMemory->prepareForRelocationBeforeTransfer();
+                           // Link the memory allocator to the return value.
+                           retVal->result_list->putCMemoryAllocator(resultInfoMemory);
+                        } else {
+                           THROW("More than one result header satisfy the search criterias.")
                         }
                      }
                   }
                }
             }
             retVal->maxID->putInteger(maxID); retVal->minID->putInteger(minID);
-            // Add info about the memory blocks within one memory block
-            resultInfoMemory->prepareForRelocationBeforeTransfer();
-            // Link the memory allocator to the return value.
-            retVal->result_list->putCMemoryAllocator(resultInfoMemory);
          } else {
             emsg = "Analysis with specified name does not exist.";
          }
@@ -372,6 +385,8 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
    } catch (CedmError *e) {
       emsg = handleError(e);
    }
+   endTime = GetTickCount();
+   int execTime = endTime - startTime;
    if (emsg) {
       retVal->status->putString("Error4"); retVal->report->putString(emsg);
    } else {
@@ -436,7 +451,7 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
       } else if (strEQL(methodName, "GetResultFromVerticesID")) {
          nodeRvGetResultFromVerticesID *results = new(&dllMa)nodeRvGetResultFromVerticesID(NULL, returnValues);
          nodeInGetResultFromVerticesID *inParams = new(&dllMa)nodeInGetResultFromVerticesID(NULL, parameters);
-         if (nOfParameters != 4 || nOfReturnValues != 5) {
+         if (nOfParameters != 4 || nOfReturnValues != 6) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->result_list->type = rptUndefined;

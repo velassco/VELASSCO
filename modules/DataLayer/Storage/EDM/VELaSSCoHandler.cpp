@@ -249,7 +249,8 @@ void VELaSSCoHandler::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
 //   4 : double   timeStep,
 //   5 : MeshInfo meshInfo),
 
-void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const MeshInfo& meshInfo)
+void VELaSSCoHandler::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& rv, const std::string& sessionID, const std::string& modelID,
+   const std::string& analysisID, const double timeStep, const MeshInfo& meshInfo)
 {
    VELaSSCoMethods theQuery(theCluster);
    try {
