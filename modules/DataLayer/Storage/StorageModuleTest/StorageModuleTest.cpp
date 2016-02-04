@@ -59,88 +59,90 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    FluidizedbedModelID = rvOM.modelID;
 
 #ifdef ALLEHER
-
-   printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
-   client.GetListOfMeshes(rvMeshes, sessionID, FluidizedbedModelID, "", 0.0);
-   printf("Return status: %s\n", rvMeshes.status.data());
-   printf("%s has %d meshes.\n", modelName, rvMeshes.meshInfos.size());
-   for (vector<VELaSSCoSM::MeshInfo>::iterator meshIter = rvMeshes.meshInfos.begin(); meshIter != rvMeshes.meshInfos.end(); meshIter++) {
-      printf("   %20s  %10llu  %10llu\n", meshIter->name.data(), meshIter->nElements, meshIter->nVertices);
-   }
-   printf("\n--->GetListOfAnalyses - \"%s\"\n", modelName);
-   client.GetListOfAnalyses(rvAnalysisList, sessionID, FluidizedbedModelID);
-   printf("Return status: %s\n", rvAnalysisList.status.data());
-   printf("%s has %d analyses.\n", modelName, rvAnalysisList.analyses.size());
-   for (vector<string>::iterator nameIter = rvAnalysisList.analyses.begin(); nameIter != rvAnalysisList.analyses.end(); nameIter++) {
-      printf("Analysis name : %s\n", (char*)nameIter->data());
-      client.GetListOfTimeSteps(rvTimesteps, sessionID, FluidizedbedModelID, *nameIter);
-      printf("   %s has %d time steps:\n", (char*)nameIter->data(), rvTimesteps.time_steps.size());
-      //printf("   %s has the following time steps:\n", (char*)nameIter->data());
-      //int i = 0;
-      //for (vector<double>::iterator tsIter = rvTimesteps.time_steps.begin(); tsIter != rvTimesteps.time_steps.end(); tsIter++) {
-      //   printf((i++) % 4 == 0 ? "\n   %lf" : " %lf", *tsIter);
-      //}
-   }
-
-   rvGetListOfVerticesFromMesh meshRV;
-   printf("\n--->GetListOfVerticesFromMesh - \"%s\"\n", modelName);
-   startTime = GetTickCount();
-   client.GetListOfVerticesFromMesh(meshRV, sessionID, FluidizedbedModelID, "", 0.0, 0);
-   endTime = GetTickCount();
-   printf("Elapsed time for GetListOfVerticesFromMesh is %d milliseconds\n", endTime - startTime);
-   printf("Return status: %s\n", meshRV.status.data());
-   printf("%s has %d vertices.\n", modelName, meshRV.vertex_list.size());
-   
-   rvGetListOfResults resultRV;
-   printf("\n--->GetListOfResultsFromTimeStepAndAnalysis - \"%s\"\n", modelName);
-   startTime = GetTickCount();
-   client.GetListOfResultsFromTimeStepAndAnalysis(resultRV, sessionID, FluidizedbedModelID, "Kratos", 21);
-   endTime = GetTickCount();
-   printf("Elapsed time for GetListOfResultsFromTimeStepAndAnalysis is %d milliseconds\n", endTime - startTime);
-   printf("Return status: %s\n", resultRV.status.data());
-   printf("%s has %d result headers.\n", modelName, resultRV.result_list.size());
-   int nRes = 0;
-   if (strncmp(resultRV.status.data(), "Error", 5) == 0) {
-      printf("Error message: \"%s\"\n", resultRV.report.data());
-   } else {
-      for (vector<VELaSSCoSM::ResultInfo>::iterator resIter = resultRV.result_list.begin(); resIter != resultRV.result_list.end(); resIter++) {
-         if (nRes++ > 16) break;
-         printf("%20s %10s\n", (char*)resIter->name.data(), (char*)resIter->type.data());
+   for (int nPass = 0; nPass < 100000000; nPass++) {
+      printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
+      client.GetListOfMeshes(rvMeshes, sessionID, FluidizedbedModelID, "", 0.0);
+      printf("Return status: %s\n", rvMeshes.status.data());
+      printf("%s has %d meshes.\n", modelName, rvMeshes.meshInfos.size());
+      for (vector<VELaSSCoSM::MeshInfo>::iterator meshIter = rvMeshes.meshInfos.begin(); meshIter != rvMeshes.meshInfos.end(); meshIter++) {
+         printf("   %20s  %10llu  %10llu\n", meshIter->name.data(), meshIter->nElements, meshIter->nVertices);
       }
-   }
-   
-   rvGetResultFromVerticesID verticesResultRV;
-   vector<int64_t> listOfVertices;
-   printf("\n--->GetResultFromVerticesID - \"%s\"\n", modelName);
-   startTime = GetTickCount();
-   client.GetResultFromVerticesID(verticesResultRV, sessionID, FluidizedbedModelID, "Kratos", 21, "PRESSURE", listOfVertices);
-   endTime = GetTickCount();
-   printf("Elapsed time for GetResultFromVerticesID is %d milliseconds\n", endTime - startTime);
-   printf("Return status: %s\n", verticesResultRV.status.data());
-   if (strncmp(verticesResultRV.status.data(), "Error", 5) == 0) {
-      printf("Error message: \"%s\"\n", verticesResultRV.report.data());
-   } else {
-      nRes = 0;
+      printf("\n--->GetListOfAnalyses - \"%s\"\n", modelName);
+      client.GetListOfAnalyses(rvAnalysisList, sessionID, FluidizedbedModelID);
+      printf("Return status: %s\n", rvAnalysisList.status.data());
+      printf("%s has %d analyses.\n", modelName, rvAnalysisList.analyses.size());
+      for (vector<string>::iterator nameIter = rvAnalysisList.analyses.begin(); nameIter != rvAnalysisList.analyses.end(); nameIter++) {
+         printf("Analysis name : %s\n", (char*)nameIter->data());
+         client.GetListOfTimeSteps(rvTimesteps, sessionID, FluidizedbedModelID, *nameIter);
+         printf("   %s has %d time steps:\n", (char*)nameIter->data(), rvTimesteps.time_steps.size());
+         //printf("   %s has the following time steps:\n", (char*)nameIter->data());
+         //int i = 0;
+         //for (vector<double>::iterator tsIter = rvTimesteps.time_steps.begin(); tsIter != rvTimesteps.time_steps.end(); tsIter++) {
+         //   printf((i++) % 4 == 0 ? "\n   %lf" : " %lf", *tsIter);
+         //}
+      }
+
+      rvGetListOfVerticesFromMesh meshRV;
+      printf("\n--->GetListOfVerticesFromMesh - \"%s\"\n", modelName);
+      startTime = GetTickCount();
+      client.GetListOfVerticesFromMesh(meshRV, sessionID, FluidizedbedModelID, "", 0.0, 0);
+      endTime = GetTickCount();
+      printf("Elapsed time for GetListOfVerticesFromMesh is %d milliseconds\n", endTime - startTime);
+      printf("Return status: %s\n", meshRV.status.data());
+      printf("%s has %d vertices.\n", modelName, meshRV.vertex_list.size());
+
+      rvGetListOfResults resultRV;
+      printf("\n--->GetListOfResultsFromTimeStepAndAnalysis - \"%s\"\n", modelName);
+      startTime = GetTickCount();
+      client.GetListOfResultsFromTimeStepAndAnalysis(resultRV, sessionID, FluidizedbedModelID, "Kratos", 21);
+      endTime = GetTickCount();
+      printf("Elapsed time for GetListOfResultsFromTimeStepAndAnalysis is %d milliseconds\n", endTime - startTime);
+      printf("Return status: %s\n", resultRV.status.data());
+      printf("%s has %d result headers.\n", modelName, resultRV.result_list.size());
+      int nRes = 0;
+      if (strncmp(resultRV.status.data(), "Error", 5) == 0) {
+         printf("Error message: \"%s\"\n", resultRV.report.data());
+      } else {
+         for (vector<VELaSSCoSM::ResultInfo>::iterator resIter = resultRV.result_list.begin(); resIter != resultRV.result_list.end(); resIter++) {
+            if (nRes++ > 16) break;
+            printf("%20s %10s\n", (char*)resIter->name.data(), (char*)resIter->type.data());
+         }
+      }
+
+      rvGetResultFromVerticesID verticesResultRV;
+      vector<int64_t> listOfVertices;
+      printf("\n--->GetResultFromVerticesID - \"%s\"\n", modelName);
+      startTime = GetTickCount();
+      client.GetResultFromVerticesID(verticesResultRV, sessionID, FluidizedbedModelID, "Kratos", 21, "PRESSURE", listOfVertices);
+      endTime = GetTickCount();
+      printf("Elapsed time for GetResultFromVerticesID is %d milliseconds\n", endTime - startTime);
+      printf("Return status: %s\n", verticesResultRV.status.data());
+      if (strncmp(verticesResultRV.status.data(), "Error", 5) == 0) {
+         printf("Error message: \"%s\"\n", verticesResultRV.report.data());
+      } else {
+         nRes = 0;
 #define BLOB 1
 #ifdef BLOB
-      printf("%s has %d results.\n", modelName, verticesResultRV.n_result_records);
-      char *cp = (char*)verticesResultRV.result_array.data();
-      for (int i = 0; i < 16; i++) {
-         EDMVD::ResultOnVertex *vertexResult = (EDMVD::ResultOnVertex*)cp;
-         printf("%10llu %Lf\n", vertexResult->id, vertexResult->value[0]);
-         cp += verticesResultRV.result_record_size;
-      }
+         printf("%s has %d results.\n", modelName, verticesResultRV.n_result_records);
+         char *cp = (char*)verticesResultRV.result_array.data();
+         for (int i = 0; i < 16; i++) {
+            EDMVD::ResultOnVertex *vertexResult = (EDMVD::ResultOnVertex*)cp;
+            printf("%10llu %Lf\n", vertexResult->id, vertexResult->value[0]);
+            cp += verticesResultRV.result_record_size;
+         }
 #else
-      for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
-         vector<double>::iterator valuesIter = resIter->value.begin();
-         if (nRes++ > 16) break;
-         printf("%10llu %Lf\n", resIter->id, *valuesIter);
-      }
+         for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
+            vector<double>::iterator valuesIter = resIter->value.begin();
+            if (nRes++ > 16) break;
+            printf("%10llu %Lf\n", resIter->id, *valuesIter);
+         }
 #endif
-      printf(verticesResultRV.report.data());
+         printf(verticesResultRV.report.data());
+      }
    }
 
-#endif
+
+#else
 
    rvGetCoordinatesAndElementsFromMesh meshInfoRV;
    printf("\n--->GetCoordinatesAndElementsFromMesh - \"%s\"\n", modelName);
@@ -148,6 +150,28 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    startTime = GetTickCount();
    client.GetCoordinatesAndElementsFromMesh(meshInfoRV, sessionID, FluidizedbedModelID, "Kratos", 21, meshInfo);
    endTime = GetTickCount();
+   printf("Elapsed time for GetCoordinatesAndElementsFromMesh is %d milliseconds\n", endTime - startTime);
+   if (strncmp(meshInfoRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", meshInfoRV.report.data());
+   } else {
+      printf("Number of vertices transferred: %12llu\n", meshInfoRV.n_vertices);
+      char *cp = (char*)meshInfoRV.vertex_array.data();
+      for (int i = 0; i < 20 && i < meshInfoRV.n_vertices; i++) {
+         EDMVD::Vertex *v = (EDMVD::Vertex*)cp; 
+         printf("%12llu   %Lf  %Lf  %Lf\n", v->id, v->x, v->y, v->z);
+         cp += meshInfoRV.vertex_record_size;
+      }
+      printf("Number of elements transferred: %12llu\n", meshInfoRV.n_elements);
+      cp = (char*)meshInfoRV.element_array.data();
+      for (int i = 0; i < 20 && i < meshInfoRV.n_elements; i++) {
+         EDMVD::FEMelement *e = (EDMVD::FEMelement*)cp;
+         printf("%12llu   ", e->id);
+         for (int j = 0; j < meshInfoRV.n_vertices_pr_element; j++) printf("  %10llu", e->nodes_ids[j]);
+         printf("\n");
+         cp += meshInfoRV.element_record_size;
+      }
+   }
+#endif
 }
 
 
@@ -191,19 +215,20 @@ Command can eiter be "all" or any of the querynames.
       string modelID_of_VELaSSCo_HbaseBasicTest_part_1;
       vector<Point> points;
       Point p;
-      int nPoints = sizeof(random_points) / sizeof(random_points[0]);
-
-      printf("\n--->UserLogin\n");
-      client.UserLogin(sessionID, "olav", "myRole", "myPassword");
-      printf("User logged on with session ID: %s\n", sessionID.data());
       rvOpenModel rvOM;
 
-      printf("\n--->OpenModel - \"telescope\"\n");
-      client.FindModel(rvOM, sessionID, "telescope", "read");
-      printf("Returned modelID: %s\n", rvOM.modelID.data());
-      printf("Comments: %s\n", rvOM.report.data());
-      modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
-      
+      int nPoints = sizeof(random_points) / sizeof(random_points[0]);
+      for (int i = 0; i < 1; i++) {
+         printf("\n--->UserLogin\n");
+         client.UserLogin(sessionID, "olav", "myRole", "myPassword");
+         printf("User logged on with session ID: %s\n", sessionID.data());
+
+         printf("\n--->OpenModel - \"telescope\"\n");
+         client.FindModel(rvOM, sessionID, "telescope", "read");
+         printf("Returned modelID: %s\n", rvOM.modelID.data());
+         printf("Comments: %s\n", rvOM.report.data());
+         modelID_of_VELaSSCo_HbaseBasicTest_part_1 = rvOM.modelID;
+      }
       //if (strEQL(command, "all") || strEQL(command, "CreateClusterModel")) {
       //   rvCreateClusterModel rvccm;
       //   vector<string> physicalModelNames;
@@ -288,12 +313,14 @@ Command can eiter be "all" or any of the querynames.
          rvGetListOfModels modelsInfo;
          rvOpenModel rvOM;
 
-         printf("\n--->GetListOfModels:\n");
-         client.GetListOfModelNames(modelsInfo, sessionID, "", "");
-         printf("Return status: %s\n", modelsInfo.status.data());
-         printf("Comments: %s\nModels:\n", modelsInfo.report.data());
-         for (std::vector<VELaSSCoSM::FullyQualifiedModelName>::iterator modelIter = modelsInfo.models.begin(); modelIter != modelsInfo.models.end(); modelIter++) {
-            printf("%s - %s\n", modelIter->name.data(), modelIter->full_path.data());
+         for (int i = 0; i < 1; i++) {
+            printf("\n--->GetListOfModels:\n");
+            client.GetListOfModelNames(modelsInfo, sessionID, "", "");
+            printf("Return status: %s\n", modelsInfo.status.data());
+            printf("Comments: %s\nModels:\n", modelsInfo.report.data());
+            for (std::vector<VELaSSCoSM::FullyQualifiedModelName>::iterator modelIter = modelsInfo.models.begin(); modelIter != modelsInfo.models.end(); modelIter++) {
+               printf("%s - %s\n", modelIter->name.data(), modelIter->full_path.data());
+            }
          }
       }
       if (strEQL(command, "all") || strEQL(command, "FindModel_DEM_b*")) {

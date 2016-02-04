@@ -62,10 +62,10 @@ int main(int argc, char* argv[])
       ourCluster.startServices();
 
       VELaSSCoMethods findAllModels(&ourCluster);
-      findAllModels.buildServerContexts("superuser", "", "v");
-      //findAllModels.ListModels();
-      //findAllModels.ValidateModels();
-      findAllModels.getBoundingBox();
+      //findAllModels.buildServerContexts("superuser", "", "v");
+      ////findAllModels.ListModels();
+      ////findAllModels.ValidateModels();
+      //findAllModels.getBoundingBox();
 
       ourVELaSSCoHandler->defineCluster(&ourCluster);
 #endif /* Cluster */

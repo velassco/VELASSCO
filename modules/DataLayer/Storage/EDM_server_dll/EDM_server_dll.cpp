@@ -5,13 +5,8 @@
 #include "EDM_server_dll.h"
 
 
-
-
-CMemoryAllocator dllMa(0x100000);
-static CMemoryAllocator *resultInfoMemory = NULL;
-
 /*=============================================================================================================================*/
-char *handleError(CedmError *e)
+char *VELaSSCoEDMplugin::handleError(CedmError *e)
 /*=============================================================================================================================*/
 {
    char *errMsg;
@@ -23,11 +18,11 @@ char *handleError(CedmError *e)
    char buf[20480];
    sprintf(buf, "Error: %s - file: %s - line %lld", errMsg, e->fileName, e->lineNo);
    printf("\n\n%s\n\n", buf);
-   return dllMa.allocString(buf);
+   return dllMa->allocString(buf);
 }
 
 /*===============================================================================================*/
-EDMVD::ModelType getModelType(SdaiModel sdaiModelID)
+EDMVD::ModelType VELaSSCoEDMplugin::getModelType(SdaiModel sdaiModelID)
 /*===============================================================================================*/
 {
    ModelType mType = mtUnknown;
@@ -58,7 +53,7 @@ EDMVD::ModelType getModelType(SdaiModel sdaiModelID)
 }
 
 /*===================================================================================================================*/
-EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, nodervGetListOfAnalyses *retVal)
+EDMLONG VELaSSCoEDMplugin::GetListOfAnalyses(Model *theModel, ModelType mt, nodervGetListOfAnalyses *retVal)
 /*===================================================================================================================*/
 {
    EdmiError rstat = OK;
@@ -67,11 +62,11 @@ EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, nodervGetListOfAnalyses
    try {
       char* np;
 
-      Container<char*> *nameList = new(&dllMa)Container<char*>(&dllMa);
+      Container<char*> *nameList = new(dllMa)Container<char*>(dllMa);
       if (mt == mtDEM) {
          Iterator<dem::Simulation*, dem::entityType> simIter(theModel->getObjectSet(dem::et_Simulation), theModel);
          for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
-            nameList->add(dllMa.allocString(s->get_name()));
+            nameList->add(dllMa->allocString(s->get_name()));
          }
          retVal->analysis_name_list->putStringContainer(nameList);
       } else if (mt == mtFEM) {
@@ -80,7 +75,7 @@ EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, nodervGetListOfAnalyses
             char* anName = rh->get_analysis();
             for (np = nameList->first(); np && strNEQ(anName, np); np = nameList->next());
             if (np == NULL) {
-               nameList->add(dllMa.allocString(anName));
+               nameList->add(dllMa->allocString(anName));
             }
          }
          retVal->analysis_name_list->putStringContainer(nameList);
@@ -101,7 +96,7 @@ EDMLONG GetListOfAnalyses(Model *theModel, ModelType mt, nodervGetListOfAnalyses
 }
 
 /*===================================================================================================================*/
-EDMLONG GetListOfTimeSteps(Model *theModel, ModelType mt, nodeInGetListOfTimeSteps *inParam, nodeRvGetListOfTimeSteps *retVal)
+EDMLONG VELaSSCoEDMplugin::GetListOfTimeSteps(Model *theModel, ModelType mt, nodeInGetListOfTimeSteps *inParam, nodeRvGetListOfTimeSteps *retVal)
 /*===================================================================================================================*/
 {
    EdmiError rstat = OK;
@@ -109,7 +104,7 @@ EDMLONG GetListOfTimeSteps(Model *theModel, ModelType mt, nodeInGetListOfTimeSte
 
    try {
       char *anid = inParam->analysisID->value.stringVal;
-      Container<double> timeSteps(&dllMa);
+      Container<double> timeSteps(dllMa);
 
       if (mt == mtDEM) {
          Iterator<dem::Simulation*, dem::entityType> simIter(theModel->getObjectSet(dem::et_Simulation), theModel);
@@ -145,7 +140,7 @@ EDMLONG GetListOfTimeSteps(Model *theModel, ModelType mt, nodeInGetListOfTimeSte
 }
 
 /*===================================================================================================================*/
-EDMLONG GetListOfVerticesFromMesh(Model *theModel, ModelType mt, nodeInGetListOfVerticesFromMesh *inParam, nodeRvGetListOfVerticesFromMesh *retVal)
+EDMLONG VELaSSCoEDMplugin::GetListOfVerticesFromMesh(Model *theModel, ModelType mt, nodeInGetListOfVerticesFromMesh *inParam, nodeRvGetListOfVerticesFromMesh *retVal)
 /*===================================================================================================================*/
 {
    EdmiError rstat = OK;
@@ -161,7 +156,7 @@ EDMLONG GetListOfVerticesFromMesh(Model *theModel, ModelType mt, nodeInGetListOf
       endTime = GetTickCount();
       printf("\n\nElapsed time for parallel execution is %d milliseconds\n\n", endTime - startTime);
       char *anid = inParam->analysisID->value.stringVal;
-      Container<EDMVD::Vertex> vertices(&dllMa, 1024);
+      Container<EDMVD::Vertex> vertices(dllMa, 1024);
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
 
       if (mt == mtDEM) {
@@ -214,7 +209,7 @@ fem::Analysis *getFEManalysis(char *anid, Iterator<fem::Analysis*, fem::entityTy
 static char *LocationTypes[] = { "OnNodes", "OnGaussPoints" };
 static char *ValueTypes[] = { "Scalar", "Vector", "Matrix", "PlainDeformationMatrix", "MainMatrix", "LocalAxes", "ComplexScalar", "ComplexVector" };
 /*===================================================================================================================*/
-EDMLONG GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, nodeInGetListOfResultsFromTimeStepAndAnalysis *inParam,
+EDMLONG VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, nodeInGetListOfResultsFromTimeStepAndAnalysis *inParam,
    nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal)
 /*===================================================================================================================*/
 {
@@ -227,7 +222,7 @@ EDMLONG GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, n
 
 
       char *anid = inParam->analysisID->value.stringVal;
-      Container<EDMVD::Vertex> vertices(&dllMa, 1024);
+      Container<EDMVD::Vertex> vertices(dllMa, 1024);
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
 
       if (!resultInfoMemory) resultInfoMemory = new CMemoryAllocator(0x100000);
@@ -248,7 +243,7 @@ EDMLONG GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, n
                if (ts->get_time_value() == inParam->stepValue->value.realVal) {
                   Iterator<fem::ResultHeader*, fem::entityType> resultIter(ts->get_results(), theModel);
                   for (fem::ResultHeader *rh = resultIter.first(); rh; rh = resultIter.next()) {
-                     ResultInfo *ri = resInfo->createNext();
+                     EDMVD::ResultInfo *ri = resInfo->createNext();
                      ri->name = resultInfoMemory->allocString(rh->get_name());
                      ri->type = resultInfoMemory->allocString(rh->exists_rType() ? ValueTypes[rh->get_rType()] : "");
                      ri->location = resultInfoMemory->allocString(rh->exists_location() ? LocationTypes[rh->get_location()] : "");
@@ -292,7 +287,7 @@ EDMLONG GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, n
 
 
 /*===================================================================================================================*/
-EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFromVerticesID *inParam,
+EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFromVerticesID *inParam,
    nodeRvGetResultFromVerticesID *retVal)
 /*===================================================================================================================*/
 {
@@ -307,7 +302,7 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
       char *analysisID = inParam->analysisID->value.stringVal;
       char *resultID = inParam->resultID->value.stringVal;
       //listOfVertices
-      Container<EDMVD::Vertex> vertices(&dllMa, 1024);
+      Container<EDMVD::Vertex> vertices(dllMa, 1024);
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
 
       if (!resultInfoMemory) resultInfoMemory = new CMemoryAllocator(0x100000);
@@ -347,7 +342,7 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
                            relocateInfo->vertexResults = resultsOnVertices;
 
                            for (void *vres = resultIter.first(&resType); vres; vres = resultIter.next(&resType)) {
-                              ResultOnVertex *rov = resultsOnVertices->createNext();
+                              EDMVD::ResultOnVertex *rov = resultsOnVertices->createNext();
                               fem::Result *res;
                               if (resType == fem::et_ScalarResult) {
                                  fem::ScalarResult *scalar = (ScalarResult *)vres; res = scalar;
@@ -399,9 +394,9 @@ EDMLONG GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFr
 }
 //typedef enum { ElementType_POINT, ElementType_LINE, ElementType_TRIANGLE, ElementType_QUADRILATERAL, ElementType_TETRAHEDRA, ElementType_HEXAHEDRA, ElementType_PRISM, ElementType_PYRAMID, ElementType_SPHERE, ElementType_CIRCLE } ElementType;
 
-static ElementShapeType elementTypeConvert[] = {PointElement, LineElement,  TriangleElement, QuadrilateralElement, TetrahedraElement, HexahedraElement, PrismElement, PyramidElement, SphereElement, CircleElement, ComplexParticleElement};
+static VELaSSCoSM::ElementShapeType elementTypeConvert[] = {PointElement, LineElement,  TriangleElement, QuadrilateralElement, TetrahedraElement, HexahedraElement, PrismElement, PyramidElement, SphereElement, CircleElement, ComplexParticleElement};
 /*===================================================================================================================*/
-EDMLONG GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam,
+EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam,
    nodeRvGetCoordinatesAndElementsFromMesh *retVal)
 /*===================================================================================================================*/
 {
@@ -413,9 +408,9 @@ EDMLONG GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInG
       bool timeStepFound = false, resultIdFound = false;
       char *analysisID = inParam->analysisID->value.stringVal;
       char *meshName = inParam->meshName->value.stringVal;
-      Container<EDMVD::Vertex> vertices(&dllMa, 1024);
+      Container<EDMVD::Vertex> vertices(dllMa, 1024);
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
-      ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)dllMa.alloc(sizeof(metaData));
+      ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)dllMa->alloc(sizeof(metaData));
 
       startTime = GetTickCount();
       if (mt == mtDEM) {
@@ -431,7 +426,7 @@ EDMLONG GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInG
                   timeStepFound = true;
                   fem::Mesh *mesh = ts->get_mesh();
                   
-                  Container<EDMVD::Vertex> *vertices = new(&dllMa) Container<EDMVD::Vertex>(&dllMa, 0x10000);
+                  Container<EDMVD::Vertex> *vertices = new(dllMa) Container<EDMVD::Vertex>(dllMa, 0x10000);
                   Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
                   for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
                      EDMVD::Vertex *v = vertices->createNext();
@@ -445,13 +440,13 @@ EDMLONG GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInG
                   retVal->node_array->putContainer(vertices);
 
                   EDMLONG n_vertices_pr_element = mesh->get_numberOfNodes();
-                  Container<EDMVD::FEMelement> *elements = new(&dllMa) Container<EDMVD::FEMelement>(&dllMa, 0x10000, sizeof(EDMULONG) * (n_vertices_pr_element - 1));
+                  Container<EDMVD::FEMelement> *elements = new(dllMa) Container<EDMVD::FEMelement>(dllMa, 0x10000, sizeof(EDMULONG) * (n_vertices_pr_element - 1));
                   Iterator<fem::Element*, fem::entityType> elemIter(mesh->get_elements(), theModel);
                   for (fem::Element *e = elemIter.first(); e; e = elemIter.next()) {
                      EDMVD::FEMelement *element = elements->createNext();
                      element->id = e->get_id();
                      if (element->id > maxID) maxID = element->id; if (element->id < minID) minID = element->id;
-                     Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
+                     Iterator<fem::Node*, fem::entityType> nodeIter(e->get_nodes(), theModel);
                      int i = 0;
                      for (fem::Node *n = nodeIter.first(); n && i < n_vertices_pr_element; n = nodeIter.next()) {
                         element->nodes_ids[i++] = n->get_id();
@@ -459,11 +454,11 @@ EDMLONG GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInG
                   }
                   metaData->n_elements = elemIter.size();
                   metaData->element_type = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
-                  metaData->element_record_size = sizeof(EDMVD::FEMelement);
+                  metaData->element_record_size = sizeof(EDMVD::FEMelement) + sizeof(EDMULONG) * (n_vertices_pr_element - 1);
                   metaData->n_vertices_pr_element = n_vertices_pr_element;
                   metaData->minElementID = minID; metaData->maxElementID = maxID;
                   retVal->elemnt_array->putContainer(elements);
-                  retVal->returned_mesh_info->putBlob(metaData, sizeof(metaData));
+                  retVal->returned_mesh_info->putBlob(metaData, sizeof(ReturnedMeshInfo));
                   emsg = NULL;
                }
             }
@@ -493,70 +488,74 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
    EdmiError rstat = OK;
 
    try {
+      VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin();
+      CMemoryAllocator *theMA = plugin->getMemoryAllocator();
+      
       Database VELaSSCo_db("", "", "");
       Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName);
-      Model VELaSSCo_model(&VELaSSCo_Repository, &dllMa, NULL);
+      Model VELaSSCo_model(&VELaSSCo_Repository, theMA, NULL);
       VELaSSCo_model.open(modelName, sdaiRO);
-      ModelType vmt = getModelType(VELaSSCo_model.modelId);
+
+      ModelType vmt = plugin->getModelType(VELaSSCo_model.modelId);
       VELaSSCo_model.defineSchema(vmt == mtFEM ? (dbSchema*)&fem_schema_velassco_SchemaObject : (dbSchema*)&dem_schema_velassco_SchemaObject);
 
       if (strEQL(methodName, "GetListOfAnalyses")) {
-         nodervGetListOfAnalyses *results = new(&dllMa)nodervGetListOfAnalyses(NULL, returnValues);
+         nodervGetListOfAnalyses *results = new(theMA)nodervGetListOfAnalyses(NULL, returnValues);
          if (nOfParameters != 0 || nOfReturnValues != 3) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->analysis_name_list->type = rptUndefined;
          } else {
-            rstat = GetListOfAnalyses(&VELaSSCo_model, vmt, results);
+            rstat = plugin->GetListOfAnalyses(&VELaSSCo_model, vmt, results);
          }
       } else if (strEQL(methodName, "GetListOfTimeSteps")) {
-         nodeRvGetListOfTimeSteps *results = new(&dllMa)nodeRvGetListOfTimeSteps(NULL, returnValues);
-         nodeInGetListOfTimeSteps *inParams = new(&dllMa)nodeInGetListOfTimeSteps(NULL, parameters);
+         nodeRvGetListOfTimeSteps *results = new(theMA)nodeRvGetListOfTimeSteps(NULL, returnValues);
+         nodeInGetListOfTimeSteps *inParams = new(theMA)nodeInGetListOfTimeSteps(NULL, parameters);
          if (nOfParameters != 1 || nOfReturnValues != 3) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->ListOfTimeSteps->type = rptUndefined;
          } else {
-            rstat = GetListOfTimeSteps(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetListOfTimeSteps(&VELaSSCo_model, vmt, inParams, results);
          }
       } else if (strEQL(methodName, "GetListOfVerticesFromMesh")) {
-         nodeRvGetListOfVerticesFromMesh *results = new(&dllMa)nodeRvGetListOfVerticesFromMesh(NULL, returnValues);
-         nodeInGetListOfVerticesFromMesh *inParams = new(&dllMa)nodeInGetListOfVerticesFromMesh(NULL, parameters);
+         nodeRvGetListOfVerticesFromMesh *results = new(theMA)nodeRvGetListOfVerticesFromMesh(NULL, returnValues);
+         nodeInGetListOfVerticesFromMesh *inParams = new(theMA)nodeInGetListOfVerticesFromMesh(NULL, parameters);
          if (nOfParameters != 3 || nOfReturnValues != 5) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->vertices->type = rptUndefined;
          } else {
-            rstat = GetListOfVerticesFromMesh(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetListOfVerticesFromMesh(&VELaSSCo_model, vmt, inParams, results);
          }
       } else if (strEQL(methodName, "GetListOfResultsFromTimeStepAndAnalysis")) {
-         nodeRvGetListOfResultsFromTimeStepAndAnalysis *results = new(&dllMa)nodeRvGetListOfResultsFromTimeStepAndAnalysis(NULL, returnValues);
-         nodeInGetListOfResultsFromTimeStepAndAnalysis *inParams = new(&dllMa)nodeInGetListOfResultsFromTimeStepAndAnalysis(NULL, parameters);
+         nodeRvGetListOfResultsFromTimeStepAndAnalysis *results = new(theMA)nodeRvGetListOfResultsFromTimeStepAndAnalysis(NULL, returnValues);
+         nodeInGetListOfResultsFromTimeStepAndAnalysis *inParams = new(theMA)nodeInGetListOfResultsFromTimeStepAndAnalysis(NULL, parameters);
          if (nOfParameters != 2 || nOfReturnValues != 3) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->ResultInfoList->type = rptUndefined;
          } else {
-            rstat = GetListOfResultsFromTimeStepAndAnalysis(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetListOfResultsFromTimeStepAndAnalysis(&VELaSSCo_model, vmt, inParams, results);
          }
       } else if (strEQL(methodName, "GetResultFromVerticesID")) {
-         nodeRvGetResultFromVerticesID *results = new(&dllMa)nodeRvGetResultFromVerticesID(NULL, returnValues);
-         nodeInGetResultFromVerticesID *inParams = new(&dllMa)nodeInGetResultFromVerticesID(NULL, parameters);
+         nodeRvGetResultFromVerticesID *results = new(theMA)nodeRvGetResultFromVerticesID(NULL, returnValues);
+         nodeInGetResultFromVerticesID *inParams = new(theMA)nodeInGetResultFromVerticesID(NULL, parameters);
          if (nOfParameters != 4 || nOfReturnValues != 6) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->result_list->type = rptUndefined;
          } else {
-            rstat = GetResultFromVerticesID(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetResultFromVerticesID(&VELaSSCo_model, vmt, inParams, results);
          }
       } else if (strEQL(methodName, "GetCoordinatesAndElementsFromMesh")) {
-         nodeRvGetCoordinatesAndElementsFromMesh *results = new(&dllMa)nodeRvGetCoordinatesAndElementsFromMesh(NULL, returnValues);
-         nodeInGetCoordinatesAndElementsFromMesh *inParams = new(&dllMa)nodeInGetCoordinatesAndElementsFromMesh(NULL, parameters);
+         nodeRvGetCoordinatesAndElementsFromMesh *results = new(theMA)nodeRvGetCoordinatesAndElementsFromMesh(NULL, returnValues);
+         nodeInGetCoordinatesAndElementsFromMesh *inParams = new(theMA)nodeInGetCoordinatesAndElementsFromMesh(NULL, parameters);
          if (nOfParameters != 3 || nOfReturnValues != 5) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
          } else {
-            rstat = GetCoordinatesAndElementsFromMesh(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetCoordinatesAndElementsFromMesh(&VELaSSCo_model, vmt, inParams, results);
          }
       }
    } catch (CedmError *e) {
@@ -572,16 +571,23 @@ extern "C" EDMLONG __declspec(dllexport) dll_version()
    return 1;
 }
 
-extern "C" void  __declspec(dllexport) *dll_malloc(char *methodName, EDMLONG bufSize)
+extern "C" void  __declspec(dllexport) *dll_malloc(void *threadObject, EDMLONG bufSize)
 {
-   return dllMa.alloc(bufSize);
+   VELaSSCoEDMplugin *plugin = (VELaSSCoEDMplugin*)threadObject;
+   return plugin->alloc(bufSize);
 }
 
-extern "C" EDMLONG  __declspec(dllexport) dll_freeAll(char *methodName)
+extern "C" EDMLONG  __declspec(dllexport) dll_freeAll(void *threadObject)
 {
-   dllMa.freeAllMemory();
-   if (resultInfoMemory) {
-      delete resultInfoMemory;  resultInfoMemory = NULL;
-   }
+   VELaSSCoEDMplugin *plugin = (VELaSSCoEDMplugin*)threadObject;
+   delete plugin;
    return OK;
+}
+
+VELaSSCoEDMplugin::~VELaSSCoEDMplugin()
+{
+   delete dllMa;
+   if (resultInfoMemory) {
+      delete resultInfoMemory;
+   }
 }

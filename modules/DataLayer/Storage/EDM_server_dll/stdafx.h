@@ -17,6 +17,8 @@ extern "C" {
 #include "cpp10_EDM_interface.h"
 }
 
+#include "../EDM/gen-cpp/VELaSSCoSM.h"
+
 #include "dem_schema_velassco_entityTypes.h"
 #include "fem_schema_velassco_entityTypes.h"
 #include "container.h"
@@ -27,6 +29,7 @@ extern "C" {
 
 using namespace dem;
 using namespace fem;
+using namespace VELaSSCoSM;
 
 
 // TODO: reference additional headers your program requires here

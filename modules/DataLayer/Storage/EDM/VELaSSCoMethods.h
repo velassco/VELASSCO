@@ -7,6 +7,7 @@ class VELaSSCoMethods : public EDMclusterExecution
    char                                         *getPluginName();
 public:
    VELaSSCoMethods(EDMclusterServices *cs) : EDMclusterExecution(cs) { }
+   ~VELaSSCoMethods();
    void                 GetListOfAnalyses(rvGetListOfAnalyses& _return);
    void                 ListModels();
    void                 ValidateModels();

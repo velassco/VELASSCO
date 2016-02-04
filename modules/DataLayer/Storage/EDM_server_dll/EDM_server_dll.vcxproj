@@ -97,12 +97,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_EDMI;WIN32;_DEBUG;_WINDOWS;_USRDLL;EDM_SERVER_DLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;O:\projects\VELaSSCo\SVN_src\EDM_Interface</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;O:\projects\VELaSSCo\SVN_src\EDM_Interface;C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>O:\edm\v6.0.xxx\output\x64\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\boost\boost_1_58_0\lib64-msvc-12.0;O:\edm\v6.0.xxx\output\x64\Debug</AdditionalLibraryDirectories>
       <AdditionalDependencies>cpp10_edmi.lib;appserver600.lib</AdditionalDependencies>
       <OutputFile>O:\edm\v6.0.xxx\output\x64\Debug\VELaSSCo_plugins\$(TargetName)$(TargetExt)</OutputFile>
     </Link>

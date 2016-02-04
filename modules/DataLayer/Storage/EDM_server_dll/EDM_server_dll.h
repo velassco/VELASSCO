@@ -4,20 +4,6 @@
 */
 namespace EDMVD {
    
-   enum ElementShapeType {
-      UnknownElement = 0,
-      PointElement = 1,
-      LineElement = 2,
-      TriangleElement = 3,
-      QuadrilateralElement = 4,
-      TetrahedraElement = 5,
-      HexahedraElement = 6,
-      PrismElement = 7,
-      PyramidElement = 8,
-      SphereElement = 9,
-      CircleElement = 10,
-      ComplexParticleElement = 11
-   };
 
    typedef struct Vertex {
       EDMULONG                            id;
@@ -164,7 +150,6 @@ namespace EDMVD {
 
 
    enum ModelType { mtFEM, mtDEM, mtAP209, mtUnknown };
-}
 
 struct nodervGetListOfAnalyses : public CppParameterClass
 {
@@ -276,46 +261,6 @@ struct nodeInGetListOfResultsFromTimeStepAndAnalysis : public CppParameterClass
    }
 };
 
-
-///*===================================================================================================================*/
-//struct nodeRvGetCoordinatesAndElementsFromMesh : public CppParameterClass
-//{
-//   cppRemoteParameter                    *attrPointerArr[6];
-//   cppRemoteParameter                    *status;
-//   cppRemoteParameter                    *report;
-//   cppRemoteParameter                    *vertex_list;
-//   cppRemoteParameter                    *element_list;
-//   cppRemoteParameter                    *element_attrib_list;
-//   cppRemoteParameter                    *element_group_info_list;
-//
-//   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
-//   nodeRvGetCoordinatesAndElementsFromMesh(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
-//      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
-//      addAddribute(&status, rptSTRING);
-//      addAddribute(&report, rptSTRING);
-//      addAddribute(&vertex_list, rptContainer);
-//      addAddribute(&element_list, rptContainer);
-//      addAddribute(&element_attrib_list, rptContainer);
-//      addAddribute(&element_group_info_list, rptContainer);
-//   }
-//};
-//struct nodeInGetCoordinatesAndElementsFromMesh : public CppParameterClass
-//{
-//   cppRemoteParameter                    *attrPointerArr[3];
-//   cppRemoteParameter                    *analysisID;
-//   cppRemoteParameter                    *timeStep;
-//   cppRemoteParameter                    *meshInfo;
-//
-//   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
-//   nodeInGetCoordinatesAndElementsFromMesh(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
-//      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
-//      addAddribute(&analysisID, rptSTRING);
-//      addAddribute(&timeStep, rptREAL);
-//      addAddribute(&meshInfo, rptContainer);
-//   }
-//};
-
-
 /*===================================================================================================================*/
 struct nodeRvGetResultFromVerticesID : public CppParameterClass
 {
@@ -418,5 +363,29 @@ struct relocateResultInfo : public RelocateInfo
    Container<EDMVD::ResultInfo> *sResults;
 };
 
+class VELaSSCoEDMplugin
+{
+   CMemoryAllocator     *dllMa;
+   CMemoryAllocator     *resultInfoMemory;
+public:
+   VELaSSCoEDMplugin() { dllMa = new CMemoryAllocator(0x100000); resultInfoMemory = NULL; }
+   ~VELaSSCoEDMplugin();
+
+   char                 *handleError(CedmError *e);
+   EDMVD::ModelType     getModelType(SdaiModel sdaiModelID);
+   CMemoryAllocator     *getMemoryAllocator() { return dllMa; }
+   void                 *alloc(EDMLONG size) { return dllMa->alloc(size); }
+
+   EDMLONG              GetListOfAnalyses(Model *theModel, EDMVD::ModelType mt, nodervGetListOfAnalyses *retVal);
+   EDMLONG              GetListOfTimeSteps(Model *theModel, ModelType mt, nodeInGetListOfTimeSteps *inParam, nodeRvGetListOfTimeSteps *retVal);
+   EDMLONG              GetListOfVerticesFromMesh(Model *theModel, ModelType mt, nodeInGetListOfVerticesFromMesh *inParam, nodeRvGetListOfVerticesFromMesh *retVal);
+   EDMLONG              GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, nodeInGetListOfResultsFromTimeStepAndAnalysis *inParam, nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal);
+   EDMLONG              GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFromVerticesID *inParam, nodeRvGetResultFromVerticesID *retVal);
+   EDMLONG              GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam, nodeRvGetCoordinatesAndElementsFromMesh *retVal);
+};
+
+
+
+} /* end namespace EDMVD */
 
 using namespace EDMVD;

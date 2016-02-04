@@ -7,46 +7,46 @@
 
 
 
-/*=============================================================================================================================*/
-void VELaSSCoMethods::ListModels()
-/*=============================================================================================================================*/
-{
-   if (serverContexts) {
-//      SdaiServerContext *scs = serverContexts->getElementArray();
-//      EDMULONG nsc = serverContexts->size();
-//#pragma omp parallel for
-//      for (int i = 0; i < nsc; i++) {
-//         SdaiString        *foundNames;
-//         CHECK(edmiRemoteListModels(scs[i], NULL, NULL, NULL, NULL, NULL, 0, &foundNames, NULL));
-//         printf("Thread number %llu\n", omp_get_thread_num());
-//         for (int i = 0; foundNames[i]; i++) {
-//            printf("%s\n", foundNames[i]);
-//         }
-//         printf("\n\n");
-//      }
-   }
-}
-
-/*=============================================================================================================================*/
-void VELaSSCoMethods::ValidateModels()
-/*=============================================================================================================================*/
-{
-   int startTime = GetTickCount();
+///*=============================================================================================================================*/
+//void VELaSSCoMethods::ListModels()
+///*=============================================================================================================================*/
+//{
 //   if (serverContexts) {
-//      SdaiServerContext *scs = serverContexts->getElementArray();
-//      EDMULONG nsc = serverContexts->size();
-//#pragma omp parallel for
-//      for (int i = 0; i < nsc; i++) {
-//         SdaiInteger        warnings, errors;
-//         char diaFileName[2048];
-//         sprintf(diaFileName, "O:\\projects\\VELaSSCo\\SVN_src\\EDM_plug_in\\db_cluster\\validate_%d.txt", i);
-//         CHECK(edmiRemoteValidateModel(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", diaFileName, 0, NULL, FULL_VALIDATION,
-//            NULL, NULL, 0, NULL, 0, &warnings, &errors, NULL));
-//      }
+////      SdaiServerContext *scs = serverContexts->getElementArray();
+////      EDMULONG nsc = serverContexts->size();
+////#pragma omp parallel for
+////      for (int i = 0; i < nsc; i++) {
+////         SdaiString        *foundNames;
+////         CHECK(edmiRemoteListModels(scs[i], NULL, NULL, NULL, NULL, NULL, 0, &foundNames, NULL));
+////         printf("Thread number %llu\n", omp_get_thread_num());
+////         for (int i = 0; foundNames[i]; i++) {
+////            printf("%s\n", foundNames[i]);
+////         }
+////         printf("\n\n");
+////      }
 //   }
-   int endTime = GetTickCount();
-   //printf("Elapsed time for the validation is %d millisecponds\n", endTime - startTime);
-}
+//}
+
+///*=============================================================================================================================*/
+//void VELaSSCoMethods::ValidateModels()
+///*=============================================================================================================================*/
+//{
+//   int startTime = GetTickCount();
+////   if (serverContexts) {
+////      SdaiServerContext *scs = serverContexts->getElementArray();
+////      EDMULONG nsc = serverContexts->size();
+////#pragma omp parallel for
+////      for (int i = 0; i < nsc; i++) {
+////         SdaiInteger        warnings, errors;
+////         char diaFileName[2048];
+////         sprintf(diaFileName, "O:\\projects\\VELaSSCo\\SVN_src\\EDM_plug_in\\db_cluster\\validate_%d.txt", i);
+////         CHECK(edmiRemoteValidateModel(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", diaFileName, 0, NULL, FULL_VALIDATION,
+////            NULL, NULL, 0, NULL, 0, &warnings, &errors, NULL));
+////      }
+////   }
+//   int endTime = GetTickCount();
+//   //printf("Elapsed time for the validation is %d millisecponds\n", endTime - startTime);
+//}
 
 
 /*=============================================================================================================================*/
@@ -129,24 +129,24 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
 }
 
 
-/*=============================================================================================================================*/
-void VELaSSCoMethods::GetListOfResults(char *modelId, char *analysisID, double timeStep)
-/*=============================================================================================================================*/
-{
-   int startTime = GetTickCount();
-//   if (serverContexts) {
-//      SdaiServerContext *scs = serverContexts->getElementArray();
-//      EDMULONG nsc = serverContexts->size();
-//      SdaiInteger          edmSystemType;
-//
-//#pragma omp parallel for
-//      for (int i = 0; i < nsc; i++) {
-//
-//      }
-//   }
-   int endTime = GetTickCount();
-   //printf("Elapsed time for the validation is %d millisecponds\n", endTime - startTime);
-}
+///*=============================================================================================================================*/
+//void VELaSSCoMethods::GetListOfResults(char *modelId, char *analysisID, double timeStep)
+///*=============================================================================================================================*/
+//{
+//   int startTime = GetTickCount();
+////   if (serverContexts) {
+////      SdaiServerContext *scs = serverContexts->getElementArray();
+////      EDMULONG nsc = serverContexts->size();
+////      SdaiInteger          edmSystemType;
+////
+////#pragma omp parallel for
+////      for (int i = 0; i < nsc; i++) {
+////
+////      }
+////   }
+//   int endTime = GetTickCount();
+//   //printf("Elapsed time for the validation is %d millisecponds\n", endTime - startTime);
+//}
 
 
 /*=============================================================================================================================*/
@@ -371,11 +371,17 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
       //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
       nodeRvGetCoordinatesAndElementsFromMesh *retValueWithError = NULL;
       EDMULONG maxNodeID = 0, minNodeID = 0xfffffffffffffff, maxElementID = 0, minElementID = 0xfffffffffffffff;
+      ReturnedMeshInfo *firstMetaData;
 
       for (int i = 0; i < nexec; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
-         ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)retVal->returned_mesh_info;
+         ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)retVal->returned_mesh_info->value.blobVal;
+         if (i == 0) {
+            firstMetaData = metaData;
+         } else if (firstMetaData->element_record_size != metaData->element_record_size || firstMetaData->element_type != metaData->element_type || firstMetaData->model_type != metaData->model_type) {
+            retValueWithError = retVal; break;
+         }
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
@@ -388,27 +394,65 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
-         unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *)* (maxNodeID + 1));
+         unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxNodeID + 1));
+         unsigned char *elementExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxElementID + 1));
          EDMULONG nDuplicates = 0, n_vertices = 0, n_elements = 0;
-         Container<EDMVD::ResultOnVertex> **vertexResultsArr = (Container<EDMVD::ResultOnVertex> **)ma.alloc(sizeof(Container<EDMVD::ResultOnVertex> *) * nexec);
+
+         rv.__set_element_record_size(firstMetaData->element_record_size);
+         rv.__set_n_vertices_pr_element(firstMetaData->n_vertices_pr_element);
+         rv.__set_vertex_record_size(firstMetaData->vertex_record_size);
+         rv.__set_element_type(firstMetaData->element_type);
+         rv.__set_model_type(firstMetaData->model_type);
+         rv.__set_model_type(1);
+
          startTime = GetTickCount();
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
 
-            Container<EDMVD::Vertex> *vertices = (Container<EDMVD::Vertex>*)retVal->node_array->value.blobVal;
-            for (EDMVD::Vertex *v = vertices->firstp(); v; v = vertices->nextp()) {
+            Container<EDMVD::Vertex> vertices(&ma, retVal->node_array);
+            for (EDMVD::Vertex *v = vertices.firstp(); v; v = vertices.nextp()) {
+               if (verticesExist[v->id] == 0) { verticesExist[v->id] = 1; n_vertices++; } else { nDuplicates++; }
+            }
+            Container<EDMVD::FEMelement> elements(&ma, retVal->elemnt_array);
+            for (EDMVD::FEMelement *e = elements.firstp(); e; e = elements.nextp()) {
+               if (elementExist[e->id] == 0) { elementExist[e->id] = 1; n_elements++; } else { nDuplicates++; }
+            }
+         }
+         string vertex_string, element_string;
+         EDMULONG vertexBufferSize = sizeof(EDMVD::Vertex) * n_vertices;
+         vertex_string.resize(vertexBufferSize);
+         element_string.resize(firstMetaData->element_record_size * n_elements);
+         char *vp = (char*)vertex_string.data();
+         char *vpEnd = vp + vertexBufferSize;
+         char *ep = (char*)element_string.data();
+         memset(verticesExist, 0, sizeof(unsigned char) * (maxNodeID + 1));
+         memset(elementExist, 0, sizeof(unsigned char) * (maxElementID + 1));
+         EDMULONG n_vertices_copied = 0, n_elements_copied = 0;
+
+         for (int i = 0; i < nexec; i++) {
+            EDMexecution *e = subQueries->getElementp(i);
+            nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
+
+            Container<EDMVD::Vertex> vertices(&ma, retVal->node_array);
+            for (EDMVD::Vertex *v = vertices.firstp(); v; v = vertices.nextp()) {
                if (verticesExist[v->id] == 0) {
-                  verticesExist[v->id] = 1; n_vertices++;
-               } else {
-                  nDuplicates++;
+                  memmove(vp, v, firstMetaData->vertex_record_size);
+                  vp += firstMetaData->vertex_record_size; n_vertices_copied++; verticesExist[v->id] = 1;
                }
             }
-            Container<EDMVD::FEMelement> *elements = (Container<EDMVD::FEMelement>*)retVal->elemnt_array->value.blobVal;
-
-
+            Container<EDMVD::FEMelement> elements(&ma, retVal->elemnt_array);
+            for (EDMVD::FEMelement *e = elements.firstp(); e; e = elements.nextp()) {
+               if (elementExist[e->id] == 0) {
+                  memmove(ep, e, firstMetaData->element_record_size);
+                  ep += firstMetaData->element_record_size; n_elements_copied++; elementExist[e->id] = 1;
+               }
+            }
          }
-         
+         rv.__set_n_vertices(n_vertices_copied);
+         rv.__set_n_elements(n_elements_copied);
+         rv.__set_element_array(element_string);
+         rv.__set_vertex_array(vertex_string);
          rv.__set_status("OK");
          rv.__set_report("");
       }
@@ -553,4 +597,9 @@ char* VELaSSCoMethods::getPluginPath()
 /*==============================================================================================================================*/
 {
    return "VELaSSCo_plugins";
+}
+/*==============================================================================================================================*/
+VELaSSCoMethods::~VELaSSCoMethods()
+/*==============================================================================================================================*/
+{
 }

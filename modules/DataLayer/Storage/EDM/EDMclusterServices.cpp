@@ -9,6 +9,10 @@ EDMclusterServices::EDMclusterServices(Model *m)
 /*==============================================================================================================================*/
 {
    clusterModel = m; ourCluster = NULL; serverContextID = 0; clusterModelID = 0;
+   clusterMa.init(0x1000);
+   serverContexts = new(&clusterMa)Container<EDMserverContext>(&clusterMa, 64);
+   lastServerContext = NULL;
+
 }
 /*==============================================================================================================================*/
 void EDMclusterServices::getUniqueServerContextID(char *idBuf)
@@ -152,31 +156,47 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
 EDMclusterExecution::EDMclusterExecution(EDMclusterServices *cs)
 /*==============================================================================================================================*/
 {
-   theServer = cs; ma.init(0x10000); serverContexts = NULL;
+   theServer = cs; ma.init(0x10000); subQueries = NULL;
 }
+
 /*==============================================================================================================================*/
-void EDMclusterExecution::buildServerContexts(char *user, char *group, char *password)
+EDMclusterExecution::~EDMclusterExecution()
 /*==============================================================================================================================*/
 {
-   char serverContextName[2048];
-
-   ma.reset();
-   serverContexts = new(&ma)Container<SdaiServerContext>(&ma);
-   EDMcluster *theCluster = theServer->getTheEDMcluster();
-
-   //Iterator<ecl::EDMdatabase*, ecl::entityType>  dbIter(theCluster->get_databases(), theServer->clusterModel);
-   for (ecl::EDMdatabase*db = theServer->databaseIter.first(); db; db = theServer->databaseIter.next()) {
-      SdaiServerContext serverContextId;
-      theServer->getUniqueServerContextID(serverContextName);
-      ecl::EDMServer *srv = db->get_server();
-      if (srv) {
-         char *port = srv->get_Port();
-         char *host = srv->get_Host();
-         CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &serverContextId));
-         serverContexts->add(serverContextId);
+   if (subQueries) {
+      for (EDMexecution *exp = subQueries->firstp(); exp; exp = subQueries->nextp()) {
+         if (exp->ema) delete exp->ema;
+         exp->ema = NULL;
+      }
+      for (EDMexecution *exp = subQueries->firstp(); exp; exp = subQueries->nextp()) {
+         if (exp->serverCtxtRecord) exp->serverCtxtRecord->inUse = false;
       }
    }
+   ma.freeAllMemory();
 }
+///*==============================================================================================================================*/
+//void EDMclusterExecution::buildServerContexts(char *user, char *group, char *password)
+///*==============================================================================================================================*/
+//{
+//   char serverContextName[2048];
+//
+//   ma.reset();
+//   serverContexts = new(&ma)Container<SdaiServerContext>(&ma);
+//   EDMcluster *theCluster = theServer->getTheEDMcluster();
+//
+//   //Iterator<ecl::EDMdatabase*, ecl::entityType>  dbIter(theCluster->get_databases(), theServer->clusterModel);
+//   for (ecl::EDMdatabase*db = theServer->databaseIter.first(); db; db = theServer->databaseIter.next()) {
+//      SdaiServerContext serverContextId;
+//      theServer->getUniqueServerContextID(serverContextName);
+//      ecl::EDMServer *srv = db->get_server();
+//      if (srv) {
+//         char *port = srv->get_Port();
+//         char *host = srv->get_Host();
+//         CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &serverContextId));
+//         serverContexts->add(serverContextId);
+//      }
+//   }
+//}
 
 /*==============================================================================================================================*/
 void* ourMemoryAllocator(SdaiVoid _ma, EDMLONG size)
@@ -192,11 +212,11 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
 {
    try {
       if (inputParameters && inputParameters->nOfAttributes) {
-         CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+         CHECK(edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
             methodName, 0, inputParameters->nOfAttributes, (RemoteParameter*)inputParameters->attrPointerArr, NULL, execParams->returnValues->nOfAttributes,
             (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
       } else {
-         CHECK(edmiRemoteExecuteCppMethod(execParams->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+         CHECK(edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
             methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
             (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
       }
@@ -214,7 +234,7 @@ void EDMclusterExecution::writeErrorMessageForSubQueries(string &allMsg)
 
    for (EDMexecution *execInfo = subQueries->firstp(); execInfo; execInfo = subQueries->nextp()) {
       if (execInfo->error) {
-         edmiGetServerContextProperties(execInfo->srvCtxt, &serverContextName, &userName, &groupName, &password, &communicationType,
+         edmiGetServerContextProperties(execInfo->serverCtxtRecord->srvCtxt, &serverContextName, &userName, &groupName, &password, &communicationType,
             &edmServerPortNumber, &edmServerHostName, &edmiHttpTunnelName, &edmiHttpTunnelPortNumber, &edmiHttpTunnelHostName,
             &proxyServerPortNumber, &proxyServerName);
          char errMsg[0x4000]; 
@@ -232,6 +252,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
 ================================================================================================================================*/
 {
    tEdmiInstData cmd;
+   theServer->clusterModel->reset();
    ecl::ClusterModel cm(theServer->clusterModel, theServer->clusterModel->initInstData(ecl::et_ClusterModel, &cmd));
    cm.setInstanceId(EDM_ATOI64(modelID.data()));
    if (cm.getEntityType() == ecl::et_ClusterModel) {
@@ -243,22 +264,16 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
             EDMmodel*m = modelIter.first();
             subQueries = new(&ma)Container<EDMexecution>(&ma, nOfEDMmodels);
             for (EDMLONG i = 0; m && i < nOfEDMmodels; i++) {
+            //for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
                EDMexecution *exp = subQueries->createNext();
                exp->modelName = m->get_name();
                ecl::EDMrepository *r = m->get_repository();
                exp->repositoryName = r ? r->get_name() : "";
                exp->ema = new CMemoryAllocator(0x100000);
-               exp->srvCtxt = theServer->getServerContext("superuser", "", "v", m);
+               exp->serverCtxtRecord = theServer->getServerContext("superuser", "", "v", m);
                exp->error = NULL;
 
                m = modelIter.next();
-            }
-            for (EDMexecution *e = subQueries->firstp(); e; e = subQueries->nextp()) {
-               e = NULL;
-            }
-            for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
-               EDMexecution *e = subQueries->getElementp(i);
-               e = NULL;
             }
             return true;
          }
@@ -272,19 +287,33 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
 
 
 /*==============================================================================================================================*/
-SdaiServerContext EDMclusterServices::getServerContext(char *user, char *group, char *password, EDMmodel *m)
+EDMserverContext *EDMclusterServices::getServerContext(char *user, char *group, char *password, EDMmodel *m)
 /*==============================================================================================================================*/
 {
-   char serverContextName[2048];
-   SdaiServerContext srvctxt = 0;
+   char                                serverContextName[2048];
+   SdaiServerContext                   srvctxt = 0;
+   EDMserverContext                    *startServerContext = lastServerContext, *cServerContext;
 
-   getUniqueServerContextID(serverContextName);
-   EDMrepository* r = m->get_repository();
-   EDMdatabase *db = r ? r->get_belongs_to() : NULL;
-   EDMServer *srv = db ? db->get_server() : NULL;
-   if (srv) {
-      CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", srv->get_Port(), srv->get_Host(), NULL, NULL, NULL, NULL, NULL, &srvctxt));
-   }
-   return srvctxt;
+   do {
+      cServerContext = serverContexts->nextp();
+      if (!cServerContext)
+         cServerContext = serverContexts->firstp();
+      if (cServerContext == startServerContext) {
+         getUniqueServerContextID(serverContextName);
+         EDMrepository* r = m->get_repository();
+         EDMdatabase *db = r ? r->get_belongs_to() : NULL;
+         EDMServer *srv = db ? db->get_server() : NULL;
+         if (srv) {
+            lastServerContext = serverContexts->createNext();
+            lastServerContext->inUse = true;
+            CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", srv->get_Port(), srv->get_Host(), NULL, NULL, NULL, NULL, NULL, &lastServerContext->srvCtxt));
+            cServerContext = serverContexts->nextp();
+            return lastServerContext;
+         }
+      } else if (!cServerContext->inUse) {
+         lastServerContext = cServerContext; cServerContext->inUse = true; return cServerContext;
+      }
+   } while (true);
+   return NULL;
 }
 

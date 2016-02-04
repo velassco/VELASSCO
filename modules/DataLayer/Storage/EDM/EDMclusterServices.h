@@ -1,5 +1,6 @@
 
 struct EDMexecution;
+struct EDMserverContext;
 
 #define MAX_PAR 20
 /*================================================================================================*/
@@ -21,6 +22,9 @@ class EDMclusterServices
 
    EDMULONG                                           serverContextID;
    SdaiModel                                          clusterModelID;
+   Container<EDMserverContext>                        *serverContexts;
+   EDMserverContext                                   *lastServerContext;
+   CMemoryAllocator                                   clusterMa;
 public:
    Iterator<ecl::EDMdatabase*, ecl::entityType>       databaseIter;
    Model                                              *clusterModel;
@@ -38,7 +42,7 @@ public:
    SdaiModel                  getClusterModelID();
    ecl::ClusterModel          *getClusterModel(const char *name, const char *repositoryName);
    ecl::ClusterRepository     *getClusterRepository(const char *name);
-   SdaiServerContext          getServerContext(char *user, char *group, char *password, EDMmodel *m);
+   EDMserverContext           *getServerContext(char *user, char *group, char *password, EDMmodel *m);
 
 };
 
@@ -52,9 +56,18 @@ struct EDMexecution
    CMemoryAllocator                 *ema;
    char                             *repositoryName;
    char                             *modelName;
-   SdaiServerContext                srvCtxt;
+   EDMserverContext                 *serverCtxtRecord;
    CppParameterClass                *returnValues;
    CedmError                        *error;
+};
+/*================================================================================================*/
+/*!
+EDMexecution contains all necessary data to execute one query on one edmappserver.exe.
+*/
+struct EDMserverContext
+{
+   bool                             inUse;
+   SdaiServerContext                srvCtxt;
 };
 
 /*================================================================================================*/
@@ -79,11 +92,11 @@ protected:
       nParameters = 0;
    }
 public:
-   Container<SdaiServerContext>    *serverContexts;
    /*!
    Execution on a ClusterModel
    */
    EDMclusterExecution(EDMclusterServices *cs);
+   ~EDMclusterExecution();
    bool                             OpenClusterModelAndPrepareExecution(const std::string& modelID);
    /*!
    addInputParameter.
