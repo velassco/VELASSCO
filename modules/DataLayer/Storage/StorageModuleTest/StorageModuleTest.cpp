@@ -58,7 +58,7 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    //printf("Comments: %s\n", rvOM.report.data());
    FluidizedbedModelID = rvOM.modelID;
 
-#ifdef ALLEHER
+#ifndef ALLEHER
    for (int nPass = 0; nPass < 100000000; nPass++) {
       printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
       client.GetListOfMeshes(rvMeshes, sessionID, FluidizedbedModelID, "", 0.0);
@@ -139,39 +139,40 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
 #endif
          printf(verticesResultRV.report.data());
       }
+
+
+
+      rvGetCoordinatesAndElementsFromMesh meshInfoRV;
+      printf("\n--->GetCoordinatesAndElementsFromMesh - \"%s\"\n", modelName);
+      VELaSSCoSM::MeshInfo meshInfo;
+      startTime = GetTickCount();
+      client.GetCoordinatesAndElementsFromMesh(meshInfoRV, sessionID, FluidizedbedModelID, "Kratos", 21, meshInfo);
+      endTime = GetTickCount();
+      printf("Elapsed time for GetCoordinatesAndElementsFromMesh is %d milliseconds\n", endTime - startTime);
+      if (strncmp(meshInfoRV.status.data(), "Error", 5) == 0) {
+         printf("Error message: \"%s\"\n", meshInfoRV.report.data());
+      } else {
+         printf("Number of vertices transferred: %12llu\n", meshInfoRV.n_vertices);
+         char *cp = (char*)meshInfoRV.vertex_array.data();
+         for (int i = 0; i < 20 && i < meshInfoRV.n_vertices; i++) {
+            EDMVD::Vertex *v = (EDMVD::Vertex*)cp; 
+            printf("%12llu   %Lf  %Lf  %Lf\n", v->id, v->x, v->y, v->z);
+            cp += meshInfoRV.vertex_record_size;
+         }
+         printf("Number of elements transferred: %12llu\n", meshInfoRV.n_elements);
+         cp = (char*)meshInfoRV.element_array.data();
+         for (int i = 0; i < 20 && i < meshInfoRV.n_elements; i++) {
+            EDMVD::FEMelement *e = (EDMVD::FEMelement*)cp;
+            printf("%12llu   ", e->id);
+            for (int j = 0; j < meshInfoRV.n_vertices_pr_element; j++) printf("  %10llu", e->nodes_ids[j]);
+            printf("\n");
+            cp += meshInfoRV.element_record_size;
+         }
+      }
    }
 
-
-#else
-
-   rvGetCoordinatesAndElementsFromMesh meshInfoRV;
-   printf("\n--->GetCoordinatesAndElementsFromMesh - \"%s\"\n", modelName);
-   VELaSSCoSM::MeshInfo meshInfo;
-   startTime = GetTickCount();
-   client.GetCoordinatesAndElementsFromMesh(meshInfoRV, sessionID, FluidizedbedModelID, "Kratos", 21, meshInfo);
-   endTime = GetTickCount();
-   printf("Elapsed time for GetCoordinatesAndElementsFromMesh is %d milliseconds\n", endTime - startTime);
-   if (strncmp(meshInfoRV.status.data(), "Error", 5) == 0) {
-      printf("Error message: \"%s\"\n", meshInfoRV.report.data());
-   } else {
-      printf("Number of vertices transferred: %12llu\n", meshInfoRV.n_vertices);
-      char *cp = (char*)meshInfoRV.vertex_array.data();
-      for (int i = 0; i < 20 && i < meshInfoRV.n_vertices; i++) {
-         EDMVD::Vertex *v = (EDMVD::Vertex*)cp; 
-         printf("%12llu   %Lf  %Lf  %Lf\n", v->id, v->x, v->y, v->z);
-         cp += meshInfoRV.vertex_record_size;
-      }
-      printf("Number of elements transferred: %12llu\n", meshInfoRV.n_elements);
-      cp = (char*)meshInfoRV.element_array.data();
-      for (int i = 0; i < 20 && i < meshInfoRV.n_elements; i++) {
-         EDMVD::FEMelement *e = (EDMVD::FEMelement*)cp;
-         printf("%12llu   ", e->id);
-         for (int j = 0; j < meshInfoRV.n_vertices_pr_element; j++) printf("  %10llu", e->nodes_ids[j]);
-         printf("\n");
-         cp += meshInfoRV.element_record_size;
-      }
-   }
-#endif
+#else /* ALLEHER */
+#endif /* ALLEHER */
 }
 
 

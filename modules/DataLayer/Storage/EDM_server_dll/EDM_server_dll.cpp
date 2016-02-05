@@ -483,13 +483,14 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
 
 
 extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *modelName, char *methodName,
-   EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues)
+   EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues, void **threadObject)
 {
    EdmiError rstat = OK;
 
    try {
       VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin();
       CMemoryAllocator *theMA = plugin->getMemoryAllocator();
+      *threadObject = (void*)plugin;
       
       Database VELaSSCo_db("", "", "");
       Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName);
