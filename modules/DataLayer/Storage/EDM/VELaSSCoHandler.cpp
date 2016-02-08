@@ -429,104 +429,104 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
       _return.__set_status("Error"); _return.__set_report(errMsg);
    }
 }
-
-#define MaxElemRef 100
-typedef struct NodeInfo {
-   int elemRefs[MaxElemRef];
-   int nElemRefs;
-   fem::Node*theNode;
-
-   void findNodeInfo(fem::Node* np, VELaSSCoHandler *vh)
-   {
-      theNode = np; nElemRefs = 0;
-      ReferencesIterator<fem::Element*, fem::entityType> elemIter(np, fem::et_Element);
-      for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
-         if (nElemRefs < MaxElemRef) {
-            //elemRefs[nElemRefs++] = ep->get_id();
-            int i, id = ep->get_id();
-            for (i = 0; i < nElemRefs && id > elemRefs[i]; i++) ;
-            if (i < nElemRefs) {
-               for (int j = nElemRefs; j > i; j--) elemRefs[j] = elemRefs[j - 1];
-            }
-            elemRefs[i] = id; nElemRefs++;
-         } else {
-            vh->ReportError("nElemRefs > MaxElemRef in CalculateBoundaryOfMesh\n");
-         }
-      }
-   }
-} NodeInfo;
-
-
-int findElementsOfTriangle(NodeInfo &n1, NodeInfo &n2, NodeInfo &n3)
-{
-   int nElems = 0, i1 = 0, i2 = 0, i3 = 0;
-
-   while (i1 < n1.nElemRefs && i2 < n2.nElemRefs && i3 < n3.nElemRefs) {
-      while (n1.elemRefs[i1] < n2.elemRefs[i2] && i1 < n1.nElemRefs)
-         i1++;
-      if (i1 < n1.nElemRefs) {
-         while (n3.elemRefs[i3] < n2.elemRefs[i2] && i3 < n3.nElemRefs)
-            i3++;
-         if (i1 < n1.nElemRefs && i2 < n2.nElemRefs && i3 < n3.nElemRefs && n3.elemRefs[i3] == n2.elemRefs[i2] && n1.elemRefs[i1] == n2.elemRefs[i2]) {
-            nElems++;
-         }
-      }
-      i2++;
-   }
-   return nElems;
-}
-
-void VELaSSCoHandler::CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle>  &elements)
-{
-
-   Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element), fmc);
-
-   for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
-      Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes(), fmc);
-      if (nodeIter.size() == 4) {
-         NodeInfo nodes[4];
-         int ix = 0;
-         for (fem::Node* np = nodeIter.first(); np; np = nodeIter.next()) {
-            nodes[ix++].findNodeInfo(np, this);
-         }
-         static int nodesInTriangles[4][3] = {
-            { 0, 1, 2 },
-            { 0, 1, 3 },
-            { 0, 2, 3 },
-            { 1, 2, 3 },
-         };
-         //fem::Node* np0 = nodeIter.first();
-         //fem::Node* np1 = nodeIter.next();
-         //fem::Node* np2 = nodeIter.next();
-         //fem::Node* np3 = nodeIter.next();
-         //
-         //nodes[0].findNodeInfo(np0, this);
-         //nodes[1].findNodeInfo(np1, this);
-         //nodes[2].findNodeInfo(np2, this);
-         //nodes[3].findNodeInfo(np3, this);
-
-         //int n_elementsOfTriangle1 = findElementsOfTriangle(nodes[0], nodes[1], nodes[2]);
-         //int n_elementsOfTriangle2 = findElementsOfTriangle(nodes[0], nodes[2], nodes[3]);
-         //int n_elementsOfTriangle3 = findElementsOfTriangle(nodes[0], nodes[1], nodes[3]);
-         //int n_elementsOfTriangle4 = findElementsOfTriangle(nodes[1], nodes[2], nodes[3]);
-         for (int i = 0; i < 4; i++) {
-            NodeInfo *ni1 = &nodes[nodesInTriangles[i][0]], *ni2 = &nodes[nodesInTriangles[i][1]], *ni3 = &nodes[nodesInTriangles[i][2]];
-            if (findElementsOfTriangle (*ni1, *ni2, *ni3) == 1) {
-               VELaSSCoSM::Triangle t;
-               vector<NodeID> nodes;
-               nodes.push_back(ni1->theNode->get_id()); nodes.push_back(ni2->theNode->get_id()); nodes.push_back(ni3->theNode->get_id());
-               t.__set_nodes(nodes);
-               elements.push_back(t);
-            }
-         }
-
-         int asdf = 9999;
-
-      } else {
-         ReportError("not tetrahdere elements in CalculateBoundaryOfMesh\n");
-      }
-   }
-}
+//
+//#define MaxElemRef 100
+//typedef struct NodeInfo {
+//   int elemRefs[MaxElemRef];
+//   int nElemRefs;
+//   fem::Node*theNode;
+//
+//   void findNodeInfo(fem::Node* np, VELaSSCoHandler *vh)
+//   {
+//      theNode = np; nElemRefs = 0;
+//      ReferencesIterator<fem::Element*, fem::entityType> elemIter(np, fem::et_Element);
+//      for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
+//         if (nElemRefs < MaxElemRef) {
+//            //elemRefs[nElemRefs++] = ep->get_id();
+//            int i, id = ep->get_id();
+//            for (i = 0; i < nElemRefs && id > elemRefs[i]; i++) ;
+//            if (i < nElemRefs) {
+//               for (int j = nElemRefs; j > i; j--) elemRefs[j] = elemRefs[j - 1];
+//            }
+//            elemRefs[i] = id; nElemRefs++;
+//         } else {
+//            vh->ReportError("nElemRefs > MaxElemRef in CalculateBoundaryOfMesh\n");
+//         }
+//      }
+//   }
+//} NodeInfo;
+//
+//
+//int findElementsOfTriangle(NodeInfo &n1, NodeInfo &n2, NodeInfo &n3)
+//{
+//   int nElems = 0, i1 = 0, i2 = 0, i3 = 0;
+//
+//   while (i1 < n1.nElemRefs && i2 < n2.nElemRefs && i3 < n3.nElemRefs) {
+//      while (n1.elemRefs[i1] < n2.elemRefs[i2] && i1 < n1.nElemRefs)
+//         i1++;
+//      if (i1 < n1.nElemRefs) {
+//         while (n3.elemRefs[i3] < n2.elemRefs[i2] && i3 < n3.nElemRefs)
+//            i3++;
+//         if (i1 < n1.nElemRefs && i2 < n2.nElemRefs && i3 < n3.nElemRefs && n3.elemRefs[i3] == n2.elemRefs[i2] && n1.elemRefs[i1] == n2.elemRefs[i2]) {
+//            nElems++;
+//         }
+//      }
+//      i2++;
+//   }
+//   return nElems;
+//}
+//
+//void VELaSSCoHandler::CalculateBoundaryOfMesh(FEMmodelCache *fmc, std::vector<Triangle>  &elements)
+//{
+//
+//   Iterator<fem::Element*, fem::entityType> elemIter(fmc->getObjectSet(fem::et_Element), fmc);
+//
+//   for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
+//      Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes(), fmc);
+//      if (nodeIter.size() == 4) {
+//         NodeInfo nodes[4];
+//         int ix = 0;
+//         for (fem::Node* np = nodeIter.first(); np; np = nodeIter.next()) {
+//            nodes[ix++].findNodeInfo(np, this);
+//         }
+//         static int nodesInTriangles[4][3] = {
+//            { 0, 1, 2 },
+//            { 0, 1, 3 },
+//            { 0, 2, 3 },
+//            { 1, 2, 3 },
+//         };
+//         //fem::Node* np0 = nodeIter.first();
+//         //fem::Node* np1 = nodeIter.next();
+//         //fem::Node* np2 = nodeIter.next();
+//         //fem::Node* np3 = nodeIter.next();
+//         //
+//         //nodes[0].findNodeInfo(np0, this);
+//         //nodes[1].findNodeInfo(np1, this);
+//         //nodes[2].findNodeInfo(np2, this);
+//         //nodes[3].findNodeInfo(np3, this);
+//
+//         //int n_elementsOfTriangle1 = findElementsOfTriangle(nodes[0], nodes[1], nodes[2]);
+//         //int n_elementsOfTriangle2 = findElementsOfTriangle(nodes[0], nodes[2], nodes[3]);
+//         //int n_elementsOfTriangle3 = findElementsOfTriangle(nodes[0], nodes[1], nodes[3]);
+//         //int n_elementsOfTriangle4 = findElementsOfTriangle(nodes[1], nodes[2], nodes[3]);
+//         for (int i = 0; i < 4; i++) {
+//            NodeInfo *ni1 = &nodes[nodesInTriangles[i][0]], *ni2 = &nodes[nodesInTriangles[i][1]], *ni3 = &nodes[nodesInTriangles[i][2]];
+//            if (findElementsOfTriangle (*ni1, *ni2, *ni3) == 1) {
+//               VELaSSCoSM::Triangle t;
+//               vector<NodeID> nodes;
+//               nodes.push_back(ni1->theNode->get_id()); nodes.push_back(ni2->theNode->get_id()); nodes.push_back(ni3->theNode->get_id());
+//               t.__set_nodes(nodes);
+//               elements.push_back(t);
+//            }
+//         }
+//
+//         int asdf = 9999;
+//
+//      } else {
+//         ReportError("not tetrahdere elements in CalculateBoundaryOfMesh\n");
+//      }
+//   }
+//}
 
 char *VELaSSCoHandler::getErrorMsg(CedmError *e)
 {
