@@ -546,29 +546,24 @@ char *VELaSSCoHandler::getErrorMsg(int rstat)
    return errmsg;
 }
 /*=============================================================================================================================*/
-void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& _return, const std::string& sessionID,
+void VELaSSCoHandler::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const std::string& sessionID,
    const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
 /*=============================================================================================================================*/
 {
+   VELaSSCoMethods theQuery(theCluster);
    try {
-      thelog->logg(5, "-->GetBoundaryOfLocalMesh\nsessionID=%s\nmodelID=%s\nmeshID=%s\nanalysisID=%s\ntime_step=%f\n\n",
-         sessionID.data(), modelID.data(), meshID.data(), analysisID.data(), time_step);
+      thelog->logg(2, "-->GetBoundaryOfLocalMesh\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
-      if (emc) {
-         FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-         std::vector<Triangle>  elements;
-
-         CalculateBoundaryOfMesh(fmc, elements);
-         _return.__set_status("OK"); _return.__set_elements(elements); thelog->logg(0, "status=OK\n\n");
+      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+         theQuery.GetBoundaryOfLocalMesh(rv, analysisID, time_step, meshID);
       } else {
-         char *em = "Model does not exist.";
-         _return.__set_status("Error"); _return.__set_report(em); thelog->logg(1, "status=Error\nerror report=%s\n\n", em);
+         char *emsg = "Model does not exist.";
+         rv.__set_status("Error"); rv.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
       }
    } catch (CedmError *e) {
       string errMsg;
       handleError(errMsg, e);
-      _return.__set_status("Error"); _return.__set_report(errMsg);
+      rv.__set_status("Error"); rv.__set_report(errMsg);
    }
 }
 

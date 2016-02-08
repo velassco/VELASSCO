@@ -482,6 +482,146 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
 
 
 
+#define MaxElemRef 1000
+typedef struct NodeInfo {
+   int elemRefs[MaxElemRef];
+   int nElemRefs;
+   fem::Node*theNode;
+
+   void findNodeInfo(fem::Node* np)
+   {
+      theNode = np; nElemRefs = 0;
+      ReferencesIterator<fem::Element*, fem::entityType> elemIter(np, fem::et_Element);
+      for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
+         if (nElemRefs < MaxElemRef) {
+            //elemRefs[nElemRefs++] = ep->get_id();
+            int i, id = ep->get_id();
+            for (i = 0; i < nElemRefs && id > elemRefs[i]; i++);
+            if (i < nElemRefs) {
+               for (int j = nElemRefs; j > i; j--) elemRefs[j] = elemRefs[j - 1];
+            }
+            elemRefs[i] = id; nElemRefs++;
+         } else {
+            //vh->ReportError("nElemRefs > MaxElemRef in CalculateBoundaryOfMesh\n");
+         }
+      }
+   }
+} NodeInfo;
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+int findElementsOfTriangle(NodeInfo &n1, NodeInfo &n2, NodeInfo &n3)
+/*-------------------------------------------------------------------------------------------------------------------*/
+{
+   int nElems = 0, i1 = 0, i2 = 0, i3 = 0;
+
+   while (i1 < n1.nElemRefs && i2 < n2.nElemRefs && i3 < n3.nElemRefs) {
+      while (n1.elemRefs[i1] < n2.elemRefs[i2] && i1 < n1.nElemRefs)
+         i1++;
+      if (i1 < n1.nElemRefs) {
+         while (n3.elemRefs[i3] < n2.elemRefs[i2] && i3 < n3.nElemRefs)
+            i3++;
+         if (i1 < n1.nElemRefs && i2 < n2.nElemRefs && i3 < n3.nElemRefs && n3.elemRefs[i3] == n2.elemRefs[i2] && n1.elemRefs[i1] == n2.elemRefs[i2]) {
+            nElems++;
+         }
+      }
+      i2++;
+   }
+   return nElems;
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+void CalculateBoundaryOfMesh(List<fem::Element*> *elementAggr, std::vector<Triangle>  &elements, Model *theModel)
+/*-------------------------------------------------------------------------------------------------------------------*/
+{
+
+   Iterator<fem::Element*, fem::entityType> elemIter(elementAggr, theModel);
+
+   for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
+      Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes(), theModel);
+      if (nodeIter.size() == 4) {
+         NodeInfo nodes[4];
+         int ix = 0;
+         for (fem::Node* np = nodeIter.first(); np; np = nodeIter.next()) {
+            nodes[ix++].findNodeInfo(np);
+         }
+         static int nodesInTriangles[4][3] = {
+            { 0, 1, 2 },
+            { 0, 1, 3 },
+            { 0, 2, 3 },
+            { 1, 2, 3 },
+         };
+         for (int i = 0; i < 4; i++) {
+            NodeInfo *ni1 = &nodes[nodesInTriangles[i][0]], *ni2 = &nodes[nodesInTriangles[i][1]], *ni3 = &nodes[nodesInTriangles[i][2]];
+            if (findElementsOfTriangle(*ni1, *ni2, *ni3) == 1) {
+               /*
+               VELaSSCoSM::Triangle t;
+               vector<NodeID> nodes;
+               nodes.push_back(ni1->theNode->get_id()); nodes.push_back(ni2->theNode->get_id()); nodes.push_back(ni3->theNode->get_id());
+               t.__set_nodes(nodes);
+               elements.push_back(t);
+               */
+            }
+         }
+
+         int asdf = 9999;
+
+      } else {
+         //ReportError("not tetrahdere elements in CalculateBoundaryOfMesh\n");
+      }
+   }
+}
+/*===================================================================================================================*/
+EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam,
+   nodeRvGetBoundaryOfLocalMesh *retVal)
+/*===================================================================================================================*/
+{
+   EdmiError rstat = OK;
+   char *emsg = NULL;
+   int startTime, endTime;
+
+   try {
+      bool timeStepFound = false, resultIdFound = false;
+      char *analysisID = inParam->analysisID->value.stringVal;
+      char *meshID = inParam->meshID->value.stringVal;
+      Container<EDMVD::Vertex> vertices(dllMa, 1024);
+      EDMULONG maxID = 0, minID = 0xfffffffffffffff;
+      ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)dllMa->alloc(sizeof(metaData));
+
+      startTime = GetTickCount();
+      if (mt == mtDEM) {
+         emsg = "GetCoordinatesAndElementsFromMesh is not implemented for DEM models.";
+      } else {
+         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+         fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
+         if (cAnalysis) {
+            emsg = "Specified time step not found.";
+            Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps(), theModel);
+            for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+               if (ts->get_time_value() == inParam->timeStep->value.realVal) {
+                  timeStepFound = true;
+                  fem::Mesh *mesh = ts->get_mesh();
+//                  mesh->
+               }
+            }
+         } else {
+            emsg = "Analysis with specified name not found.";
+         }
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+   }
+   endTime = GetTickCount();
+   int execTime = endTime - startTime;
+   if (emsg) {
+      retVal->status->putString("Error"); retVal->report->putString(emsg);
+   } else {
+      retVal->status->putString("OK");
+      retVal->report->putString("");
+   }
+   return rstat;
+}
+
+
 extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *modelName, char *methodName,
    EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues, void **threadObject)
 {
@@ -557,6 +697,15 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
             results->report->putString("Wrong number of input parameters or result values.");
          } else {
             rstat = plugin->GetCoordinatesAndElementsFromMesh(&VELaSSCo_model, vmt, inParams, results);
+         }
+      } else if (strEQL(methodName, "GetBoundaryOfLocalMesh")) {
+         nodeRvGetBoundaryOfLocalMesh *results = new(theMA)nodeRvGetBoundaryOfLocalMesh(NULL, returnValues);
+         nodeInGetBoundaryOfLocalMesh *inParams = new(theMA)nodeInGetBoundaryOfLocalMesh(NULL, parameters);
+         if (nOfParameters != 3 || nOfReturnValues != 5) {
+            results->status->putString("Error");
+            results->report->putString("Wrong number of input parameters or result values.");
+         } else {
+            rstat = plugin->GetBoundaryOfLocalMesh(&VELaSSCo_model, vmt, inParams, results);
          }
       }
    } catch (CedmError *e) {
