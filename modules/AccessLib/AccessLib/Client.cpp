@@ -14,12 +14,14 @@ using namespace VELaSSCo;
 
 Client::Client()
 {
-	PING;
+        PING; // seems not to work in Linux ...
+	DEBUG( __FUNCTION__);
 }
 
 Client::~Client()
 {
-	PING;
+	PING; // seems not to work in Linux ...
+	DEBUG( __FUNCTION__);
 }
 
 VAL_Result Client::UserLogin( /* in */
@@ -30,7 +32,8 @@ VAL_Result Client::UserLogin( /* in */
 							  /* out */
 					          VAL_SessionID &sessionID )
 {
-	PING;
+	PING; // seems not to work in Linux ...
+	DEBUG( __FUNCTION__);
 
 	// Parse server URL
 	const std::string host = URL(url).Host();
@@ -75,7 +78,8 @@ VAL_Result Client::UserLogin( /* in */
 VAL_Result Client::UserLogout( /* in */
 					           VAL_SessionID sessionID )
 {
-	PING;
+	PING; // seems not to work in Linux ...
+	DEBUG( __FUNCTION__);
 
 	try
 	{
@@ -107,18 +111,19 @@ VAL_Result Client::Query( /* in */
 				          /* out */
 				          const std::string* &data )
 {
-	PING;
+	PING; // seems not to work in Linux ...
+	DEBUG( __FUNCTION__);
 
 	try
 	{
-	        // LOGGER << "Doing " << query << std::endl;
+	        LOGGER << "Doing " << query << std::endl;
 		m_transport->open();
 		m_client->Query(m_queryResult, sessionID, query);
 		m_transport->close();
 
 		LOGGER << "Query_Result: "                                      << std::endl;
 		LOGGER << "    result : "   << m_queryResult.result             << std::endl;
-		// LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 128) << std::endl;
+		LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 128) << std::endl;
 
 		// Return pointer to result string (Thrift uses std::string)
 		data = &(m_queryResult.data);
@@ -144,7 +149,8 @@ VAL_Result Client::GetStatusDB( /* in */
 			       /* out */
 			       const std::string* &status ) {
 
-  PING;
+  PING; // seems not to work in Linux ...
+  DEBUG( __FUNCTION__);
   
   try
     {
@@ -179,7 +185,8 @@ VAL_Result Client::StopVELaSSCo(  /* in */
 				/* out */ 
 				const std::string *&status) {
 
-  PING;
+  PING; // seems not to work in Linux ...
+  DEBUG( __FUNCTION__);
   
   try
     {
