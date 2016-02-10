@@ -604,9 +604,9 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
 #pragma omp parallel for
       for (int i = 0; i < nexec; i++) {
          EDMexecution *e = subQueries->getElementp(i);
-         nodeRvGetResultFromVerticesID *retVal = new(e->ema)nodeRvGetResultFromVerticesID(e->ema, NULL);
+         nodeRvGetBoundaryOfLocalMesh *retVal = new(e->ema)nodeRvGetBoundaryOfLocalMesh(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetResultFromVerticesID", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetBoundaryOfLocalMesh", inParams, &errorFound);
       }
       if (errorFound) {
          string errorMsg;
@@ -615,78 +615,65 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
       }
       endTime = GetTickCount(); timeSubQueryExecytion = endTime - startTime;
       //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
-      nodeRvGetResultFromVerticesID *retValueWithError = NULL;
+      nodeRvGetBoundaryOfLocalMesh *retValueWithError = NULL;
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
-      int nOfValuesPrVertex = 0;
+      int tot_n_triangles = 0;
       for (int i = 0; i < nexec; i++) {
          EDMexecution *e = subQueries->getElementp(i);
-         nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
+         nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
-         if (i == 0) {
-            nOfValuesPrVertex = retVal->nOfValuesPrVertex->value.intVal;
-         } else if (nOfValuesPrVertex != retVal->nOfValuesPrVertex->value.intVal) {
-            THROW("Different number of values pr vertex in Subqueries in GetResultFromVerticesID.")
-         }
-         if (retVal->maxID->value.intVal > maxID) maxID = retVal->maxID->value.intVal;
-         if (retVal->minID->value.intVal < minID) minID = retVal->minID->value.intVal;
+         tot_n_triangles += retVal->n_triangles->value.intVal;
+         //if (i == 0) {
+         //   nOfValuesPrVertex = retVal->nOfValuesPrVertex->value.intVal;
+         //} else if (nOfValuesPrVertex != retVal->nOfValuesPrVertex->value.intVal) {
+         //   THROW("Different number of values pr vertex in Subqueries in GetResultFromVerticesID.")
+         //}
+         //if (retVal->maxID->value.intVal > maxID) maxID = retVal->maxID->value.intVal;
+         //if (retVal->minID->value.intVal < minID) minID = retVal->minID->value.intVal;
       }
       if (retValueWithError) {
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
-         unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *)* (maxID + 1));
-         EDMULONG nDuplicates = 0, n_result_records = 0;
-         Container<EDMVD::ResultOnVertex> **vertexResultsArr = (Container<EDMVD::ResultOnVertex> **)ma.alloc(sizeof(Container<EDMVD::ResultOnVertex> *) * nexec);
          startTime = GetTickCount();
+         EDMULONG n_triangles_pr_string = tot_n_triangles / 4;
+         std::vector<std::string> triangle_strings;
+         EDMULONG n_triangles_in_this_string = n_triangles_pr_string;
+         int stringNo = -1;
+         //std::string *cTriangleBuffer;
+         char *bp;
+
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
-            nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
-            CMemoryAllocator result_ma(retVal->result_list, false);
-
-
-            relocateResultOnVertex *relocateInfo = (relocateResultOnVertex *)result_ma.getRelocateInfo();
-            result_ma.prepareForRelocationAfterTransfer();
-            relocateInfo->vertexResults = (Container<EDMVD::ResultOnVertex>*)relocateInfo->bufferInfo->relocatePointer((char*)relocateInfo->vertexResults);
-            Container<EDMVD::ResultOnVertex> *vertexResults = relocateInfo->vertexResults;
-            vertexResults->relocateStructContainer(relocateInfo->bufferInfo);
-            vertexResultsArr[i] = vertexResults;
-            for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
-               if (verticesExist[rov->id] == 0) {
-                  verticesExist[rov->id] = 1;
-                  n_result_records++;
-               } else {
-                  nDuplicates++;
+            nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
+            Container<EDMVD::Triangle>  triangles(&ma, retVal->triangle_array);
+            for (EDMVD::Triangle *t = triangles.firstp(); t; t = triangles.nextp()) {
+               if (n_triangles_in_this_string >= n_triangles_pr_string) {
+                  n_triangles_in_this_string = 0;
+                  stringNo++;
+                  triangle_strings.push_back(std::string());
+                  triangle_strings[stringNo].resize(n_triangles_pr_string * sizeof(EDMVD::Triangle));
+                  bp = (char*)triangle_strings[stringNo].data();
                }
+               memmove(bp, t, sizeof(EDMVD::Triangle)); bp += sizeof(EDMVD::Triangle);
+               n_triangles_in_this_string++;
             }
+            triangle_strings[stringNo].resize(n_triangles_in_this_string * sizeof(EDMVD::Triangle));
          }
-         EDMLONG ResultOnVertexSize = sizeof(EDMVD::ResultOnVertex) + sizeof(double)* (nOfValuesPrVertex - 1);
-         std::string result_array;
-         EDMLONG blobSize = ResultOnVertexSize * n_result_records;
-         result_array.resize(blobSize);
-         char *cp = (char*)result_array.data();
 
-         memset(verticesExist, 0, sizeof(unsigned char *)* (maxID + 1));
-
-         for (int i = 0; i < nexec; i++) {
-            Container<EDMVD::ResultOnVertex> *vertexResults = vertexResultsArr[i];
-            for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
-               if (verticesExist[rov->id] == 0) {
-                  memmove(cp, rov, ResultOnVertexSize);
-                  cp += ResultOnVertexSize;
-                  verticesExist[rov->id] = 1;
-               }
-            }
-         }
          endTime = GetTickCount();
          timeCollectingReturnValues = endTime - startTime;
          char msgBuffer[2048];
-         sprintf(msgBuffer, "Execution time subqueries: %d\nExecution time building return values: %d\nNumber of distinct results: %lld\nNumber of duplicates: %lld\n",
-            timeSubQueryExecytion, timeCollectingReturnValues, n_result_records, nDuplicates);
+         sprintf(msgBuffer, "Execution time subqueries: %d\nExecution time building return values: %d\nNumber of triangles: %lld\nNumber of triangles pr string: %lld\n",
+            timeSubQueryExecytion, timeCollectingReturnValues, tot_n_triangles, n_triangles_pr_string);
          rv.__set_status("OK");
          rv.__set_report(msgBuffer);
+         rv.__set_triangle_record_size(sizeof(EDMVD::Triangle));
+         rv.__set_nTriangles(tot_n_triangles);
+         rv.__set_triangles(triangle_strings);
       }
    }
 }

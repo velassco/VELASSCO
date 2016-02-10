@@ -5,6 +5,10 @@
 namespace EDMVD {
    
 
+   typedef struct Triangle {
+      EDMULONG                            node_ids[3];
+   } Triangle;
+
    typedef struct Vertex {
       EDMULONG                            id;
       double                              x;
@@ -358,18 +362,18 @@ struct nodeRvGetBoundaryOfLocalMesh : public CppParameterClass
    cppRemoteParameter                    *attrPointerArr[5];
    cppRemoteParameter                    *status;
    cppRemoteParameter                    *report;
-   cppRemoteParameter                    *n_vertices;
-   cppRemoteParameter                    *vertix_record_size;
-   cppRemoteParameter                    *vertex_array;
+   cppRemoteParameter                    *n_triangles;
+   cppRemoteParameter                    *triangle_record_size;
+   cppRemoteParameter                    *triangle_array;
 
    void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
    nodeRvGetBoundaryOfLocalMesh(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
       : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
       addAddribute(&status, rptSTRING);
       addAddribute(&report, rptSTRING);
-      addAddribute(&n_vertices, rptINTEGER);
-      addAddribute(&vertix_record_size, rptINTEGER);
-      addAddribute(&vertex_array, rptContainer);
+      addAddribute(&n_triangles, rptINTEGER);
+      addAddribute(&triangle_record_size, rptINTEGER);
+      addAddribute(&triangle_array, rptContainer);
    }
 };
 struct nodeInGetBoundaryOfLocalMesh : public CppParameterClass

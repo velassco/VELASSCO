@@ -59,7 +59,7 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    FluidizedbedModelID = rvOM.modelID;
 
 #ifndef ALLEHER
-   for (int nPass = 0; nPass < 100000000; nPass++) {
+   for (int nPass = 0; nPass < 1; nPass++) {  //100000000
       printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
       client.GetListOfMeshes(rvMeshes, sessionID, FluidizedbedModelID, "", 0.0);
       printf("Return status: %s\n", rvMeshes.status.data());
@@ -172,6 +172,25 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    }
 
 #else /* ALLEHER */
+   rvGetBoundaryOfLocalMesh boundaryRV;
+   printf("\n--->GetBoundaryOfLocalMesh - \"%s\"\n", modelName);
+   startTime = GetTickCount();
+   client.GetBoundaryOfLocalMesh(boundaryRV, sessionID, FluidizedbedModelID, "meshID", "Kratos", 21);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetBoundaryOfLocalMesh is %d milliseconds\n", endTime - startTime);
+   if (strncmp(boundaryRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", boundaryRV.report.data());
+   } else {
+      for (vector<std::string>::iterator bufferIter = boundaryRV.triangles.begin(); bufferIter != boundaryRV.triangles.end(); bufferIter++) {
+         char *cp = (char*)bufferIter->data();
+         EDMULONG nTrianglesInThisString = bufferIter->size() / boundaryRV.triangle_record_size;
+         for (int i = 0; i < nTrianglesInThisString; i++) {
+            EDMVD::Triangle *t = (EDMVD::Triangle*)cp; cp += boundaryRV.triangle_record_size;
+            printf("%10llu %10llu %10llu\n", t->node_ids[0], t->node_ids[1], t->node_ids[2]);
+         }
+      }
+      printf("\nMessage: \"%s\"\n", boundaryRV.report.data());
+   }
 #endif /* ALLEHER */
 }
 

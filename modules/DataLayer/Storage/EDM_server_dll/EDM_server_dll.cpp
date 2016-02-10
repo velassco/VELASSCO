@@ -486,12 +486,13 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
 typedef struct NodeInfo {
    int elemRefs[MaxElemRef];
    int nElemRefs;
-   fem::Node*theNode;
+   //fem::Node*theNode;
+   InstanceId nodeID;
 
-   void findNodeInfo(fem::Node* np)
+   void findNodeInfo(fem::Node* np, Model *theModel)
    {
-      theNode = np; nElemRefs = 0;
-      ReferencesIterator<fem::Element*, fem::entityType> elemIter(np, fem::et_Element);
+      nodeID = np->get_id(); nElemRefs = 0;
+      Iterator<fem::Element*, fem::entityType> elemIter(np->get_elements(), theModel);
       for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
          if (nElemRefs < MaxElemRef) {
             //elemRefs[nElemRefs++] = ep->get_id();
@@ -528,9 +529,9 @@ int findElementsOfTriangle(NodeInfo &n1, NodeInfo &n2, NodeInfo &n3)
    }
    return nElems;
 }
-
+#define swap(a, b) {EDMULONG t = *a; *a=*b; *b = t; }
 /*-------------------------------------------------------------------------------------------------------------------*/
-void CalculateBoundaryOfMesh(List<fem::Element*> *elementAggr, std::vector<Triangle>  &elements, Model *theModel)
+void CalculateBoundaryOfMesh(List<fem::Element*> *elementAggr, Container<EDMVD::Triangle>  *triangles, Model *theModel)
 /*-------------------------------------------------------------------------------------------------------------------*/
 {
 
@@ -542,7 +543,7 @@ void CalculateBoundaryOfMesh(List<fem::Element*> *elementAggr, std::vector<Trian
          NodeInfo nodes[4];
          int ix = 0;
          for (fem::Node* np = nodeIter.first(); np; np = nodeIter.next()) {
-            nodes[ix++].findNodeInfo(np);
+            nodes[ix++].findNodeInfo(np, theModel);
          }
          static int nodesInTriangles[4][3] = {
             { 0, 1, 2 },
@@ -551,22 +552,25 @@ void CalculateBoundaryOfMesh(List<fem::Element*> *elementAggr, std::vector<Trian
             { 1, 2, 3 },
          };
          for (int i = 0; i < 4; i++) {
-            NodeInfo *ni1 = &nodes[nodesInTriangles[i][0]], *ni2 = &nodes[nodesInTriangles[i][1]], *ni3 = &nodes[nodesInTriangles[i][2]];
-            if (findElementsOfTriangle(*ni1, *ni2, *ni3) == 1) {
-               /*
-               VELaSSCoSM::Triangle t;
-               vector<NodeID> nodes;
-               nodes.push_back(ni1->theNode->get_id()); nodes.push_back(ni2->theNode->get_id()); nodes.push_back(ni3->theNode->get_id());
-               t.__set_nodes(nodes);
-               elements.push_back(t);
-               */
+            NodeInfo *ni0 = &nodes[nodesInTriangles[i][0]], *ni1 = &nodes[nodesInTriangles[i][1]], *ni2 = &nodes[nodesInTriangles[i][2]];
+            if (findElementsOfTriangle(*ni0, *ni1, *ni2) == 1) {
+               EDMVD::Triangle *t = triangles->createNext();
+               t->node_ids[0] = ni0->nodeID;
+               t->node_ids[1] = ni1->nodeID;
+               t->node_ids[2] = ni2->nodeID;
+               EDMULONG *idp0 = &t->node_ids[0], *idp1 = &t->node_ids[1], *idp2 = &t->node_ids[2];
+               if (*idp0 > *idp1) swap(idp0, idp1);
+               if (*idp1 > *idp2) {
+                  swap(idp1, idp2);
+                  if (*idp0 > *idp1) swap(idp0, idp1);
+               }
+               if (t->node_ids[0] > t->node_ids[1] || t->node_ids[1] > t->node_ids[2]) {
+                  int asdfasdf = 999;
+               }
             }
          }
-
-         int asdf = 9999;
-
       } else {
-         //ReportError("not tetrahdere elements in CalculateBoundaryOfMesh\n");
+         THROW("Not tetrahedral elements in CalculateBoundaryOfMesh\n");
       }
    }
 }
@@ -600,7 +604,14 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
                if (ts->get_time_value() == inParam->timeStep->value.realVal) {
                   timeStepFound = true;
                   fem::Mesh *mesh = ts->get_mesh();
-//                  mesh->
+                  Container<EDMVD::Triangle>  *triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, 0x10000);
+                  
+                  CalculateBoundaryOfMesh(mesh->get_elements(), triangles, theModel);
+                  
+                  retVal->triangle_record_size->putInteger(sizeof(EDMVD::Triangle));
+                  retVal->n_triangles->putInteger(triangles->size());
+                  retVal->triangle_array->putContainer(triangles);
+                  emsg = NULL;
                }
             }
          } else {
