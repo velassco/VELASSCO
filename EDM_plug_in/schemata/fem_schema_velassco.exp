@@ -66,30 +66,13 @@ SCHEMA FEM_SCHEMA_VELASSCO;
   END_ENTITY;
 
   ENTITY Node;
-      id      : INTEGER;
-      x       : REAL;
-      y       : REAL;
-      z       : REAL;
+      id       : INTEGER;
+      x        : REAL;
+      y        : REAL;
+      z        : REAL;
     INVERSE
-      results : Result FOR result_for;
-  END_ENTITY;
-
-  ENTITY Element;
-      nodes : LIST [1:?] OF Node;
-      id    : INTEGER;
-  END_ENTITY;
-
-  ENTITY ResultHeader;
-      name         : STRING;
-      analysis     : STRING;
-      step         : REAL;
-      gpName       : STRING;
-      compName     : LIST [1:?] OF STRING;
-      rType        : ValueType;
-      location     : LocationType;
-      gauss_points : SET [1:?] OF GaussPoint;
-    INVERSE
-      values       : Result FOR result_header;
+      elements : Element FOR nodes;
+      results  : Result FOR result_for;
   END_ENTITY;
 
   ENTITY Result
@@ -123,10 +106,28 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       values : ARRAY [0:3] OF REAL;
   END_ENTITY;
 
+  ENTITY ResultHeader;
+      name         : STRING;
+      analysis     : STRING;
+      step         : REAL;
+      gpName       : STRING;
+      compName     : LIST [1:?] OF STRING;
+      rType        : ValueType;
+      location     : LocationType;
+      gauss_points : SET [1:?] OF GaussPoint;
+    INVERSE
+      values       : Result FOR result_header;
+  END_ENTITY;
+
   ENTITY GaussPoint;
       gauss_point_for : Element;
       values          : SET [1:?] OF REAL;
       GPtype          : GaussPointType;
+  END_ENTITY;
+
+  ENTITY Element;
+      nodes : LIST [1:?] OF Node;
+      id    : INTEGER;
   END_ENTITY;
 
   ENTITY Analysis;
