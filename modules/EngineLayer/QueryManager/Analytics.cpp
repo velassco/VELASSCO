@@ -41,6 +41,7 @@ AnalyticsModule *AnalyticsModule::getInstance() {
 
 #pragma message( "WARNING: ")
 #pragma message( "WARNING: yarn and hdfs should be in the $PATH and not hard coded in the source.")
+#pragma message( "WARNING: look at GetFullHBaseConfigurationFilename() for a similar approach: PathToYarnAndHDFS()")
 #pragma message( "WARNING: ")
 
 
