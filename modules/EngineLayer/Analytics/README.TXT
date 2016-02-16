@@ -1,3 +1,14 @@
+create the 'lib' link to the platform where you are,
+
+for instance in pez001:
+
+ln -s lib_acuario lib
+
+in eddie cluster:
+
+ln -s lib_eddie lib
+
+
 ========================
 BUILD OUTPUT DESCRIPTION
 ========================
