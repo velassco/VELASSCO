@@ -1117,43 +1117,22 @@ void VELaSSCoHandler::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
 */
 
 
-void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep)
+void VELaSSCoHandler::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep)
 {
+   VELaSSCoMethods theQuery(theCluster);
    try {
+      thelog->logg(2, "-->GetListOfMeshes\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
-      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
-      if (emc) {
-         vector<VELaSSCoSM::MeshInfo> meshInfos;
-         if (emc->type == mtDEM) {
-            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-            /* Need to get ifo from UEDIN about how to store mesh */
-         } else {
-            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh), fmc);
-            for (fem::Mesh *m = meshIter.first(); m; m = meshIter.next()) {
-               VELaSSCoSM::MeshInfo mi;
-               List<fem::Element*>* elems = m->get_elements();
-               List<fem::Node*>* nodes = m->get_nodes();
-               string name = m->get_name();
-               mi.__set_name(name);
-               mi.__set_nElements(elems ? elems->size() : 0);
-               mi.__set_nVertices(nodes ? nodes->size() : 0);
-               meshInfos.push_back(mi);
-               //if (strEQL(rh->get_analysis(), analysisID.data())) {
-               //   timeSteps.push_back(rh->get_step());
-               //}
-            }
-            _return.__set_status("OK"); _return.__set_meshInfos(meshInfos);
-            thelog->logg(0, "status=OK\n\n");
-         }
+      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+         theQuery.GetListOfMeshes(rv, analysisID, timeStep);
       } else {
          char *emsg = "Model does not exist.";
-         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+         rv.__set_status("Error"); rv.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
       }
    } catch (CedmError *e) {
       string errMsg;
       handleError(errMsg, e);
-      _return.__set_status("Error"); _return.__set_report(errMsg);
+      rv.__set_status("Error"); rv.__set_report(errMsg);
    }
 }
 ///*=============================================================================================================================*/

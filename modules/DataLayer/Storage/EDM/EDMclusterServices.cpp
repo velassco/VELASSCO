@@ -210,16 +210,23 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
    bool *errorFound)
 /*==============================================================================================================================*/
 {
+   EDMLONG rstat = OK;
    try {
-      if (inputParameters && inputParameters->nOfAttributes) {
-         CHECK(edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
-            methodName, 0, inputParameters->nOfAttributes, (RemoteParameter*)inputParameters->attrPointerArr, NULL, execParams->returnValues->nOfAttributes,
-            (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
-      } else {
-         CHECK(edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
-            methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
-            (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL));
-      }
+      int nTimeouts = 0;
+      do {
+         if (inputParameters && inputParameters->nOfAttributes) {
+            rstat = edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+               methodName, 0, inputParameters->nOfAttributes, (RemoteParameter*)inputParameters->attrPointerArr, NULL, execParams->returnValues->nOfAttributes,
+               (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL);
+         } else {
+            rstat = edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+               methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
+               (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL);
+         }
+         if (rstat && rstat != edmiE_CLIENT_START_TIMEOUT) {
+            *errorFound = true; execParams->error = new CedmError(rstat, __FILE__, __LINE__);
+         }
+      } while (rstat == edmiE_CLIENT_START_TIMEOUT && ++nTimeouts < 50);
    } catch (CedmError *e) {
       execParams->error = e; *errorFound = true;
    }

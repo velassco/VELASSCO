@@ -340,28 +340,48 @@ EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt
                            relocateResultOnVertex *relocateInfo = (relocateResultOnVertex *)resultInfoMemory->createRelocateInfo(sizeof(relocateResultOnVertex));
                            Container<EDMVD::ResultOnVertex> *resultsOnVertices = new(resultInfoMemory)Container<EDMVD::ResultOnVertex>(resultInfoMemory, 1024, (sizeof(double) * (nOfValuesPrVertex - 1)));
                            relocateInfo->vertexResults = resultsOnVertices;
-
+                           
+                           EDMULONG maxInputID = 0, minInputID = 0xfffffffffffffff;
+                           char *vertixSpecified = NULL;
+                           EDMULONG nOfInputVertices = inParam->listOfVertices->getAggrSize();
+                           if (nOfInputVertices > 0) {
+                              EDMLONG *vertices = inParam->listOfVertices->value.intAggrVal;
+                              for (int i = 0; i < nOfInputVertices; i++) {
+                                 if (vertices[i] > maxInputID) maxInputID = vertices[i]; if (vertices[i] < minInputID) minInputID = vertices[i];
+                              }
+                              vertixSpecified = (char*)dllMa->allocZeroFilled((maxInputID - minInputID + 1) * sizeof(char));
+                              for (int i = 0; i < nOfInputVertices; i++) vertixSpecified[vertices[i] - minInputID] = 1;
+                           }
                            for (void *vres = resultIter.first(&resType); vres; vres = resultIter.next(&resType)) {
-                              EDMVD::ResultOnVertex *rov = resultsOnVertices->createNext();
                               fem::Result *res;
+                              fem::ScalarResult *scalar;
+                              fem::VectorResult *vector;
                               if (resType == fem::et_ScalarResult) {
-                                 fem::ScalarResult *scalar = (ScalarResult *)vres; res = scalar;
-                                 rov->value[0] = scalar->get_val();
+                                 scalar = (ScalarResult *)vres; res = scalar;
                               } else if (resType == fem::et_VectorResult) {
-                                 fem::VectorResult *vector = (VectorResult *)vres; res = vector;
-                                 SdaiAggr cnAID = vector->get_values_aggrId();
-                                 for (int vi = 0; vi < nOfValuesPrVertex; vi++) {
-                                    double d;
-                                    if (!edmiGetAggrElement(cnAID, vi, sdaiREAL, &d)) CHECK(sdaiErrorQuery());
-                                    rov->value[vi] = d;
-                                 }
-                              } else {
-                                 emsg = "Resulttype not supported in GetResultFromVerticesID.";
+                                 vector = (VectorResult *)vres; res = vector;
                               }
                               fem::Node *node = res->get_result_for();
-                              rov->id = node ? node->get_id() : 0;
-                              if (rov->id > maxID) maxID = rov->id;
-                              if (rov->id < minID) minID = rov->id;
+                              EDMLONG nodeID = node ? node->get_id() : 0;
+
+                              if (vertixSpecified == NULL || (nodeID >= minInputID && nodeID <= maxInputID && vertixSpecified[nodeID - minInputID])) {
+                                 EDMVD::ResultOnVertex *rov = resultsOnVertices->createNext();
+                                 if (resType == fem::et_ScalarResult) {
+                                    rov->value[0] = scalar->get_val();
+                                 } else if (resType == fem::et_VectorResult) {
+                                    SdaiAggr cnAID = vector->get_values_aggrId();
+                                    for (int vi = 0; vi < nOfValuesPrVertex; vi++) {
+                                       double d;
+                                       if (!edmiGetAggrElement(cnAID, vi, sdaiREAL, &d)) CHECK(sdaiErrorQuery());
+                                       rov->value[vi] = d;
+                                    }
+                                 } else {
+                                    emsg = "Resulttype not supported in GetResultFromVerticesID.";
+                                 }
+                                 rov->id = nodeID;
+                                 if (rov->id > maxID) maxID = rov->id;
+                                 if (rov->id < minID) minID = rov->id;
+                              }
                            }
                            // Add info about the memory blocks within one memory block
                            resultInfoMemory->prepareForRelocationBeforeTransfer();
@@ -574,6 +594,29 @@ void CalculateBoundaryOfMesh(List<fem::Element*> *elementAggr, Container<EDMVD::
       }
    }
 }
+static int compareTriangle(const void *a, const void *b)
+{
+   EDMVD::Triangle *at = (EDMVD::Triangle*)a, *bt = (EDMVD::Triangle*)b;
+   if (at->node_ids[0] > bt->node_ids[0]) {
+      return 1;
+   } else if (at->node_ids[0] == bt->node_ids[0]) {
+      if (at->node_ids[1] > bt->node_ids[1]) {
+         return 1;
+      } else if (at->node_ids[1] == bt->node_ids[1]) {
+         if (at->node_ids[2] > bt->node_ids[2]) {
+            return 1;
+         } else if (at->node_ids[2] == bt->node_ids[2]) {
+            return 0;
+         } else {
+            return -1;
+         }
+      } else {
+         return -1;
+      }
+   } else {
+      return -1;
+   }
+}
 /*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam,
    nodeRvGetBoundaryOfLocalMesh *retVal)
@@ -604,13 +647,103 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
                if (ts->get_time_value() == inParam->timeStep->value.realVal) {
                   timeStepFound = true;
                   fem::Mesh *mesh = ts->get_mesh();
-                  Container<EDMVD::Triangle>  *triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, 0x10000);
+                  EDMULONG nTrianglesPrContainerBuffer = 127; //0x10000;
+                  Container<EDMVD::Triangle>  *triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
                   
                   CalculateBoundaryOfMesh(mesh->get_elements(), triangles, theModel);
-                  
+
+                  if (triangles->size() > nTrianglesPrContainerBuffer) {
+                     Container<EDMVD::Triangle>  *sortable_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, triangles);
+                     triangles = sortable_triangles;
+                  }
+                  triangles->sort(compareTriangle);
+                  EDMVD::Triangle *prev = NULL;
+                  for (EDMVD::Triangle *t = triangles->firstp(); t; t = triangles->nextp()) {
+                     if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
+                        int nasdfasdf = 9999;
+                     }
+                     if (prev) {
+                        if (prev->node_ids[0] == t->node_ids[0] && prev->node_ids[1] == t->node_ids[1] && prev->node_ids[2] == t->node_ids[2]) {
+                           int nasdfasdf = 9999;
+                        }
+                     }
+                     prev = t;
+                  }
+
                   retVal->triangle_record_size->putInteger(sizeof(EDMVD::Triangle));
                   retVal->n_triangles->putInteger(triangles->size());
                   retVal->triangle_array->putContainer(triangles);
+                  emsg = NULL;
+               }
+            }
+         } else {
+            emsg = "Analysis with specified name not found.";
+         }
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+   }
+   endTime = GetTickCount();
+   int execTime = endTime - startTime;
+   if (emsg) {
+      retVal->status->putString("Error"); retVal->report->putString(emsg);
+   } else {
+      retVal->status->putString("OK");
+      retVal->report->putString("");
+   }
+   return rstat;
+}
+/*===================================================================================================================*/
+EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeInGetListOfMeshes *inParam,
+   nodeRvGetListOfMeshes *retVal)
+/*
+===================================================================================================================*/
+{
+   EdmiError rstat = OK;
+   char *emsg = NULL;
+   int startTime, endTime;
+
+   try {
+      bool timeStepFound = false, resultIdFound = false;
+      char *analysisID = inParam->analysisID->value.stringVal;
+      Container<EDMVD::Vertex> vertices(dllMa, 1024);
+      EDMULONG maxID = 0, minID = 0xfffffffffffffff;
+      ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)dllMa->alloc(sizeof(metaData));
+
+      if (!resultInfoMemory) resultInfoMemory = new CMemoryAllocator(0x100000);
+      startTime = GetTickCount();
+      if (mt == mtDEM) {
+         emsg = "GetListOfMeshes is not implemented for DEM models.";
+      } else {
+         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+         fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
+         if (cAnalysis) {
+            emsg = "Specified time step not found.";
+            Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps(), theModel);
+            resultInfoMemory->freeAllMemory();
+            relocateMeshInfo *relocateInfo = (relocateMeshInfo *)resultInfoMemory->createRelocateInfo(sizeof(relocateMeshInfo));
+            Container<EDMVD::MeshInfo> *meshContainer = new(resultInfoMemory)Container<EDMVD::MeshInfo>(resultInfoMemory, 16);
+            relocateInfo->meshes = meshContainer;
+
+            for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+               if (ts->get_time_value() == inParam->timeStep->value.realVal) {
+                  timeStepFound = true;
+                  fem::Mesh *mesh = ts->get_mesh();
+
+                  EDMVD::MeshInfo *mi = meshContainer->createNext();
+                  mi->name = resultInfoMemory->allocString(mesh->exists_name() ? mesh->get_name() : "");
+                  mi->elementType.shape = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
+                  List<fem::Element*>* elems = mesh->get_elements();
+                  List<fem::Node*>* nodes = mesh->get_nodes();
+                  mi->nElements = elems ? elems->size() : 0;
+                  mi->nVertices = nodes ? nodes->size() : 0;
+                  mi->elementType.num_nodes = (EDMULONG32)mi->nVertices;
+                  mi->meshUnits = mi->meshColor = mi->coordsName = NULL;
+
+                  // Add info about the memory blocks within one memory block
+                  resultInfoMemory->prepareForRelocationBeforeTransfer();
+                  // Link the memory allocator to the return value.
+                  retVal->mesh_info_list->putCMemoryAllocator(resultInfoMemory);
                   emsg = NULL;
                }
             }
@@ -717,6 +850,15 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
             results->report->putString("Wrong number of input parameters or result values.");
          } else {
             rstat = plugin->GetBoundaryOfLocalMesh(&VELaSSCo_model, vmt, inParams, results);
+         }
+      } else if (strEQL(methodName, "GetListOfMeshes")) {
+         nodeRvGetListOfMeshes *results = new(theMA)nodeRvGetListOfMeshes(NULL, returnValues);
+         nodeInGetListOfMeshes *inParams = new(theMA)nodeInGetListOfMeshes(NULL, parameters);
+         if (nOfParameters != 2 || nOfReturnValues != 3) {
+            results->status->putString("Error");
+            results->report->putString("Wrong number of input parameters or result values.");
+         } else {
+            rstat = plugin->GetListOfMeshes(&VELaSSCo_model, vmt, inParams, results);
          }
       }
    } catch (CedmError *e) {

@@ -393,6 +393,37 @@ struct nodeInGetBoundaryOfLocalMesh : public CppParameterClass
 };
 
 
+/*===================================================================================================================*/
+struct nodeRvGetListOfMeshes : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[3];
+   cppRemoteParameter                    *status;
+   cppRemoteParameter                    *report;
+   cppRemoteParameter                    *mesh_info_list;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeRvGetListOfMeshes(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&status, rptSTRING);
+      addAddribute(&report, rptSTRING);
+      addAddribute(&mesh_info_list, rptCMemoryAllocator);
+   }
+};
+struct nodeInGetListOfMeshes : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[2];
+   cppRemoteParameter                    *analysisID;
+   cppRemoteParameter                    *timeStep;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeInGetListOfMeshes(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&analysisID, rptSTRING);
+      addAddribute(&timeStep, rptREAL);
+   }
+};
+
+
 struct relocateResultOnVertex : public RelocateInfo
 {
    Container<EDMVD::ResultOnVertex> *vertexResults;
@@ -402,6 +433,12 @@ struct relocateResultOnVertex : public RelocateInfo
 struct relocateResultInfo : public RelocateInfo
 {
    Container<EDMVD::ResultInfo> *sResults;
+};
+
+
+struct relocateMeshInfo : public RelocateInfo
+{
+   Container<EDMVD::MeshInfo> *meshes;
 };
 
 class VELaSSCoEDMplugin
@@ -424,6 +461,7 @@ public:
    EDMLONG              GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFromVerticesID *inParam, nodeRvGetResultFromVerticesID *retVal);
    EDMLONG              GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam, nodeRvGetCoordinatesAndElementsFromMesh *retVal);
    EDMLONG              GetBoundaryOfLocalMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam, nodeRvGetBoundaryOfLocalMesh *retVal);
+   EDMLONG              GetListOfMeshes(Model *theModel, ModelType mt, nodeInGetListOfMeshes *inParam, nodeRvGetListOfMeshes *retVal);
 };
 
 

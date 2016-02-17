@@ -183,9 +183,9 @@ void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::st
             retValueWithError = retVal; break;
          }
          Container<double> timeStepList(&ma, retVal->ListOfTimeSteps);
-         for (double ts = timeStepList.first(); timeStepList.moreElements(); ts = timeStepList.next()) {
-            if (std::find(time_steps.begin(), time_steps.end(), ts) == time_steps.end()) {
-               time_steps.push_back(ts);
+         for (double *ts = timeStepList.firstp(); timeStepList.moreElements(); ts = timeStepList.nextp()) {
+            if (std::find(time_steps.begin(), time_steps.end(), *ts) == time_steps.end()) {
+               time_steps.push_back(*ts);
             }
          }
       }
@@ -209,7 +209,7 @@ void VELaSSCoMethods::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
 {
    int startTime, endTime;
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubmodels = subQueries->size();
       nodeInGetListOfVerticesFromMesh *inParams = new(&ma)nodeInGetListOfVerticesFromMesh(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->stepValue->putReal(stepValue);
@@ -218,14 +218,15 @@ void VELaSSCoMethods::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
 
       startTime = GetTickCount();
 #pragma omp parallel for
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubmodels; i++) {
          EDMexecution *e = subQueries->getElementp(i);
+         // e contains information about the execution of one subquery
+         // create return value object for this subquery, retVal
          nodeRvGetListOfVerticesFromMesh *retVal = new(e->ema)nodeRvGetListOfVerticesFromMesh(e->ema, NULL);
          e->returnValues = retVal;
-         int localTime = GetTickCount();
-         printf("Before ExecuteRemoteCppMethod: Time since start is %d milliseconds, Thread no %d\n", localTime - startTime, omp_get_thread_num());
          ExecuteRemoteCppMethod(e, "GetListOfVerticesFromMesh", inParams, &errorFound);
       }
+      // Execution in single thread mode from here
       if (errorFound) {
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg);
@@ -233,11 +234,10 @@ void VELaSSCoMethods::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
          return;
       }
       endTime = GetTickCount();
-      //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
       nodeRvGetListOfVerticesFromMesh *retValueWithError = NULL;
       vector<VELaSSCoSM::Vertex>  vertices;
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubmodels; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetListOfVerticesFromMesh *retVal = (nodeRvGetListOfVerticesFromMesh *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
@@ -252,7 +252,7 @@ void VELaSSCoMethods::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
       } else {
          unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *) * (maxID + 1));
          EDMULONG nDuplicates = 0;
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubmodels; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetListOfVerticesFromMesh *retVal = (nodeRvGetListOfVerticesFromMesh *)e->returnValues;
             Container<EDMVD::Vertex> vertexList(&ma, retVal->vertices);
@@ -463,14 +463,14 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
    const std::string& resultID, const std::vector<int64_t> & listOfVertices)
 /*=============================================================================================================================*/
 {
-   int startTime, endTime, timeSubQueryExecytion, timeCollectingReturnValues;
+   int startTime, startTime2, endTime, timeSubQueryExecytion, timeCollectingReturnValues, t2, t3, t4, t5, t6;
    if (subQueries) {
       EDMULONG nexec = subQueries->size();
       nodeInGetResultFromVerticesID *inParams = new(&ma)nodeInGetResultFromVerticesID(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->timeStep->putReal(timeStep);
       inParams->resultID->putString((char*)resultID.data());
-      inParams->listOfVertices->putInteger(1);
+      inParams->listOfVertices->putIntegerAggr((EDMLONG*)listOfVertices.data(), listOfVertices.size());
       bool errorFound = false;
 
       startTime = GetTickCount();
@@ -481,6 +481,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          e->returnValues = retVal;
          ExecuteRemoteCppMethod(e, "GetResultFromVerticesID", inParams, &errorFound);
       }
+      t2 = GetTickCount();
       if (errorFound) {
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg); rv.__set_status("Error"); rv.__set_report(errorMsg);
@@ -491,7 +492,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
       nodeRvGetResultFromVerticesID *retValueWithError = NULL;
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
-      int nOfValuesPrVertex = 0;
+      EDMULONG nOfValuesPrVertex = 0;
       for (int i = 0; i < nexec; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
@@ -506,6 +507,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          if (retVal->maxID->value.intVal > maxID) maxID = retVal->maxID->value.intVal;
          if (retVal->minID->value.intVal < minID) minID = retVal->minID->value.intVal;
       }
+      t3 = GetTickCount();
       if (retValueWithError) {
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
@@ -513,7 +515,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *)* (maxID + 1));
          EDMULONG nDuplicates = 0, n_result_records = 0;
          Container<EDMVD::ResultOnVertex> **vertexResultsArr = (Container<EDMVD::ResultOnVertex> **)ma.alloc(sizeof(Container<EDMVD::ResultOnVertex> *) * nexec);
-         startTime = GetTickCount();
+         startTime2 = GetTickCount();
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
@@ -535,6 +537,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
                }
             }
          }
+         t4 = GetTickCount();
 #define BLOB 1
 #ifdef BLOB
          EDMLONG ResultOnVertexSize = sizeof(EDMVD::ResultOnVertex) + sizeof(double)* (nOfValuesPrVertex - 1);
@@ -550,6 +553,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
 #endif
          memset(verticesExist, 0, sizeof(unsigned char *)* (maxID + 1));
 
+         t5 = GetTickCount();
          for (int i = 0; i < nexec; i++) {
             Container<EDMVD::ResultOnVertex> *vertexResults = vertexResultsArr[i];
             for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
@@ -572,11 +576,13 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
                }
             }
          }
+         t6 = GetTickCount();
          endTime = GetTickCount();
-         timeCollectingReturnValues = endTime - startTime;
+         timeCollectingReturnValues = endTime - startTime2;
          char msgBuffer[2048];
-         sprintf(msgBuffer, "Execution time subqueries: %d\nExecution time building return values: %d\nNumber of distinct results: %lld\nNumber of duplicates: %lld\n",
-            timeSubQueryExecytion, timeCollectingReturnValues, n_result_records, nDuplicates);
+         sprintf(msgBuffer, "Execution time subqueries: %d\nExecution time building return values: %d\nt2=%d\nt3=%d\nt4=%d\nt5=%d\nt6=%d\nNumber of distinct results: %lld\nNumber of duplicates: %lld\n",
+            timeSubQueryExecytion, timeCollectingReturnValues, t2 - startTime, t3 - startTime, t4 - startTime, t5 - startTime, t6 - startTime,
+            n_result_records, nDuplicates);
          rv.__set_status("OK");
          rv.__set_report(msgBuffer);
          rv.__set_result_array(result_array);
@@ -614,7 +620,6 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
          return;
       }
       endTime = GetTickCount(); timeSubQueryExecytion = endTime - startTime;
-      //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
       nodeRvGetBoundaryOfLocalMesh *retValueWithError = NULL;
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
@@ -651,6 +656,9 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
             nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
             Container<EDMVD::Triangle>  triangles(&ma, retVal->triangle_array);
             for (EDMVD::Triangle *t = triangles.firstp(); t; t = triangles.nextp()) {
+               if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
+                  int nasdfasdf = 9999;
+               }
                if (n_triangles_in_this_string >= n_triangles_pr_string) {
                   n_triangles_in_this_string = 0;
                   stringNo++;
@@ -661,8 +669,8 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
                memmove(bp, t, sizeof(EDMVD::Triangle)); bp += sizeof(EDMVD::Triangle);
                n_triangles_in_this_string++;
             }
-            triangle_strings[stringNo].resize(n_triangles_in_this_string * sizeof(EDMVD::Triangle));
          }
+         triangle_strings[stringNo].resize(n_triangles_in_this_string * sizeof(EDMVD::Triangle));
 
          endTime = GetTickCount();
          timeCollectingReturnValues = endTime - startTime;
@@ -674,6 +682,81 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
          rv.__set_triangle_record_size(sizeof(EDMVD::Triangle));
          rv.__set_nTriangles(tot_n_triangles);
          rv.__set_triangles(triangle_strings);
+      }
+   }
+}
+/*=============================================================================================================================*/
+void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& analysisID, const double timeStep)
+/*=============================================================================================================================*/
+{
+   int startTime, endTime;
+   if (subQueries) {
+      EDMULONG nexec = subQueries->size();
+      nodeInGetListOfMeshes *inParams = new(&ma)nodeInGetListOfMeshes(&ma, NULL);
+      inParams->analysisID->putString((char*)analysisID.data());
+      inParams->timeStep->putReal(timeStep);
+      bool errorFound = false;
+
+      startTime = GetTickCount();
+#pragma omp parallel for
+      for (int i = 0; i < nexec; i++) {
+         EDMexecution *e = subQueries->getElementp(i);
+         nodeRvGetListOfMeshes *retVal = new(e->ema)nodeRvGetListOfMeshes(e->ema, NULL);
+         e->returnValues = retVal;
+         ExecuteRemoteCppMethod(e, "GetListOfMeshes", inParams, &errorFound);
+      }
+      if (errorFound) {
+         string errorMsg;
+         writeErrorMessageForSubQueries(errorMsg); rv.__set_status("Error"); rv.__set_report(errorMsg);
+         return;
+      }
+      nodeRvGetListOfMeshes *retValueWithError = NULL;
+      int tot_n_triangles = 0;
+      for (int i = 0; i < nexec; i++) {
+         EDMexecution *e = subQueries->getElementp(i);
+         nodeRvGetListOfMeshes *retVal = (nodeRvGetListOfMeshes *)e->returnValues;
+         if (strNEQ(retVal->status->value.stringVal, "OK")) {
+            retValueWithError = retVal; break;
+         }
+      }
+      if (retValueWithError) {
+         rv.__set_status("Error");
+         rv.__set_report(retValueWithError->report->value.stringVal);
+      } else {
+         vector<VELaSSCoSM::MeshInfo> meshInfos;
+         int meshNumber = 1;
+
+         for (int i = 0; i < nexec; i++) {
+            EDMexecution *e = subQueries->getElementp(i);
+            nodeRvGetListOfMeshes *retVal = (nodeRvGetListOfMeshes *)e->returnValues;
+            CMemoryAllocator resMa(retVal->mesh_info_list, false);
+
+            relocateMeshInfo *mesh_info_relocator = (relocateMeshInfo *)resMa.getRelocateInfo();
+            resMa.prepareForRelocationAfterTransfer();
+            Container<EDMVD::MeshInfo> *mesh_info_container = (Container<EDMVD::MeshInfo>*)mesh_info_relocator->bufferInfo->relocatePointer((char*)mesh_info_relocator->meshes);
+            mesh_info_container->relocateStructContainer(mesh_info_relocator->bufferInfo);
+
+            for (EDMVD::MeshInfo *mi = mesh_info_container->firstp(); mi; mi = mesh_info_container->nextp()) {
+               mi->relocateThis(mesh_info_relocator->bufferInfo);
+               //vector<VELaSSCoSM::MeshInfo>::iterator meshInfoIter;
+               //for (meshInfoIter = meshInfos.begin(); meshInfoIter != meshInfos.end(); meshInfoIter++) {
+               //   if (strEQL(mi->name, meshInfoIter->name.data()))
+               //      break;
+               //}
+               //if (meshInfoIter == meshInfos.end()) {
+                  VELaSSCoSM::MeshInfo meshInfo;
+                  meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
+                  VELaSSCoSM::ElementType elementType;
+                  elementType.__set_shape(mi->elementType.shape); elementType.__set_num_nodes(mi->nVertices);
+                  meshInfo.__set_elementType(elementType);
+                  meshInfo.__set_meshNumber(meshNumber++);
+
+                  meshInfos.push_back(meshInfo);
+               //}
+            }
+         }
+         rv.__set_status("OK");
+         rv.__set_meshInfos(meshInfos);
       }
    }
 }
