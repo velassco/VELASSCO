@@ -20,7 +20,8 @@ endif
 CPP_FLAGS = $(EXTRA_FLAGS)
 C_FLAGS = $(EXTRA_FLAGS)
 
-OPTS = -g -O2
+# OPTS = -g
+OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing
 
 THRIFT_STORAGE_DIR=../../thrift/Storage/gen-cpp
 THRIFT_QUERY_MANAGER_DIR=../../thrift/QueryManager/gen-cpp
