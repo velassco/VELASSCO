@@ -247,6 +247,12 @@ struct rvGetListOfVerticesFromMesh {
    3: list<Vertex>      vertex_list
 }
 
+struct rvGetResultFromVerticesID {
+  1: string status
+  2: string report
+  3: list<ResultOnVertex> result_list
+}
+
 /*
    rvGetResultFromVerticesID
    The binary result_array is an array of result_record. A result_record is declared
@@ -259,7 +265,7 @@ struct rvGetListOfVerticesFromMesh {
    
    The query must set the values so that:
    n_result_records * result_record_size == sizeof(result_array) 
-*/
+
 struct rvGetResultFromVerticesID {
   1: string             status
   2: string             report
@@ -268,11 +274,7 @@ struct rvGetResultFromVerticesID {
   5: i64                n_result_records
   6: binary             result_array
 }
-
-
-/*
-   This rvGetCoordinatesAndElementsFromMesh is exchanged with the version below due
-   due to performance problems with this one.
+*/
 
 struct rvGetCoordinatesAndElementsFromMesh {
   1: string status
@@ -282,8 +284,8 @@ struct rvGetCoordinatesAndElementsFromMesh {
   5: list<ElementAttrib> element_attrib_list
   6: list<ElementGroup>  element_group_info_list
 }
-*/
 
+/*
 struct rvGetCoordinatesAndElementsFromMesh {
    1  : string                      status
    2  : string                      report
@@ -297,7 +299,7 @@ struct rvGetCoordinatesAndElementsFromMesh {
    10 : binary                      vertex_array
    11 : binary                      element_array
 }
-
+*/
 
 
 // provides service VELaSSCo Storage Module
