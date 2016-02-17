@@ -12,7 +12,8 @@ EXTRA_FLAGS = -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs
 CPP_FLAGS = $(EXTRA_FLAGS)
 C_FLAGS = $(EXTRA_FLAGS)
 
-OPTS = -g -O2
+# OPTS = -g
+OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing
 
 # thrift headers and libs
 #THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
