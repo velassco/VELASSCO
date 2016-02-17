@@ -9,10 +9,10 @@ namespace fem {
 class fem_Schema;
 class TimeStep;
 class Analysis;
-class Element;
 class GaussPoint;
 class ResultHeader;
 class Result;
+class Element;
 class Node;
 class Mesh;
 class ScalarResult;
@@ -75,28 +75,6 @@ public:
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Analysis(Model *m, entityType et=et_Analysis) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    Analysis(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
-};
-
-
-class Element :  public dbInstance
-{
-protected:
-   Element() {}
-public:
-   static const entityType type = et_Element;
-   List<Node*>*                         get_nodes();
-   void                                 put_nodes(List<Node*>* v);
-   void                                 unset_nodes() { unsetAttribute(0); }
-   bool                                 exists_nodes() { return isAttrSet(0); }
-   SdaiAggr                             get_nodes_aggrId();
-   void                                 put_nodes_element(Node*);
-   int                                  get_id();
-   void                                 put_id(int v);
-   void                                 unset_id() { unsetAttribute(1); }
-   bool                                 exists_id() { return isAttrSet(1); }
-   void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
-   Element(Model *m, entityType et=et_Element) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
-   Element(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
 };
 
 
@@ -195,6 +173,28 @@ public:
 };
 
 
+class Element :  public dbInstance
+{
+protected:
+   Element() {}
+public:
+   static const entityType type = et_Element;
+   List<Node*>*                         get_nodes();
+   void                                 put_nodes(List<Node*>* v);
+   void                                 unset_nodes() { unsetAttribute(0); }
+   bool                                 exists_nodes() { return isAttrSet(0); }
+   SdaiAggr                             get_nodes_aggrId();
+   void                                 put_nodes_element(Node*);
+   int                                  get_id();
+   void                                 put_id(int v);
+   void                                 unset_id() { unsetAttribute(1); }
+   bool                                 exists_id() { return isAttrSet(1); }
+   void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
+   Element(Model *m, entityType et=et_Element) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
+   Element(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
+};
+
+
 class Node :  public dbInstance
 {
 protected:
@@ -217,6 +217,7 @@ public:
    void                                 put_z(double v);
    void                                 unset_z() { unsetAttribute(3); }
    bool                                 exists_z() { return isAttrSet(3); }
+   Set<Element*>*                       get_elements();
    Set<Result*>*                        get_results();
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Node(Model *m, entityType et=et_Node) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }

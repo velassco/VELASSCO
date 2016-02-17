@@ -21,13 +21,6 @@ tEdmiAttribute Analysis_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG Analysis_Subtypes[] = {0};
-EDMLONG Element_AttributeLayout[] = {9, 0, 0};
-tEdmiAttribute Element_Attributes[] = {
-   {"nodes", 9, 0},
-   {"id", 0, 0},
-   {NULL, 0, 0},
-};
-EDMLONG Element_Subtypes[] = {0};
 EDMLONG GaussPoint_AttributeLayout[] = {8, 9, 6, 0};
 tEdmiAttribute GaussPoint_Attributes[] = {
    {"gauss_point_for", 8, 0},
@@ -57,12 +50,20 @@ tEdmiAttribute Result_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG Result_Subtypes[] = {et_ScalarResult, et_VectorResult, et_Matrix_2D, et_Matrix_3D, et_Matrix_Deformated, 0};
-EDMLONG Node_AttributeLayout[] = {0, 1, 1, 1, 9, 0};
+EDMLONG Element_AttributeLayout[] = {9, 0, 0};
+tEdmiAttribute Element_Attributes[] = {
+   {"nodes", 9, 0},
+   {"id", 0, 0},
+   {NULL, 0, 0},
+};
+EDMLONG Element_Subtypes[] = {0};
+EDMLONG Node_AttributeLayout[] = {0, 1, 1, 1, 9, 9, 0};
 tEdmiAttribute Node_Attributes[] = {
    {"id", 0, 0},
    {"x", 1, 0},
    {"y", 1, 0},
    {"z", 1, 0},
+   {"elements", 9, 0},
    {"results", 9, 0},
    {NULL, 0, 0},
 };
@@ -134,17 +135,17 @@ tEdmiEntityData fem_schema_velassco_Entities[] = {
 {"indeterminate"},
 {"TimeStep", 5, 663, 8, 56, 12, et_TimeStep, TimeStep_AttributeLayout, TimeStep_Subtypes, NULL, TimeStep_Attributes},
 {"Analysis", 2, 661, 8, 32, 11, et_Analysis, Analysis_AttributeLayout, Analysis_Subtypes, NULL, Analysis_Attributes},
-{"Element", 2, 643, 8, 32, 2, et_Element, Element_AttributeLayout, Element_Subtypes, NULL, Element_Attributes},
-{"GaussPoint", 3, 659, 8, 40, 10, et_GaussPoint, GaussPoint_AttributeLayout, GaussPoint_Subtypes, NULL, GaussPoint_Attributes},
-{"ResultHeader", 9, 645, 16, 104, 3, et_ResultHeader, ResultHeader_AttributeLayout, ResultHeader_Subtypes, NULL, ResultHeader_Attributes},
-{"Result", 2, 647, 8, 32, 4, et_Result, Result_AttributeLayout, Result_Subtypes, NULL, Result_Attributes},
-{"Node", 5, 641, 8, 56, 1, et_Node, Node_AttributeLayout, Node_Subtypes, NULL, Node_Attributes},
+{"GaussPoint", 3, 657, 8, 40, 9, et_GaussPoint, GaussPoint_AttributeLayout, GaussPoint_Subtypes, NULL, GaussPoint_Attributes},
+{"ResultHeader", 9, 655, 16, 104, 8, et_ResultHeader, ResultHeader_AttributeLayout, ResultHeader_Subtypes, NULL, ResultHeader_Attributes},
+{"Result", 2, 643, 8, 32, 2, et_Result, Result_AttributeLayout, Result_Subtypes, NULL, Result_Attributes},
+{"Element", 2, 659, 8, 32, 10, et_Element, Element_AttributeLayout, Element_Subtypes, NULL, Element_Attributes},
+{"Node", 6, 641, 8, 64, 1, et_Node, Node_AttributeLayout, Node_Subtypes, NULL, Node_Attributes},
 {"Mesh", 11, 639, 16, 120, 0, et_Mesh, Mesh_AttributeLayout, Mesh_Subtypes, NULL, Mesh_Attributes},
-{"ScalarResult", 3, 649, 8, 40, 5, et_ScalarResult, ScalarResult_AttributeLayout, ScalarResult_Subtypes, NULL, ScalarResult_Attributes},
-{"VectorResult", 3, 651, 8, 40, 6, et_VectorResult, VectorResult_AttributeLayout, VectorResult_Subtypes, NULL, VectorResult_Attributes},
-{"Matrix_2D", 3, 653, 8, 40, 7, et_Matrix_2D, Matrix_2D_AttributeLayout, Matrix_2D_Subtypes, NULL, Matrix_2D_Attributes},
-{"Matrix_3D", 3, 655, 8, 40, 8, et_Matrix_3D, Matrix_3D_AttributeLayout, Matrix_3D_Subtypes, NULL, Matrix_3D_Attributes},
-{"Matrix_Deformated", 3, 657, 8, 40, 9, et_Matrix_Deformated, Matrix_Deformated_AttributeLayout, Matrix_Deformated_Subtypes, NULL, Matrix_Deformated_Attributes},
+{"ScalarResult", 3, 645, 8, 40, 3, et_ScalarResult, ScalarResult_AttributeLayout, ScalarResult_Subtypes, NULL, ScalarResult_Attributes},
+{"VectorResult", 3, 647, 8, 40, 4, et_VectorResult, VectorResult_AttributeLayout, VectorResult_Subtypes, NULL, VectorResult_Attributes},
+{"Matrix_2D", 3, 649, 8, 40, 5, et_Matrix_2D, Matrix_2D_AttributeLayout, Matrix_2D_Subtypes, NULL, Matrix_2D_Attributes},
+{"Matrix_3D", 3, 651, 8, 40, 6, et_Matrix_3D, Matrix_3D_AttributeLayout, Matrix_3D_Subtypes, NULL, Matrix_3D_Attributes},
+{"Matrix_Deformated", 3, 653, 8, 40, 7, et_Matrix_Deformated, Matrix_Deformated_AttributeLayout, Matrix_Deformated_Subtypes, NULL, Matrix_Deformated_Attributes},
 {NULL},
 };
 
@@ -176,22 +177,6 @@ void TimeStep::put_name(char * v) { putATTRIBUTE(32, char *, v, name, 4, 4); }
 char * Analysis::get_name() { return getATTRIBUTE(0, char *, 0); }
 void Analysis::put_name(char * v) { putATTRIBUTE(0, char *, v, name, 0, 4); }
 Set<TimeStep*>* Analysis::get_time_steps() { return getAGGREGATE(8, Set<TimeStep*>*, 1); }
-/*====================================================================================================
-   Element
-====================================================================================================*/
-List<Node*>* Element::get_nodes() { return getAGGREGATE(0, List<Node*>*, 0); }
-void Element::put_nodes(List<Node*>* v) { putAGGREGATE(0, List<Node*>*, v, nodes, 0, 9); }
-SdaiAggr  Element::get_nodes_aggrId() { return getAGGRID(0); }
-void Element::put_nodes_element(Node* element) {
-   SdaiAggr agId = get_nodes_aggrId();
-   List<Node*> aggregate(m, agId);
-   if (agId == 0) {
-      put_nodes(&aggregate);
-   }
-   aggregate.add(element);
-}
-int Element::get_id() { return getATTRIBUTE(8, int, 1); }
-void Element::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
 /*====================================================================================================
    GaussPoint
 ====================================================================================================*/
@@ -256,6 +241,22 @@ void Result::put_result_for(Node* v) { putInstance(0, Node*, v, result_for, 0, 8
 ResultHeader* Result::get_result_header() { return getInstance(8, ResultHeader*, 1); }
 void Result::put_result_header(ResultHeader* v) { putInstance(8, ResultHeader*, v, result_header, 1, 8); v->addToUsedIn(c); }
 /*====================================================================================================
+   Element
+====================================================================================================*/
+List<Node*>* Element::get_nodes() { return getAGGREGATE(0, List<Node*>*, 0); }
+void Element::put_nodes(List<Node*>* v) { putAGGREGATE(0, List<Node*>*, v, nodes, 0, 9); }
+SdaiAggr  Element::get_nodes_aggrId() { return getAGGRID(0); }
+void Element::put_nodes_element(Node* element) {
+   SdaiAggr agId = get_nodes_aggrId();
+   List<Node*> aggregate(m, agId);
+   if (agId == 0) {
+      put_nodes(&aggregate);
+   }
+   aggregate.add(element);
+}
+int Element::get_id() { return getATTRIBUTE(8, int, 1); }
+void Element::put_id(int v) { putATTRIBUTE(8, int, v, id, 1, 0); }
+/*====================================================================================================
    Node
 ====================================================================================================*/
 int Node::get_id() { return getATTRIBUTE(0, int, 0); }
@@ -266,7 +267,8 @@ double Node::get_y() { return getREAL(16, double, 2); }
 void Node::put_y(double v) { putREAL(16, double, v, y, 2, 1); }
 double Node::get_z() { return getREAL(24, double, 3); }
 void Node::put_z(double v) { putREAL(24, double, v, z, 3, 1); }
-Set<Result*>* Node::get_results() { return getAGGREGATE(32, Set<Result*>*, 4); }
+Set<Element*>* Node::get_elements() { return getAGGREGATE(32, Set<Element*>*, 4); }
+Set<Result*>* Node::get_results() { return getAGGREGATE(40, Set<Result*>*, 5); }
 /*====================================================================================================
    Mesh
 ====================================================================================================*/
@@ -387,10 +389,10 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
 
    TimeStep* p_TimeStep;
    Analysis* p_Analysis;
-   Element* p_Element;
    GaussPoint* p_GaussPoint;
    ResultHeader* p_ResultHeader;
    Result* p_Result;
+   Element* p_Element;
    Node* p_Node;
    Mesh* p_Mesh;
    ScalarResult* p_ScalarResult;
@@ -410,10 +412,6 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
             p_Analysis = new(ma) Analysis(ma, instData);
             theObject = (void*)p_Analysis;
             break;
-         case et_Element:
-            p_Element = new(ma) Element(ma, instData);
-            theObject = (void*)p_Element;
-            break;
          case et_GaussPoint:
             p_GaussPoint = new(ma) GaussPoint(ma, instData);
             theObject = (void*)p_GaussPoint;
@@ -425,6 +423,10 @@ void* fem_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Mode
          case et_Result:
             p_Result = new(ma) Result(ma, instData);
             theObject = (void*)p_Result;
+            break;
+         case et_Element:
+            p_Element = new(ma) Element(ma, instData);
+            theObject = (void*)p_Element;
             break;
          case et_Node:
             p_Node = new(ma) Node(ma, instData);
@@ -472,10 +474,10 @@ fem_Schema fem_schema_velassco_SchemaObject(fem_schema_velassco_Entities, fem_sc
 
 static bool supertypeOf_TimeStep(entityType wantedSuperType, void **p);
 static bool supertypeOf_Analysis(entityType wantedSuperType, void **p);
-static bool supertypeOf_Element(entityType wantedSuperType, void **p);
 static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **p);
 static bool supertypeOf_ResultHeader(entityType wantedSuperType, void **p);
 static bool supertypeOf_Result(entityType wantedSuperType, void **p);
+static bool supertypeOf_Element(entityType wantedSuperType, void **p);
 static bool supertypeOf_Node(entityType wantedSuperType, void **p);
 static bool supertypeOf_Mesh(entityType wantedSuperType, void **p);
 static bool supertypeOf_ScalarResult(entityType wantedSuperType, void **p);
@@ -497,13 +499,6 @@ static bool supertypeOf_Analysis(entityType wantedSuperType, void **)
    return wantedSuperType == et_Analysis;
 }
 
-static dbInstance *dbInstanceOf_Element(void *obj) { Element *p = (Element*)obj; dbInstance *dbi = p; return dbi;}
-
-static bool supertypeOf_Element(entityType wantedSuperType, void **)
-{
-   return wantedSuperType == et_Element;
-}
-
 static dbInstance *dbInstanceOf_GaussPoint(void *obj) { GaussPoint *p = (GaussPoint*)obj; dbInstance *dbi = p; return dbi;}
 
 static bool supertypeOf_GaussPoint(entityType wantedSuperType, void **)
@@ -523,6 +518,13 @@ static dbInstance *dbInstanceOf_Result(void *obj) { Result *p = (Result*)obj; db
 static bool supertypeOf_Result(entityType wantedSuperType, void **)
 {
    return wantedSuperType == et_Result;
+}
+
+static dbInstance *dbInstanceOf_Element(void *obj) { Element *p = (Element*)obj; dbInstance *dbi = p; return dbi;}
+
+static bool supertypeOf_Element(entityType wantedSuperType, void **)
+{
+   return wantedSuperType == et_Element;
 }
 
 static dbInstance *dbInstanceOf_Node(void *obj) { Node *p = (Node*)obj; dbInstance *dbi = p; return dbi;}
@@ -629,10 +631,10 @@ static supertypeCastingFunc castingFunctions[] = {
 &supertypeOf_indeterminate,
    &supertypeOf_TimeStep,
    &supertypeOf_Analysis,
-   &supertypeOf_Element,
    &supertypeOf_GaussPoint,
    &supertypeOf_ResultHeader,
    &supertypeOf_Result,
+   &supertypeOf_Element,
    &supertypeOf_Node,
    &supertypeOf_Mesh,
    &supertypeOf_ScalarResult,
@@ -661,10 +663,10 @@ static dbInstanceCastingFunc dbInstanceCastingFunctions[] = {
 &dbInstanceOf_indeterminate,
    &dbInstanceOf_TimeStep,
    &dbInstanceOf_Analysis,
-   &dbInstanceOf_Element,
    &dbInstanceOf_GaussPoint,
    &dbInstanceOf_ResultHeader,
    &dbInstanceOf_Result,
+   &dbInstanceOf_Element,
    &dbInstanceOf_Node,
    &dbInstanceOf_Mesh,
    &dbInstanceOf_ScalarResult,
