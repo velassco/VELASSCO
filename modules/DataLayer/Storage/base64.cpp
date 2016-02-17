@@ -45,7 +45,7 @@ std::string base64_encode( char const* bytes_to_encode)
     return base64_encode( bytes_to_encode, (unsigned)strlen(bytes_to_encode) );
 }
 
-std::string base64_encode( char const* bytes_to_encode, unsigned int in_len)
+std::string base64_encode( char const* bytes_to_encode, size_t in_len)
 {
     std::string ret;
     int i = 0;
