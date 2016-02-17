@@ -181,11 +181,16 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   result = valGetMeshDrawData( sessionID, modelID.c_str(), analysisID, timeStep, meshID, &status, &mesh_draw_data );
   std::cout << "status:  " << status;
   
-  const int64_t vertexIDs[] = {2724, 10, 0};
+  //const int64_t vertexIDs[] = {2724, 10, 0};
+  std::vector<int64_t> vertexIDs;
+  for(int64_t idx = 1; idx <= 11000; idx+=1)
+    vertexIDs.push_back(idx);
+  vertexIDs.push_back(0);
+	  
   const int64_t  *resultVertexIDs;
   const double   *resultValues;
   size_t          resultNumVertices;
-  result = valGetResultFromVerticesID( sessionID, modelID.c_str(), "Velocity", "DEM", vertexIDs, 2939000.0, &status, &resultVertexIDs, &resultValues, &resultNumVertices);
+  result = valGetResultFromVerticesID( sessionID, modelID.c_str(), "Velocity", "DEM", vertexIDs.data(), 2939000.0, &status, &resultVertexIDs, &resultValues, &resultNumVertices);
   std::cout  << "valGetResultFromVerticesID: "    << std::endl
              << "   status = " << status << std::endl;
   for(size_t i = 0; i < resultNumVertices; i++){

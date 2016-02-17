@@ -485,8 +485,8 @@ std::string HBase::getResultFromVerticesID( std::string& report, std::vector<Res
 				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
 {
   //return getResultOnVertices_curl( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
-  //return getResultFromVerticesID_thrift( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
-  return getResultFromVerticesID_thrift_filter( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
+  return getResultFromVerticesID_thrift( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
+  //return getResultFromVerticesID_thrift_filter( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
 }
 
 std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
@@ -582,6 +582,7 @@ std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
 // ==============================================
 //#define READ_GROUPED_ROWS_FILTERS
 
+//#define USE_HASHING_FILTER
 
 /* GetResultsFromVerticesID */
 static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t> &listOfVerticesID, const int64_t &minVertexID, const int64_t &maxVertexID ) {
@@ -590,7 +591,7 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
 	it != rowResult.columns.end(); ++it) {
     const char *cq_str = it->first.c_str();
-    LOGGER << cq_str << it->second.value.data() << std::endl;
+    //LOGGER << cq_str << it->second.value.data() << std::endl;
     const char CF = cq_str[ 0];
     // cq_str[ 1] should be ':'
     const char subC = cq_str[ 2];
@@ -615,6 +616,7 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
       	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
       	      
       	    //LOGGER << node_id << " " << coords[0] << " " << coords[1] << " " << coords[2] << std::endl;
+#ifdef USE_HASHING_FILTER
 #if __cplusplus < 201103L
 	    // c++ < c++11
       	    resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
@@ -622,13 +624,21 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
 	    // c++ <= c++98
       	    resultOnVertexListMap.insert (std::pair< int64_t, std::vector< double > >(node_id, result_values));  
 #endif
+#else
+			ResultOnVertex result;
+			result.__set_id( node_id );
+			result.__set_value( result_values );
+			listOfResults.push_back( result );
+			num_results++;	  
+#endif
       	  }
       	}
       }
     }
   }
-  
-  LOGGER << "====> before unordered" << std::endl; 
+ 
+#ifdef USE_HASHING_FILTER
+  //LOGGER << "====> before unordered" << std::endl; 
   
       for(size_t i = 0; i < listOfVerticesID.size(); i++){
 		int64_t vertexID = listOfVerticesID[i];
@@ -648,6 +658,7 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
 		
 		LOGGER << num_results << std::endl;
 	}
+#endif
   
   LOGGER << "Number of Results = " << num_results << std::endl; 
   
@@ -672,6 +683,7 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   
   int64_t minNodeNum = minVertexID;
   int64_t maxNodeNum = maxVertexID;
+  LOGGER << "filter = [" << minNodeNum << " , " << maxNodeNum << "]\n";
   minNodeNum = byteSwap(minNodeNum);  
   maxNodeNum = byteSwap(maxNodeNum);  
   
@@ -690,12 +702,25 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   //LOGGER << "Starting scanner with scan..." << std::endl;
   std::stringstream filter;
   filter << "(";
+  filter << "(QualifierFilter (=, 'regexstring:R*')) AND ";
   filter << "(RowFilter (>=, 'binary:";
   filter << startRowKey;
   filter << "')) AND (RowFilter (<=, 'binary:";
   filter << stopRowKey;
   filter << "')) AND ";
-  filter << "(FamilyFilter (=, 'substring:R')) AND ";
+  filter << "ColumnRangeFilter ('r" << resultNum_str << "vl_";
+  filter.write((const char*)&minNodeNum, 8);
+  filter << "', true, 'r" << resultNum_str << "vl_";
+  filter.write((const char*)&maxNodeNum, 8);
+  filter << "', true)";
+  filter << ")";
+  /*filter << "(";
+  filter << "(RowFilter (>=, 'binary:";
+  filter << startRowKey;
+  filter << "')) AND (RowFilter (<=, 'binary:";
+  filter << stopRowKey;
+  filter << "')) AND ";
+  
   filter << "(";
   filter << "((QualifierFilter (=, 'binaryprefix:r" << resultNum_str << "vl_')) AND ";
   filter << " (QualifierFilter (>=, 'binary:r" << resultNum_str << "vl_";
@@ -712,16 +737,16 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   filter << "(QualifierFilter (<=, 'binary:r" << resultNum_str << "_";
   filter.write((const char*)&maxNodeNum, 8);
   filter << "')))";
-  filter << ")";
+  filter << ")";*/
   
   //filter << "SingleColumnValue(=, 'regexstring:*', 'substring:R', 'substring:r"
   //       << resultNum_str
   //       << "vl_*";
   //filter.write((const char*)&nodeNum, 8);
   //filter << "')";
-  filter << ")";
+  //filter << ")";
 
-  //LOGGER << "filter = " << filter.str() << std::endl;
+  LOGGER << filter.str() << std::endl;
   ts.__set_filterString(filter.str());
   ScannerID scan_id = _hbase_client->scannerOpenWithScan(data_table, ts, m); 
   //LOGGER << "The scanner id is " << scan_id << std::endl;
@@ -851,7 +876,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
     std::sort(sorted_listOfVerticesID.begin(), sorted_listOfVerticesID.end());
     
     i = 0;
-    int64_t threshold = 1000;
+    int64_t threshold = 1;
     while(i < sorted_listOfVerticesID.size()){
 		// group the successive vertex ids
 		size_t j = i + 1;
