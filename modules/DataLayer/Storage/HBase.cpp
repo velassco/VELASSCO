@@ -892,10 +892,10 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 // ==============================================
 // ==== Thrift
 // ==============================================
-#define READ_GROUPED_ROWS
+//#define READ_GROUPED_ROWS
 
 /* GetResultsFromVerticesID */
-static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, std::vector<bool>& foundFlags, const std::vector<int64_t>& listOfVerticesID) {
+static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t>& listOfVerticesID) {
   int num_results = 0;
   unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
@@ -923,13 +923,18 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
       	    double *coords = ( double *)it->second.value.data();
             for(int i = 0; i < resultInfo.numberOfComponents; i++)
       	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
+      	    ResultOnVertex result;
+			result.__set_id( node_id );
+			result.__set_value( result_values );
+			listOfResults.push_back( result );
+			num_results++;
 
 #if __cplusplus < 201103L
 	    // c++ < c++11
-      	    resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
+      	    //resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
 #else
 	    // c++ <= c++98
-      	    resultOnVertexListMap.insert (std::pair< int64_t, std::vector< double > >(node_id, result_values));  
+      	    //resultOnVertexListMap.insert (std::pair< int64_t, std::vector< double > >(node_id, result_values));  
 #endif
       	  }
       	}
@@ -937,7 +942,7 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
     }
   }
   
-  for(size_t i = 0; i < listOfVerticesID.size(); i++){
+  /*for(size_t i = 0; i < listOfVerticesID.size(); i++){
 	  
 	  // already a value is found.
 	  if(foundFlags[i]) continue;
@@ -960,7 +965,7 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
 	  }
 	  
 	  
-  }
+  }*/
   
   return num_results;
 }
@@ -971,8 +976,8 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
            const ResultInfo &resultInfo,  const std::vector<int64_t> &listOfVerticesID, const char *format ){
   bool scan_ok = true;
   
-  std::vector<bool> foundFlags(listOfVerticesID.size(), false);
-  
+  //std::vector<bool> foundFlags(listOfVerticesID.size(), false);
+  listOfResults.reserve( listOfVerticesID.size() );
 #ifdef READ_GROUPED_ROWS
   int chunk_size = 4;
   for(int rowIdx = 0; rowIdx <= 1000; rowIdx+=chunk_size){
@@ -984,12 +989,25 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 	  // filter.str("");
 	  // ts.__set_filterString(filter.str());
 	  StrVec cols;
-	  // char buf[ 100];
+	  char buf[ 100];
 	  // these filters: do not work, should check another way ...
 	  // sprintf( buf, "M:c%06d*", meshID);
 	  // sprintf( buf, "M:c%06d", meshID);
 	  // cols.push_back( buf); // Mesh column family with
-	  cols.push_back( "R");
+	  std::cout << "Making list of vertices column names...\n";
+	  for(size_t i = 0; i < listOfVerticesID.size(); i++){
+		{
+		  std::ostringstream oss;
+		  sprintf( buf, "R:r%06dvl_", resultInfo.resultNumber );
+		  //sprintf( buf, "R:r%06d_", resultInfo.resultNumber );
+		  oss << buf;
+		  int64_t vertexID = byteSwap<int64_t>( listOfVerticesID[i] );
+		  oss.write( (char*)&vertexID, sizeof(int64_t));
+		  //LOGGER << "=====================> " << oss.str() << std::endl;
+		  cols.push_back( oss.str() );
+	    }
+	  }
+	  std::cout << "Making list of vertices column names (Done)...\n";
 	  // M:un for units
 	  // M:c* prefix for c123456nm c123456nc for name of coordinates set and number of coordinates = vertices = nodes
 	  // M:m* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
@@ -1016,8 +1034,8 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 	  
 	  try {
 		// or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
-		bool done = false;
-		while ( !done ) {
+		//bool done = false;
+		while ( true ) {
 		  _hbase_client->scannerGet( rowsResult, scan_id);
 		  if ( rowsResult.size() == 0)
 		break;
@@ -1027,13 +1045,13 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 		// check if the rowkey is our's ... should be ....
 		if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
 		  continue; // break;
-		bool ok = getResultsFromRow( listOfResults, rowsResult[ i ], resultInfo, foundFlags, listOfVerticesID );
+		bool ok = getResultsFromRow( listOfResults, rowsResult[ i ], resultInfo, listOfVerticesID );
 		if ( ok) {
 			
-			size_t i = 0;
-			for(; i < foundFlags.size(); i++)
-			  if(!foundFlags[i]) break;
-			if(i == foundFlags.size()) done = true;
+			//size_t i = 0;
+			//for(; i < foundFlags.size(); i++)
+			//  if(!foundFlags[i]) break;
+			//if(i == foundFlags.size()) done = true;
 
 		  // getMeshInfoFromRow.push_back( model_info);
 		  // getMeshInfoFromRow( tmp_lst_meshes, rowsResult[ i]);

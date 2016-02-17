@@ -746,8 +746,8 @@ typedef struct _VELaSSCoSM_GetResultFromVerticesID_result__isset {
 class VELaSSCoSM_GetResultFromVerticesID_result {
  public:
 
-  static const char* ascii_fingerprint; // = "F5BFC349DD50E1076F9E344574552FD5";
-  static const uint8_t binary_fingerprint[16]; // = {0xF5,0xBF,0xC3,0x49,0xDD,0x50,0xE1,0x07,0x6F,0x9E,0x34,0x45,0x74,0x55,0x2F,0xD5};
+  static const char* ascii_fingerprint; // = "9777375F4D3818203657321E4F678D46";
+  static const uint8_t binary_fingerprint[16]; // = {0x97,0x77,0x37,0x5F,0x4D,0x38,0x18,0x20,0x36,0x57,0x32,0x1E,0x4F,0x67,0x8D,0x46};
 
   VELaSSCoSM_GetResultFromVerticesID_result(const VELaSSCoSM_GetResultFromVerticesID_result&);
   VELaSSCoSM_GetResultFromVerticesID_result& operator=(const VELaSSCoSM_GetResultFromVerticesID_result&);
@@ -787,8 +787,8 @@ typedef struct _VELaSSCoSM_GetResultFromVerticesID_presult__isset {
 class VELaSSCoSM_GetResultFromVerticesID_presult {
  public:
 
-  static const char* ascii_fingerprint; // = "F5BFC349DD50E1076F9E344574552FD5";
-  static const uint8_t binary_fingerprint[16]; // = {0xF5,0xBF,0xC3,0x49,0xDD,0x50,0xE1,0x07,0x6F,0x9E,0x34,0x45,0x74,0x55,0x2F,0xD5};
+  static const char* ascii_fingerprint; // = "9777375F4D3818203657321E4F678D46";
+  static const uint8_t binary_fingerprint[16]; // = {0x97,0x77,0x37,0x5F,0x4D,0x38,0x18,0x20,0x36,0x57,0x32,0x1E,0x4F,0x67,0x8D,0x46};
 
 
   virtual ~VELaSSCoSM_GetResultFromVerticesID_presult() throw();

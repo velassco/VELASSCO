@@ -664,25 +664,27 @@ class ResultInfo {
 void swap(ResultInfo &a, ResultInfo &b);
 
 typedef struct _ResultOnVertex__isset {
-  _ResultOnVertex__isset() : id(false), value(false) {}
+  _ResultOnVertex__isset() : id(false), value(false), bvalue(false) {}
   bool id :1;
   bool value :1;
+  bool bvalue :1;
 } _ResultOnVertex__isset;
 
 class ResultOnVertex {
  public:
 
-  static const char* ascii_fingerprint; // = "1CB61EEDEC70E44B3B75F0C0C76D5496";
-  static const uint8_t binary_fingerprint[16]; // = {0x1C,0xB6,0x1E,0xED,0xEC,0x70,0xE4,0x4B,0x3B,0x75,0xF0,0xC0,0xC7,0x6D,0x54,0x96};
+  static const char* ascii_fingerprint; // = "3E701BDC702ACA6F8E92958F21CE728E";
+  static const uint8_t binary_fingerprint[16]; // = {0x3E,0x70,0x1B,0xDC,0x70,0x2A,0xCA,0x6F,0x8E,0x92,0x95,0x8F,0x21,0xCE,0x72,0x8E};
 
   ResultOnVertex(const ResultOnVertex&);
   ResultOnVertex& operator=(const ResultOnVertex&);
-  ResultOnVertex() : id(0) {
+  ResultOnVertex() : id(0), bvalue() {
   }
 
   virtual ~ResultOnVertex() throw();
   int64_t id;
   std::vector<double>  value;
+  std::string bvalue;
 
   _ResultOnVertex__isset __isset;
 
@@ -690,11 +692,15 @@ class ResultOnVertex {
 
   void __set_value(const std::vector<double> & val);
 
+  void __set_bvalue(const std::string& val);
+
   bool operator == (const ResultOnVertex & rhs) const
   {
     if (!(id == rhs.id))
       return false;
     if (!(value == rhs.value))
+      return false;
+    if (!(bvalue == rhs.bvalue))
       return false;
     return true;
   }
@@ -1662,8 +1668,8 @@ typedef struct _rvGetResultFromVerticesID__isset {
 class rvGetResultFromVerticesID {
  public:
 
-  static const char* ascii_fingerprint; // = "7D7F6E03D85558681F4AC69C1B4F3FC4";
-  static const uint8_t binary_fingerprint[16]; // = {0x7D,0x7F,0x6E,0x03,0xD8,0x55,0x58,0x68,0x1F,0x4A,0xC6,0x9C,0x1B,0x4F,0x3F,0xC4};
+  static const char* ascii_fingerprint; // = "E9197D1E0C80A11B20AB3C28F5F02CC8";
+  static const uint8_t binary_fingerprint[16]; // = {0xE9,0x19,0x7D,0x1E,0x0C,0x80,0xA1,0x1B,0x20,0xAB,0x3C,0x28,0xF5,0xF0,0x2C,0xC8};
 
   rvGetResultFromVerticesID(const rvGetResultFromVerticesID&);
   rvGetResultFromVerticesID& operator=(const rvGetResultFromVerticesID&);

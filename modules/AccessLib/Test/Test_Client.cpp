@@ -134,8 +134,8 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   //Location: Hbase:Test_VELaSSCo_Models
   
   const char* model_name 		= "FluidizedBed_small";//"FluidizedBed_large";
-  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
-  const char* model_tablename   = "VELaSSCo_Models";//"Test_VELaSSCo_Models";
+  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";// "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
+  const char* model_tablename   = "VELaSSCo_Models";//"VELaSSCo_Models";//"Test_VELaSSCo_Models";
   
   //const char* fem_name 			=	"fine_mesh-ascii_";
   //const char* fem_fullpath    	=	"/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii";
@@ -180,6 +180,17 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   const VELaSSCo::RTFormat::File* mesh_draw_data = NULL;
   result = valGetMeshDrawData( sessionID, modelID.c_str(), analysisID, timeStep, meshID, &status, &mesh_draw_data );
   std::cout << "status:  " << status;
+  
+  const int64_t vertexIDs[] = {2724, 10, 0};
+  const int64_t  *resultVertexIDs;
+  const double   *resultValues;
+  size_t          resultNumVertices;
+  result = valGetResultFromVerticesID( sessionID, modelID.c_str(), "Velocity", "DEM", vertexIDs, 2939000.0, &status, &resultVertexIDs, &resultValues, &resultNumVertices);
+  std::cout  << "valGetResultFromVerticesID: "    << std::endl
+             << "   status = " << status << std::endl;
+  for(size_t i = 0; i < resultNumVertices; i++){
+	std::cout << resultVertexIDs[i] << "\t" << resultValues[3*i+0] << " " << resultValues[3*i+1] << " " << resultValues[3*i+2] << std::endl;
+  }
   
   return EXIT_SUCCESS;
 }
@@ -628,9 +639,9 @@ int main(int argc, char* argv[])
   std::cout << "   model_list = " << return_list << std::endl;
 
   int ret = 0;
-  //ret = doTestMorteza( sessionID);
+  ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
-    ret= doTestDC (sessionID);
+  //ret= doTestDC (sessionID);
 
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  
