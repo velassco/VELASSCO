@@ -485,8 +485,8 @@ std::string HBase::getResultFromVerticesID( std::string& report, std::vector<Res
 				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
 {
   //return getResultOnVertices_curl( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
-  return getResultFromVerticesID_thrift( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
-  //return getResultFromVerticesID_thrift_filter( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
+  //return getResultFromVerticesID_thrift( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
+  return getResultFromVerticesID_thrift_filter( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
 }
 
 std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
@@ -580,10 +580,11 @@ std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
 // ==============================================
 // ==== Thrift + Filters
 // ==============================================
-#define READ_GROUPED_ROWS_FILTERS
+//#define READ_GROUPED_ROWS_FILTERS
+
 
 /* GetResultsFromVerticesID */
-static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const int64_t &minVertexID, const int64_t &maxVertexID ) {
+static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t> &listOfVerticesID, const int64_t &minVertexID, const int64_t &maxVertexID ) {
   int num_results = 0;
   unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
@@ -629,7 +630,8 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
   
   LOGGER << "====> before unordered" << std::endl; 
   
-      for(int64_t vertexID = minVertexID; vertexID <= maxVertexID; vertexID++){
+      for(size_t i = 0; i < listOfVerticesID.size(); i++){
+		int64_t vertexID = listOfVerticesID[i];
 		std::unordered_map< int64_t,std::vector< double > >::const_iterator resultOnVertex = resultOnVertexListMap.find (vertexID);
 
 		if ( resultOnVertex == resultOnVertexListMap.end() ){
@@ -655,7 +657,7 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
 bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& data_table,
            const std::string &sessionID,  const std::string &modelID,
            const std::string &analysisID, const double       timeStep,  
-           const ResultInfo &resultInfo,  const int64_t &minVertexID, const int64_t &maxVertexID, const char *format ){
+           const ResultInfo &resultInfo, const std::vector<int64_t> &listOfVerticesID, const int64_t &minVertexID, const int64_t &maxVertexID, const char *format ){
   bool scan_ok = true;  
 #ifdef READ_GROUPED_ROWS_FILTERS
   int chunk_size = 30;
@@ -745,7 +747,7 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
 		// check if the rowkey is our's ... should be ....
 		if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
 		  continue; // break;
-		bool ok = getResultsFromRow_filter( listOfResults, rowsResult[ i ], resultInfo, minVertexID, maxVertexID );
+		bool ok = getResultsFromRow_filter( listOfResults, rowsResult[ i ], resultInfo, listOfVerticesID, minVertexID, maxVertexID );
 		if ( ok) {
 		
 		  // getMeshInfoFromRow.push_back( model_info);
@@ -859,10 +861,14 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 			  sorted_listOfVerticesID[j] <= (sorted_listOfVerticesID[j-1]+threshold)
 			)) break;
 		LOGGER << "[" << i << ", " << j << "]\n";
-		scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1]);
+		
+		std::vector<int64_t> request_vertex_ids;
+		for(int64_t idx = i; idx <= j; idx++) request_vertex_ids.push_back(sorted_listOfVerticesID[idx]);
+		
+		scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, request_vertex_ids, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1]);
 		if ( scan_ok && ( listOfVerticesID.size() == 0)) {
 			// try with uppercase
-			scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1], "%02X");
+			scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, request_vertex_ids, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1], "%02X");
 		}
 		
 		i = j;
@@ -882,7 +888,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
   } else {
     LOGGER << "ERROR**********\n";
     result = "Error";
-    report = "HBase::getResultFromVerticesID THRIFT with Filtering could not scan.";
+    report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
   }
 
   return result;
@@ -942,31 +948,6 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
     }
   }
   
-  /*for(size_t i = 0; i < listOfVerticesID.size(); i++){
-	  
-	  // already a value is found.
-	  if(foundFlags[i]) continue;
-	  
-	  std::unordered_map< int64_t,std::vector< double > >::const_iterator resultOnVertex = resultOnVertexListMap.find (listOfVerticesID[i]);
-
-	  if ( resultOnVertex == resultOnVertexListMap.end() ){
-		//LOGGER << "not found";
-		continue;
-	  } else {
-		
-		foundFlags[i] = true;
-		  
-		//  LOGGER << "found";
-		ResultOnVertex result;
-		result.__set_id( resultOnVertex->first );
-		result.__set_value( resultOnVertex->second );
-		listOfResults.push_back( result );
-		num_results++;
-	  }
-	  
-	  
-  }*/
-  
   return num_results;
 }
 
@@ -976,7 +957,6 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
            const ResultInfo &resultInfo,  const std::vector<int64_t> &listOfVerticesID, const char *format ){
   bool scan_ok = true;
   
-  //std::vector<bool> foundFlags(listOfVerticesID.size(), false);
   listOfResults.reserve( listOfVerticesID.size() );
 #ifdef READ_GROUPED_ROWS
   int chunk_size = 4;
@@ -984,16 +964,9 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 #endif
 	  vector< TRowResult> rowsResult;
 	  std::map<std::string,std::string> m;
-	  // TScan ts;
-	  // std::stringstream filter;
-	  // filter.str("");
-	  // ts.__set_filterString(filter.str());
+
 	  StrVec cols;
 	  char buf[ 100];
-	  // these filters: do not work, should check another way ...
-	  // sprintf( buf, "M:c%06d*", meshID);
-	  // sprintf( buf, "M:c%06d", meshID);
-	  // cols.push_back( buf); // Mesh column family with
 	  std::cout << "Making list of vertices column names...\n";
 	  for(size_t i = 0; i < listOfVerticesID.size(); i++){
 		{
@@ -1034,7 +1007,6 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 	  
 	  try {
 		// or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
-		//bool done = false;
 		while ( true ) {
 		  _hbase_client->scannerGet( rowsResult, scan_id);
 		  if ( rowsResult.size() == 0)
