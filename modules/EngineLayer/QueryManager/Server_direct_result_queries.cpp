@@ -162,9 +162,14 @@ static bool isMeshTypeImplemented(MeshInfo& meshInfo) {
 	switch(meshInfo.elementType.shape){
 	case ElementShapeType::type::SphereElement:
 	case ElementShapeType::type::TetrahedraElement:
+	case ElementShapeType::type::PointElement:
+	case ElementShapeType::type::LineElement:
+	case ElementShapeType::type::TriangleElement:
+		std::cout << " Mesh Type Supported.\n";
 		return true;
 	  
 	default:
+		std::cout << " Mesh Type NOT Supported.\n";
 		return false;
 	}
 }

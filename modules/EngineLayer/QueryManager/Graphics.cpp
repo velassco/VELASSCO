@@ -36,11 +36,14 @@ void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, co
 	case ElementShapeType::type::TetrahedraElement:
 	    fromatTetrahedraMeshForDrawing(_return_, meshInfo, vertices, elements, elementAttribs);
 		break;
-		
-	case ElementShapeType::type::UnknownElement:
+
 	case ElementShapeType::type::PointElement:
 	case ElementShapeType::type::LineElement:
 	case ElementShapeType::type::TriangleElement:
+	    fromatElementaryMeshForDrawing(_return_, meshInfo, vertices, elements, elementAttribs);
+	    break;
+		
+	case ElementShapeType::type::UnknownElement:
 	case ElementShapeType::type::QuadrilateralElement:
 	case ElementShapeType::type::HexahedraElement:
 	case ElementShapeType::type::PrismElement:
@@ -52,6 +55,111 @@ void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, co
 	    return;
 	}
 	
+	
+}
+
+void GraphicsModule::fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, 
+  const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
+  const std::vector<ElementAttrib>& elementAttribs)
+{
+	const size_t num_vertices    = vertices.size();
+	const size_t num_elements    = elements.size();
+	const size_t num_attribs     = elementAttribs.size();
+	//size_t num_groupInfos  = elementInfos.size();
+	
+	std::map<int64_t, int64_t> vertexIdx_map;
+	
+	std::vector<VertexElement> vertexElements( vertices.size() );
+	for(int64_t i = 0; i < vertices.size(); i++){
+		vertexElements[i].x = vertices[i].x;
+		vertexElements[i].y = vertices[i].y;
+		vertexElements[i].z = vertices[i].z;
+		vertexElements[i].vertexID = vertices[i].id;
+		vertexIdx_map[ vertexElements[i].vertexID ] = i;
+	}
+	
+	int num_indices_per_element = meshInfo.elementType.num_nodes;
+	std::vector<int64_t> strips( num_elements * (num_indices_per_element + 1) );
+
+	for(size_t idx = 0; idx < elements.size(); idx++){
+		
+		int i = 0;
+		for(; i < num_indices_per_element; i++){
+			strips[idx * (num_indices_per_element+1) + i] = vertexIdx_map[ elements[idx].nodes_ids[i] ];
+			//std::cout << strips[idx * (num_indices_per_element+1) + i] << std::endl;
+		}
+		strips[idx * (num_indices_per_element+1) + i] = -1;
+		
+		
+	}
+		
+	char description[] =
+		"# TEST PLY DATA                                        \n"
+		"VertexDefinition         = position, vertexIdx         \n"
+		"vertexDefinitionsType    = float3, int64               \n"	
+		"OgLPrimitiveRestartIndex = -1                          \n";
+	  
+	  _return_.header.magic[0] = 'V';
+	  _return_.header.magic[1] = 'E';
+	  _return_.header.magic[2] = 'L';
+	  _return_.header.magic[3] = 'a';
+	  _return_.header.magic[4] = 'S';
+	  _return_.header.magic[5] = 'S';
+	  _return_.header.magic[6] = 'C';
+	  _return_.header.magic[7] = 'o';
+
+	  _return_.header.version = 100;
+	  _return_.header.descriptionBytes = sizeof(description);
+
+	  _return_.header.metaBytes = 0;
+
+	  _return_.header.vertexDefinitionsBytes  = static_cast<uint64_t>(vertexElements.size() * sizeof(VertexElement));
+	  _return_.header.vertexAttributesBytes   = 0;
+	  _return_.header.cellDefinitionsBytes    = 0;
+	  _return_.header.cellAttributesBytes     = 0;
+	  
+	  _return_.data.meta              = 0;
+	  _return_.data.vertexDefinitions = new uint8_t[ _return_.header.vertexDefinitionsBytes ];
+	  _return_.data.vertexAttributes  = 0;
+	  _return_.data.cellDefinitions   = 0;
+	  _return_.data.cellAttributes    = 0;
+	  
+	  switch(meshInfo.elementType.shape){
+	  case ElementShapeType::type::PointElement:
+		break;
+	  case ElementShapeType::type::LineElement:
+          //std::cout << "Line Element.\n";
+		  _return_.header.edgeDefinitionsBytes    = static_cast<uint64_t>(strips.size() * sizeof(int64_t));
+		  _return_.header.edgeAttributesBytes     = 0;
+		  _return_.header.faceDefinitionsBytes    = 0;
+		  _return_.header.faceAttributesBytes     = 0;
+		  
+		  _return_.data.edgeDefinitions   = new uint8_t[  _return_.header.edgeDefinitionsBytes ];;
+		  _return_.data.edgeAttributes    = 0;
+		  _return_.data.faceDefinitions   = 0;
+		  _return_.data.faceAttributes    = 0;
+		  
+		  memcpy(_return_.data.edgeDefinitions, (const char*)strips.data(), _return_.header.edgeDefinitionsBytes);
+		  		  
+		  break;
+	case ElementShapeType::type::TriangleElement:
+		  _return_.header.edgeDefinitionsBytes    = 0;
+		  _return_.header.edgeAttributesBytes     = 0;
+		  _return_.header.faceDefinitionsBytes    = static_cast<uint64_t>(strips.size() * sizeof(int64_t));
+		  _return_.header.faceAttributesBytes     = 0;
+		  
+		  _return_.data.edgeDefinitions   = 0;
+		  _return_.data.edgeAttributes    = 0;
+		  _return_.data.faceDefinitions   = new uint8_t[  _return_.header.faceDefinitionsBytes ];
+		  _return_.data.faceAttributes    = 0;
+		  		  		  
+		  memcpy(_return_.data.faceDefinitions, (const char*)strips.data(), _return_.header.faceDefinitionsBytes);
+		  break;
+    }
+    
+    _return_.data.description       = new uint8_t[ _return_.header.descriptionBytes ];
+    memcpy(_return_.data.description, description, _return_.header.descriptionBytes);
+    memcpy(_return_.data.vertexDefinitions, (const char*)vertexElements.data(), _return_.header.vertexDefinitionsBytes);
 	
 }
 

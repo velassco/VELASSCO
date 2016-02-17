@@ -1392,7 +1392,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &ses
 // ==============================================
 // ==== Thrift
 // ==============================================
-#define READ_MESH_GROUPED_ROWS
+//#define READ_MESH_GROUPED_ROWS
 
 /* GetMeshDrawData */
 static bool getIndicesFromRow( std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, std::vector< ElementGroup > &listOfElementInfoGroups, const TRowResult &rowResult, const MeshInfo &meshInfo) {

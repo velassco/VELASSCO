@@ -133,8 +133,8 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   //ModelID: 35c14b308febbaedd343e077d5e2c3ae
   //Location: Hbase:Test_VELaSSCo_Models
   
-  const char* model_name 		= "FluidizedBed_small";//"FluidizedBed_large";
-  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";// "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
+  const char* model_name 		= "FluidizedBed_large";//"FluidizedBed_small";//"FluidizedBed_large";
+  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";// "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
   const char* model_tablename   = "VELaSSCo_Models";//"VELaSSCo_Models";//"Test_VELaSSCo_Models";
   
   //const char* fem_name 			=	"fine_mesh-ascii_";
