@@ -21,7 +21,7 @@ CPP_FLAGS = $(EXTRA_FLAGS)
 C_FLAGS = $(EXTRA_FLAGS)
 
 # OPTS = -g
-OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing
+OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG
 
 THRIFT_STORAGE_DIR=../../thrift/Storage/gen-cpp
 THRIFT_QUERY_MANAGER_DIR=../../thrift/QueryManager/gen-cpp
