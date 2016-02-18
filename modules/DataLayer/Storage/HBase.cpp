@@ -608,7 +608,7 @@ static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResul
       	    // coordinates are of the form rXXXXXXvl_ID, where ID is binary indes ...
       	    int64_t node_id;
       	    std::vector<double> result_values;
-      	    if ( *pinfo == '_') pinfo++; // some data only is r000001_nodeId
+      	    if ( *pinfo == '_') pinfo++; // some data only is r000001_nodeId // to be removed soon
 			else pinfo+= 3; // the 'vl_'
       	    node_id = byteSwap< int64_t>( *( int64_t *)pinfo );
       	    double *coords = ( double *)it->second.value.data();
@@ -948,7 +948,7 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
       	    // coordinates are of the form rXXXXXXvl_ID, where ID is binary indes ...
       	    int64_t node_id;
       	    std::vector<double> result_values;
-	    if ( *pinfo == '_') pinfo++; // some data only is r000001_nodeId
+	    if ( *pinfo == '_') pinfo++; // some data only is r000001_nodeId // to be removed soon
 	    else pinfo+= 3; // the 'vl_'
       	    node_id = byteSwap< int64_t>( *( int64_t *)pinfo );
       	    double *coords = ( double *)it->second.value.data();
@@ -1003,6 +1003,15 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 		  oss.write( (char*)&vertexID, sizeof(int64_t));
 		  //LOGGER << "=====================> " << oss.str() << std::endl;
 		  cols.push_back( oss.str() );
+
+		  // to be removed soon
+		  // some data only is r000001_nodeId
+		  std::ostringstream oss2;
+		  sprintf( buf, "R:r%06d_", resultInfo.resultNumber );
+		  oss2 << buf;
+		  oss2.write( (char*)&vertexID, sizeof(int64_t));
+		  //LOGGER << "=====================> " << oss.str() << std::endl;
+		  cols.push_back( oss2.str() );
 	    }
 	  }
 	  std::cout << "Making list of vertices column names (Done)...\n";
