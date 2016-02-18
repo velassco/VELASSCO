@@ -165,8 +165,10 @@ namespace VELaSSCo {
       }
     }
 
+#ifndef NDEBUG
     size_t last = mesh_data_pos + nv * sizeof( MeshPoint) + nf * sizeof( BoundaryTriangle);
     assert( last == binaryMeshSize);
+#endif // NDEBUG
     MeshPoint *lst_vertices = ( MeshPoint *)&binaryMeshData[ mesh_data_pos];
     BoundaryTriangle *lst_faces = ( BoundaryTriangle *)&binaryMeshData[ mesh_data_pos + nv * sizeof( MeshPoint)];
 
