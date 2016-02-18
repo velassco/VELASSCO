@@ -13,7 +13,7 @@ CPP_FLAGS = $(EXTRA_FLAGS)
 C_FLAGS = $(EXTRA_FLAGS)
 
 # OPTS = -g
-OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing
+OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG
 
 # thrift headers and libs
 #THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
