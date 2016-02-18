@@ -58,6 +58,63 @@ void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, co
 	
 }
 
+static int getNumberOfIndicesPerElement(const MeshInfo& meshInfo){
+	int num_indices_per_element = meshInfo.elementType.num_nodes;
+	if(num_indices_per_element <= 0){
+		switch(meshInfo.elementType.shape){
+		case ElementShapeType::type::SphereElement:
+			num_indices_per_element = 1;
+			break;
+		
+		case ElementShapeType::type::TetrahedraElement:
+			num_indices_per_element = 4;
+			break;
+
+		case ElementShapeType::type::PointElement:
+			num_indices_per_element = 1;
+			break;
+		
+		case ElementShapeType::type::LineElement:
+			num_indices_per_element = 2;
+			break;
+			
+		case ElementShapeType::type::TriangleElement:
+			num_indices_per_element = 3;
+			break;
+		
+		case ElementShapeType::type::UnknownElement:
+			num_indices_per_element = -1;
+			break;
+		
+		case ElementShapeType::type::QuadrilateralElement:
+			num_indices_per_element = 4;
+			break;
+		
+		case ElementShapeType::type::HexahedraElement:
+			num_indices_per_element = 4;
+			break;
+		
+		case ElementShapeType::type::PrismElement:
+			num_indices_per_element = 6;
+			break;
+		
+		case ElementShapeType::type::PyramidElement:
+			num_indices_per_element = 5;
+			break;
+		
+		case ElementShapeType::type::CircleElement:
+			num_indices_per_element = 3;
+			break;
+		
+		case ElementShapeType::type::ComplexParticleElement:
+			num_indices_per_element = -1;
+			break;
+		}
+	}
+	
+	return num_indices_per_element;
+}
+
 void GraphicsModule::fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, 
   const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
   const std::vector<ElementAttrib>& elementAttribs)
@@ -78,7 +135,7 @@ void GraphicsModule::fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _r
 		vertexIdx_map[ vertexElements[i].vertexID ] = i;
 	}
 	
-	int num_indices_per_element = meshInfo.elementType.num_nodes;
+	int num_indices_per_element = getNumberOfIndicesPerElement(meshInfo);
 	std::vector<int64_t> strips( num_elements * (num_indices_per_element + 1) );
 
 	for(size_t idx = 0; idx < elements.size(); idx++){
