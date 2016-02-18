@@ -770,51 +770,53 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
    EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues, void **threadObject)
 {
    EdmiError rstat = OK;
+   int lineNo = __LINE__;
+#define tr lineNo = __LINE__;
 
    try {
-      VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin();
-      CMemoryAllocator *theMA = plugin->getMemoryAllocator();
+      VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin(); tr;
+      CMemoryAllocator *theMA = plugin->getMemoryAllocator(); tr;
       *threadObject = (void*)plugin;
       
-      Database VELaSSCo_db("", "", "");
-      Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName);
-      Model VELaSSCo_model(&VELaSSCo_Repository, theMA, NULL);
-      VELaSSCo_model.open(modelName, sdaiRO);
+      Database VELaSSCo_db("", "", ""); tr;
+      Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName); tr;
+      Model VELaSSCo_model(&VELaSSCo_Repository, theMA, NULL); tr;
+      VELaSSCo_model.open(modelName, sdaiRO); tr;
 
-      ModelType vmt = plugin->getModelType(VELaSSCo_model.modelId);
-      VELaSSCo_model.defineSchema(vmt == mtFEM ? (dbSchema*)&fem_schema_velassco_SchemaObject : (dbSchema*)&dem_schema_velassco_SchemaObject);
+      ModelType vmt = plugin->getModelType(VELaSSCo_model.modelId); tr;
+      VELaSSCo_model.defineSchema(vmt == mtFEM ? (dbSchema*)&fem_schema_velassco_SchemaObject : (dbSchema*)&dem_schema_velassco_SchemaObject); tr;
 
       if (strEQL(methodName, "GetListOfAnalyses")) {
-         nodervGetListOfAnalyses *results = new(theMA)nodervGetListOfAnalyses(NULL, returnValues);
+         nodervGetListOfAnalyses *results = new(theMA)nodervGetListOfAnalyses(NULL, returnValues); tr;
          if (nOfParameters != 0 || nOfReturnValues != 3) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->analysis_name_list->type = rptUndefined;
          } else {
-            rstat = plugin->GetListOfAnalyses(&VELaSSCo_model, vmt, results);
+            rstat = plugin->GetListOfAnalyses(&VELaSSCo_model, vmt, results); tr;
          }
       } else if (strEQL(methodName, "GetListOfTimeSteps")) {
-         nodeRvGetListOfTimeSteps *results = new(theMA)nodeRvGetListOfTimeSteps(NULL, returnValues);
+         nodeRvGetListOfTimeSteps *results = new(theMA)nodeRvGetListOfTimeSteps(NULL, returnValues); tr;
          nodeInGetListOfTimeSteps *inParams = new(theMA)nodeInGetListOfTimeSteps(NULL, parameters);
          if (nOfParameters != 1 || nOfReturnValues != 3) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->ListOfTimeSteps->type = rptUndefined;
          } else {
-            rstat = plugin->GetListOfTimeSteps(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetListOfTimeSteps(&VELaSSCo_model, vmt, inParams, results); tr;
          }
       } else if (strEQL(methodName, "GetListOfVerticesFromMesh")) {
-         nodeRvGetListOfVerticesFromMesh *results = new(theMA)nodeRvGetListOfVerticesFromMesh(NULL, returnValues);
+         nodeRvGetListOfVerticesFromMesh *results = new(theMA)nodeRvGetListOfVerticesFromMesh(NULL, returnValues); tr;
          nodeInGetListOfVerticesFromMesh *inParams = new(theMA)nodeInGetListOfVerticesFromMesh(NULL, parameters);
          if (nOfParameters != 3 || nOfReturnValues != 5) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
             results->vertices->type = rptUndefined;
          } else {
-            rstat = plugin->GetListOfVerticesFromMesh(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetListOfVerticesFromMesh(&VELaSSCo_model, vmt, inParams, results); tr;
          }
       } else if (strEQL(methodName, "GetListOfResultsFromTimeStepAndAnalysis")) {
-         nodeRvGetListOfResultsFromTimeStepAndAnalysis *results = new(theMA)nodeRvGetListOfResultsFromTimeStepAndAnalysis(NULL, returnValues);
+         nodeRvGetListOfResultsFromTimeStepAndAnalysis *results = new(theMA)nodeRvGetListOfResultsFromTimeStepAndAnalysis(NULL, returnValues); tr;
          nodeInGetListOfResultsFromTimeStepAndAnalysis *inParams = new(theMA)nodeInGetListOfResultsFromTimeStepAndAnalysis(NULL, parameters);
          if (nOfParameters != 2 || nOfReturnValues != 3) {
             results->status->putString("Error");
@@ -823,7 +825,7 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
          } else {
             rstat = plugin->GetListOfResultsFromTimeStepAndAnalysis(&VELaSSCo_model, vmt, inParams, results);
          }
-      } else if (strEQL(methodName, "GetResultFromVerticesID")) {
+      } else if (strEQL(methodName, "GetResultFromVerticesID")) { tr;
          nodeRvGetResultFromVerticesID *results = new(theMA)nodeRvGetResultFromVerticesID(NULL, returnValues);
          nodeInGetResultFromVerticesID *inParams = new(theMA)nodeInGetResultFromVerticesID(NULL, parameters);
          if (nOfParameters != 4 || nOfReturnValues != 6) {
@@ -831,16 +833,16 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
             results->report->putString("Wrong number of input parameters or result values.");
             results->result_list->type = rptUndefined;
          } else {
-            rstat = plugin->GetResultFromVerticesID(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetResultFromVerticesID(&VELaSSCo_model, vmt, inParams, results); tr;
          }
-      } else if (strEQL(methodName, "GetCoordinatesAndElementsFromMesh")) {
+      } else if (strEQL(methodName, "GetCoordinatesAndElementsFromMesh")) { tr;
          nodeRvGetCoordinatesAndElementsFromMesh *results = new(theMA)nodeRvGetCoordinatesAndElementsFromMesh(NULL, returnValues);
          nodeInGetCoordinatesAndElementsFromMesh *inParams = new(theMA)nodeInGetCoordinatesAndElementsFromMesh(NULL, parameters);
          if (nOfParameters != 3 || nOfReturnValues != 5) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
          } else {
-            rstat = plugin->GetCoordinatesAndElementsFromMesh(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetCoordinatesAndElementsFromMesh(&VELaSSCo_model, vmt, inParams, results); tr;
          }
       } else if (strEQL(methodName, "GetBoundaryOfLocalMesh")) {
          nodeRvGetBoundaryOfLocalMesh *results = new(theMA)nodeRvGetBoundaryOfLocalMesh(NULL, returnValues);
@@ -849,20 +851,22 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
          } else {
-            rstat = plugin->GetBoundaryOfLocalMesh(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetBoundaryOfLocalMesh(&VELaSSCo_model, vmt, inParams, results); tr;
          }
-      } else if (strEQL(methodName, "GetListOfMeshes")) {
+      } else if (strEQL(methodName, "GetListOfMeshes")) { tr;
          nodeRvGetListOfMeshes *results = new(theMA)nodeRvGetListOfMeshes(NULL, returnValues);
          nodeInGetListOfMeshes *inParams = new(theMA)nodeInGetListOfMeshes(NULL, parameters);
          if (nOfParameters != 2 || nOfReturnValues != 3) {
             results->status->putString("Error");
             results->report->putString("Wrong number of input parameters or result values.");
          } else {
-            rstat = plugin->GetListOfMeshes(&VELaSSCo_model, vmt, inParams, results);
+            rstat = plugin->GetListOfMeshes(&VELaSSCo_model, vmt, inParams, results); tr;
          }
       }
    } catch (CedmError *e) {
       rstat = e->rstat; delete e;
+      printf("Error in EDMserver_dll detected, repositoryName=%s, modelName=%s, methodName=%s\nError=%s, at line %d\n",
+         repositoryName, modelName, methodName, edmiGetErrorText(rstat), lineNo);
    } catch (...) {
       rstat = sdaiESYSTEM;
    }
