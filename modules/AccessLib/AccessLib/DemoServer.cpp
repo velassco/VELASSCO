@@ -417,8 +417,8 @@ void QM_DemoServer::ManageGetMeshDrawData( Query_Result &_return, const SessionI
   /* will be: a structure call RealTimeFormat */
   std::ostringstream oss;
 
-  int nFaces = 12;
-  int nVertices = 8;
+  // int nFaces = 12;
+  // int nVertices = 8;
 
   float vertices[] = 
   {
