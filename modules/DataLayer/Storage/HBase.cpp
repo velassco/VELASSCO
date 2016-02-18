@@ -888,7 +888,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 		LOGGER << "[" << i << ", " << j << "]\n";
 		
 		std::vector<int64_t> request_vertex_ids;
-		for(int64_t idx = i; idx <= j; idx++) request_vertex_ids.push_back(sorted_listOfVerticesID[idx]);
+		for(size_t idx = i; idx <= j; idx++) request_vertex_ids.push_back(sorted_listOfVerticesID[idx]);
 		
 		scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, request_vertex_ids, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1]);
 		if ( scan_ok && ( listOfVerticesID.size() == 0)) {

@@ -202,7 +202,7 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
   // Metadata rowkeys = modelId + AnalysisID + StepNumber
   double my_stepValue = ( analysisID == "") ? 0.0 : stepValue; // rowkeys for static meshes have stepValue == 0.0
   std::string rowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
-  const size_t len_rowkey = rowKey.length();
+  // const size_t len_rowkey = rowKey.length();
   ScannerID scan_id = _hbase_client->scannerOpen( metadata_table, rowKey, cols, m);
   // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
