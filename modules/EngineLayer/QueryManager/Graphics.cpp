@@ -119,15 +119,15 @@ void GraphicsModule::fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _r
   const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
   const std::vector<ElementAttrib>& elementAttribs)
 {
-	const size_t num_vertices    = vertices.size();
+        // const size_t num_vertices    = vertices.size();
 	const size_t num_elements    = elements.size();
-	const size_t num_attribs     = elementAttribs.size();
+	// const size_t num_attribs     = elementAttribs.size();
 	//size_t num_groupInfos  = elementInfos.size();
 	
 	std::map<int64_t, int64_t> vertexIdx_map;
 	
 	std::vector<VertexElement> vertexElements( vertices.size() );
-	for(int64_t i = 0; i < vertices.size(); i++){
+	for(size_t i = 0; i < vertices.size(); i++){
 		vertexElements[i].x = vertices[i].x;
 		vertexElements[i].y = vertices[i].y;
 		vertexElements[i].z = vertices[i].z;
@@ -212,6 +212,17 @@ void GraphicsModule::fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _r
 		  		  		  
 		  memcpy(_return_.data.faceDefinitions, (const char*)strips.data(), _return_.header.faceDefinitionsBytes);
 		  break;
+	  default: // not handled
+	    // ElementShapeType::type::UnknownElement
+	    // ElementShapeType::type::QuadrilateralElement
+	    // ElementShapeType::type::TetrahedraElement
+	    // ElementShapeType::type::HexahedraElement
+	    // ElementShapeType::type::PrismElement
+	    // ElementShapeType::type::PyramidElement
+	    // ElementShapeType::type::SphereElement
+	    // ElementShapeType::type::CircleElement
+	    // ElementShapeType::type::ComplexParticleElement
+	    break;
     }
     
     _return_.data.description       = new uint8_t[ _return_.header.descriptionBytes ];
@@ -224,15 +235,15 @@ void GraphicsModule::fromatTetrahedraMeshForDrawing(VELaSSCo::RTFormat::File& _r
   const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
   const std::vector<ElementAttrib>& elementAttribs)
 {
-	const size_t num_vertices    = vertices.size();
+        // const size_t num_vertices    = vertices.size();
 	const size_t num_elements    = elements.size();
-	const size_t num_attribs     = elementAttribs.size();
+	// const size_t num_attribs     = elementAttribs.size();
 	//size_t num_groupInfos  = elementInfos.size();
 	
 	std::map<int64_t, int64_t> vertexIdx_map;
 	
 	std::vector<VertexElement> vertexElements( vertices.size() );
-	for(int64_t i = 0; i < vertices.size(); i++){
+	for(size_t i = 0; i < vertices.size(); i++){
 		vertexElements[i].x = vertices[i].x;
 		vertexElements[i].y = vertices[i].y;
 		vertexElements[i].z = vertices[i].z;
@@ -304,9 +315,9 @@ void GraphicsModule::fromatSphereMeshForDrawing(VELaSSCo::RTFormat::File& _retur
   const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
   const std::vector<ElementAttrib>& elementAttribs)
 {
-	const size_t num_vertices    = vertices.size();
+        // const size_t num_vertices    = vertices.size();
 	const size_t num_elements    = elements.size();
-	const size_t num_attribs     = elementAttribs.size();
+	// const size_t num_attribs     = elementAttribs.size();
 	//size_t num_groupInfos  = elementInfos.size();
 	
 	std::vector<SphereElement> ret_vertices( num_elements );

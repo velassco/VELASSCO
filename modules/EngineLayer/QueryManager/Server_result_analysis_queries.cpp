@@ -104,7 +104,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
 							  // numVertexIDs, lstVertexIDs,
 							  0, NULL,
 							  &bbox[ 0], &error_str);
-    GraphicsModule *graphics = GraphicsModule::getInstance();
+    // GraphicsModule *graphics = GraphicsModule::getInstance();
     // just to link to the GraphicsModule;
   } catch ( TException &e) {
     std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
@@ -187,7 +187,7 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
 								 coarseGrainingMethod, width, cutoffFactor, processContacts, 
 								 doTemporalAVG, temporalAVGOptions, deltaT, &query_outcome, &error_str);
 							  
-    GraphicsModule *graphics = GraphicsModule::getInstance();
+    // GraphicsModule *graphics = GraphicsModule::getInstance();
   } 
 	catch ( TException &e) {
     std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
@@ -277,7 +277,7 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
 								meshID, elementType,
 								analysisID, stepValue, 
 								&binary_mesh, &error_str);
-      GraphicsModule *graphics = GraphicsModule::getInstance();
+      // GraphicsModule *graphics = GraphicsModule::getInstance();
       // just to link to the GraphicsModule;
     } catch ( TException &e) {
       std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
