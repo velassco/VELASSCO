@@ -192,16 +192,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>USE_EDMI;WIN32;NDEBUG;_WINDOWS;_USRDLL;EDM_SERVER_DLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;O:\projects\VELaSSCo\SVN_src\EDM_Interface;C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>O:\projects\VELaSSCo\installation\software\edm\edmsix_VELaSSCo\include;O:\projects\VELaSSCo\SVN_src\EDM_Interface;C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>cpp10_edmi.lib;edmikit600.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\boost\boost_1_58_0\lib64-msvc-12.0;O:\edm\v6.0.xxx\output\x64\Release</AdditionalLibraryDirectories>
-      <OutputFile>O:\edm\v6.0.xxx\output\x64\Release\VELaSSCo_plugins\$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalDependencies>cpp10_edmi.lib;appserver600.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\boost\boost_1_58_0\lib64-msvc-12.0;O:\projects\VELaSSCo\installation\software\edm\edmsix_VELaSSCo\bin</AdditionalLibraryDirectories>
+      <OutputFile>O:\projects\VELaSSCo\installation\software\edm\edmsix_VELaSSCo\bin\VELaSSCo_plugins\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

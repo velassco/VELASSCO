@@ -270,17 +270,21 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
             Iterator<EDMmodel*, ecl::entityType> modelIter(theEDMmodels, theServer->clusterModel);
             EDMmodel*m = modelIter.first();
             subQueries = new(&ma)Container<EDMexecution>(&ma, nOfEDMmodels);
-            for (EDMLONG i = 0; m && i < nOfEDMmodels; i++) {
-            //for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
-               EDMexecution *exp = subQueries->createNext();
-               exp->modelName = m->get_name();
-               ecl::EDMrepository *r = m->get_repository();
-               exp->repositoryName = r ? r->get_name() : "";
-               exp->ema = new CMemoryAllocator(0x100000);
-               exp->serverCtxtRecord = theServer->getServerContext("superuser", "", "v", m);
-               exp->error = NULL;
+            //for (EDMLONG i = 0; m && i < nOfEDMmodels; i++) {
+            for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
+               if (m) {
+                  EDMexecution *exp = subQueries->createNext();
+                  exp->modelName = m->get_name();
+                  ecl::EDMrepository *r = m->get_repository();
+                  exp->repositoryName = r ? r->get_name() : "";
+                  exp->ema = new CMemoryAllocator(0x100000);
+                  exp->serverCtxtRecord = theServer->getServerContext("superuser", "", "v", m);
+                  exp->error = NULL;
 
-               m = modelIter.next();
+                  m = modelIter.next();
+               } else {
+                  printf("Error in Model list, i=%llu\n", i);
+               }
             }
             return true;
          }

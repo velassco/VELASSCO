@@ -56,22 +56,23 @@ void GetCoordinatesAndElementsFromMesh(VELaSSCoSMClient &client, string sessionI
    if (strncmp(meshInfoRV.status.data(), "Error", 5) == 0) {
       printf("Error message: \"%s\"\n", meshInfoRV.report.data());
    } else {
-      printf("Number of vertices transferred: %12llu\n", meshInfoRV.n_vertices);
-      char *cp = (char*)meshInfoRV.vertex_array.data();
-      for (int i = 0; i < 20 && i < meshInfoRV.n_vertices; i++) {
-         EDMVD::Vertex *v = (EDMVD::Vertex*)cp;
-         printf("%12llu   %Lf  %Lf  %Lf\n", v->id, v->x, v->y, v->z);
-         cp += meshInfoRV.vertex_record_size;
-      }
-      printf("Number of elements transferred: %12llu\n", meshInfoRV.n_elements);
-      cp = (char*)meshInfoRV.element_array.data();
-      for (int i = 0; i < 20 && i < meshInfoRV.n_elements; i++) {
-         EDMVD::FEMelement *e = (EDMVD::FEMelement*)cp;
-         printf("%12llu   ", e->id);
-         for (int j = 0; j < meshInfoRV.n_vertices_pr_element; j++) printf("  %10llu", e->nodes_ids[j]);
-         printf("\n");
-         cp += meshInfoRV.element_record_size;
-      }
+      //OLI
+      //printf("Number of vertices transferred: %12llu\n", meshInfoRV.n_vertices);
+      //char *cp = (char*)meshInfoRV.vertex_array.data();
+      //for (int i = 0; i < 20 && i < meshInfoRV.n_vertices; i++) {
+      //   EDMVD::Vertex *v = (EDMVD::Vertex*)cp;
+      //   printf("%12llu   %Lf  %Lf  %Lf\n", v->id, v->x, v->y, v->z);
+      //   cp += meshInfoRV.vertex_record_size;
+      //}
+      //printf("Number of elements transferred: %12llu\n", meshInfoRV.n_elements);
+      //cp = (char*)meshInfoRV.element_array.data();
+      //for (int i = 0; i < 20 && i < meshInfoRV.n_elements; i++) {
+      //   EDMVD::FEMelement *e = (EDMVD::FEMelement*)cp;
+      //   printf("%12llu   ", e->id);
+      //   for (int j = 0; j < meshInfoRV.n_vertices_pr_element; j++) printf("  %10llu", e->nodes_ids[j]);
+      //   printf("\n");
+      //   cp += meshInfoRV.element_record_size;
+      //}
    }
 }
 
@@ -97,7 +98,7 @@ void GetResultFromVerticesID(VELaSSCoSMClient &client, string sessionID, char *m
       printf("Error message: \"%s\"\n", verticesResultRV.report.data());
    } else {
       int nRes = 0;
-#define BLOB 1
+//#define BLOB 1
 #ifdef BLOB
       printf("%s has %d results.\n", modelName, verticesResultRV.n_result_records);
       char *cp = (char*)verticesResultRV.result_array.data();
@@ -132,18 +133,18 @@ void GetBoundaryOfLocalMesh(VELaSSCoSMClient &client, string sessionID, char *mo
    if (strncmp(boundaryRV.status.data(), "Error", 5) == 0) {
       printf("Error message: \"%s\"\n", boundaryRV.report.data());
    } else {
-      for (vector<std::string>::iterator bufferIter = boundaryRV.triangles.begin(); bufferIter != boundaryRV.triangles.end(); bufferIter++) {
-         char *cp = (char*)bufferIter->data();
-         EDMULONG nTrianglesInThisString = bufferIter->size() / boundaryRV.triangle_record_size;
-         for (int i = 0; i < nTrianglesInThisString; i++) {
-            EDMVD::Triangle *t = (EDMVD::Triangle*)cp; cp += boundaryRV.triangle_record_size;
-            if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
-               int nasdfasdf = 9999;
-            }
-            printf("%10llu %10llu %10llu\n", t->node_ids[0], t->node_ids[1], t->node_ids[2]);
-         }
-      }
-      printf("\nMessage: \"%s\"\n", boundaryRV.report.data());
+      //for (vector<std::string>::iterator bufferIter = boundaryRV.triangles.begin(); bufferIter != boundaryRV.triangles.end(); bufferIter++) {
+      //   char *cp = (char*)bufferIter->data();
+      //   EDMULONG nTrianglesInThisString = bufferIter->size() / boundaryRV.triangle_record_size;
+      //   for (int i = 0; i < nTrianglesInThisString; i++) {
+      //      EDMVD::Triangle *t = (EDMVD::Triangle*)cp; cp += boundaryRV.triangle_record_size;
+      //      if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
+      //         int nasdfasdf = 9999;
+      //      }
+      //      printf("%10llu %10llu %10llu\n", t->node_ids[0], t->node_ids[1], t->node_ids[2]);
+      //   }
+      //}
+      //printf("\nMessage: \"%s\"\n", boundaryRV.report.data());
    }
 }
 
@@ -195,7 +196,7 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    client.FindModel(rvOM, sessionID, modelName, "read");
    modelID = rvOM.modelID;
 
-#ifdef ALLEHER
+#ifndef ALLEHER
    for (int nPass = 0; nPass < 1; nPass++) {  //100000000
 
       GetListOfAnalyses(client, sessionID, modelName, modelID);
@@ -240,8 +241,8 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    //GetResultFromVerticesID(client, sessionID, modelName, modelID);
 
    //GetResultFromVerticesID(client, sessionID, modelName, modelID);
-   //GetListOfAnalyses(client, sessionID, modelName, modelID);
-   GetListOfMeshes(client, sessionID, modelName, modelID);
+   GetListOfAnalyses(client, sessionID, modelName, modelID);
+   //GetListOfMeshes(client, sessionID, modelName, modelID);
 
 #endif /* ALLEHER */
 }

@@ -81,10 +81,12 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       EDMULONG nexec = subQueries->size();
       int nError = 0;
       bool errorFound = false;
+
 #pragma omp parallel for
       for (int i = 0; i < nexec; i++) {
          try {
             EDMexecution *e = subQueries->getElementp(i);
+//            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s\n", nexec, i, e ? e->modelName : "EDMexecution e is NULL");
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
@@ -265,7 +267,6 @@ void VELaSSCoMethods::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
                   nDuplicates++;
                }
             }
-            printf("minID=%15llu, maxID=%15llu\n", minID, maxID);
          }
          rv.__set_status("OK");
          rv.__set_report("");
@@ -329,10 +330,16 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
             dResults->relocateStructContainer(relocator->bufferInfo);
             for (EDMVD::ResultInfo *ri = dResults->firstp(); ri; ri = dResults->nextp()) {
                ri->relocateThis(relocator->bufferInfo);
-               VELaSSCoSM::ResultInfo res;
-               if (ri->name) res.__set_name(ri->name);
-               if (ri->type) res.__set_type(ri->type);
-               result_list.push_back(res);
+               vector<VELaSSCoSM::ResultInfo>::iterator resIter;
+               for (resIter = result_list.begin(); resIter != result_list.end(); resIter++) {
+                  if (strEQL(ri->name, resIter->name.data())) break;
+               }
+               if (resIter == result_list.end()) {
+                  VELaSSCoSM::ResultInfo res;
+                  if (ri->name) res.__set_name(ri->name);
+                  if (ri->type) res.__set_type(ri->type);
+                  result_list.push_back(res);
+               }
             }
          }
          rv.__set_result_list(result_list);
@@ -397,13 +404,13 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxNodeID + 1));
          unsigned char *elementExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxElementID + 1));
          EDMULONG nDuplicates = 0, n_vertices = 0, n_elements = 0;
-
-         rv.__set_element_record_size(firstMetaData->element_record_size);
-         rv.__set_n_vertices_pr_element(firstMetaData->n_vertices_pr_element);
-         rv.__set_vertex_record_size(firstMetaData->vertex_record_size);
-         rv.__set_element_type(firstMetaData->element_type);
-         rv.__set_model_type(firstMetaData->model_type);
-         rv.__set_model_type(1);
+//OLI
+         //rv.__set_element_record_size(firstMetaData->element_record_size);
+         //rv.__set_n_vertices_pr_element(firstMetaData->n_vertices_pr_element);
+         //rv.__set_vertex_record_size(firstMetaData->vertex_record_size);
+         //rv.__set_element_type(firstMetaData->element_type);
+         //rv.__set_model_type(firstMetaData->model_type);
+         //rv.__set_model_type(1);
 
          startTime = GetTickCount();
          for (int i = 0; i < nexec; i++) {
@@ -449,10 +456,11 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
                }
             }
          }
-         rv.__set_n_vertices(n_vertices_copied);
-         rv.__set_n_elements(n_elements_copied);
-         rv.__set_element_array(element_string);
-         rv.__set_vertex_array(vertex_string);
+         //OLI
+         //rv.__set_n_vertices(n_vertices_copied);
+         //rv.__set_n_elements(n_elements_copied);
+         //rv.__set_element_array(element_string);
+         //rv.__set_vertex_array(vertex_string);
          rv.__set_status("OK");
          rv.__set_report("");
       }
@@ -474,9 +482,13 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
       bool errorFound = false;
 
       startTime = GetTickCount();
-#pragma omp parallel for
+
+#pragma omp parallel for 
       for (int i = 0; i < nexec; i++) {
          EDMexecution *e = subQueries->getElementp(i);
+         if (!e) {
+            int asdfsdg = 9999;
+         }
          nodeRvGetResultFromVerticesID *retVal = new(e->ema)nodeRvGetResultFromVerticesID(e->ema, NULL);
          e->returnValues = retVal;
          ExecuteRemoteCppMethod(e, "GetResultFromVerticesID", inParams, &errorFound);
@@ -538,7 +550,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
             }
          }
          t4 = GetTickCount();
-#define BLOB 1
+//#define BLOB 1
 #ifdef BLOB
          EDMLONG ResultOnVertexSize = sizeof(EDMVD::ResultOnVertex) + sizeof(double)* (nOfValuesPrVertex - 1);
          std::string result_array;
@@ -548,7 +560,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
 #else
          vector<VELaSSCoSM::ResultOnVertex>  result_array;
          EDMLONG resSize = result_array.size();
-         //result_array.reserve(n_result_records);
+         result_array.reserve(n_result_records);
          resSize = result_array.size();
 #endif
          memset(verticesExist, 0, sizeof(unsigned char *)* (maxID + 1));
@@ -585,10 +597,14 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
             n_result_records, nDuplicates);
          rv.__set_status("OK");
          rv.__set_report(msgBuffer);
+#ifdef BLOB
          rv.__set_result_array(result_array);
          rv.__set_n_values_pr_record(nOfValuesPrVertex);
          rv.__set_result_record_size(ResultOnVertexSize);
          rv.__set_n_result_records(n_result_records);
+#else
+         rv.__set_result_list(result_array);
+#endif
       }
    }
 }
@@ -679,9 +695,10 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
             timeSubQueryExecytion, timeCollectingReturnValues, tot_n_triangles, n_triangles_pr_string);
          rv.__set_status("OK");
          rv.__set_report(msgBuffer);
-         rv.__set_triangle_record_size(sizeof(EDMVD::Triangle));
-         rv.__set_nTriangles(tot_n_triangles);
-         rv.__set_triangles(triangle_strings);
+         //OLI
+         //rv.__set_triangle_record_size(sizeof(EDMVD::Triangle));
+         //rv.__set_nTriangles(tot_n_triangles);
+         //rv.__set_triangles(triangle_strings);
       }
    }
 }
@@ -724,9 +741,9 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          vector<VELaSSCoSM::MeshInfo> meshInfos;
-         int meshNumber = 1;
 
          for (int i = 0; i < nexec; i++) {
+            int meshNumber = 1;
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetListOfMeshes *retVal = (nodeRvGetListOfMeshes *)e->returnValues;
             CMemoryAllocator resMa(retVal->mesh_info_list, false);

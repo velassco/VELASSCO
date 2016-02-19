@@ -765,7 +765,24 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
    return rstat;
 }
 
+void logError(char *repositoryName, char *modelName, char *methodName, char *msg, int lineNo)
+{
+   char msgBuf[10000];
+   time_t t = time(NULL);
 
+   sprintf(msgBuf, "\n\n%s\nError in EDMserver_dll detected, repositoryName=%s, modelName=%s, methodName=%s\nError=%s, at line %d\n",
+      asctime(localtime(&t)), repositoryName, modelName, methodName, msg, lineNo);
+   FILE *logfp = fopen("VELaSSCO_EDMserver_dll_error.log", "a");
+   if (logfp) {
+      fprintf(logfp, msgBuf); fclose(logfp);
+   }
+   printf(msgBuf);
+}
+
+void logError(char *repositoryName, char *modelName, char *methodName, int rstat, int lineNo)
+{
+   logError(repositoryName, modelName, methodName, edmiGetErrorText(rstat), lineNo);
+}
 extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *modelName, char *methodName,
    EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues, void **threadObject)
 {
@@ -774,11 +791,15 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
 #define tr lineNo = __LINE__;
 
    try {
+      //EdmiError trrstat = edmiTrace(DEFINE_TRACE, TRACE_CALLS | TRACE_ARGS | TRACE_RETURNS | TRACE_ERRORS | TRACE_TO_STDOUT, 0, "");
+      //trrstat = edmiTrace(START_TRACE, 0, 0, "");
+      
       VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin(); tr;
       CMemoryAllocator *theMA = plugin->getMemoryAllocator(); tr;
       *threadObject = (void*)plugin;
       
       Database VELaSSCo_db("", "", ""); tr;
+      //SdaiSession sessionId = sdaiOpenSession();
       Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName); tr;
       Model VELaSSCo_model(&VELaSSCo_Repository, theMA, NULL); tr;
       VELaSSCo_model.open(modelName, sdaiRO); tr;
@@ -865,9 +886,9 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
       }
    } catch (CedmError *e) {
       rstat = e->rstat; delete e;
-      printf("Error in EDMserver_dll detected, repositoryName=%s, modelName=%s, methodName=%s\nError=%s, at line %d\n",
-         repositoryName, modelName, methodName, edmiGetErrorText(rstat), lineNo);
+      logError(repositoryName, modelName, methodName, rstat, lineNo);
    } catch (...) {
+      logError(repositoryName, modelName, methodName, "GPF exception", lineNo);
       rstat = sdaiESYSTEM;
    }
    return rstat;
@@ -881,7 +902,11 @@ extern "C" EDMLONG __declspec(dllexport) dll_version()
 extern "C" void  __declspec(dllexport) *dll_malloc(void *threadObject, EDMLONG bufSize)
 {
    VELaSSCoEDMplugin *plugin = (VELaSSCoEDMplugin*)threadObject;
-   return plugin->alloc(bufSize);
+   if (plugin) {
+      return plugin->alloc(bufSize);
+   } else {
+      return NULL;
+   }
 }
 
 extern "C" EDMLONG  __declspec(dllexport) dll_freeAll(void *threadObject)
