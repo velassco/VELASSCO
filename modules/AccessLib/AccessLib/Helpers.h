@@ -202,7 +202,7 @@ inline std::string GetNiceSizeString( const size_t num_bytes, bool append_origin
    // Human readable form:
    const char *units[] = { "Bytes", "KBytes", "MBytes", "GBytes", "TBytes", NULL};
    int idx = 0;
-   double scaled_size = num_bytes;
+   double scaled_size = ( double)num_bytes;
    // make printable number between 0...1024 and have a valid unit suffix
    while ( ( scaled_size > 1024.0) && units[ idx + 1]) {
      scaled_size /= 1024.0;
@@ -215,6 +215,14 @@ inline std::string GetNiceSizeString( const size_t num_bytes, bool append_origin
    }
    return oss.str();
 }
+
+#ifdef _WIN32
+
+#ifndef strcasecmp
+#define strcasecmp  _stricmp
+#endif
+
+#endif /* _WIN32 */
 
   // ---------------------------------------------------------------------------
 	
