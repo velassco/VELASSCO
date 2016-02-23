@@ -7,7 +7,7 @@ set( SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}" )
 IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CXX_4_4_STD_COMPILE_FLAG "-std=c++0x -fPIC -g -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs")
 # optimization:
-  SET(CXX_4_4_STD_OPTIMIZE_FLAG "-O3 -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG")
+  #SET(CXX_4_4_STD_OPTIMIZE_FLAG "-O3 -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG")
   SET(CXX_4_4_STD_COMPILE_FLAG "${CXX_4_4_STD_COMPILE_FLAG} ${CXX_4_4_STD_OPTIMIZE_FLAG}")
 # other interesting warnings not included in Wall:
 #  -Wcast-align -Wcomment
@@ -39,11 +39,14 @@ if( NOT MSVC )
   # instead of old 1.41 instaled on /usr/lib64 which shows the problem described in the above link
   # and 'make' tries to link with '/usr/lib64/lib64/libboost_regex-mt.so.5' and make it.
   find_package( Boost 1.5 REQUIRED COMPONENTS regex date_time system)
+  find_package( ZLIB 1.2 REQUIRED)
 else()
   set( THRIFT_INCLUDE_DIR "${SOURCE_ROOT}/3rdParty/thrift-0.9.2/lib/cpp/src" )
   set( Boost_INCLUDE_DIRS "${SOURCE_ROOT}/3rdParty/boost-1_54_0/include/boost-1_54" )
   set( BOOST_LIBRARY_DIR "${SOURCE_ROOT}/3rdParty/boost-1_54_0/lib" )
   set( THRIFT_LIBRARY_DIR "${SOURCE_ROOT}/3rdParty/thrift-0.9.2/lib/cpp/x64/${CMAKE_BUILD_TYPE}" )
+  set( ZLIB_INCLUDE_DIRS "${SOURCE_ROOT}/zlib-1.2.8/vs2012/ ${SOURCE_ROOT}/zlib-1.2.8/" )
+  set( ZLIB_LIBRARY_DIR "${SOURCE_ROOT}/zlib-1.2.8/vs2012/Release/" )
   message( STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}" )
   set( THRIFT_LIBRARIES libthrift libthriftnb )
   set( Boost_LIBRARIES "" )
