@@ -2,6 +2,7 @@
 # Includes
 include_directories( ${THRIFT_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIRS} )
+include_directories( ${ZLIB_INCLUDE_DIR} )
 
 # List of Thrift generated sources
 # this is not the correct folder :
@@ -46,7 +47,7 @@ add_library(AccessLib STATIC ${ACCESS_LIB_SOURCES} ${THRIFT_GEN_SOURCES})
 target_include_directories(AccessLib PUBLIC ${ACCESS_LIB_SOURCE_DIR})
 
 target_link_libraries( AccessLib LINK_PUBLIC ${THRIFT_LIBRARIES}
-  ${Boost_LIBRARIES} ${LIBEVENT_LIBRARY} )
+  ${Boost_LIBRARIES} ${LIBEVENT_LIBRARY} ${ZLIB_LIBRARY} )
 
 # Install Access library
 install(TARGETS AccessLib DESTINATION ${CMAKE_BINARY_DIR}/Install/${CMAKE_PROJECT_NAME}/lib)
