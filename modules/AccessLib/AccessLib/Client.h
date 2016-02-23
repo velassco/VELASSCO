@@ -72,6 +72,7 @@ public:
 	void SetDefaultCompression() {
 	  m_compression.setCompressionType( VL_Compression::CompressionType::Zlib);
 	  m_compression.setCompressionLevel( 1);
+	  m_compression.setCompressionThreshold( VL_COMPRESSION_MINIMUM_DATA_SIZE_TO_COMPRESS);
 	  m_compression_enabled = false; // compression disabled until enabled explicitly by the AccessLib
 	}
 	void SetCompressionEnabledFlag( bool flag) { m_compression_enabled = true;}
