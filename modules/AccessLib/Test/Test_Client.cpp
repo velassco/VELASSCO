@@ -197,6 +197,8 @@ int doTestMorteza( const VAL_SessionID sessionID) {
 	std::cout << resultVertexIDs[i] << "\t" << resultValues[3*i+0] << " " << resultValues[3*i+1] << " " << resultValues[3*i+2] << std::endl;
   }
   
+  std::cout << "=======================>>> Morteza <<<=====================\n";
+  
   return EXIT_SUCCESS;
 }
 
@@ -213,62 +215,65 @@ static const char alphanum[]="012345678ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno
 }
 
 int doTestDC( const VAL_SessionID sessionID){
-        srand(time(0));
-        VAL_Result    result;
-        const char *status = NULL;
-        char hex_string[ 1024];
+  srand(time(0));
+  VAL_Result    result;
+  // const char *status = NULL;
+  // char hex_string[ 1024];
 
-        //Test Discrete To Continuum
-std::cout<<"Performing Discrete2Continuum Test"<<std::endl;
+  std::cout << "=======================>>> Giuseppe <<<=====================\n";
+  
+  //Test Discrete To Continuum
+  std::cout<<"Performing Discrete2Continuum Test"<<std::endl;
 
-std::string modelID = "3885c75d0d5c360515a64c0ac117a459";
-std::string analisysName = "analysisName_10";
-//concat random 5charstring at the end of the analysis name
+  std::string modelID = "3885c75d0d5c360515a64c0ac117a459";
+  std::string analisysName = "analysisName_10";
+  //concat random 5charstring at the end of the analysis name
 
-analisysName=analisysName+(gen_random(5) );
-std::cout<<"HEREEEE\n\n\n"<<gen_random(5)<<std::endl<<std::endl;
+  analisysName=analisysName+(gen_random(5) );
+  std::cout<<"HEREEEE\n\n\n"<<gen_random(5)<<std::endl<<std::endl;
 
-std::string staticMeshID = "708f23d401f17c34ac3df5bff499032b";
+  std::string staticMeshID = "708f23d401f17c34ac3df5bff499032b";
 
-std::string stepOption = "INTERVAL"; //try all possible values = ALL SINGLE INTERVAL
-const double lstSteps[] = {2799000,4000000};
-const int numStep = 2;
-std::string coarseGrainedMethod = "Gaussian" ;
-const double w =0.0024;
-const double cutF =3;
-const bool procCont = true;
-const bool doAVG = true;
+  std::string stepOption = "INTERVAL"; //try all possible values = ALL SINGLE INTERVAL
+  const double lstSteps[] = {2799000,4000000};
+  const int numStep = 2;
+  std::string coarseGrainedMethod = "Gaussian" ;
+  const double w =0.0024;
+  const double cutF =3;
+  const bool procCont = true;
+  const bool doAVG = true;
 
-std::string tempAVGOpts = "ALL";
-const double deltaT = 30000;
+  std::string tempAVGOpts = "ALL";
+  const double deltaT = 30000;
 
-const char* queryOutCome = NULL;
-const char* resultError = NULL;
+  const char* queryOutCome = NULL;
+  const char* resultError = NULL;
 
-result = valGetDiscrete2Continuum(       sessionID,
-                                        modelID.c_str(),
-                                        analisysName.c_str(),
-                                        staticMeshID.c_str(),
-                                        stepOption.c_str(),
-                                        &lstSteps[0],
-                                        numStep,
-                                        coarseGrainedMethod.c_str(),
-                                        w,  cutF , procCont,
-                                        doAVG, tempAVGOpts.c_str(),
-                                        deltaT,
-                                        //out 
-                                        &queryOutCome, &resultError
-                                );
-
-
-        if (result == VAL_SUCCESS) {
-                std::cout<<"SUCCESS: "<<queryOutCome<<std::endl;
-        } else {
-                std::cout<<"FAILED: "<<resultError<<std::endl;
-        }
+  result = valGetDiscrete2Continuum(       sessionID,
+					   modelID.c_str(),
+					   analisysName.c_str(),
+					   staticMeshID.c_str(),
+					   stepOption.c_str(),
+					   &lstSteps[0],
+					   numStep,
+					   coarseGrainedMethod.c_str(),
+					   w,  cutF , procCont,
+					   doAVG, tempAVGOpts.c_str(),
+					   deltaT,
+					   //out 
+					   &queryOutCome, &resultError
+					   );
 
 
-        return 0;
+  if (result == VAL_SUCCESS) {
+    std::cout<<"SUCCESS: "<<queryOutCome<<std::endl;
+  } else {
+    std::cout<<"FAILED: "<<resultError<<std::endl;
+  }
+
+  std::cout << "=======================>>> Giuseppe <<<=====================\n";
+
+  return 0;
 
 }
 
@@ -290,6 +295,25 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   const char *status = NULL;
   char hex_string[ 1024];
 
+  std::cout << "=======================>>> Miguel <<<=====================\n";
+
+  // const char *value = NULL;
+  // const char *lst[] = { "All", "CompressionList", "CompressionType", "CompressionLevel", "CompressionThreshold", NULL};
+  // for ( int idx = 0; lst[ idx]; idx++) {
+  //   result = valGetConfiguration( sessionID, lst[ idx], &status, &value);
+  //   CheckVALResult(result);
+  //   std::cout << "GetConfiguration: " << std::endl;
+  //   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;  
+  //   std::cout << "   value = " << ( value ? value : "(null)") << std::endl;  
+  // }
+  // 
+  // strcpy( hex_string, "9");
+  // result = valSetConfiguration( sessionID, "CompressionLevel", hex_string, &status);
+  // CheckVALResult(result);
+  // std::cout << "SetConfiguration: " << std::endl;
+  // std::cout << "   status = " << ( status ? status : "(null)") << std::endl;  
+
+    // return EXIT_SUCCESS;
   // 
   // Test OpenModel
   //
@@ -303,9 +327,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/:VELaSSCo_HbaseBasicTest";
-
-  // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part_";
-  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part-";
+  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasic_FEM:VELaSSCo_HbaseBasicTestGP-part_";
 
   // // EDM models:
   // const char *unique_name = "VELaSSCo_HbaseBasicTest_part_1";
@@ -477,7 +499,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
 	std::cout << "Vertex: " << i;
 	std::cout << "  ID: " << resultVertexIDs[i];
 	std::cout << "  Values: [";
-	for (size_t j=0; j< num_comp; j++)
+	for (int j=0; j< num_comp; j++)
 	  std::cout << " " << resultValues[num_comp*i+j];
 	std::cout << " ]" << std::endl;
       }
@@ -585,6 +607,8 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   std::cout << "CloseModel: " << std::endl;
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
   
+  std::cout << "=======================>>> Miguel <<<=====================\n";
+
   return EXIT_SUCCESS;
 }
 
@@ -644,6 +668,14 @@ int main(int argc, char* argv[])
   std::cout << "   model_list = " << return_list << std::endl;
 
   int ret = 0;
+
+  // enable compression between QM --> AL
+  // by default it's disabled so that old AL & plug-in's also work
+  result = valSetConfiguration( sessionID, "CompressionEnabled", "1", &status);
+  CheckVALResult(result);
+  std::cout << "SetConfiguration: " << std::endl;
+  std::cout << "   status = " << ( status ? status : "(null)") << std::endl;  
+
   ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
   //ret= doTestDC (sessionID);
