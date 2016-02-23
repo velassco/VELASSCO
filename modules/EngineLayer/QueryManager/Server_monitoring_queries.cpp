@@ -116,3 +116,126 @@ void QueryManagerServer::StopVELaSSCo(StopVELaSSCo_Result& _return, const Sessio
   this->m_simpleServer->stop();
   this->SetSimpleServer( NULL);
 }
+
+void QueryManagerServer::ManageGetConfiguration( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string key_str      = pt.get<std::string>( "Key");
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S  -" << sessionID        << std::endl;
+  std::cout << "K  -" << key_str       << std::endl;
+  
+  const char *key = key_str.c_str();
+  if ( !key || !*key || ( key_str.size() == 0) || !strcasecmp( key, "List") || !strcasecmp( key, "All") || !strcasecmp( key, "help")) {
+    // returns all possible options with their value, separated by '\n'
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    ostringstream oss;
+    oss << "CompressionType" << std::endl << m_compression.getCompressionTypeString() << std::endl;
+    oss << "CompressionLevel" << std::endl << m_compression.getCompressionLevel() << std::endl;
+    oss << "CompressionThreshold" << std::endl << "m_compression.getCompressionThreshold()" << std::endl;
+    oss << "CompressionEnabled" << std::endl << ( m_compression_enabled ? "1" : "0") << std::endl;
+    _return.__set_data( oss.str());
+  } else if ( !strcasecmp( key, "CompressionType")) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( m_compression.getCompressionTypeString());
+  } else if ( !strcasecmp( key, "CompressionLevel")) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( std::to_string( ( long long int)m_compression.getCompressionLevel()));
+  } else if ( !strcasecmp( key, "CompressionThreshold")) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( std::to_string( ( long long int)m_compression.getCompressionThreshold()));
+  } else if ( !strcasecmp( key, "CompressionList")) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( m_compression.getCompressionTypeList());
+  } else if ( !strcasecmp( key, "CompressionEnabled")) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( ( m_compression_enabled ? "1" : "0"));
+  } else {
+    _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS);
+    _return.__set_data( std::string( "Unknown configuration parameter: ") + key_str);
+  }
+  LOGGER << "Output:"                       << std::endl;
+  LOGGER << "  result : " << _return.result << std::endl;
+  LOGGER << "  data   : " << _return.data   << std::endl;
+
+}
+
+void QueryManagerServer::ManageSetConfiguration( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string key_str      = pt.get<std::string>( "Key");
+  std::string val_str      = pt.get<std::string>( "Value");
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S  -" << sessionID        << std::endl;
+  std::cout << "K  -" << key_str       << std::endl;
+  std::cout << "V  -" << val_str       << std::endl;
+  
+  const char *key = key_str.c_str();
+  const char *value = val_str.c_str();
+  bool wrong_value = false;
+  if ( !strcasecmp( key, "CompressionType")) {
+    // _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( m_compression.getCompressionTypeString());
+    bool ok = m_compression.setCompressionTypeFromString( value);
+    if ( ok) {
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      LOGGER << "   Compresison type set to: " << value << std::endl;
+    } else {
+      wrong_value = true;
+    }
+  } else if ( !strcasecmp( key, "CompressionLevel")) {
+    // _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( std::to_string( m_compression.getCompressionLevel()));
+    int level = 1;
+    int n = sscanf( value, "%d", &level);
+    if ( n == 1 && ( level >= 1) && ( level <= 9)) {
+      m_compression.setCompressionLevel( level);
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      LOGGER << "   Compresison level set to: " << level << std::endl;
+    } else {
+      wrong_value = true;
+    }
+  } else if ( !strcasecmp( key, "CompressionThreshold")) {
+    // _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( std::to_string( m_compression.getCompressionLevel()));
+    size_t mem_minimum = 100; // absolute minimum
+    int n = sscanf( value, "%ld", &mem_minimum);
+    if ( n == 1 && ( mem_minimum >= 1)) {
+      m_compression.setCompressionThreshold( mem_minimum);
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      LOGGER << "   Compresison threshold set to: " << GetNiceSizeString( mem_minimum) << std::endl;
+    } else {
+      wrong_value = true;
+    }
+  } else if ( !strcasecmp( key, "CompressionEnabled") || !strcasecmp( key, "CompressionEnable")) {
+    int flag = 1;
+    int n = sscanf( value, "%d", &flag);
+    if ( n == 1) {
+      m_compression_enabled = ( flag ? true : false);
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      LOGGER << "   Compresison " << ( flag ? "enabled" : "disabled") << std::endl;
+    } else {
+      wrong_value = true;
+    }
+  } else {
+    _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS);
+    _return.__set_data( std::string( "Unknown configuration parameter: ") + key_str);
+  }
+  if ( wrong_value) {
+    _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS);
+    _return.__set_data( std::string( "Unknown configuration value: ") + val_str + std::string( " for parameter: ") + key_str);
+  }
+  LOGGER << "Output:"                       << std::endl;
+  LOGGER << "  result : " << _return.result << std::endl;
+  LOGGER << "  data   : " << _return.data   << std::endl;
+}

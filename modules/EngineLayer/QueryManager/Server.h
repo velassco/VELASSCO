@@ -24,6 +24,7 @@
 
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
+#include "Compression.h"
 
 // ***************************************************************************
 //
@@ -94,6 +95,10 @@ class QueryManagerServer : virtual public QueryManagerIf {
   static ::apache::thrift::server::TSimpleServer *m_simpleServer;
   UserMap m_users;
   ModelMap m_models;
+  // handles compression between QM and AL
+  // at the moment the QM only compresses data to AL
+  VL_Compression m_compression;
+  bool m_compression_enabled;
 
   bool ValidSessionID( const SessionID &sessionID) const;
   // here we have a int64 SessionId between AccessLib and QueryManager
@@ -123,6 +128,8 @@ class QueryManagerServer : virtual public QueryManagerIf {
   /* Monitoring Queries */  
   void GetStatusDB(StatusDB_Result& _return, const SessionID sessionID);
   void StopVELaSSCo(StopVELaSSCo_Result& _return, const SessionID sessionID);
+  void ManageGetConfiguration( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageSetConfiguration( Query_Result &_return, const SessionID sessionID, const std::string& query);
 
   /* Session Queries */
   void ManageGetListOfModels( Query_Result &_return, const SessionID sessionID, const std::string& query);
@@ -147,6 +154,11 @@ public:
     if ( m_simpleServer)
       delete m_simpleServer;
     m_simpleServer = simpleServer;
+  }
+  void SetDefaultCompression() {
+    m_compression.setCompressionType( VL_Compression::CompressionType::Zlib);
+    m_compression.setCompressionLevel( 1);
+    m_compression_enabled = false; // compression disabled until enabled explicitly by the AccessLib
   }
 }; // class QueryManagerServer
 

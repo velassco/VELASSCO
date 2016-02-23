@@ -161,6 +161,10 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetDiscrete2Continuum(_return, sessionID, query);
   } else if ( name == "GetBoundaryOfAMesh") {
     ManageGetBoundaryOfAMesh( _return, sessionID, query);
+  } else if ( name == "GetConfiguration") {
+    ManageGetConfiguration( _return, sessionID, query);
+  } else if ( name == "SetConfiguration") {
+    ManageSetConfiguration( _return, sessionID, query);
   } else {
     _return.__set_result( (Result::type)VAL_INVALID_QUERY );
     
@@ -168,18 +172,23 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     LOGGER << "Output:"                       << std::endl;
     LOGGER << "  result : " << _return.result << std::endl;
   }
-  size_t num_bytes = sizeof( _return.result) + _return.data.size();
-  // Human readable form:
-  const char *units[] = { "Bytes", "KBytes", "MBytes", "GBytes", "TBytes", NULL};
-  int idx = 0;
-  double scaled_size = num_bytes;
-  // make printable number between 0...1024 and have a valid unit suffix
-  while ( ( scaled_size > 1024.0) && units[ idx + 1]) {
-    scaled_size /= 1024.0;
-    idx++;
+  size_t num_bytes = _return.data.size();
+  LOGGER << "  --> result size: " << GetNiceSizeString( sizeof( _return.result) + num_bytes) << " to send back." << std::endl;
+
+  // compress data:
+  if ( m_compression_enabled && num_bytes) {
+    std::string *compressed_result = NULL;
+    bool ok = m_compression.doCompress( _return.data, &compressed_result);
+    LOGGER << "  --> compressed with " << ( ok ? "no error" : "ERROR") << std::endl;
+    if ( compressed_result) {
+      double percent = 100.0 * ( double)( compressed_result->size() - 12) / ( double)num_bytes;
+      LOGGER << "        to " << GetNiceSizeString( compressed_result->size() - 12); // header
+      std::cout << " from " << GetNiceSizeString( num_bytes) << " ( " << percent << "% )" << std::endl; // header
+      _return.__set_data( *compressed_result);
+      delete compressed_result;
+      compressed_result = NULL;
+    }
   }
-  LOGGER << "  --> result size: " << num_bytes << " Bytes." << std::endl;
-  LOGGER << "  --> scaled size: " << scaled_size << " " << units[ idx] << " to send back." << std::endl << std::endl;
 }
 
 TSimpleServer *QueryManagerServer::m_simpleServer = NULL;
@@ -198,6 +207,7 @@ int StartServer( const int server_port) {
 
   TSimpleServer *server = new TSimpleServer(processor, serverTransport, transportFactory, protocolFactory);
   handler->SetSimpleServer( server);
+  handler->SetDefaultCompression();
   DEBUG( "  before serving ...");
   server->serve();
   DEBUG( "  after serving ...");

@@ -20,7 +20,7 @@ endif
 CPP_FLAGS = $(EXTRA_FLAGS)
 C_FLAGS = $(EXTRA_FLAGS)
 
-# OPTS = -g
+#OPTS = -g
 OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG
 
 THRIFT_STORAGE_DIR=../../thrift/Storage/gen-cpp
@@ -53,7 +53,8 @@ ENGINE_CPP_FILES = DataLayerAccess.cpp Analytics.cpp Graphics.cpp Helpers.cpp ma
 	Server_monitoring_queries.cpp      \
 	Server_result_analysis_queries.cpp \
 	Server_session_queries.cpp \
-	base64.cpp
+	base64.cpp \
+	Compression.cpp
 
 ENGINE_C_FILES = cJSON.c
 ENGINE_OBJS_TMP = ${ENGINE_CPP_FILES:.cpp=.o} ${ENGINE_C_FILES:.c=.o}
@@ -66,7 +67,7 @@ ENGINE_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
 ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) \
 	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include -I.
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
-	-lboost_date_time -lboost_thread -lboost_system
+	-lboost_date_time -lboost_thread -lboost_system -lz
 
 all: $(BIN) $(BIN)/$(EXEC)
 

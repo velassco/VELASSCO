@@ -34,6 +34,7 @@
 #include "DataLayerAccess.h"
 #include "Analytics.h"
 #include "Graphics.h"
+#include "base64.h"
 
 #include "Server.h"
 
@@ -60,33 +61,85 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   std::string modelID    = pt.get<std::string>("modelID");
   std::string resultID   = pt.get<std::string>("resultID");
   std::string analysisID = pt.get<std::string>("analysisID");
-  std::string vertexIDs  = as_string<int64_t>( pt, "vertexIDs");
   double      timeStep   = pt.get<double>("timeStep");
   
-  std::vector<int64_t> listOfVertices;
   //std::cout << "Vertex IDs = " << vertexIDs << std::endl;
   
-  std::string tmp_buf;
-  for(size_t i = 0; i < vertexIDs.size(); i++){
-	  if(vertexIDs[i] == '[') continue;
-	  else if(vertexIDs[i]==','){
-		  istringstream tmp_buf_stream(tmp_buf);
-		  int64_t vertexID;
-		  tmp_buf_stream >> vertexID;
-		  listOfVertices.push_back(vertexID);
-		  tmp_buf = "";
-	  } else if(vertexIDs[i] == ']'){
-		  istringstream tmp_buf_stream(tmp_buf);
-		  int64_t vertexID;
-		  tmp_buf_stream >> vertexID;
-		  listOfVertices.push_back(vertexID);
-		  tmp_buf = "";
-		  break;
-	  } else {
-		  tmp_buf += vertexIDs[i];
-	  }
+  // the vertexID list is encoded in a base64 string
+  // std::string vertexIDs  = as_string<int64_t>( pt, "vertexIDs");
+  // std::vector<int64_t> listOfVertices;
+  // std::string tmp_buf;
+  // for(size_t i = 0; i < vertexIDs.size(); i++){
+  // 	  if(vertexIDs[i] == '[') continue;
+  // 	  else if(vertexIDs[i]==','){
+  // 		  istringstream tmp_buf_stream(tmp_buf);
+  // 		  int64_t vertexID;
+  // 		  tmp_buf_stream >> vertexID;
+  // 		  listOfVertices.push_back(vertexID);
+  // 		  tmp_buf = "";
+  // 	  } else if(vertexIDs[i] == ']'){
+  // 		  istringstream tmp_buf_stream(tmp_buf);
+  // 		  int64_t vertexID;
+  // 		  tmp_buf_stream >> vertexID;
+  // 		  listOfVertices.push_back(vertexID);
+  // 		  tmp_buf = "";
+  // 		  break;
+  // 	  } else {
+  // 		  tmp_buf += vertexIDs[i];
+  // 	  }
+  // }
+  std::string vertexIDs  = pt.get<std::string>("vertexIDs");
+  std::string raw_data = base64_decode( vertexIDs);
+  size_t num_vertexIDs = raw_data.length() / sizeof( int64_t);
+  int64_t *lst_vertexIDs = ( int64_t *)raw_data.data();
+  std::vector<int64_t> listOfVertices( lst_vertexIDs, lst_vertexIDs + num_vertexIDs);
+  // for ( size_t idx = 0; idx < num_vertexIDs; idx++) {
+  //   listOfVertices.push_back( lst_vertexIDs[ idx]);
+  // }
+
+  bool decoded = false;
+  if ( raw_data.length()) {
+    decoded = true;
+  } else {
+    // old fashioned way:
+    vertexIDs  = as_string<int64_t>( pt, "vertexIDs");
+    std::string tmp_buf;
+    for(size_t i = 0; i < vertexIDs.size(); i++){
+      if(vertexIDs[i] == '[') continue;
+      else if(vertexIDs[i]==','){
+	istringstream tmp_buf_stream(tmp_buf);
+	int64_t vertexID;
+	tmp_buf_stream >> vertexID;
+	listOfVertices.push_back(vertexID);
+	tmp_buf = "";
+      } else if(vertexIDs[i] == ']'){
+	istringstream tmp_buf_stream(tmp_buf);
+	int64_t vertexID;
+	tmp_buf_stream >> vertexID;
+	listOfVertices.push_back(vertexID);
+	tmp_buf = "";
+	break;
+      } else {
+	tmp_buf += vertexIDs[i];
+      }
+    }
   }
+   
+  size_t last = ( num_vertexIDs < 100) ? num_vertexIDs : 100;
     
+  // just to provide feed-back:
+  std::ostringstream oss;
+  oss << ( decoded ? "parameter base64-decoded: " : "parameter old format: ") 
+      << num_vertexIDs << " vertexIDs" << std::endl << "  ids = ";
+  for ( size_t idx = 0; idx < last; idx++) {
+    if ( idx) oss << ", ";
+    oss << listOfVertices[ idx];
+  }
+  if ( num_vertexIDs > 100) {
+    oss << ", ..., " << listOfVertices[ num_vertexIDs - 1];
+  }
+  LOGGER << oss.str() << " ." << std::endl;
+
   std::stringstream sessionIDStr;
   sessionIDStr << sessionID;
   
