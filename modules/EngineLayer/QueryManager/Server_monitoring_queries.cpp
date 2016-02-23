@@ -137,7 +137,7 @@ void QueryManagerServer::ManageGetConfiguration( Query_Result &_return, const Se
     ostringstream oss;
     oss << "CompressionType" << std::endl << m_compression.getCompressionTypeString() << std::endl;
     oss << "CompressionLevel" << std::endl << m_compression.getCompressionLevel() << std::endl;
-    oss << "CompressionThreshold" << std::endl << "m_compression.getCompressionThreshold()" << std::endl;
+    oss << "CompressionThreshold" << std::endl << m_compression.getCompressionThreshold() << std::endl;
     oss << "CompressionEnabled" << std::endl << ( m_compression_enabled ? "1" : "0") << std::endl;
     _return.__set_data( oss.str());
   } else if ( !strcasecmp( key, "CompressionType")) {
