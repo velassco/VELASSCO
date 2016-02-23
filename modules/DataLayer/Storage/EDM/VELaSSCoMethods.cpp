@@ -78,15 +78,15 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
 {
    int startTime = GetTickCount();
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubdomains = subQueries->size();
       int nError = 0;
       bool errorFound = false;
 
 #pragma omp parallel for
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          try {
             EDMexecution *e = subQueries->getElementp(i);
-//            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s\n", nexec, i, e ? e->modelName : "EDMexecution e is NULL");
+//            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL");
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
@@ -104,7 +104,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       Container<char*> analysisNames(&ma);
       vector<string> names;
       string aName;
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodervGetListOfAnalyses *retVal = (nodervGetListOfAnalyses *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
@@ -157,13 +157,13 @@ void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::st
 {
    int startTime = GetTickCount();
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetListOfTimeSteps *inParams = new(&ma)nodeInGetListOfTimeSteps(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       bool errorFound = false;
 
 #pragma omp parallel for
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetListOfTimeSteps *retVal = new(e->ema)nodeRvGetListOfTimeSteps(e->ema, NULL);
          e->returnValues = retVal;
@@ -178,7 +178,7 @@ void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::st
       nodeRvGetListOfTimeSteps *retValueWithError = NULL;
       vector<double>  time_steps;
 
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetListOfTimeSteps *retVal = (nodeRvGetListOfTimeSteps *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
@@ -283,7 +283,7 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
 {
    int startTime, endTime;
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetListOfResultsFromTimeStepAndAnalysis *inParams = new(&ma)nodeInGetListOfResultsFromTimeStepAndAnalysis(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->stepValue->putReal(stepValue);
@@ -291,7 +291,7 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
 
       startTime = GetTickCount();
 #pragma omp parallel for
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal = new(e->ema)nodeRvGetListOfResultsFromTimeStepAndAnalysis(e->ema, NULL);
          e->returnValues = retVal;
@@ -306,7 +306,7 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
       //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
       nodeRvGetListOfResultsFromTimeStepAndAnalysis *retValueWithError = NULL;
 
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal = (nodeRvGetListOfResultsFromTimeStepAndAnalysis *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
@@ -318,7 +318,7 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          vector<VELaSSCoSM::ResultInfo>  result_list;
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal = (nodeRvGetListOfResultsFromTimeStepAndAnalysis *)e->returnValues;
             CMemoryAllocator resMa(retVal->ResultInfoList, false);
@@ -361,7 +361,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
 {
    int startTime, endTime;
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetCoordinatesAndElementsFromMesh *inParams = new(&ma)nodeInGetCoordinatesAndElementsFromMesh(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->timeStep->putReal(stepValue);
@@ -370,7 +370,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
 
       startTime = GetTickCount();
 #pragma omp parallel for
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetCoordinatesAndElementsFromMesh *retVal = new(e->ema)nodeRvGetCoordinatesAndElementsFromMesh(e->ema, NULL);
          e->returnValues = retVal;
@@ -387,7 +387,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
       EDMULONG maxNodeID = 0, minNodeID = 0xfffffffffffffff, maxElementID = 0, minElementID = 0xfffffffffffffff;
       ReturnedMeshInfo *firstMetaData;
 
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
          ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)retVal->returned_mesh_info->value.blobVal;
@@ -420,7 +420,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          //rv.__set_model_type(1);
 
          startTime = GetTickCount();
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
 
@@ -452,7 +452,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          EDMULONG n_vertices_copied = 0, n_elements_copied = 0;
          EDMULONG n_vertices_pr_element = firstMetaData->n_vertices_pr_element;
 
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
 
@@ -495,7 +495,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
 {
    int startTime, startTime2, endTime, timeSubQueryExecytion, timeCollectingReturnValues, t2, t3, t4, t5, t6;
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetResultFromVerticesID *inParams = new(&ma)nodeInGetResultFromVerticesID(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->timeStep->putReal(timeStep);
@@ -506,7 +506,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
       startTime = GetTickCount();
 
 #pragma omp parallel for 
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          if (!e) {
             int asdfsdg = 9999;
@@ -527,7 +527,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
       EDMULONG nOfValuesPrVertex = 0;
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
@@ -548,9 +548,9 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
       } else {
          unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char *)* (maxID + 1));
          EDMULONG nDuplicates = 0, n_result_records = 0;
-         Container<EDMVD::ResultOnVertex> **vertexResultsArr = (Container<EDMVD::ResultOnVertex> **)ma.alloc(sizeof(Container<EDMVD::ResultOnVertex> *) * nexec);
+         Container<EDMVD::ResultOnVertex> **vertexResultsArr = (Container<EDMVD::ResultOnVertex> **)ma.alloc(sizeof(Container<EDMVD::ResultOnVertex> *) * nOfSubdomains);
          startTime2 = GetTickCount();
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetResultFromVerticesID *retVal = (nodeRvGetResultFromVerticesID *)e->returnValues;
             CMemoryAllocator result_ma(retVal->result_list, false);
@@ -588,7 +588,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          memset(verticesExist, 0, sizeof(unsigned char *)* (maxID + 1));
 
          t5 = GetTickCount();
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubdomains; i++) {
             Container<EDMVD::ResultOnVertex> *vertexResults = vertexResultsArr[i];
             for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
                if (verticesExist[rov->id] == 0) {
@@ -614,7 +614,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          endTime = GetTickCount();
          timeCollectingReturnValues = endTime - startTime2;
          char msgBuffer[2048];
-         sprintf(msgBuffer, "Execution time subqueries: %d\nExecution time building return values: %d\nt2=%d\nt3=%d\nt4=%d\nt5=%d\nt6=%d\nNumber of distinct results: %lld\nNumber of duplicates: %lld\n",
+         sprintf(msgBuffer, "Execution time subqueries: %d\nOfSubdomainsution time building return values: %d\nt2=%d\nt3=%d\nt4=%d\nt5=%d\nt6=%d\nNumber of distinct results: %lld\nNumber of duplicates: %lld\n",
             timeSubQueryExecytion, timeCollectingReturnValues, t2 - startTime, t3 - startTime, t4 - startTime, t5 - startTime, t6 - startTime,
             n_result_records, nDuplicates);
          rv.__set_status("OK");
@@ -637,7 +637,7 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
 {
    int startTime, endTime, timeSubQueryExecytion, timeCollectingReturnValues;
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetBoundaryOfLocalMesh *inParams = new(&ma)nodeInGetBoundaryOfLocalMesh(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->timeStep->putReal(stepValue);
@@ -646,7 +646,7 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
 
       startTime = GetTickCount();
 #pragma omp parallel for
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetBoundaryOfLocalMesh *retVal = new(e->ema)nodeRvGetBoundaryOfLocalMesh(e->ema, NULL);
          e->returnValues = retVal;
@@ -662,7 +662,7 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
       int tot_n_triangles = 0;
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
@@ -687,12 +687,24 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
          //EDMULONG n_triangles_in_this_string = n_triangles_pr_string;
          //int stringNo = -1;
          //std::string *cTriangleBuffer;
-         char *bp;
+         //char *bp;
+         struct MergeJob {
+            int nOfContainers;
+            Container<EDMVD::Triangle> *containers[1];
+         };
+         int nOfCores = omp_get_max_threads();
+         int nOfContainersPrThread = nOfSubdomains / nOfCores;
+         int nContainersToMerge = nOfContainersPrThread;
+
+         while (nContainersToMerge > 1) {
+
+         }
+
          vector<VELaSSCoSM::Triangle> triangles;
          triangles.reserve(tot_n_triangles);
          int nNodesInTriangle = 3;
 
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
             Container<EDMVD::Triangle>  sub_triangles(&ma, retVal->triangle_array);
@@ -707,27 +719,11 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
                triangles.push_back(vt);
             }
          }
-            //for (EDMVD::Triangle *t = triangles.firstp(); t; t = triangles.nextp()) {
-            //   if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
-            //      int nasdfasdf = 9999;
-            //   }
-            //   if (n_triangles_in_this_string >= n_triangles_pr_string) {
-            //      n_triangles_in_this_string = 0;
-            //      stringNo++;
-            //      triangle_strings.push_back(std::string());
-            //      triangle_strings[stringNo].resize(n_triangles_pr_string * sizeof(EDMVD::Triangle));
-            //      bp = (char*)triangle_strings[stringNo].data();
-            //   }
-            //   memmove(bp, t, sizeof(EDMVD::Triangle)); bp += sizeof(EDMVD::Triangle);
-            //   n_triangles_in_this_string++;
-            //}
-         //}
-         //triangle_strings[stringNo].resize(n_triangles_in_this_string * sizeof(EDMVD::Triangle));
 
          endTime = GetTickCount();
          timeCollectingReturnValues = endTime - startTime;
          char msgBuffer[2048];
-         sprintf(msgBuffer, "Execution time subqueries: %d\nExecution time building return values: %d\nNumber of triangles: %lld\nNumber of triangles pr string: %lld\n",
+         sprintf(msgBuffer, "Execution time subqueries: %d\nOfSubdomainsution time building return values: %d\nNumber of triangles: %lld\nNumber of triangles pr string: %lld\n",
             timeSubQueryExecytion, timeCollectingReturnValues, tot_n_triangles, n_triangles_pr_string);
          rv.__set_status("OK");
          rv.__set_report(msgBuffer);
@@ -745,7 +741,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
 {
    int startTime, endTime;
    if (subQueries) {
-      EDMULONG nexec = subQueries->size();
+      EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetListOfMeshes *inParams = new(&ma)nodeInGetListOfMeshes(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->timeStep->putReal(timeStep);
@@ -753,7 +749,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
 
       startTime = GetTickCount();
 #pragma omp parallel for
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetListOfMeshes *retVal = new(e->ema)nodeRvGetListOfMeshes(e->ema, NULL);
          e->returnValues = retVal;
@@ -766,7 +762,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
       }
       nodeRvGetListOfMeshes *retValueWithError = NULL;
       int tot_n_triangles = 0;
-      for (int i = 0; i < nexec; i++) {
+      for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetListOfMeshes *retVal = (nodeRvGetListOfMeshes *)e->returnValues;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
@@ -779,7 +775,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
       } else {
          vector<VELaSSCoSM::MeshInfo> meshInfos;
 
-         for (int i = 0; i < nexec; i++) {
+         for (int i = 0; i < nOfSubdomains; i++) {
             int meshNumber = 1;
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetListOfMeshes *retVal = (nodeRvGetListOfMeshes *)e->returnValues;
