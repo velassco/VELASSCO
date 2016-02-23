@@ -1568,8 +1568,12 @@ void ResultOnVertex::__set_value(const std::vector<double> & val) {
   this->value = val;
 }
 
-const char* ResultOnVertex::ascii_fingerprint = "1CB61EEDEC70E44B3B75F0C0C76D5496";
-const uint8_t ResultOnVertex::binary_fingerprint[16] = {0x1C,0xB6,0x1E,0xED,0xEC,0x70,0xE4,0x4B,0x3B,0x75,0xF0,0xC0,0xC7,0x6D,0x54,0x96};
+void ResultOnVertex::__set_bvalue(const std::string& val) {
+  this->bvalue = val;
+}
+
+const char* ResultOnVertex::ascii_fingerprint = "3E701BDC702ACA6F8E92958F21CE728E";
+const uint8_t ResultOnVertex::binary_fingerprint[16] = {0x3E,0x70,0x1B,0xDC,0x70,0x2A,0xCA,0x6F,0x8E,0x92,0x95,0x8F,0x21,0xCE,0x72,0x8E};
 
 uint32_t ResultOnVertex::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1619,6 +1623,14 @@ uint32_t ResultOnVertex::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->bvalue);
+          this->__isset.bvalue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1652,6 +1664,10 @@ uint32_t ResultOnVertex::write(::apache::thrift::protocol::TProtocol* oprot) con
   }
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("bvalue", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeBinary(this->bvalue);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   oprot->decrementRecursionDepth();
@@ -1662,17 +1678,20 @@ void swap(ResultOnVertex &a, ResultOnVertex &b) {
   using ::std::swap;
   swap(a.id, b.id);
   swap(a.value, b.value);
+  swap(a.bvalue, b.bvalue);
   swap(a.__isset, b.__isset);
 }
 
 ResultOnVertex::ResultOnVertex(const ResultOnVertex& other55) {
   id = other55.id;
   value = other55.value;
+  bvalue = other55.bvalue;
   __isset = other55.__isset;
 }
 ResultOnVertex& ResultOnVertex::operator=(const ResultOnVertex& other56) {
   id = other56.id;
   value = other56.value;
+  bvalue = other56.bvalue;
   __isset = other56.__isset;
   return *this;
 }
@@ -1681,6 +1700,7 @@ std::ostream& operator<<(std::ostream& out, const ResultOnVertex& obj) {
   out << "ResultOnVertex(";
   out << "id=" << to_string(obj.id);
   out << ", " << "value=" << to_string(obj.value);
+  out << ", " << "bvalue=" << to_string(obj.bvalue);
   out << ")";
   return out;
 }
@@ -4242,8 +4262,8 @@ void rvGetResultFromVerticesID::__set_result_list(const std::vector<ResultOnVert
   this->result_list = val;
 }
 
-const char* rvGetResultFromVerticesID::ascii_fingerprint = "7D7F6E03D85558681F4AC69C1B4F3FC4";
-const uint8_t rvGetResultFromVerticesID::binary_fingerprint[16] = {0x7D,0x7F,0x6E,0x03,0xD8,0x55,0x58,0x68,0x1F,0x4A,0xC6,0x9C,0x1B,0x4F,0x3F,0xC4};
+const char* rvGetResultFromVerticesID::ascii_fingerprint = "E9197D1E0C80A11B20AB3C28F5F02CC8";
+const uint8_t rvGetResultFromVerticesID::binary_fingerprint[16] = {0xE9,0x19,0x7D,0x1E,0x0C,0x80,0xA1,0x1B,0x20,0xAB,0x3C,0x28,0xF5,0xF0,0x2C,0xC8};
 
 uint32_t rvGetResultFromVerticesID::read(::apache::thrift::protocol::TProtocol* iprot) {
 

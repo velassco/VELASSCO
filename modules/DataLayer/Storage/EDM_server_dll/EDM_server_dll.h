@@ -307,36 +307,40 @@ struct nodeInGetResultFromVerticesID : public CppParameterClass
 
 
 /*===================================================================================================================
+typedef i64 NodeID;
+struct Vertex {
+   1: NodeID                              id
+   2: double                              x
+   3: double                              y
+   4: double                              z
+}
+
 struct rvGetCoordinatesAndElementsFromMesh {
-1  : string                      status
-2  : string                      report
-3  : i64                         model_type        // FEM = 1, DEM =2
-4  : ElementShapeType            element_type
-5  : i64                         n_vertices
-6  : i64                         vertex_record_size
-7  : i64                         n_elements
-8  : i64                         n_vertices_pr_element
-9  : i64                         element_record_size
-10 : binary                      vertex_array
-11 : binary                      element_array
+   1: string status
+   2: string report
+   3: list<Vertex>        vertex_list
+   4: list<Element>       element_list
+   5: list<ElementAttrib> element_attrib_list
+   6: list<ElementGroup>  element_group_info_list
+}
 */
 struct nodeRvGetCoordinatesAndElementsFromMesh : public CppParameterClass
 {
    cppRemoteParameter                    *attrPointerArr[5];
    cppRemoteParameter                    *status;
    cppRemoteParameter                    *report;
-   cppRemoteParameter                    *returned_mesh_info;
    cppRemoteParameter                    *node_array;
    cppRemoteParameter                    *elemnt_array;
+   cppRemoteParameter                    *returned_mesh_info;
 
    void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
    nodeRvGetCoordinatesAndElementsFromMesh(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
       : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
       addAddribute(&status, rptSTRING);
       addAddribute(&report, rptSTRING);
-      addAddribute(&returned_mesh_info, rptBLOB);
-      addAddribute(&node_array, rptINTEGER);
+      addAddribute(&node_array, rptContainer);
       addAddribute(&elemnt_array, rptContainer);
+      addAddribute(&returned_mesh_info, rptBLOB);
    }
 };
 struct nodeInGetCoordinatesAndElementsFromMesh : public CppParameterClass

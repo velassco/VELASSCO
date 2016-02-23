@@ -57,22 +57,18 @@ void GetCoordinatesAndElementsFromMesh(VELaSSCoSMClient &client, string sessionI
       printf("Error message: \"%s\"\n", meshInfoRV.report.data());
    } else {
       //OLI
-      //printf("Number of vertices transferred: %12llu\n", meshInfoRV.n_vertices);
-      //char *cp = (char*)meshInfoRV.vertex_array.data();
-      //for (int i = 0; i < 20 && i < meshInfoRV.n_vertices; i++) {
-      //   EDMVD::Vertex *v = (EDMVD::Vertex*)cp;
-      //   printf("%12llu   %Lf  %Lf  %Lf\n", v->id, v->x, v->y, v->z);
-      //   cp += meshInfoRV.vertex_record_size;
-      //}
-      //printf("Number of elements transferred: %12llu\n", meshInfoRV.n_elements);
-      //cp = (char*)meshInfoRV.element_array.data();
-      //for (int i = 0; i < 20 && i < meshInfoRV.n_elements; i++) {
-      //   EDMVD::FEMelement *e = (EDMVD::FEMelement*)cp;
-      //   printf("%12llu   ", e->id);
-      //   for (int j = 0; j < meshInfoRV.n_vertices_pr_element; j++) printf("  %10llu", e->nodes_ids[j]);
-      //   printf("\n");
-      //   cp += meshInfoRV.element_record_size;
-      //}
+      printf("Number of vertices transferred: %12llu\n", meshInfoRV.vertex_list.size());
+      for (int i = 0; i < 20 && i < meshInfoRV.vertex_list.size(); i++) {
+         VELaSSCoSM::Vertex v = meshInfoRV.vertex_list[i];
+         printf("%12llu   %Lf  %Lf  %Lf\n", v.id, v.x, v.y, v.z);
+      }
+      printf("Number of elements transferred: %12llu\n", meshInfoRV.element_list.size());
+      for (int i = 0; i < 20 && i < meshInfoRV.element_list.size(); i++) {
+         VELaSSCoSM::Element e = meshInfoRV.element_list[i];
+         printf("%12llu   ", e.id);
+         for (int j = 0; j < meshInfoRV.element_list[i].nodes_ids.size(); j++) printf("  %10llu", meshInfoRV.element_list[i].nodes_ids[j]);
+         printf("\n");
+      }
    }
 }
 
@@ -133,6 +129,14 @@ void GetBoundaryOfLocalMesh(VELaSSCoSMClient &client, string sessionID, char *mo
    if (strncmp(boundaryRV.status.data(), "Error", 5) == 0) {
       printf("Error message: \"%s\"\n", boundaryRV.report.data());
    } else {
+      int nn = 0;
+      for (vector<VELaSSCoSM::Triangle>::iterator bufferIter = boundaryRV.elements.begin(); bufferIter != boundaryRV.elements.end() && nn++ < 20; bufferIter++) {
+         for (vector<VELaSSCoSM::NodeID>::iterator nodeIter = bufferIter->nodes.begin(); nodeIter != bufferIter->nodes.end(); nodeIter++) {
+            printf("%10llu", *nodeIter);
+         }
+         printf("\n");
+      }
+      //printf("\nMessage: \"%s\"\n", boundaryRV.report.data());
       //for (vector<std::string>::iterator bufferIter = boundaryRV.triangles.begin(); bufferIter != boundaryRV.triangles.end(); bufferIter++) {
       //   char *cp = (char*)bufferIter->data();
       //   EDMULONG nTrianglesInThisString = bufferIter->size() / boundaryRV.triangle_record_size;
@@ -160,6 +164,30 @@ void GetListOfMeshes(VELaSSCoSMClient &client, string sessionID, char *modelName
    printf("%s has %d meshes.\n", modelName, rvMeshes.meshInfos.size());
    for (vector<VELaSSCoSM::MeshInfo>::iterator meshIter = rvMeshes.meshInfos.begin(); meshIter != rvMeshes.meshInfos.end(); meshIter++) {
       printf("   %20s  %10llu  %10llu\n", meshIter->name.data(), meshIter->nElements, meshIter->nVertices);
+   }
+}
+void GetListOfResultsFromTimeStepAndAnalysis(VELaSSCoSMClient &client, string sessionID, char *modelName, string modelID, string analysisID, double timeStep)
+{
+   int endTime, startTime;
+   rvGetListOfResults resultRV;
+   printf("\n--->GetListOfResultsFromTimeStepAndAnalysis - \"%s\"\n", modelName);
+   startTime = GetTickCount();
+   client.GetListOfResultsFromTimeStepAndAnalysis(resultRV, sessionID, modelID, analysisID, timeStep);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetListOfResultsFromTimeStepAndAnalysis is %d milliseconds\n", endTime - startTime);
+   printf("Return status: %s\n", resultRV.status.data());
+   printf("%s has %d result headers.\n", modelName, resultRV.result_list.size());
+   int nRes = 0;
+   if (strncmp(resultRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", resultRV.report.data());
+   } else {
+      for (vector<VELaSSCoSM::ResultInfo>::iterator resIter = resultRV.result_list.begin(); resIter != resultRV.result_list.end(); resIter++) {
+         if (nRes++ > 16) break;
+         printf("%20s %15s %15s %10d\n", (char*)resIter->name.data(), (char*)resIter->type.data(), (char*)resIter->location.data(), resIter->numberOfComponents);
+         for (vector<string>::iterator compName = resIter->componentNames.begin(); compName != resIter->componentNames.end(); compName++) {
+            printf("                                     %s\n", compName->data());
+         }
+      }
    }
 }
 
@@ -196,7 +224,7 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
    client.FindModel(rvOM, sessionID, modelName, "read");
    modelID = rvOM.modelID;
 
-#ifndef ALLEHER
+#ifdef ALLEHER
    for (int nPass = 0; nPass < 1; nPass++) {  //100000000
 
       GetListOfAnalyses(client, sessionID, modelName, modelID);
@@ -239,10 +267,12 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
 
 
    //GetResultFromVerticesID(client, sessionID, modelName, modelID);
-
+   //GetCoordinatesAndElementsFromMesh(client, sessionID, modelName, modelID);
    //GetResultFromVerticesID(client, sessionID, modelName, modelID);
-   GetListOfAnalyses(client, sessionID, modelName, modelID);
+   //GetListOfAnalyses(client, sessionID, modelName, modelID);
    //GetListOfMeshes(client, sessionID, modelName, modelID);
+   GetBoundaryOfLocalMesh(client, sessionID, modelName, modelID);
+   //GetListOfResultsFromTimeStepAndAnalysis(client, sessionID, modelName, modelID, "Kratos", 21);
 
 #endif /* ALLEHER */
 }

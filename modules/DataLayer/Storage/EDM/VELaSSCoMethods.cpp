@@ -338,6 +338,13 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
                   VELaSSCoSM::ResultInfo res;
                   if (ri->name) res.__set_name(ri->name);
                   if (ri->type) res.__set_type(ri->type);
+                  if (ri->location) res.__set_location(ri->location);
+                  res.__set_numberOfComponents(ri->componentNames->size());
+                  vector<string> componentNames;
+                  for (char *cn = ri->componentNames->first(); cn; cn = ri->componentNames->next()) {
+                     componentNames.push_back(cn);
+                  }
+                  res.__set_componentNames(componentNames);
                   result_list.push_back(res);
                }
             }
@@ -426,16 +433,24 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
                if (elementExist[e->id] == 0) { elementExist[e->id] = 1; n_elements++; } else { nDuplicates++; }
             }
          }
-         string vertex_string, element_string;
-         EDMULONG vertexBufferSize = sizeof(EDMVD::Vertex) * n_vertices;
-         vertex_string.resize(vertexBufferSize);
-         element_string.resize(firstMetaData->element_record_size * n_elements);
-         char *vp = (char*)vertex_string.data();
-         char *vpEnd = vp + vertexBufferSize;
-         char *ep = (char*)element_string.data();
+         //string vertex_string, element_string;
+         //EDMULONG vertexBufferSize = sizeof(EDMVD::Vertex) * n_vertices;
+         //vertex_string.resize(vertexBufferSize);
+         //element_string.resize(firstMetaData->element_record_size * n_elements);
+         //char *vp = (char*)vertex_string.data();
+         //char *vpEnd = vp + vertexBufferSize;
+         //char *ep = (char*)element_string.data();
+
+         vector<VELaSSCoSM::Vertex> vertex_list;
+         int sizeV = sizeof(VELaSSCoSM::Vertex);
+         vertex_list.reserve(n_vertices);
+         vector<VELaSSCoSM::Element> element_list;
+         element_list.reserve(n_elements);
+
          memset(verticesExist, 0, sizeof(unsigned char) * (maxNodeID + 1));
          memset(elementExist, 0, sizeof(unsigned char) * (maxElementID + 1));
          EDMULONG n_vertices_copied = 0, n_elements_copied = 0;
+         EDMULONG n_vertices_pr_element = firstMetaData->n_vertices_pr_element;
 
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
@@ -444,25 +459,32 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
             Container<EDMVD::Vertex> vertices(&ma, retVal->node_array);
             for (EDMVD::Vertex *v = vertices.firstp(); v; v = vertices.nextp()) {
                if (verticesExist[v->id] == 0) {
-                  memmove(vp, v, firstMetaData->vertex_record_size);
-                  vp += firstMetaData->vertex_record_size; n_vertices_copied++; verticesExist[v->id] = 1;
+                  VELaSSCoSM::Vertex vv;
+                  vv.__set_id(v->id); vv.__set_x(v->x); vv.__set_y(v->y); vv.__set_z(v->z);
+                  vertex_list.push_back(vv);  verticesExist[v->id] = 1;
                }
             }
             Container<EDMVD::FEMelement> elements(&ma, retVal->elemnt_array);
             for (EDMVD::FEMelement *e = elements.firstp(); e; e = elements.nextp()) {
                if (elementExist[e->id] == 0) {
-                  memmove(ep, e, firstMetaData->element_record_size);
-                  ep += firstMetaData->element_record_size; n_elements_copied++; elementExist[e->id] = 1;
+                  VELaSSCoSM::Element el;
+                  el.__set_id(e->id);
+                  vector<NodeID> nodes;
+                  nodes.reserve(n_vertices_pr_element);
+                  for (int i = 0; i < n_vertices_pr_element; i++) nodes.push_back(e->nodes_ids[i]);
+                  el.__set_nodes_ids(nodes);
+                  element_list.push_back(el); elementExist[e->id] = 1;
                }
             }
          }
-         //OLI
          //rv.__set_n_vertices(n_vertices_copied);
          //rv.__set_n_elements(n_elements_copied);
          //rv.__set_element_array(element_string);
          //rv.__set_vertex_array(vertex_string);
          rv.__set_status("OK");
          rv.__set_report("");
+         rv.__set_vertex_list(vertex_list);
+         rv.__set_element_list(element_list);
       }
    }
 }
@@ -661,32 +683,46 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
       } else {
          startTime = GetTickCount();
          EDMULONG n_triangles_pr_string = tot_n_triangles / 4;
-         std::vector<std::string> triangle_strings;
-         EDMULONG n_triangles_in_this_string = n_triangles_pr_string;
-         int stringNo = -1;
+         //std::vector<std::string> triangle_strings;
+         //EDMULONG n_triangles_in_this_string = n_triangles_pr_string;
+         //int stringNo = -1;
          //std::string *cTriangleBuffer;
          char *bp;
+         vector<VELaSSCoSM::Triangle> triangles;
+         triangles.reserve(tot_n_triangles);
+         int nNodesInTriangle = 3;
 
          for (int i = 0; i < nexec; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
-            Container<EDMVD::Triangle>  triangles(&ma, retVal->triangle_array);
-            for (EDMVD::Triangle *t = triangles.firstp(); t; t = triangles.nextp()) {
-               if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
-                  int nasdfasdf = 9999;
+            Container<EDMVD::Triangle>  sub_triangles(&ma, retVal->triangle_array);
+            VELaSSCoSM::Triangle vt;
+            for (EDMVD::Triangle *t = sub_triangles.firstp(); t; t = sub_triangles.nextp()) {
+               vector<VELaSSCoSM::NodeID> nodes;
+               nodes.reserve(nNodesInTriangle);
+               for (int i = 0; i < nNodesInTriangle; i++) {
+                  nodes.push_back(t->node_ids[i]);
                }
-               if (n_triangles_in_this_string >= n_triangles_pr_string) {
-                  n_triangles_in_this_string = 0;
-                  stringNo++;
-                  triangle_strings.push_back(std::string());
-                  triangle_strings[stringNo].resize(n_triangles_pr_string * sizeof(EDMVD::Triangle));
-                  bp = (char*)triangle_strings[stringNo].data();
-               }
-               memmove(bp, t, sizeof(EDMVD::Triangle)); bp += sizeof(EDMVD::Triangle);
-               n_triangles_in_this_string++;
+               vt.__set_nodes(nodes);
+               triangles.push_back(vt);
             }
          }
-         triangle_strings[stringNo].resize(n_triangles_in_this_string * sizeof(EDMVD::Triangle));
+            //for (EDMVD::Triangle *t = triangles.firstp(); t; t = triangles.nextp()) {
+            //   if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
+            //      int nasdfasdf = 9999;
+            //   }
+            //   if (n_triangles_in_this_string >= n_triangles_pr_string) {
+            //      n_triangles_in_this_string = 0;
+            //      stringNo++;
+            //      triangle_strings.push_back(std::string());
+            //      triangle_strings[stringNo].resize(n_triangles_pr_string * sizeof(EDMVD::Triangle));
+            //      bp = (char*)triangle_strings[stringNo].data();
+            //   }
+            //   memmove(bp, t, sizeof(EDMVD::Triangle)); bp += sizeof(EDMVD::Triangle);
+            //   n_triangles_in_this_string++;
+            //}
+         //}
+         //triangle_strings[stringNo].resize(n_triangles_in_this_string * sizeof(EDMVD::Triangle));
 
          endTime = GetTickCount();
          timeCollectingReturnValues = endTime - startTime;
@@ -695,6 +731,7 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
             timeSubQueryExecytion, timeCollectingReturnValues, tot_n_triangles, n_triangles_pr_string);
          rv.__set_status("OK");
          rv.__set_report(msgBuffer);
+         rv.__set_elements(triangles);
          //OLI
          //rv.__set_triangle_record_size(sizeof(EDMVD::Triangle));
          //rv.__set_nTriangles(tot_n_triangles);
