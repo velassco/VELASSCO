@@ -30,7 +30,8 @@ set(ACCESS_LIB_SOURCES ${ACCESS_LIB_SOURCE_DIR}/AccessLib.h
 		       ${ACCESS_LIB_SOURCE_DIR}/DemoServer.cpp
 		       ${ACCESS_LIB_SOURCE_DIR}/Helpers.h
 		       ${ACCESS_LIB_SOURCE_DIR}/Helpers.cpp
-		       ${ACCESS_LIB_SOURCE_DIR}/base64.cpp)
+		       ${ACCESS_LIB_SOURCE_DIR}/base64.cpp
+		       ${ACCESS_LIB_SOURCE_DIR}/Compression.cpp)
 
 # Group generated sources
 source_group(Generated FILES ${THRIFT_GEN_SOURCES})

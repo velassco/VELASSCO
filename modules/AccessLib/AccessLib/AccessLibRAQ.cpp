@@ -9,8 +9,20 @@
 #include "Client.h"
 #include "Helpers.h"
 #include "DemoServer.h" // for the StartServer() function
+#include "base64.h"
 
 #include "AccessLibCommon.h"
+
+void dumpVQueryResult( const char *file_name, const char *bytes, size_t len_bytes) {
+  FILE *fo = fopen( file_name, "wb");
+  // size_t num_written_bytes = 
+  fwrite( bytes, len_bytes, sizeof( char), fo);
+  fclose( fo);
+  // assert( num_written_bytes == len_bytes);
+  char tmp[ 1024];
+  sprintf( tmp, "%g KBytes written.", ( double)len_bytes / 1024.0);
+  DEBUG( std::string( "dumpVQueryResult '") + file_name + "' done: " + tmp);
+}
 
 /*
  * 2xx RAQ - Result Analysis Queries
@@ -56,14 +68,22 @@ extern "C" {
 		     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
 		     << "  \"resultID\"   : \"" << resultID                  << "\",\n"
 		     << "  \"analysisID\" : \"" << analysisID                << "\",\n";
-	queryCommand << "  \"vertexIDs\"  : [";
-	const int64_t *ip = vertexIDs;
-	while (*ip != 0) {
-	  queryCommand << *ip++;
-	  if (*ip != 0)
-	    queryCommand << ",";
+	// encode the vertexID list in a base64 string
+	// queryCommand << "  \"vertexIDs\"  : [";
+	// const int64_t *ip = vertexIDs;
+	// while (*ip != 0) {
+	//   queryCommand << *ip++;
+	//   if (*ip != 0)
+	//     queryCommand << ",";
+	// }
+	// queryCommand << "],\n";
+	// list vertexIDs is ends with a '0', so count items
+	size_t num_vertexIDs = 0;
+	for ( ; vertexIDs[ num_vertexIDs] != 0; num_vertexIDs++) {
 	}
-	queryCommand << "],\n";
+	queryCommand << "  \"vertexIDs\"  : \"" 
+		     << base64_encode( ( const char *)vertexIDs, num_vertexIDs * sizeof( int64_t))
+		     << "\",\n";
 	queryCommand << "  \"timeStep\"   : "  << timeStep << "\n";
 	queryCommand << "}\n";
 
@@ -75,6 +95,10 @@ extern "C" {
 	  {
 	    size_t numVertices;
 	    size_t numElements;
+
+	    std::string file_name = std::string( "/tmp/valGetResultFromVerticesID_") + \
+	      resultID + ".bin";
+	    dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
 	    
 	    std::istringstream in(*queryData);
 	    // this is a worng corrections:
@@ -336,8 +360,12 @@ extern "C" {
 
 	// Give back pointers to actual binary data
 	if (result == VAL_SUCCESS) {
-	    *resultMesh = ( const char *)queryData->data();
-	    *resultMeshByteSize = queryData->length();
+	  *resultMesh = ( const char *)queryData->data();
+	  *resultMeshByteSize = queryData->length();
+
+	  std::string file_name = std::string( "/tmp/valGetBoundaryOfAMesh_") + \
+	    meshID + ".bin";
+	  dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
 	} else {
 	  *resultErrorStr = queryData->c_str();
 	}

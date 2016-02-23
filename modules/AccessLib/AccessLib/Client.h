@@ -15,6 +15,7 @@
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 
+#include "Compression.h"
 
 namespace VELaSSCo
 {
@@ -68,6 +69,13 @@ public:
 				/* out */ 
 				const std::string *&status);
 
+	void SetDefaultCompression() {
+	  m_compression.setCompressionType( VL_Compression::CompressionType::Zlib);
+	  m_compression.setCompressionLevel( 1);
+	  m_compression_enabled = false; // compression disabled until enabled explicitly by the AccessLib
+	}
+	void SetCompressionEnabledFlag( bool flag) { m_compression_enabled = true;}
+	bool GetCompressionEnabledFlag() const { return m_compression_enabled;}
 private:
 
 	boost::shared_ptr<TTransport> m_socket;
@@ -79,6 +87,10 @@ private:
 	Query_Result m_queryResult;
 	StatusDB_Result m_getStatusDBResult;
 	StopVELaSSCo_Result m_stopVELaSSCoResult;
+	// handles compression between QM and AL
+	// at the moment the AL only uncompresses the data from QM
+	VL_Compression m_compression;
+	bool m_compression_enabled;
 };
 
 }

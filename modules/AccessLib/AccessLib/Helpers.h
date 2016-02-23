@@ -198,6 +198,24 @@ namespace VELaSSCo
     return ret;
   }
 
+inline std::string GetNiceSizeString( const size_t num_bytes, bool append_original_size = true) {
+   // Human readable form:
+   const char *units[] = { "Bytes", "KBytes", "MBytes", "GBytes", "TBytes", NULL};
+   int idx = 0;
+   double scaled_size = num_bytes;
+   // make printable number between 0...1024 and have a valid unit suffix
+   while ( ( scaled_size > 1024.0) && units[ idx + 1]) {
+     scaled_size /= 1024.0;
+     idx++;
+   }
+   std::ostringstream oss;
+   oss << scaled_size << " " << units[ idx];
+   if ( append_original_size) {
+     oss << " ( " << num_bytes << " Bytes)";
+   }
+   return oss.str();
+}
+
   // ---------------------------------------------------------------------------
 	
   /**

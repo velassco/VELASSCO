@@ -270,7 +270,18 @@ extern "C" {
 				     VAL_SessionID   sessionID,
 				     /* out */ 
 				     const char **status);
-  
+  VAL_Result VAL_API valGetConfiguration( /* in */
+					 VAL_SessionID   sessionID,
+					 const char     *parameter,
+					 /* out */ 
+					 const char    **status,
+					 const char    **parameter_value);
+  VAL_Result VAL_API valSetConfiguration( /* in */
+					 VAL_SessionID   sessionID,
+					 const char     *parameter,
+					 const char     *value,
+					 /* out */ 
+					 const char    **status);
   /**
    * API testing. 
    */

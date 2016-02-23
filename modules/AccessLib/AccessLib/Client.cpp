@@ -16,6 +16,7 @@ Client::Client()
 {
         PING; // seems not to work in Linux ...
 	DEBUG( __FUNCTION__);
+	SetDefaultCompression();
 }
 
 Client::~Client()
@@ -116,6 +117,7 @@ VAL_Result Client::Query( /* in */
 
 	try
 	{
+	        m_queryResult.data.clear();
 	        LOGGER << "Doing " << query << std::endl;
 		m_transport->open();
 		m_client->Query(m_queryResult, sessionID, query);
@@ -123,11 +125,28 @@ VAL_Result Client::Query( /* in */
 
 		LOGGER << "Query_Result: "                                      << std::endl;
 		LOGGER << "    result : "   << m_queryResult.result             << std::endl;
-		LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 128) << std::endl;
+		// LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 128) << std::endl;
+		// LOGGER << "    data   : \n" << Hexdump(m_queryResult.data, 32) << std::endl;
+
+		size_t num_bytes = sizeof( m_queryResult.result) + m_queryResult.data.size();
+		LOGGER << "    --> result size: " << GetNiceSizeString( num_bytes) << " received." << std::endl;
 
 		// Return pointer to result string (Thrift uses std::string)
+		// uncompress the data:
+		if ( m_compression_enabled && ( m_queryResult.data.size() > 0)) {
+		  std::string *uncompressed_result = NULL;
+		  bool ok = m_compression.doUncompress( m_queryResult.data, &uncompressed_result);
+		  LOGGER << "    --> uncompressed with " << ( ok ? "no error" : "ERROR") << std::endl;
+		  if ( uncompressed_result) {
+		    LOGGER << "        to " << GetNiceSizeString( uncompressed_result->size());
+		    std::cout << " from " << GetNiceSizeString( m_queryResult.data.size() - 12) << std::endl; // header
+		    m_queryResult.data = *uncompressed_result;
+		    delete uncompressed_result;
+		    uncompressed_result = NULL;
+		    LOGGER << "    uncdata: \n" << Hexdump(m_queryResult.data, 128) << std::endl;
+		  }
+		}
 		data = &(m_queryResult.data);
-
 		return (VAL_Result)(m_queryResult.result);
 	}
 	catch (TException& tx)

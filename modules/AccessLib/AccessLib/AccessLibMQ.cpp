@@ -58,6 +58,94 @@ VAL_Result VAL_API valGetStatusDB( /* in */
     CATCH_ERROR;
   }
 
+
+  VAL_Result VAL_API valGetConfiguration( /* in */
+					 VAL_SessionID   sessionID,
+					 const char     *parameter,
+					 /* out */ 
+					 const char    **result_status,
+					 const char    **result_parameter_value) {
+    CHECK_SESSION_ID( sessionID );
+    CHECK_QUERY_POINTER( parameter );
+    
+    API_TRACE;
+    try
+      {
+	std::stringstream  queryCommand;
+	const std::string* queryData;
+      
+	// Build JSON command string
+	queryCommand << "{\n"
+		     << "  \"name\" : \"" << "GetConfiguration" << "\",\n"
+		     << "  \"Key\"  : \"" << parameter   << "\"\n";
+	queryCommand << "}\n";
+      
+	// Send command string and get back result data
+	VAL_Result result = g_clients[sessionID]->Query( sessionID, queryCommand.str(), queryData);
+
+	// Give back pointers to actual binary data
+	if (result == VAL_SUCCESS) {
+	  *result_status = "Ok"; // eventually strdup() ...
+	  *result_parameter_value = queryData->c_str(); // eventually strdup() ...
+	} else {
+	  // in case of error queryData has the error message from the data layer
+	  *result_status = queryData->c_str(); // eventually strdup() ...
+	}
+
+	return result;
+      }
+    CATCH_ERROR;
+  }
+
+  VAL_Result VAL_API valSetConfiguration( /* in */
+					 VAL_SessionID   sessionID,
+					 const char     *parameter,
+					 const char     *value,
+					 /* out */ 
+					 const char    **result_status) {
+    CHECK_SESSION_ID( sessionID );
+    CHECK_QUERY_POINTER( parameter );
+    CHECK_QUERY_POINTER( value );
+    
+    API_TRACE;
+    try
+      {
+	std::stringstream  queryCommand;
+	const std::string* queryData;
+      
+	// Build JSON command string
+	queryCommand << "{\n"
+		     << "  \"name\"  : \"" << "SetConfiguration" << "\",\n"
+		     << "  \"Key\"   : \"" << parameter   << "\",\n"
+		     << "  \"Value\" : \"" << value   << "\"\n";
+	queryCommand << "}\n";
+      
+	// Send command string and get back result data
+	VAL_Result result = g_clients[sessionID]->Query( sessionID, queryCommand.str(), queryData);
+
+	// Give back pointers to actual binary data
+	if (result == VAL_SUCCESS) {
+	  *result_status = "Ok"; // eventually strdup() ...
+	  
+	  // is flag passed is "CompressionEnabled" we should enable that on our side too.
+	  if (  !strcasecmp( parameter, "CompressionEnabled") || !strcasecmp( parameter, "CompressionEnable")) {
+	    int flag = 1;
+	    int n = sscanf( value, "%d", &flag);
+	    if ( n == 1) {
+	      g_clients[sessionID]->SetCompressionEnabledFlag( flag ? true : false);
+	      LOGGER << "   Compresison " << ( flag ? "enabled" : "disabled") << std::endl;
+	    }
+	  }
+	} else {
+	  // in case of error queryData has the error message from the data layer
+	  *result_status = queryData->c_str(); // eventually strdup() ...
+	}
+
+	return result;
+      }
+    CATCH_ERROR;
+  }
+
 VAL_Result VAL_API valErrorMessage( /* in */
 	                                VAL_Result   error,
 
