@@ -139,6 +139,8 @@ void QueryManagerServer::ManageGetConfiguration( Query_Result &_return, const Se
     oss << "CompressionLevel" << std::endl << m_compression.getCompressionLevel() << std::endl;
     oss << "CompressionThreshold" << std::endl << m_compression.getCompressionThreshold() << std::endl;
     oss << "CompressionEnabled" << std::endl << ( m_compression_enabled ? "1" : "0") << std::endl;
+    // supported compression schemes
+    oss << "CompressionList" << std::endl << m_compression.getCompressionTypeList() << std::endl;
     _return.__set_data( oss.str());
   } else if ( !strcasecmp( key, "CompressionType")) {
     _return.__set_result( (Result::type)VAL_SUCCESS );
@@ -150,6 +152,7 @@ void QueryManagerServer::ManageGetConfiguration( Query_Result &_return, const Se
     _return.__set_result( (Result::type)VAL_SUCCESS );
     _return.__set_data( std::to_string( ( long long int)m_compression.getCompressionThreshold()));
   } else if ( !strcasecmp( key, "CompressionList")) {
+    // supported compression schemes
     _return.__set_result( (Result::type)VAL_SUCCESS );
     _return.__set_data( m_compression.getCompressionTypeList());
   } else if ( !strcasecmp( key, "CompressionEnabled")) {
