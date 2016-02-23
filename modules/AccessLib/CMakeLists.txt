@@ -52,7 +52,7 @@ else()
   set( THRIFT_LIBRARIES libthrift libthriftnb )
   set( Boost_LIBRARIES "" )
   set( LIBEVENT_LIBRARY "" )
-  set( ZLIB_LIBRARY zlibstatic)
+  set( ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/zlibstatic.lib")
 endif( )
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
