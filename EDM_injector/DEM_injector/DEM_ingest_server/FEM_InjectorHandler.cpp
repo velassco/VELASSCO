@@ -177,7 +177,25 @@ void FEM_InjectorHandler::InjectResultFile()
             //int nColumns = sscanf(line, "%s %s %s %lf %s %s %s", command, resultName, analysisName, &stepValue, resultType, Location, GP_location);
             int nColumns = scanInputLine();
             if (nColumns == 6 || nColumns == 7) {
+               int nResultTypeErrors = 0, nLocationTypeErrors = 0;
                cResultHeader = newObject(fem::ResultHeader); cResultHeader->put_name(col[1]); cResultHeader->put_analysis(col[2]);
+               
+               //typedef enum {ValueType_SCALAR, ValueType_VECTOR, ValueType_MATRIX, ValueType_PLAINDEFORMATIONMATRIX, ValueType_MAINMATRIX, ValueType_LOCALAXES, ValueType_COMPLEXSCALAR, ValueType_COMPLEXVECTOR} ValueType;
+               if (strEQL(col[4], "Scalar")) {
+                  cResultHeader->put_rType(ValueType_SCALAR);
+               } else if (strEQL(col[4], "Vector")) {
+                  cResultHeader->put_rType(ValueType_VECTOR);
+               } else if (nResultTypeErrors++ < 5) {
+                  printf("\nIllegal result type: %s\n", col[4]);
+               }
+               //typedef enum { LocationType_ONNODES, LocationType_ONGAUSSPOINTS } LocationType; 
+               if (strEQL(col[5], "OnNodes\n")) {
+                  cResultHeader->put_location(LocationType_ONNODES);
+               } else if (strEQL(col[5], "OnGaussPoints\n")) {
+                  cResultHeader->put_location(LocationType_ONGAUSSPOINTS);
+               } else if (nLocationTypeErrors++ < 5) {
+                  printf("\nIllegal location type: %s\n", col[4]);
+               }
 
                if (cAnalysis && strNEQ(cAnalysis->get_name(), col[2])) {
                   for (cAnalysis = anIter.first(); cAnalysis; cAnalysis = anIter.next()) {
@@ -206,7 +224,9 @@ void FEM_InjectorHandler::InjectResultFile()
                if (strnEQL(line, "ComponentNames", 14)) {
                   int nComponentNames = scanInputLine();
                   for (int i = 1; i < nComponentNames; i++) {
-                     cResultHeader->put_compName_element(col[i]);
+                     if (strNEQ(col[i], ",")) {
+                        cResultHeader->put_compName_element(col[i]);
+                     }
                   }
                }
                if (strNEQ(line, "Values\n")) {

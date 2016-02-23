@@ -308,11 +308,13 @@ void DEM_InjectorHandler::store_TIMESTEP_CONTACTS()
             dem::Contact *c = pgc;
             if (p1) {
                pgc->put_P1(p1);
-               dem::FEM_mesh *mesh = meshes[WALL];
-               if (mesh) {
-                  pgc->put_geometry(mesh); ts->put_has_contact_element(pgc);
-               } else {
-                  printf("Illegal mesh ID \"%ld\" in file \"%s\"\n", WALL, injectorFileName);
+               if (WALL) {
+                  dem::FEM_mesh *mesh = meshes[WALL];
+                  if (mesh) {
+                     pgc->put_geometry(mesh); ts->put_has_contact_element(pgc);
+                  } else {
+                     printf("Illegal mesh ID \"%ld\" in file \"%s\"\n", WALL, injectorFileName);
+                  }
                }
             } else {
                printf("Illegal particle number in particle contact file \"%s\"\n", injectorFileName);
