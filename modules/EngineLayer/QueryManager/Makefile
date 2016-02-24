@@ -30,11 +30,13 @@ THRIFT_QUERY_MANAGER_DIR=../../thrift/QueryManager/gen-cpp
 OBJS_DIR = $(BIN)
 
 # thrift headers and libs
-THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
-BOOST_ROOT=/exports/applications/apps/community/VELaSSCo/build/boost/
+# THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
+# BOOST_ROOT=/exports/applications/apps/community/VELaSSCo/build/boost/
+THRIFT_BASE = $(HOME)
+BOOST_BASE = $(HOME)
 
-EXTRA_INC_DIRS = -I$(THRIFT_BASE)/include -I$(BOOST_ROOT)/include
-EXTRA_LIB_DIRS = -L$(THRIFT_BASE)/lib -L$(BOOST_ROOT)/lib
+EXTRA_INC_DIRS = -I$(THRIFT_BASE)/include -I$(BOOST_BASE)/include
+EXTRA_LIB_DIRS = -L$(THRIFT_BASE)/lib -L$(BOOST_BASE)/lib
 
 #EXTRA_LIB_DIRS = -L/exports/applications/apps/community/VELaSSCo/build/lib
 

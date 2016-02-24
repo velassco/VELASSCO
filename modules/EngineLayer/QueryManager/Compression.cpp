@@ -65,6 +65,8 @@ inline int strncasecmp( char const *s1, char const *s2, size_t length) {
 class VL_ZlibCompression : public VL_CompressionStrategy  {
 public:
   VL_ZlibCompression(): m_level( 1) {}
+  ~VL_ZlibCompression() {};
+
   void setCompressionLevel( int level) { m_level = level;}
   VL_Compression::CompressionType getCompressionType() const { return VL_Compression::CompressionType::Zlib;}
 private:
