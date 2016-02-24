@@ -7,7 +7,7 @@ set( SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}" )
 IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CXX_4_4_STD_COMPILE_FLAG "-std=c++0x -fPIC -g -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs")
 # optimization:
-  #SET(CXX_4_4_STD_OPTIMIZE_FLAG "-O3 -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG")
+  SET(CXX_4_4_STD_OPTIMIZE_FLAG "-O3 -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG")
   SET(CXX_4_4_STD_COMPILE_FLAG "${CXX_4_4_STD_COMPILE_FLAG} ${CXX_4_4_STD_OPTIMIZE_FLAG}")
 # other interesting warnings not included in Wall:
 #  -Wcast-align -Wcomment
