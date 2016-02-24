@@ -20,7 +20,8 @@ endif
 CPP_FLAGS = $(EXTRA_FLAGS)
 C_FLAGS = $(EXTRA_FLAGS)
 
-#OPTS = -g
+#OPTS = -g 
+#-Wextra -Wno-unused-parameter
 OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG
 
 THRIFT_STORAGE_DIR=../../thrift/Storage/gen-cpp
