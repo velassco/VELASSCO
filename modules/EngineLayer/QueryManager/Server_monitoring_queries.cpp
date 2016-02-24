@@ -189,7 +189,11 @@ void QueryManagerServer::ManageSetConfiguration( Query_Result &_return, const Se
   if ( !strcasecmp( key, "CompressionType")) {
     // _return.__set_result( (Result::type)VAL_SUCCESS );
     // _return.__set_data( m_compression.getCompressionTypeString());
-    bool ok = m_compression.setCompressionTypeFromString( value);
+    char comp_type[ 5]; // compression type should have 4 chars only
+    comp_type[ 0] = comp_type[ 1] = comp_type[ 2] = comp_type[ 3] = ' '; // initialize to spaces
+    comp_type[ 4] = '\0';
+    strncpy( comp_type, value, 4);
+    bool ok = m_compression.setCompressionTypeFromString( comp_type);
     if ( ok) {
       _return.__set_result( (Result::type)VAL_SUCCESS );
       LOGGER << "   Compresison type set to: " << value << std::endl;
