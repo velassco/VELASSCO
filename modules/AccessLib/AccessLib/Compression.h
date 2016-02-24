@@ -15,11 +15,11 @@
 #define LOG_COMPRESS( a)   LOGGER << a << std::endl;
 
 // VL_Compression: several compression methods, included Raw, i.e. no compression
-// compression types: Raw, Zlib, Lzop, ...
+// compression types: Raw, Zlib, Lzo, ...
 // data_block is compressed using one of the strategies and
 // 12 bytes are prepend to the data:
 // CCCC01234567 + data
-// CCCC --> 4 chars defined compression method: 'RAW ', 'ZLIB', 'LZOP', ... case does not matter
+// CCCC --> 4 chars defined compression method: 'RAW ', 'ZLIB', 'LZO ', ... case does not matter
 // 01234567 --> uint64_t length of the uncompressed data
 class VL_CompressionStrategy;
 
@@ -28,7 +28,7 @@ class VL_CompressionStrategy;
 class VL_Compression {
 public:
   enum CompressionType {
-    None, Raw, Zlib, Lzop
+    None, Raw, Zlib, Lzo
   };
   VL_Compression(): m_compression( NULL), m_level( 1), m_compression_threshold( VL_COMPRESSION_MINIMUM_DATA_SIZE_TO_COMPRESS) {};
   ~VL_Compression();
@@ -71,33 +71,9 @@ public:
 private:
 };
 
-class VL_ZlibCompression : public VL_CompressionStrategy  {
-public:
-  VL_ZlibCompression(): m_level( 1) {}
-  void setCompressionLevel( int level) { m_level = level;}
-  VL_Compression::CompressionType getCompressionType() const { return VL_Compression::CompressionType::Zlib;}
-private:
-  // data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
-  bool compressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
-  bool uncompressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
-
-private:
-  int m_level;
-};
-
-class VL_LzopCompression : public VL_CompressionStrategy  {
-public:
-  VL_LzopCompression(): m_level( 1) {}
-  void setCompressionLevel( int level) { m_level = level;}
-  VL_Compression::CompressionType getCompressionType() const { return VL_Compression::CompressionType::Lzop;}
-private:
-  // data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
-  bool compressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
-  bool uncompressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
-
-private:
-  int m_level;
-};
+// specific strategies in Compression.cpp
+// class VL_ZlibCompression
+// class VL_LzoCompression
 
 inline VL_Compression::~VL_Compression() { 
   delete m_compression;
