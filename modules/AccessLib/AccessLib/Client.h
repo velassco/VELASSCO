@@ -75,7 +75,7 @@ public:
 	  m_compression.setCompressionThreshold( VL_COMPRESSION_MINIMUM_DATA_SIZE_TO_COMPRESS);
 	  m_compression_enabled = false; // compression disabled until enabled explicitly by the AccessLib
 	}
-	void SetCompressionEnabledFlag( bool flag) { m_compression_enabled = true;}
+	void SetCompressionEnabledFlag( bool flag) { m_compression_enabled = flag;}
 	bool GetCompressionEnabledFlag() const { return m_compression_enabled;}
 private:
 
