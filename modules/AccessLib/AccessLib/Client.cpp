@@ -106,11 +106,11 @@ VAL_Result Client::UserLogout( /* in */
 }
 
 VAL_Result Client::Query( /* in */
-	                      SessionID          sessionID,
-						  const std::string &query,
-
-				          /* out */
-				          const std::string* &data )
+			 SessionID          sessionID,
+			 const std::string &query,
+			 
+			 /* out */
+			 const std::string* &data )
 {
 	PING; // seems not to work in Linux ...
 	DEBUG( __FUNCTION__);
@@ -118,7 +118,10 @@ VAL_Result Client::Query( /* in */
 	try
 	{
 	        m_queryResult.data.clear();
-	        LOGGER << "Doing " << query << std::endl;
+		// too long queries in the log
+	        // LOGGER << "Doing " << query << std::endl;
+	        LOGGER << "Doing " << query.substr( 0, 1000) << 
+		  ( ( query.length() > 1000) ? "..." : "") << std::endl;
 		m_transport->open();
 		m_client->Query(m_queryResult, sessionID, query);
 		m_transport->close();
