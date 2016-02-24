@@ -187,7 +187,7 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
       _return.__set_data( *compressed_result);
       delete compressed_result;
       // useful to debug:
-      LOGGER << "  data   : \n" << Hexdump(_return.data, 128) << std::endl;
+      // LOGGER << "  data   : \n" << Hexdump(_return.data, 128) << std::endl;
       compressed_result = NULL;
     }
   }
