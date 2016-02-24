@@ -90,6 +90,8 @@ private:
 private:
   int m_level;
   bool m_initialized, m_init_ok;
+  static const size_t m_working_memory_size = LZO1X_1_MEM_COMPRESS * sizeof( lzo_align_t); // 128 KBytes
+  // ((lzo_uint)1 << D_BITS) * sizeof(lzo_dict_t)
   lzo_align_t __LZO_MMODEL *m_working_memory;
 };
 
@@ -182,8 +184,7 @@ VL_LzoCompression::VL_LzoCompression(): m_level( 1),
     LOG_COMPRESS( "Error initializing Lzo library \n\t(this usually indicates a compiler bug - try recompiling\n\twithout optimizations, and enable '-DLZO_DEBUG' for diagnostics)");
   } else {
     // working memory
-    size_t mem_size = LZO1X_1_MEM_COMPRESS;
-    m_working_memory = ( lzo_align_t __LZO_MMODEL *)malloc( ( ( mem_size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
+    m_working_memory = ( lzo_align_t __LZO_MMODEL *)malloc( ( ( m_working_memory_size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
   }
 }
 
@@ -233,6 +234,8 @@ bool VL_LzoCompression::compressData( const char *data_in, const size_t data_in_
   }
   bool ok = false;
   lzo_uint comp_size = ( lzo_uint)*data_out_size;
+  // deterministic, zero the working memory
+  lzo_memset( m_working_memory, 0, m_working_memory_size);
   int lzo_err = lzo1x_1_compress( ( unsigned char *)data_in, data_in_size, ( unsigned char *)data_out, &comp_size, m_working_memory);
   *data_out_size = ( size_t)comp_size;
   if ( lzo_err == LZO_E_OK) {
@@ -265,6 +268,8 @@ bool VL_LzoCompression::uncompressData( const char *data_in, const size_t data_i
   bool ok = false;
   lzo_uint original_size = ( lzo_uint)*data_out_size;
   lzo_uint ucomp_size = original_size;
+  // deterministic, zero the working memory
+  lzo_memset( m_working_memory, 0, m_working_memory_size);
   int lzo_err = lzo1x_decompress( ( unsigned char *)data_in, data_in_size, ( unsigned char *)data_out, &ucomp_size, m_working_memory); 
   *data_out_size = ( size_t)ucomp_size;
   
@@ -392,9 +397,9 @@ bool VL_Compression::doCompress( const std::string &in, std::string **out) const
   }
   
   char *compressed_frame = buildCompressedFrame( comp_type, data_size);
-  // header is 12 bytes long
-  // data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
   bool ok = false;
+  // header is 12 bytes long
+  // compressed_data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
   size_t compressed_data_size = data_size;
   if ( comp_alg) {
     ok = comp_alg->compressData( data_in, data_size, &compressed_frame[ 12], &compressed_data_size); // at least same size
