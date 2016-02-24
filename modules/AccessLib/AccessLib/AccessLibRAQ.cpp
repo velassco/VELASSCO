@@ -97,8 +97,7 @@ extern "C" {
 	    size_t numElements;
 
 	    // to debug and test:
-	    // std::string file_name = std::string( "/tmp/valGetResultFromVerticesID_") + \
-	    //   resultID + ".bin";
+	    // std::string file_name = std::string( "/tmp/valGetResultFromVerticesID_") + resultID + ".bin";
 	    // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
 	    
 	    std::istringstream in(*queryData);
@@ -365,8 +364,7 @@ extern "C" {
 	  *resultMeshByteSize = queryData->length();
 
 	  // to debug and test:
-	  // std::string file_name = std::string( "/tmp/valGetBoundaryOfAMesh_") + \
-	  //   meshID + ".bin";
+	  // std::string file_name = std::string( "/tmp/valGetBoundaryOfAMesh_") + meshID + ".bin";
 	  // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
 	} else {
 	  *resultErrorStr = queryData->c_str();
