@@ -182,12 +182,12 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     LOGGER << "  --> compressed with " << ( ok ? "no error" : "ERROR") << std::endl;
     if ( compressed_result) {
       double percent = 100.0 * ( double)( compressed_result->size() - 12) / ( double)num_bytes;
-      LOGGER << "        to " << GetNiceSizeString( compressed_result->size() - 12); // header
-      std::cout << " from " << GetNiceSizeString( num_bytes) << " ( " << percent << "% )" << std::endl; // header
+      LOGGER << "        to " << GetNiceSizeString( compressed_result->size() - 12) // header
+	     << " from " << GetNiceSizeString( num_bytes) << " ( " << percent << "% )" << std::endl; // header
       _return.__set_data( *compressed_result);
       delete compressed_result;
       // useful to debug:
-      // LOGGER << "  data   : \n" << Hexdump(_return.data, 128) << std::endl;
+      LOGGER << "  data   : \n" << Hexdump(_return.data, 128) << std::endl;
       compressed_result = NULL;
     }
   }
