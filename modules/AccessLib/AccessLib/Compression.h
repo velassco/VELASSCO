@@ -60,6 +60,7 @@ private:
 // compression strategies
 class VL_CompressionStrategy {
 public:
+  virtual ~VL_CompressionStrategy() {};
   virtual void setCompressionLevel( int level) = 0;
   virtual VL_Compression::CompressionType getCompressionType() const = 0;
   static VL_CompressionStrategy *getCompressionStrategy( VL_Compression::CompressionType type);
