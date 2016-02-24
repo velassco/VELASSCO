@@ -141,8 +141,8 @@ VAL_Result Client::Query( /* in */
 		  bool ok = m_compression.doUncompress( m_queryResult.data, &uncompressed_result);
 		  LOGGER << "    --> uncompressed with " << ( ok ? "no error" : "ERROR") << std::endl;
 		  if ( uncompressed_result) {
-		    LOGGER << "        to " << GetNiceSizeString( uncompressed_result->size());
-		    std::cout << " from " << GetNiceSizeString( m_queryResult.data.size() - 12) << std::endl; // header
+		    LOGGER << "        to " << GetNiceSizeString( uncompressed_result->size())
+			   << " from " << GetNiceSizeString( m_queryResult.data.size() - 12) << std::endl; // header
 		    m_queryResult.data = *uncompressed_result;
 		    delete uncompressed_result;
 		    uncompressed_result = NULL;
