@@ -68,6 +68,7 @@ extern "C" {
 		     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
 		     << "  \"resultID\"   : \"" << resultID                  << "\",\n"
 		     << "  \"analysisID\" : \"" << analysisID                << "\",\n";
+	queryCommand << "  \"timeStep\"   : "  << timeStep << ",\n";
 	// encode the vertexID list in a base64 string
 	// queryCommand << "  \"vertexIDs\"  : [";
 	// const int64_t *ip = vertexIDs;
@@ -83,8 +84,7 @@ extern "C" {
 	}
 	queryCommand << "  \"vertexIDs\"  : \"" 
 		     << base64_encode( ( const char *)vertexIDs, num_vertexIDs * sizeof( int64_t))
-		     << "\",\n";
-	queryCommand << "  \"timeStep\"   : "  << timeStep << "\n";
+		     << "\"\n";
 	queryCommand << "}\n";
 
 	// Send command string and get back result data
