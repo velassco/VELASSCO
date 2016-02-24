@@ -16,8 +16,10 @@ C_FLAGS = $(EXTRA_FLAGS)
 OPTS = -g -O3  -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG
 
 # thrift headers and libs
-THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
-BOOST_BASE = /exports/applications/apps/community/VELaSSCo/build/boost
+# THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
+# BOOST_BASE = /exports/applications/apps/community/VELaSSCo/build/boost
+THRIFT_BASE = $(HOME)
+BOOST_BASE = $(HOME)
 
 EXTRA_INC_DIRS = -I$(THRIFT_BASE)/include -I$(BOOST_BASE)/include
 EXTRA_LIB_DIRS = -L$(THRIFT_BASE)/lib -L$(BOOST_BASE)/lib
