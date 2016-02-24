@@ -44,8 +44,8 @@ namespace VELaSSCo {
 
     const MeshPoint *getLstVertices() const { return _lst_vertices;}
     const BoundaryTriangle *getLstTriangles() const { return _lst_triangles;}
-    const int64_t getNumVertices() const { return _num_vertices;}
-    const int64_t getNumTriangles() const { return _num_triangles;}
+    int64_t getNumVertices() const { return _num_vertices;}
+    int64_t getNumTriangles() const { return _num_triangles;}
     
   private:
     const MeshPoint *_lst_vertices;
