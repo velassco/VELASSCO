@@ -1,6 +1,10 @@
 #include <Compression.h>
 #include <string.h>
+#include <stdlib.h>
 #include <zlib.h>
+
+// Lzo compression, using embedded minilzo, instead of std lzo library
+#include "minilzo.h"
 
 #ifdef _WIN32
 
@@ -58,6 +62,36 @@ inline int strncasecmp( char const *s1, char const *s2, size_t length) {
     return 0;
 }
 #endif // _WIN32
+class VL_ZlibCompression : public VL_CompressionStrategy  {
+public:
+  VL_ZlibCompression(): m_level( 1) {}
+  void setCompressionLevel( int level) { m_level = level;}
+  VL_Compression::CompressionType getCompressionType() const { return VL_Compression::CompressionType::Zlib;}
+private:
+  // data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
+  bool compressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
+  bool uncompressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
+
+private:
+  int m_level;
+};
+
+class VL_LzoCompression : public VL_CompressionStrategy  {
+public:
+  VL_LzoCompression();
+  ~VL_LzoCompression();
+  void setCompressionLevel( int level) { m_level = level;}
+  VL_Compression::CompressionType getCompressionType() const { return VL_Compression::CompressionType::Lzo;}
+private:
+  // data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
+  bool compressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
+  bool uncompressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const;
+
+private:
+  int m_level;
+  bool m_initialized, m_init_ok;
+  lzo_align_t __LZO_MMODEL *m_working_memory;
+};
 
 VL_CompressionStrategy *VL_CompressionStrategy::getCompressionStrategy( VL_Compression::CompressionType type) {
   VL_CompressionStrategy *ret = NULL;
@@ -65,7 +99,7 @@ VL_CompressionStrategy *VL_CompressionStrategy::getCompressionStrategy( VL_Compr
   case VL_Compression::CompressionType::None:   ret = NULL;                     break;
   case VL_Compression::CompressionType::Raw:    ret = NULL;                     break;
   case VL_Compression::CompressionType::Zlib:   ret = new VL_ZlibCompression(); break;
-  case VL_Compression::CompressionType::Lzop:   ret = new VL_LzopCompression(); break;
+  case VL_Compression::CompressionType::Lzo:    ret = new VL_LzoCompression(); break;
   }
   return ret;
 }
@@ -75,7 +109,7 @@ bool VL_ZlibCompression::compressData( const char *data_in, const size_t data_in
 				       char *data_out, size_t *data_out_size) const {
   // check sizes ...
   if ( sizeof( size_t) > sizeof( uLong)) {
-    // uLong / u Longf are declared as unsigned longs...
+    // uLong / uLongf are declared as unsigned longs...
     if ( ( data_in_size & 0xffffffff00000000LL) || ( *data_out_size & 0xffffffff00000000LL)) {
       LOG_COMPRESS( std::string( "Too much data to compress > 4GB."));
       return false;
@@ -139,13 +173,110 @@ bool VL_ZlibCompression::uncompressData( const char *data_in, const size_t data_
   return ok;
 }
 
+// VL_LzoCompression following testmini.c from miniLZO example
+VL_LzoCompression::VL_LzoCompression(): m_level( 1), 
+					  m_initialized( false), m_init_ok( false), m_working_memory( NULL) {
+  m_init_ok = ( lzo_init() == LZO_E_OK);
+  m_initialized = true;
+  if ( !m_init_ok) {
+    LOG_COMPRESS( "Error initializing Lzo library \n\t(this usually indicates a compiler bug - try recompiling\n\twithout optimizations, and enable '-DLZO_DEBUG' for diagnostics)");
+  } else {
+    // working memory
+    size_t mem_size = LZO1X_1_MEM_COMPRESS;
+    m_working_memory = ( lzo_align_t __LZO_MMODEL *)malloc( ( ( mem_size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
+  }
+}
+
+VL_LzoCompression::~VL_LzoCompression() {
+  free( m_working_memory);
+}
+
+ static const char *lzoErrorString( int lzo_error) {
+   const char *ret = "Unknown error";
+   switch( lzo_error) {
+   case LZO_E_OK:                    ret = "LZO_E_OK"; break;
+   case LZO_E_ERROR:                 ret = "LZO_E_ERROR"; break;
+   case LZO_E_OUT_OF_MEMORY:         ret = "LZO_E_OUT_OF_MEMORY, [lzo_alloc_func_t failure]"; break;
+   case LZO_E_NOT_COMPRESSIBLE:      ret = "LZO_E_NOT_COMPRESSIBLE"; break;  /* [not used right now] */
+   case LZO_E_INPUT_OVERRUN:         ret = "LZO_E_INPUT_OVERRUN"; break;
+   case LZO_E_OUTPUT_OVERRUN:        ret = "LZO_E_OUTPUT_OVERRUN"; break;
+   case LZO_E_LOOKBEHIND_OVERRUN:    ret = "LZO_E_LOOKBEHIND_OVERRUN"; break;
+   case LZO_E_EOF_NOT_FOUND:         ret = "LZO_E_EOF_NOT_FOUND"; break;
+   case LZO_E_INPUT_NOT_CONSUMED:    ret = "LZO_E_INPUT_NOT_CONSUMED"; break;
+   case LZO_E_NOT_YET_IMPLEMENTED:   ret = "LZO_E_NOT_YET_IMPLEMENTED"; break;  /* [not used right now] */
+   case LZO_E_INVALID_ARGUMENT:      ret = "LZO_E_INVALID_ARGUMENT"; break;
+   case LZO_E_INVALID_ALIGNMENT:     ret = "LZO_E_INVALID_ALIGNMENT, pointer argument is not properly aligned"; break;
+   case LZO_E_OUTPUT_NOT_CONSUMED:   ret = "LZO_E_OUTPUT_NOT_CONSUMED"; break;
+   case LZO_E_INTERNAL_ERROR:        ret = "LZO_E_INTERNAL_ERROR"; break;
+   }
+   return ret;
+ }
+
 // data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
-bool VL_LzopCompression::compressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const {
-  return false;
+bool VL_LzoCompression::compressData( const char *data_in, const size_t data_in_size, 
+				       char *data_out, size_t *data_out_size) const {
+  // check sizes ...
+  if ( sizeof( size_t) > sizeof( lzo_uint)) {
+    // lzo_uint / u Longf are declared as unsigned longs...
+    if ( ( data_in_size & 0xffffffff00000000LL) || ( *data_out_size & 0xffffffff00000000LL)) {
+      LOG_COMPRESS( std::string( "Too much data to compress > 4GB."));
+      return false;
+    }
+  }
+  if ( !data_in) {
+    LOG_COMPRESS( std::string( "No data to compress."));
+    return false;
+  }
+  if ( !data_out) {
+    LOG_COMPRESS( std::string( "No buffer for compressed data."));
+    return false;
+  }
+  bool ok = false;
+  lzo_uint comp_size = ( lzo_uint)*data_out_size;
+  int lzo_err = lzo1x_1_compress( ( unsigned char *)data_in, data_in_size, ( unsigned char *)data_out, &comp_size, m_working_memory);
+  *data_out_size = ( size_t)comp_size;
+  if ( lzo_err == LZO_E_OK) {
+    ok = true;
+  } else {
+    LOG_COMPRESS( "Error compressing " << data_in_size << " bytes: " << "error #" << lzo_err << ": " << lzoErrorString( lzo_err));
+  }
+  return ok;
 }
 // data_size is I/O parameter: in = size of buffer to compress data, out = size of compressed data
-bool VL_LzopCompression::uncompressData( const char *data_in, const size_t data_in_size, char *data_out, size_t *data_size) const {
-  return false;
+bool VL_LzoCompression::uncompressData( const char *data_in, const size_t data_in_size, 
+					 char *data_out, size_t *data_out_size) const {
+  // check sizes ...
+  if ( sizeof( size_t) > sizeof( lzo_uint)) {
+    // lzo_uint are declared as unsigned longs...
+    if ( ( data_in_size & 0xffffffff00000000LL) || ( *data_out_size & 0xffffffff00000000LL)) {
+      LOG_COMPRESS( std::string( "Too much data to uncompress > 4GB."));
+      return false;
+    }
+  }
+  if ( !data_in) {
+    LOG_COMPRESS( std::string( "No data to uncompress."));
+    return false;
+  }
+  if ( !data_out) {
+    LOG_COMPRESS( std::string( "No buffer for uncompressed data."));
+    return false;
+  }
+
+  bool ok = false;
+  lzo_uint original_size = ( lzo_uint)*data_out_size;
+  lzo_uint ucomp_size = original_size;
+  int lzo_err = lzo1x_decompress( ( unsigned char *)data_in, data_in_size, ( unsigned char *)data_out, &ucomp_size, m_working_memory); 
+  *data_out_size = ( size_t)ucomp_size;
+  
+  if ( ( lzo_err == LZO_E_OK) && ( ucomp_size == original_size)) {
+    ok = true;
+  } else {
+    if ( ucomp_size != original_size) {
+      LOG_COMPRESS( "Error uncompressing data: uncompressed size ( " << ucomp_size << ") does not match original size ( " << original_size <<").");
+    }
+    LOG_COMPRESS( "Error uncompressing " << data_in_size << " bytes: " << "error #" << lzo_err << ": " << lzoErrorString( lzo_err));
+  }
+  return ok;
 }
 
 static const char *getStringFromCompressionType( const VL_Compression::CompressionType type) {
@@ -155,7 +286,7 @@ static const char *getStringFromCompressionType( const VL_Compression::Compressi
   case VL_Compression::CompressionType::None:   assert( 0); ret = "None"; break; // shouldn't be here !!!
   case VL_Compression::CompressionType::Raw:    ret = "RAW "; break;
   case VL_Compression::CompressionType::Zlib:   ret = "ZLIB"; break;
-  case VL_Compression::CompressionType::Lzop:   ret = "LZOP"; break;
+  case VL_Compression::CompressionType::Lzo:    ret = "LZO "; break;
   }
   return ret;
 }
@@ -170,8 +301,8 @@ static VL_Compression::CompressionType getCompressionTypeFromString( const char 
       ret = VL_Compression::CompressionType::Raw;
     } else if ( ( tolower( type[ 0]) == 'z') && !strncasecmp( type, "zlib", 4)) {
       ret = VL_Compression::CompressionType::Zlib;
-    } else if ( ( tolower( type[ 0]) == 'l') && !strncasecmp( type, "lzop", 4)) {
-      ret = VL_Compression::CompressionType::Lzop;
+    } else if ( ( tolower( type[ 0]) == 'l') && !strncasecmp( type, "lzo ", 4)) {
+      ret = VL_Compression::CompressionType::Lzo;
     } else {
       ret = VL_Compression::CompressionType::None;
     }
@@ -181,8 +312,7 @@ static VL_Compression::CompressionType getCompressionTypeFromString( const char 
 
 // a space separated list
 std::string VL_Compression::getCompressionTypeList() {
-  // return std::string( "Raw Zlib LZop");
-  return std::string( "Raw Zlib"); // LZop not implemented yet
+  return std::string( "Raw Zlib LZo");
 }
 
 std::string VL_Compression::getCompressionTypeString() const {
@@ -198,11 +328,11 @@ static char *buildCompressedFrame( const VL_Compression::CompressionType comp_ty
   uint64_t data_size = ( uint64_t)data_in_size;
   
   // allocate buffer for compressed data & header
-  // compression types: Raw, Zlib, Lzop, ...
+  // compression types: Raw, Zlib, Lzo, ...
   // data_block is compressed using one of the strategies and
   // 12 bytes are prepend to the data:
   // CCCC01234567 + data
-  // CCCC --> 4 chars defined compression method: 'RAW ', 'ZLIB', 'LZOP', ... case does not matter
+  // CCCC --> 4 chars defined compression method: 'RAW ', 'ZLIB', 'LZO ', ... case does not matter
   // 01234567 --> uint64_t length of the uncompressed data
   size_t frame_size = data_in_size + 12;
   char *compressedFrame = new char[ frame_size];
@@ -227,11 +357,11 @@ static char *buildUncompressedFrame( const char *compressedFrame, size_t *data_o
     return NULL;
   
   // allocate buffer for uncompressed data
-  // compression types: Raw, Zlib, Lzop, ...
+  // compression types: Raw, Zlib, Lzo, ...
   // data_block is compressed using one of the strategies and
   // 12 bytes are prepend to the data:
   // CCCC01234567 + data
-  // CCCC --> 4 chars defined compression method: 'RAW ', 'ZLIB', 'LZOP', ... case does not matter
+  // CCCC --> 4 chars defined compression method: 'RAW ', 'ZLIB', 'LZO ', ... case does not matter
   // 01234567 --> uint64_t length of the uncompressed data
   typedef union {
     uint64_t i;

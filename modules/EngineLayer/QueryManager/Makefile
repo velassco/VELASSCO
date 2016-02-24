@@ -56,7 +56,7 @@ ENGINE_CPP_FILES = DataLayerAccess.cpp Analytics.cpp Graphics.cpp Helpers.cpp ma
 	base64.cpp \
 	Compression.cpp
 
-ENGINE_C_FILES = cJSON.c
+ENGINE_C_FILES = cJSON.c minilzo.c
 ENGINE_OBJS_TMP = ${ENGINE_CPP_FILES:.cpp=.o} ${ENGINE_C_FILES:.c=.o}
 ENGINE_OBJS = ${ENGINE_OBJS_TMP:%=$(OBJS_DIR)/%}
 
