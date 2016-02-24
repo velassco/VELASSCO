@@ -90,7 +90,8 @@ private:
 private:
   int m_level;
   bool m_initialized, m_init_ok;
-  static const size_t m_working_memory_size = LZO1X_1_MEM_COMPRESS * sizeof( lzo_align_t); // 128 KBytes
+  static const size_t m_working_memory_size =   // 128 KBytes
+  sizeof( lzo_align_t) * ( ( ( LZO1X_1_MEM_COMPRESS) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
   // ((lzo_uint)1 << D_BITS) * sizeof(lzo_dict_t)
   lzo_align_t __LZO_MMODEL *m_working_memory;
 };
@@ -184,7 +185,7 @@ VL_LzoCompression::VL_LzoCompression(): m_level( 1),
     LOG_COMPRESS( "Error initializing Lzo library \n\t(this usually indicates a compiler bug - try recompiling\n\twithout optimizations, and enable '-DLZO_DEBUG' for diagnostics)");
   } else {
     // working memory
-    m_working_memory = ( lzo_align_t __LZO_MMODEL *)malloc( ( ( m_working_memory_size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
+    m_working_memory = ( lzo_align_t __LZO_MMODEL *)malloc( m_working_memory_size);
   }
 }
 
