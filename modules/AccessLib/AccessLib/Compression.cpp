@@ -312,7 +312,7 @@ static VL_Compression::CompressionType getCompressionTypeFromString( const char 
 
 // a space separated list
 std::string VL_Compression::getCompressionTypeList() {
-  return std::string( "Raw Zlib LZo");
+  return std::string( "Raw Zlib Lzo");
 }
 
 std::string VL_Compression::getCompressionTypeString() const {
