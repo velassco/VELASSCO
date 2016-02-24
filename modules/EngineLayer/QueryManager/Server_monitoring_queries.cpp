@@ -192,7 +192,9 @@ void QueryManagerServer::ManageSetConfiguration( Query_Result &_return, const Se
     char comp_type[ 5]; // compression type should have 4 chars only
     comp_type[ 0] = comp_type[ 1] = comp_type[ 2] = comp_type[ 3] = ' '; // initialize to spaces
     comp_type[ 4] = '\0';
-    strncpy( comp_type, value, 4);
+    for ( int i = 0; i < 4; i++) {
+      comp_type[ i] = ( value[ i] ? value[ i] : ' '); // trainling spaces if needed
+    }
     bool ok = m_compression.setCompressionTypeFromString( comp_type);
     if ( ok) {
       _return.__set_result( (Result::type)VAL_SUCCESS );
