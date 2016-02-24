@@ -6,14 +6,18 @@ set( SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}" )
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CXX_4_4_STD_COMPILE_FLAG "-std=c++0x -fPIC -g -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs")
+  SET(C_4_4_STD_COMPILE_FLAG "-fPIC -g -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs")
 # optimization:
   SET(CXX_4_4_STD_OPTIMIZE_FLAG "-O3 -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG")
   SET(CXX_4_4_STD_COMPILE_FLAG "${CXX_4_4_STD_COMPILE_FLAG} ${CXX_4_4_STD_OPTIMIZE_FLAG}")
+  SET(C_4_4_STD_OPTIMIZE_FLAG "-O3 -funroll-loops -finline-functions -fno-strict-aliasing -DNDEBUG")
+  SET(C_4_4_STD_COMPILE_FLAG "${C_4_4_STD_COMPILE_FLAG} ${C_4_4_STD_OPTIMIZE_FLAG}")
 # other interesting warnings not included in Wall:
 #  -Wcast-align -Wcomment
 #   -Wconversion  --> warnings in boost
 #  -Wextra
   SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CXX_4_4_STD_COMPILE_FLAG}" )
+  SET( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${C_4_4_STD_COMPILE_FLAG}" )
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 if( NOT MSVC )
@@ -38,7 +42,7 @@ if( NOT MSVC )
   # Added version 1.5 to get version 1.54 on windows and 1.58 on acuario/pez
   # instead of old 1.41 instaled on /usr/lib64 which shows the problem described in the above link
   # and 'make' tries to link with '/usr/lib64/lib64/libboost_regex-mt.so.5' and make it.
-  find_package( Boost 1.5 REQUIRED COMPONENTS regex date_time system)
+  find_package( Boost 1.4 REQUIRED COMPONENTS regex date_time system)
   find_package( ZLIB 1.2 REQUIRED)
   message( STATUS "ZLIB_INCLUDE_DIRS = ${ZLIB_INCLUDE_DIRS}" )
 else()
