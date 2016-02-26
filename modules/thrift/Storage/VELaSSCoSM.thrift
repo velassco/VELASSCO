@@ -279,7 +279,7 @@ struct rvGetResultFromVerticesID {
 struct rvGetCoordinatesAndElementsFromMesh {
   1: string status
   2: string report
-  3: list<Vertex>        vertex_list
+  3: list<Vertex>        vertex_list			// not used.
   4: list<Element>       element_list
   5: list<ElementAttrib> element_attrib_list
   6: list<ElementGroup>  element_group_info_list

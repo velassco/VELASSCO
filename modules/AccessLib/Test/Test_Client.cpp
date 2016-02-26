@@ -113,6 +113,8 @@ std::string getStringFromCharPointers( const char *str1, const char *str2) {
   return std::string( str1 ? str1 : "") + std::string( str2 ? str2 : "");
 }
 
+
+
 int doTestMorteza( const VAL_SessionID sessionID) {
   VAL_Result    result;
   const char *status = NULL;

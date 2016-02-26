@@ -385,18 +385,39 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 	  VELaSSCo::RTFormat::File binaryMesh;
 	  if ( error_str.length() == 0) {
 		  
+		  std::cout << "====>\n";
 		if( isMeshTypeImplemented(meshInfo) ){
 		  
 			try {
 			  rvGetCoordinatesAndElementsFromMesh _return_;
 			  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo );
-			  GraphicsModule::getInstance()->fromatMeshForDrawing( binaryMesh, meshInfo, _return_.vertex_list, _return_.element_list, _return_.element_attrib_list, _return_.element_group_info_list );
+			  
+			  std::vector<std::vector<Vertex>> vertex_list;
+			  if(meshInfo.name == "p2p contacts"){
+				rvGetListOfVerticesFromMesh _return_vertices;
+			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, 1 );
+			    vertex_list.push_back( _return_vertices.vertex_list );
+			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
+			    vertex_list.push_back( _return_vertices.vertex_list );
+			  } else if(meshInfo.name == "p2w contacts"){
+				rvGetListOfVerticesFromMesh _return_vertices;
+			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, 1 );
+			    vertex_list.push_back( _return_vertices.vertex_list );
+			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
+			    vertex_list.push_back( _return_vertices.vertex_list );
+			  } else {
+				rvGetListOfVerticesFromMesh _return_vertices;
+				DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
+			    vertex_list.push_back( _return_vertices.vertex_list );
+			  }
+			  
+			  GraphicsModule::getInstance()->fromatMeshForDrawing( binaryMesh, meshInfo, vertex_list, _return_.element_list, _return_.element_attrib_list, _return_.element_group_info_list );
 			} catch ( TException &e) {
 			  std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
 			} catch ( exception &e) {
 			  std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
 			}
-			
+			std::cout << "==========>\n";
 		} else {
 			error_str = "The mesh type is not implemented, yet!\n";
 		}

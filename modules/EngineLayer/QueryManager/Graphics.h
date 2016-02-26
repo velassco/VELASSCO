@@ -21,14 +21,14 @@ public:
   static GraphicsModule *getInstance();
 
   // methods:
-  void fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, const std::vector<Vertex>& vertices, const std::vector<Element>& elements, const std::vector<ElementAttrib>& elementAttribs, const std::vector<ElementGroup>& elementGroupInfos) ;
+  void fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, const std::vector<std::vector<Vertex>>& vertices, const std::vector<Element>& elements, const std::vector<ElementAttrib>& elementAttribs, const std::vector<ElementGroup>& elementGroupInfos) ;
 
 private:
   GraphicsModule() {};
   GraphicsModule( GraphicsModule const&) {};
   GraphicsModule &operator=( GraphicsModule const&) { return *this;};
   
-  void fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, const std::vector<Vertex>& vertices, const std::vector<Element>& elements, const std::vector<ElementAttrib>& elementAttribs) ;
+  void fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, const std::vector<std::vector<Vertex>>& vertices, const std::vector<Element>& elements, const std::vector<ElementAttrib>& elementAttribs) ;
   void fromatTetrahedraMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, const std::vector<Vertex>& vertices, const std::vector<Element>& elements, const std::vector<ElementAttrib>& elementAttribs) ;
   void fromatSphereMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, const std::vector<Vertex>& vertices, const std::vector<Element>& elements, const std::vector<ElementAttrib>& elementAttribs) ;
     

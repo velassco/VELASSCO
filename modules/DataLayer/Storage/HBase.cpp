@@ -1462,8 +1462,17 @@ static bool getIndicesFromRow( std::vector< Element > &listOfElements, std::vect
 			    element.id = element_id;
 				std::vector<NodeID> node_ids;
 			    int64_t *indices = ( int64_t *)it->second.value.data();
-                node_ids.push_back( byteSwap< int64_t>( indices[ 0 ] ) );
-                node_ids.push_back( byteSwap< int64_t>( indices[ 1 ] ) );
+			    if(meshInfo.name == "p2p contacts"){
+					node_ids.push_back( byteSwap< int64_t>( indices[ 0 ] ) );
+					node_ids.push_back( byteSwap< int64_t>( indices[ 1 ] ) );
+					node_ids.push_back( byteSwap< int64_t>( indices[ 2 ] ) );
+				} else if(meshInfo.name == "p2w contacts"){
+					node_ids.push_back( byteSwap< int64_t>( indices[ 0 ] ) );
+					node_ids.push_back( byteSwap< int64_t>( indices[ 1 ] ) );
+				} else {
+					node_ids.push_back( byteSwap< int64_t>( indices[ 0 ] ) );
+					node_ids.push_back( byteSwap< int64_t>( indices[ 1 ] ) );
+				}
       	        element.nodes_ids = node_ids;
       	        listOfElements.push_back(element);        
 			  }
@@ -1770,13 +1779,20 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
   bool found = getTableNames( sessionID, modelID, table_set);
   if ( found) {
 	
-	  std::string list_of_vertices_report;
-	  std::string list_of_vertices_result = getListOfVerticesFromMesh(list_of_vertices_report, vertices, sessionID, modelID, analysisID, timeStep, meshInfo.meshNumber);
+	  /*std::string list_of_vertices_report;
+	  std::string list_of_vertices_result;
+	  
+	  if(meshInfo.name == "p2p contacts"){
+		list_of_vertices_result += getListOfVerticesFromMesh(list_of_vertices_report, vertices, sessionID, modelID, analysisID, timeStep, 1);
+	  } else if(meshInfo.name == "p2w contacts"){
+	  } else {
+		list_of_vertices_result += getListOfVerticesFromMesh(list_of_vertices_report, vertices, sessionID, modelID, analysisID, timeStep, meshInfo.meshNumber);
+	  }*/
 		  
 	  // if no errors
-	  if(list_of_vertices_result == "Ok"){
+	  //if(list_of_vertices_result == "Ok"){
 
-		LOGGER << "Number of vertices = " << vertices.size() << std::endl;  
+		//LOGGER << "Number of vertices = " << vertices.size() << std::endl;  
 
 		// by default hexstrings are lower case but some data has been injected as upper case !!!
 		scan_ok = getMeshElementsFromTable( report, listOfElements, listOfElementAttribs, listOfElementInfoGroups, table_set._data, sessionID, modelID, analysisID, timeStep, meshInfo );
@@ -1789,12 +1805,12 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
 		LOGGER << "Number of element attributes = " << listOfElementAttribs.size() << std::endl;        
 		LOGGER << "Number of element groups = " << listOfElementInfoGroups.size() << std::endl;
 			  
-	  } else {
+	  //} else {
 			  
-		LOGGER << "ERROR: GetListOfVerticesFromMesh Reort:" << list_of_vertices_report << std::endl;
-		return "Error";
+	 //LOGGER << "ERROR: GetListOfVerticesFromMesh Reort:" << list_of_vertices_report << std::endl;
+	 //return "Error";
 		
-	  }
+	  //}
   } else {
 	scan_ok = false;
   }

@@ -896,13 +896,16 @@ static bool getVerticesFromRow( std::vector< Vertex> &listOfVertices, const TRow
 	    node_x = byteSwap< double>( coords[ 0]);
 	    node_y = byteSwap< double>( coords[ 1]);
 	    node_z = byteSwap< double>( coords[ 2]);
-	    Vertex mesh_vertex;
-	    mesh_vertex.__set_id( node_id);
-	    mesh_vertex.__set_x( node_x);
-	    mesh_vertex.__set_y( node_y);
-	    mesh_vertex.__set_z( node_z);
-	    listOfVertices.push_back( mesh_vertex);
-	    num_vertices++;
+	    
+	    if(mesh_number == meshID){
+			Vertex mesh_vertex;
+			mesh_vertex.__set_id( node_id);
+			mesh_vertex.__set_x( node_x);
+			mesh_vertex.__set_y( node_y);
+			mesh_vertex.__set_z( node_z);
+			listOfVertices.push_back( mesh_vertex);
+			num_vertices++;
+		}
 	  }
 	}
       }

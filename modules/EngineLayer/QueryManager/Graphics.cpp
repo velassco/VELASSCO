@@ -24,17 +24,17 @@ GraphicsModule *GraphicsModule::getInstance() {
 }
 
 void GraphicsModule::fromatMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, 
-  const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
+  const std::vector<std::vector<Vertex>>& vertices, const std::vector<Element>& elements, 
   const std::vector<ElementAttrib>& elementAttribs, const std::vector<ElementGroup>& elementGroupInfos)
 {	
 	
 	switch(meshInfo.elementType.shape){
 	case ElementShapeType::type::SphereElement:
-		fromatSphereMeshForDrawing(_return_, meshInfo, vertices, elements, elementAttribs);
+		fromatSphereMeshForDrawing(_return_, meshInfo, vertices[0], elements, elementAttribs);
 		break;
 		
 	case ElementShapeType::type::TetrahedraElement:
-	    fromatTetrahedraMeshForDrawing(_return_, meshInfo, vertices, elements, elementAttribs);
+	    fromatTetrahedraMeshForDrawing(_return_, meshInfo, vertices[0], elements, elementAttribs);
 		break;
 
 	case ElementShapeType::type::PointElement:
@@ -116,37 +116,61 @@ static int getNumberOfIndicesPerElement(const MeshInfo& meshInfo){
 }
 
 void GraphicsModule::fromatElementaryMeshForDrawing(VELaSSCo::RTFormat::File& _return_, const MeshInfo& meshInfo, 
-  const std::vector<Vertex>& vertices, const std::vector<Element>& elements, 
+  const std::vector<std::vector<Vertex>>& vertices, const std::vector<Element>& elements, 
   const std::vector<ElementAttrib>& elementAttribs)
 {
+	std::cout << "============>22\n";
         // const size_t num_vertices    = vertices.size();
 	const size_t num_elements    = elements.size();
 	// const size_t num_attribs     = elementAttribs.size();
 	//size_t num_groupInfos  = elementInfos.size();
 	
-	std::map<int64_t, int64_t> vertexIdx_map;
+	std::vector<std::map<int64_t, int64_t>> vertexIdx_map( vertices.size() );
 	
-	std::vector<VertexElement> vertexElements( vertices.size() );
+	// Total number of vertices
+	size_t num_vertices = 0;
 	for(size_t i = 0; i < vertices.size(); i++){
-		vertexElements[i].x = vertices[i].x;
-		vertexElements[i].y = vertices[i].y;
-		vertexElements[i].z = vertices[i].z;
-		vertexElements[i].vertexID = vertices[i].id;
-		vertexIdx_map[ vertexElements[i].vertexID ] = i;
+	  num_vertices += vertices[i].size();
 	}
+	
+	// Fill vertex buffer
+	std::vector<VertexElement> vertexElements( num_vertices );
+	size_t vertex_idx = 0;
+	for(size_t i = 0; i < vertices.size(); i++){
+	  for(size_t j = 0; j < vertices[i].size(); j++){
+		vertexElements[vertex_idx].x = vertices[i][j].x;
+		vertexElements[vertex_idx].y = vertices[i][j].y;
+		vertexElements[vertex_idx].z = vertices[i][j].z;
+		vertexElements[vertex_idx].vertexID = vertices[i][j].id;
+		vertexIdx_map[i][ vertexElements[vertex_idx].vertexID ] = vertex_idx;
+		vertex_idx++;
+	  }
+	}
+	
+	std::cout << "2das=d=asd=as\n";
 	
 	int num_indices_per_element = getNumberOfIndicesPerElement(meshInfo);
 	std::vector<int64_t> strips( num_elements * (num_indices_per_element + 1) );
 
 	for(size_t idx = 0; idx < elements.size(); idx++){
 		
-		int i = 0;
-		for(; i < num_indices_per_element; i++){
-			strips[idx * (num_indices_per_element+1) + i] = vertexIdx_map[ elements[idx].nodes_ids[i] ];
-			//std::cout << strips[idx * (num_indices_per_element+1) + i] << std::endl;
-		}
-		strips[idx * (num_indices_per_element+1) + i] = -1;
-		
+		if(meshInfo.name == "p2p contacts"){
+			strips[idx * (num_indices_per_element+1) + 0] = vertexIdx_map[0][ elements[idx].nodes_ids[0] ];
+			strips[idx * (num_indices_per_element+1) + 1] = vertexIdx_map[1][ elements[idx].nodes_ids[2] ];
+			strips[idx * (num_indices_per_element+1) + 2] = vertexIdx_map[0][ elements[idx].nodes_ids[1] ];
+			strips[idx * (num_indices_per_element+1) + 3] = -1;
+		} else if(meshInfo.name == "p2w contacts"){
+			strips[idx * (num_indices_per_element+1) + 0] = vertexIdx_map[0][ elements[idx].nodes_ids[0] ];
+			strips[idx * (num_indices_per_element+1) + 1] = vertexIdx_map[1][ elements[idx].nodes_ids[1] ];
+			strips[idx * (num_indices_per_element+1) + 2] = -1;
+		} else {
+			int i = 0;
+			for(; i < num_indices_per_element; i++){
+				strips[idx * (num_indices_per_element+1) + i] = vertexIdx_map[0][ elements[idx].nodes_ids[i] ];
+				//std::cout << strips[idx * (num_indices_per_element+1) + i] << std::endl;
+			}
+			strips[idx * (num_indices_per_element+1) + i] = -1;
+	    }
 		
 	}
 		
