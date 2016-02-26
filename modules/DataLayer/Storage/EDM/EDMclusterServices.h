@@ -59,6 +59,7 @@ struct EDMexecution
    EDMserverContext                 *serverCtxtRecord;
    CppParameterClass                *returnValues;
    CedmError                        *error;
+   int                              executionTime;
 };
 /*================================================================================================*/
 /*!
@@ -106,7 +107,7 @@ public:
    void                             buildServerContexts(char *user, char *group, char *password, ClusterModel *cm);
    void                             ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters, bool *errorFound);
    void                             writeErrorMessageForSubQueries(string &errMsg);
-
+   void                             printExecutionReport(string &msg);
 };
 
 

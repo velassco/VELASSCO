@@ -211,8 +211,9 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
 /*==============================================================================================================================*/
 {
    EDMLONG rstat = OK;
+   int startTime = GetTickCount();
    try {
-      int nTimeouts = 0;
+      int nTimeouts = 0; execParams->executionTime = -1;
       do {
          if (inputParameters && inputParameters->nOfAttributes) {
             rstat = edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
@@ -230,6 +231,8 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
    } catch (CedmError *e) {
       execParams->error = e; *errorFound = true;
    }
+   int endTime = GetTickCount();
+   execParams->executionTime = endTime - startTime;
 }
 /*==============================================================================================================================*/
 void EDMclusterExecution::writeErrorMessageForSubQueries(string &allMsg)
@@ -295,6 +298,51 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
    }
    return true;
 }
+/*==============================================================================================================================*/
+void EDMclusterExecution::printExecutionReport(string &msg)
+/*==============================================================================================================================*/
+{
+   struct ExecutionTimeInfo {
+      ExecutionTimeInfo    *next;
+      char                 *ipAddress;
+      int                  nExecutions;
+      int                  minExecutionTime;
+      int                  maxExecutionTime;
+      int                  averageExecutionTime;
+   };
+   SdaiString              serverContextName, userName, groupName, password, communicationType, edmServerPortNumber;
+   SdaiString              edmServerHostName, edmiHttpTunnelName, edmiHttpTunnelPortNumber, edmiHttpTunnelHostName, proxyServerPortNumber, proxyServerName;
+   char maBuf[0x8000];
+   CMemoryAllocator ma(0x8000, maBuf, sizeof(maBuf));
+
+   int nServers = 0;
+   ExecutionTimeInfo *firstExecInfo = NULL, **etip, *eti;
+
+   for (EDMexecution *exec = subQueries->firstp(); exec; exec = subQueries->nextp()) {
+      edmiGetServerContextProperties(exec->serverCtxtRecord->srvCtxt, &serverContextName, &userName, &groupName, &password, &communicationType,
+         &edmServerPortNumber, &edmServerHostName, &edmiHttpTunnelName, &edmiHttpTunnelPortNumber, &edmiHttpTunnelHostName,
+         &proxyServerPortNumber, &proxyServerName);
+      for (etip = &firstExecInfo; *etip && strNEQ((*etip)->ipAddress, edmServerHostName); etip = &(*etip)->next);
+      if (*etip == NULL) {
+         eti = (ExecutionTimeInfo*)ma.allocZeroFilled(sizeof(ExecutionTimeInfo)); *etip = eti;
+         eti->ipAddress = ma.allocString(edmServerHostName); eti->minExecutionTime = 0x7fffffff;
+      } else {
+         eti = *etip;
+      }
+      eti->nExecutions++;
+      if (exec->executionTime > eti->maxExecutionTime) eti->maxExecutionTime = exec->executionTime;
+      if (exec->executionTime < eti->minExecutionTime) eti->minExecutionTime = exec->executionTime;
+      eti->averageExecutionTime += exec->executionTime;
+   }
+
+   msg += "Execution time info:\n         server     min     max average   nexec\n";
+   for (eti = firstExecInfo; eti; eti = eti->next) {
+      eti->averageExecutionTime = eti->averageExecutionTime / eti->nExecutions;
+      char buf[4096];
+      sprintf(buf, "%15s%8d%8d%8d%8d\n", eti->ipAddress, eti->minExecutionTime, eti->maxExecutionTime, eti->averageExecutionTime, eti->nExecutions);
+      msg += buf;
+   }
+}
 
 
 /*==============================================================================================================================*/
@@ -327,4 +375,3 @@ EDMserverContext *EDMclusterServices::getServerContext(char *user, char *group, 
    } while (true);
    return NULL;
 }
-

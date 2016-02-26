@@ -5,9 +5,33 @@
 namespace EDMVD {
    
 
-   typedef struct Triangle {
+  struct Triangle {
       EDMULONG                            node_ids[3];
-   } Triangle;
+      
+      inline int                          conpare(const Triangle *x)
+      {
+         if (node_ids[0] > x->node_ids[0]) {
+            return 1;
+         } else if (node_ids[0] < x->node_ids[0]) {
+            return -1;
+         } else {
+            if (node_ids[1] > x->node_ids[1]) {
+               return 1;
+            } else if (node_ids[1] < x->node_ids[1]) {
+               return -1;
+            } else {
+               if (node_ids[2] > x->node_ids[2]) {
+                  return 1;
+               } else if (node_ids[2] < x->node_ids[2]) {
+                  return -1;
+               } else {
+                  return 0;
+               }
+            }
+         }
+      }
+   };
+
 
    typedef struct Vertex {
       EDMULONG                            id;

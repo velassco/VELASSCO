@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "VELaSSCoMethods.h"
 #include "modules/DataLayer/Storage/EDM_server_dll/EDM_server_dll.h"
+#include "VELaSSCo_utils.h"
 #include <omp.h>
 
 
@@ -122,8 +123,10 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
+         string report;
+         printExecutionReport(report);
          rv.__set_status("OK");
-         rv.__set_report("");
+         rv.__set_report(report);
          rv.__set_analyses(names);
       }
    }
@@ -195,8 +198,10 @@ void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::st
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
+         string report;
+         printExecutionReport(report);
+         rv.__set_report(report);
          rv.__set_status("OK");
-         rv.__set_report("");
          rv.__set_time_steps(time_steps);
       }
    }
@@ -268,8 +273,10 @@ void VELaSSCoMethods::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
                }
             }
          }
+         string report;
+         printExecutionReport(report);
+         rv.__set_report(report);
          rv.__set_status("OK");
-         rv.__set_report("");
          rv.__set_vertex_list(vertices);
       }
    }
@@ -349,9 +356,11 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
                }
             }
          }
+         string report;
+         printExecutionReport(report);
+         rv.__set_report(report);
          rv.__set_result_list(result_list);
          rv.__set_status("OK");
-         rv.__set_report("");
       }
    }
 }
@@ -410,7 +419,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
       } else {
          unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxNodeID + 1));
          unsigned char *elementExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxElementID + 1));
-         EDMULONG nDuplicates = 0, n_vertices = 0, n_elements = 0;
+         EDMULONG nNodeDuplicates = 0, nElementDuplicates = 0, n_vertices = 0, n_elements = 0;
 //OLI
          //rv.__set_element_record_size(firstMetaData->element_record_size);
          //rv.__set_n_vertices_pr_element(firstMetaData->n_vertices_pr_element);
@@ -421,17 +430,22 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
 
          startTime = GetTickCount();
          for (int i = 0; i < nOfSubdomains; i++) {
+            int prev_n_vertices = n_vertices;
+            int prev_n_elements = n_elements;
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
 
             Container<EDMVD::Vertex> vertices(&ma, retVal->node_array);
             for (EDMVD::Vertex *v = vertices.firstp(); v; v = vertices.nextp()) {
-               if (verticesExist[v->id] == 0) { verticesExist[v->id] = 1; n_vertices++; } else { nDuplicates++; }
+               if (verticesExist[v->id] == 0) { verticesExist[v->id] = 1; n_vertices++; } else { nNodeDuplicates++; }
             }
             Container<EDMVD::FEMelement> elements(&ma, retVal->elemnt_array);
             for (EDMVD::FEMelement *e = elements.firstp(); e; e = elements.nextp()) {
-               if (elementExist[e->id] == 0) { elementExist[e->id] = 1; n_elements++; } else { nDuplicates++; }
+               if (elementExist[e->id] == 0) { elementExist[e->id] = 1; n_elements++; } else { nElementDuplicates++; }
             }
+            int nNodeThisModel = n_vertices - prev_n_vertices;
+            int nElemThisModel = n_elements - prev_n_elements;
+            prev_n_vertices = n_vertices;
          }
          //string vertex_string, element_string;
          //EDMULONG vertexBufferSize = sizeof(EDMVD::Vertex) * n_vertices;
@@ -481,8 +495,10 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          //rv.__set_n_elements(n_elements_copied);
          //rv.__set_element_array(element_string);
          //rv.__set_vertex_array(vertex_string);
+         string report;
+         printExecutionReport(report);
+         rv.__set_report(report);
          rv.__set_status("OK");
-         rv.__set_report("");
          rv.__set_vertex_list(vertex_list);
          rv.__set_element_list(element_list);
       }
@@ -617,8 +633,10 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          sprintf(msgBuffer, "Execution time subqueries: %d\nOfSubdomainsution time building return values: %d\nt2=%d\nt3=%d\nt4=%d\nt5=%d\nt6=%d\nNumber of distinct results: %lld\nNumber of duplicates: %lld\n",
             timeSubQueryExecytion, timeCollectingReturnValues, t2 - startTime, t3 - startTime, t4 - startTime, t5 - startTime, t6 - startTime,
             n_result_records, nDuplicates);
+         string report;
+         printExecutionReport(report); report += msgBuffer;
+         rv.__set_report(report);
          rv.__set_status("OK");
-         rv.__set_report(msgBuffer);
 #ifdef BLOB
          rv.__set_result_array(result_array);
          rv.__set_n_values_pr_record(nOfValuesPrVertex);
@@ -628,6 +646,24 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          rv.__set_result_list(result_array);
 #endif
       }
+   }
+}
+
+void writeTrianglesToFile(char *fileName, Container<EDMVD::Triangle> *cont)
+{
+   FILE *triangleFile = fopen(fileName, "w");
+   if (triangleFile) {
+      EDMVD::Triangle *p = NULL;
+      for (EDMVD::Triangle *t = cont->firstp(); t; t = cont->nextp()) {
+         if (p) {
+            if (p->conpare(t) >= 0) {
+               THROW("Merge error in VELaSSCoMethods::GetBoundaryOfLocalMesh.")
+            }
+         }
+         p = t;
+         fprintf(triangleFile, "%10llu%10llu%10llu\n", t->node_ids[0], t->node_ids[1], t->node_ids[2]);
+      }
+      fclose(triangleFile);
    }
 }
 /*=============================================================================================================================*/
@@ -662,10 +698,11 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
       int tot_n_triangles = 0;
+      char tfilena[1024];
       for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
-         if (strNEQ(retVal->status->value.stringVal, "OK")) {
+         if(strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
          tot_n_triangles += retVal->n_triangles->value.intVal;
@@ -688,45 +725,82 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
          //int stringNo = -1;
          //std::string *cTriangleBuffer;
          //char *bp;
-         struct MergeJob {
-            int nOfContainers;
-            Container<EDMVD::Triangle> *containers[1];
-         };
          int nOfCores = omp_get_max_threads();
-         int nOfContainersPrThread = nOfSubdomains / nOfCores;
-         int nContainersToMerge = nOfContainersPrThread;
+         int nOfMergeJobs = nOfCores;
+         int nOfContainersPrMergeJob = nOfSubdomains / nOfMergeJobs;
+         if (nOfContainersPrMergeJob < 2) {
+            nOfContainersPrMergeJob = 2; nOfMergeJobs = nOfSubdomains / 2;
+         }
+         int rest = nOfSubdomains % nOfMergeJobs;
 
-         while (nContainersToMerge > 1) {
+         MergeJob **mergeJobs = (MergeJob **)ma.alloc(nOfMergeJobs * sizeof(MergeJob *));
+         int cSubQuery = 0;
 
+         for (int i = 0; i < nOfMergeJobs; i++) {
+            MergeJob *mj = mergeJobs[i] = new(&ma)MergeJob(&ma, nOfContainersPrMergeJob + 1, 0x20000);
+            int nOfContainersInThisMergeJob = nOfContainersPrMergeJob;
+            if (rest > 0) {
+               rest--; nOfContainersInThisMergeJob++;
+            }
+            for (int j = 0; j < nOfContainersInThisMergeJob && cSubQuery < nOfSubdomains; j++) {
+               char tfilena[1024];
+               sprintf(tfilena, "TriangleFile_%d", cSubQuery);
+
+               EDMexecution *e = subQueries->getElementp(cSubQuery++);
+               nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
+               Container<EDMVD::Triangle> *triangleContainer = new(&ma)Container<EDMVD::Triangle>(&ma, retVal->triangle_array);
+               mj->addContainer(triangleContainer);
+               #ifdef _DEBUG
+               writeTrianglesToFile(tfilena, triangleContainer);
+               #endif
+            }
          }
 
-         vector<VELaSSCoSM::Triangle> triangles;
-         triangles.reserve(tot_n_triangles);
-         int nNodesInTriangle = 3;
-
+         #pragma omp parallel for
+         for (int i = 0; i < nOfMergeJobs; i++) {
+            mergeJobs[i]->merge();
+         }
          for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
-            nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
-            Container<EDMVD::Triangle>  sub_triangles(&ma, retVal->triangle_array);
-            VELaSSCoSM::Triangle vt;
-            for (EDMVD::Triangle *t = sub_triangles.firstp(); t; t = sub_triangles.nextp()) {
-               vector<VELaSSCoSM::NodeID> nodes;
-               nodes.reserve(nNodesInTriangle);
-               for (int i = 0; i < nNodesInTriangle; i++) {
-                  nodes.push_back(t->node_ids[i]);
-               }
-               vt.__set_nodes(nodes);
-               triangles.push_back(vt);
+            delete e->ema;
+            e->ema = NULL;
+         }
+         MergeJob *lastMerge = new(&ma)MergeJob(&ma, nOfMergeJobs, 0x20000);
+         for (int i = 0; i < nOfMergeJobs; i++) {
+            lastMerge->addContainer(mergeJobs[i]->targetContainer);
+         }
+         lastMerge->merge();
+
+         #ifdef _DEBUG
+         writeTrianglesToFile("triangleFile.txt", lastMerge->targetContainer);
+         #endif
+
+         vector<VELaSSCoSM::Triangle> triangles;
+         triangles.reserve(lastMerge->targetContainer->size());
+         int nNodesInTriangle = 3;
+         Container<EDMVD::Triangle> *resultContainer = lastMerge->targetContainer;
+
+         VELaSSCoSM::Triangle vt;
+         for (EDMVD::Triangle *t = resultContainer->firstp(); t; t = resultContainer->nextp()) {
+            vector<VELaSSCoSM::NodeID> nodes;
+            nodes.reserve(nNodesInTriangle);
+            for (int i = 0; i < nNodesInTriangle; i++) {
+               nodes.push_back(t->node_ids[i]);
             }
+            vt.__set_nodes(nodes);
+            triangles.push_back(vt);
          }
 
          endTime = GetTickCount();
          timeCollectingReturnValues = endTime - startTime;
          char msgBuffer[2048];
-         sprintf(msgBuffer, "Execution time subqueries: %d\nOfSubdomainsution time building return values: %d\nNumber of triangles: %lld\nNumber of triangles pr string: %lld\n",
+         string report;
+         sprintf(msgBuffer, "\n\nExecution time subqueries: %d\nOfSubdomainsution time building return values: %d\n",
             timeSubQueryExecytion, timeCollectingReturnValues, tot_n_triangles, n_triangles_pr_string);
+         printExecutionReport(report); report += msgBuffer;
+
          rv.__set_status("OK");
-         rv.__set_report(msgBuffer);
+         rv.__set_report(report);
          rv.__set_elements(triangles);
          //OLI
          //rv.__set_triangle_record_size(sizeof(EDMVD::Triangle));
@@ -805,6 +879,9 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
                //}
             }
          }
+         string report;
+         printExecutionReport(report);
+         rv.__set_report(report);
          rv.__set_status("OK");
          rv.__set_meshInfos(meshInfos);
       }

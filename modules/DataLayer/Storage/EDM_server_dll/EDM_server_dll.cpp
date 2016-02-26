@@ -445,34 +445,87 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
                if (ts->get_time_value() == inParam->timeStep->value.realVal) {
                   timeStepFound = true;
                   fem::Mesh *mesh = ts->get_mesh();
+                  char elementFileName[0x1000], *vertexFileName = elementFileName;
                   
-                  Container<EDMVD::Vertex> *vertices = new(dllMa) Container<EDMVD::Vertex>(dllMa, 0x10000);
-                  Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
-                  for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                     EDMVD::Vertex *v = vertices->createNext();
-                     v->id = n->get_id();
-                     v->x = n->get_x(); v->y = n->get_y(); v->z = n->get_z();
-                     if (v->id > maxID) maxID = v->id; if (v->id < minID) minID = v->id;
+                  //Container<EDMVD::Vertex> *vertices = new(dllMa) Container<EDMVD::Vertex>(dllMa, 0x10000);
+                  //Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
+                  //for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                  //   EDMVD::Vertex *v = vertices->createNext();
+                  //   v->id = n->get_id();
+                  //   v->x = n->get_x(); v->y = n->get_y(); v->z = n->get_z();
+                  //   if (v->id > maxID) maxID = v->id; if (v->id < minID) minID = v->id;
+                  //}
+                  sprintf(vertexFileName, "vertices_%llu.dat", mesh->getInstanceId());
+                  FILE *vertexFile = fopen(vertexFileName, "rb");
+                  Container<EDMVD::Vertex> *vertices;
+                  maxID = 0, minID = 0xfffffffffffffff;
+
+                  if (vertexFile) {
+                     vertices = new(dllMa)Container<EDMVD::Vertex>(dllMa, vertexFile);
+                     for (EDMVD::Vertex *v = vertices->firstp(); v; v = vertices->nextp()) {
+                        if (v->id > maxID) maxID = v->id; if (v->id < minID) minID = v->id;
+                     }
+                  } else {
+                     vertices = new(dllMa)Container<EDMVD::Vertex>(dllMa, 0x10000);
+                     Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
+                     for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                        EDMVD::Vertex *v = vertices->createNext();
+                        v->id = n->get_id();
+                        v->x = n->get_x(); v->y = n->get_y(); v->z = n->get_z();
+                        if (v->id > maxID) maxID = v->id; if (v->id < minID) minID = v->id;
+                     }
+                     vertices->writeToBinaryFile(vertexFileName);
                   }
                   metaData->minNodeID = minID; metaData->maxNodeID = maxID;
-                  metaData->n_vertices = nodeIter.size();
+                  metaData->n_vertices = vertices->size();
                   metaData->vertex_record_size = sizeof(EDMVD::Vertex);
                   retVal->node_array->putContainer(vertices);
 
+
+
+                  sprintf(elementFileName, "elements_%llu.dat", mesh->getInstanceId());
+                  FILE *elementFile = fopen(elementFileName, "rb");
                   EDMLONG n_vertices_pr_element = mesh->get_numberOfNodes();
-                  Container<EDMVD::FEMelement> *elements = new(dllMa) Container<EDMVD::FEMelement>(dllMa, 0x10000, sizeof(EDMULONG) * (n_vertices_pr_element - 1));
-                  Iterator<fem::Element*, fem::entityType> elemIter(mesh->get_elements(), theModel);
-                  for (fem::Element *e = elemIter.first(); e; e = elemIter.next()) {
-                     EDMVD::FEMelement *element = elements->createNext();
-                     element->id = e->get_id();
-                     if (element->id > maxID) maxID = element->id; if (element->id < minID) minID = element->id;
-                     Iterator<fem::Node*, fem::entityType> nodeIter(e->get_nodes(), theModel);
-                     int i = 0;
-                     for (fem::Node *n = nodeIter.first(); n && i < n_vertices_pr_element; n = nodeIter.next()) {
-                        element->nodes_ids[i++] = n->get_id();
+                  Container<EDMVD::FEMelement> *elements;
+                  EDMLONG extraVertexSize = sizeof(EDMULONG)* (n_vertices_pr_element - 1);
+                  maxID = 0, minID = 0xfffffffffffffff;
+
+                  if (elementFile) {
+                     elements = new(dllMa)Container<EDMVD::FEMelement>(dllMa, elementFile, extraVertexSize);
+                     for (EDMVD::FEMelement *e = elements->firstp(); e; e = elements->nextp()) {
+                        if (e->id > maxID) maxID = e->id; if (e->id < minID) minID = e->id;
                      }
+                  } else {
+                     EDMLONG n_vertices_pr_element = mesh->get_numberOfNodes();
+                     elements = new(dllMa)Container<EDMVD::FEMelement>(dllMa, 0x10000, extraVertexSize);
+                     Iterator<fem::Element*, fem::entityType> elemIter(mesh->get_elements(), theModel);
+                     for (fem::Element *e = elemIter.first(); e; e = elemIter.next()) {
+                        EDMVD::FEMelement *element = elements->createNext();
+                        element->id = e->get_id();
+                        if (element->id > maxID) maxID = element->id; if (element->id < minID) minID = element->id;
+                        Iterator<fem::Node*, fem::entityType> nodeIter(e->get_nodes(), theModel);
+                        int i = 0;
+                        for (fem::Node *n = nodeIter.first(); n && i < n_vertices_pr_element; n = nodeIter.next()) {
+                           element->nodes_ids[i++] = n->get_id();
+                        }
+                     }
+                     elements->writeToBinaryFile(elementFileName);
                   }
-                  metaData->n_elements = elemIter.size();
+                  metaData->n_elements = elements->size();
+
+                  //EDMLONG n_vertices_pr_element = mesh->get_numberOfNodes();
+                  //Container<EDMVD::FEMelement> *elements = new(dllMa) Container<EDMVD::FEMelement>(dllMa, 0x10000, sizeof(EDMULONG) * (n_vertices_pr_element - 1));
+                  //Iterator<fem::Element*, fem::entityType> elemIter(mesh->get_elements(), theModel);
+                  //for (fem::Element *e = elemIter.first(); e; e = elemIter.next()) {
+                  //   EDMVD::FEMelement *element = elements->createNext();
+                  //   element->id = e->get_id();
+                  //   if (element->id > maxID) maxID = element->id; if (element->id < minID) minID = element->id;
+                  //   Iterator<fem::Node*, fem::entityType> nodeIter(e->get_nodes(), theModel);
+                  //   int i = 0;
+                  //   for (fem::Node *n = nodeIter.first(); n && i < n_vertices_pr_element; n = nodeIter.next()) {
+                  //      element->nodes_ids[i++] = n->get_id();
+                  //   }
+                  //}
                   metaData->element_type = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
                   metaData->element_record_size = sizeof(EDMVD::FEMelement) + sizeof(EDMULONG) * (n_vertices_pr_element - 1);
                   metaData->n_vertices_pr_element = n_vertices_pr_element;
@@ -654,12 +707,6 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
                   Container<EDMVD::Triangle>  *triangles;
 
                   if (triangelFile) {
-                     fseek(triangelFile, 0L, SEEK_END);
-                     nTrianglesPrContainerBuffer = ftell(triangelFile);
-                     if (nTrianglesPrContainerBuffer % sizeof(EDMVD::Triangle)) {
-                        int asdfasdfasdf = 9999;
-                     }
-                     nTrianglesPrContainerBuffer /= sizeof(EDMVD::Triangle);
                      triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, triangelFile);
                   } else {
                      triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
