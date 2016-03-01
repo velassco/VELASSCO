@@ -71,6 +71,16 @@ void parse(string cmd)
 	cout<<"### " << status << endl;
         cout<<"#### /Ping ####"<<endl;
     }
+    else if( cmd.find("list")  == 0)
+    {
+        cout<<"#### List ####"<<endl;
+	std::string status;
+        rvGetListOfModels _return_;
+	DataLayerAccess::Instance()->getListOfModels( _return_,
+						      "", "", ""); // dl_sessionID, group_qualifier, name_pattern);
+	cout<<"### " << _return_ << endl;
+        cout<<"#### /List ####"<<endl;
+    }
     else if( cmd.find("stop")  == 0)
     {
         cout<<"#### stop ####"<<endl;
@@ -85,6 +95,7 @@ void printListOfCmd()
     cout << "List of available commands :" << endl;
     cout << "stop: stop the dataLayer application" << endl;
     cout << "ping: get Status of DB" << endl;
+    cout << "list: list models in DataLayer" << endl;
     cout << "query: does a query" << endl;
     cout << "exit (or quit): stop the current application (enginelayer)" << endl;
     cout <<" ################################################" << endl << endl;
