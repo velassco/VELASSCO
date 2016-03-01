@@ -187,7 +187,7 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
       }
       std::string type = m_compression.getCompressionTypeString();
       if ( lvl)
-	type += " " + std::to_string( lvl);
+	type += " " + std::to_string( ( long long int)lvl);
       double percent = 100.0 * ( double)( compressed_result->size() - 12) / ( double)num_bytes;
       LOGGER << "        to " << GetNiceSizeString( compressed_result->size() - 12) // header
 	     << " from " << GetNiceSizeString( num_bytes) << " ( " << percent << "% "
