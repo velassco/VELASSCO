@@ -181,9 +181,17 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     bool ok = m_compression.doCompress( _return.data, &compressed_result);
     LOGGER << "  --> compressed with " << ( ok ? "no error" : "ERROR") << std::endl;
     if ( compressed_result) {
+      int lvl = m_compression.getCompressionLevel();
+      if ( m_compression.getCompressionType() != VL_Compression::Zlib) {
+	lvl = 0;
+      }
+      std::string type = m_compression.getCompressionTypeString();
+      if ( lvl)
+	type += " " + std::to_string( lvl);
       double percent = 100.0 * ( double)( compressed_result->size() - 12) / ( double)num_bytes;
       LOGGER << "        to " << GetNiceSizeString( compressed_result->size() - 12) // header
-	     << " from " << GetNiceSizeString( num_bytes) << " ( " << percent << "% )" << std::endl; // header
+	     << " from " << GetNiceSizeString( num_bytes) << " ( " << percent << "% "
+	     << type << " )" << std::endl; // header
       _return.__set_data( *compressed_result);
       delete compressed_result;
       // useful to debug:
