@@ -1301,11 +1301,11 @@ int ProcessInput( const po::variables_map &vm )
         {
         return status;
         }
-      LOG(trace) << "There were " << meshesInPartition.size() << " meshed parsed";
-      for( std::list<GID::MeshResultType>::const_iterator it = meshesInPartition.begin();
-           it != meshesInPartition.end(); it++ )
+      LOG(trace) << "There were " << meshesInPartition.size() << " meshes parsed";
+      for( std::list<GID::MeshResultType>::const_iterator itm = meshesInPartition.begin();
+           itm != meshesInPartition.end(); itm++ )
         {
-        meshInfo.Update( *it );
+        meshInfo.Update( *itm );
         }
       LOG(trace) << "START PARSING: \"" << it->second.string() << "\"";
       status = GID::ParseResultFile( it->second.string(), resultPart );
