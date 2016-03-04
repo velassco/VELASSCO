@@ -2,6 +2,7 @@
 #define __ParseAsciiMesh_h__
 #include "GidTypes.h"
 #include <vector>
+#include <list>
 #include <string>
 #include <map>
 #include <boost/spirit/include/qi_symbols.hpp>
@@ -20,6 +21,14 @@ struct MeshHeaderType
   void setDimension( UInt32 const &d ) { this->dimension = d; }
   void setElementType( ElementType const &t ) { this->elementType = t; }
   void setNumberOfNodes( IdNode const &n ) { this->numberOfNodes = n; }
+
+  void Init()
+  {
+    this->setName( "" );
+    this->setDimension( 3 );
+    this->setElementType( TRIANGLE );
+    this->setNumberOfNodes( 3 );
+  }
 };
 
 struct MeshNodeType
@@ -36,9 +45,16 @@ struct MeshResultType
   MeshHeaderType header;
   std::vector<MeshNodeType> nodes;
   std::vector<MeshElementType> elements;
+
+  void Init()
+  {
+    this->header.Init();
+    this->nodes.clear();
+    this->elements.clear();
+  }
 };
 
-int ParseMeshFile( const std::string& pathFile, MeshResultType &mesh );
+int ParseMeshFile( const std::string& pathFile, std::list<MeshResultType> &meshes );
 
 END_GID_DECLS
 

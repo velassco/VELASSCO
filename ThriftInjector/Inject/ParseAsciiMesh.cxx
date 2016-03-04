@@ -190,13 +190,14 @@ int ParseElement( unsigned int nnode, const std::string &line, MeshElementType &
   return 0;
 }
 
-int ParseMeshFile( const std::string& pathFile, MeshResultType &mesh )
+int ParseMeshFile( const std::string& pathFile, std::list<MeshResultType> &meshes )
 {
   std::ifstream fin( pathFile );
   std::string line;
   enum MeshStateType {S, H, C, CE, E, EE};
   MeshStateType state = S;
   std::string kwCoordinates( "Coordinates" );
+  MeshResultType mesh;
 
   while( std::getline( fin, line ) )
     {
@@ -209,6 +210,7 @@ int ParseMeshFile( const std::string& pathFile, MeshResultType &mesh )
     switch ( state )
       {
       case S:
+        mesh.Init();
         if( ParseMeshHeader( line, mesh.header ) != 0 )
           {
           LOG(error) << "parsing mesh header from: '" << line << "'";
@@ -266,7 +268,9 @@ int ParseMeshFile( const std::string& pathFile, MeshResultType &mesh )
           {
           LOG(trace) << mesh.elements.size() << " elements where read";
           LOG(trace) << line;
-          state = EE;
+          meshes.push_back( mesh );
+          // prepare for next mesh
+          state = S;
           }
         else 
           {

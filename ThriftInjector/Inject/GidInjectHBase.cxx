@@ -1277,6 +1277,9 @@ int ProcessInput( const po::variables_map &vm )
   for( PathContainerType::const_iterator it = res_files.m_Parts.begin( );
           it != res_files.m_Parts.end( ); it++ )
     {
+
+    std::list<GID::MeshResultType> meshesInPartition;
+
     GID::MeshResultType meshPart;
     GID::ResultContainerType resultPart;
 
@@ -1292,14 +1295,18 @@ int ProcessInput( const po::variables_map &vm )
     else
       {
       LOG(trace) << "START PARSING: \"" << msh_files.m_Parts[it->first].string() << "\"";
-      status = GID::ParseMeshFile( msh_files.m_Parts[it->first].string(), meshPart );
+      status = GID::ParseMeshFile( msh_files.m_Parts[it->first].string(), meshesInPartition );
       LOG(trace) << "END PARSING: \"" << msh_files.m_Parts[it->first].string() << "\"";
       if ( status != SUCCESS )
         {
         return status;
         }
-      // TODO: check status returned
-      meshInfo.Update( meshPart );
+      LOG(trace) << "There were " << meshesInPartition.size() << " meshed parsed";
+      for( std::list<GID::MeshResultType>::const_iterator it = meshesInPartition.begin();
+           it != meshesInPartition.end(); it++ )
+        {
+        meshInfo.Update( *it );
+        }
       LOG(trace) << "START PARSING: \"" << it->second.string() << "\"";
       status = GID::ParseResultFile( it->second.string(), resultPart );
       LOG(trace) << "END PARSING: \"" << it->second.string() << "\"";

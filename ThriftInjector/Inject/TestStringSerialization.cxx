@@ -30,5 +30,15 @@ int main()
     pos = bindeserBig.Read( buffer, str, pos );
     std::cout << str << "\n";
     }
+  std::cout << "Now try to deserialize from a bad stream\n";
+  std::string anyBuffer( "empty" );
+  pos = 0;
+  while( pos < anyBuffer.length() )
+    {
+    str.clear();
+    pos = bindeserBig.Read( anyBuffer, str, pos );
+    std::cout << "Result is: " << str << std::endl; 
+    std::cout << "pos = " << pos << std::endl;
+    }
   return 0;
 }
