@@ -359,6 +359,19 @@ struct GPProperties
       }
   }
 
+  void addCrd( double const &c )
+  {
+    if ( naturalCoordinates == 1 )
+      {
+       LOG(error) << "Coordinate value specified for a gausspoint definition with natural coordinate 'internal'";
+       errorFound = true;
+      }
+    else
+      {
+      this->coords.push_back( c );
+      }
+  }
+
   void setEnd()
   {
     endFound = true;
@@ -396,7 +409,9 @@ int ParseGaussPointProperties( const std::string &line,
        | 
        lit("NATURAL") >> lit("COORDINATES") >> lit(":") >> 
        as_string [(lit("INTERNAL") | lit("GIVEN"))] [ boost::bind(&GPProperties::setCoordinates, &gp, ::_1) ]
-       | 
+       |
+       +double_[boost::bind(&GPProperties::addCrd, &gp, ::_1)]
+       |
        eoi
        ]
      //  End grammar

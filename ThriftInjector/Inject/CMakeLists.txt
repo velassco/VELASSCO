@@ -12,12 +12,19 @@ add_executable( ExampleLog_01 ExampleLog_01.cxx Logger.cxx )
 target_link_libraries( ExampleLog_01 ${CMAKE_THREAD_LIBS_INIT} 
   ${Boost_LIBRARIES} )
 
-add_executable( gid_inject GidInjectHBase.cxx Logger.cxx GidTypes.cxx ParseAsciiMesh.cxx ParseAsciiResult.cxx BinarySerialization.cxx )
-target_include_directories( gid_inject PRIVATE 
+add_library( inject STATIC Logger.cxx GidTypes.cxx ParseAsciiMesh.cxx ParseAsciiResult.cxx BinarySerialization.cxx )
+target_include_directories( inject PUBLIC
   ${Boost_INCLUDE_DIRS}
-  ${THRIFTCPP_INCLUDE_DIRS} )
-target_link_libraries( gid_inject 
+  ${THRIFTCPP_INCLUDE_DIRS}  )
+target_link_libraries( inject
   ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} thriftcpp )
+
+add_executable( gid_inject GidInjectHBase.cxx )
+
+target_link_libraries( gid_inject inject )
+
+add_executable( TestParseResultFile TestParseResultFile.cxx )
+target_link_libraries( TestParseResultFile thriftcpp inject )
 
 if( CHECK_HBASE_MODEL )
 add_executable( check_model CheckHBaseModel.cxx Logger.cxx )
