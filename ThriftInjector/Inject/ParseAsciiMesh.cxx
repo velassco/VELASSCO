@@ -28,7 +28,8 @@ boost::spirit::qi::symbols<char, ElementType> &GetElementSymbols( )
       ( "tetrahedra", TETRAHEDRA )
       ( "triangle", TRIANGLE )
       ( "sphere", SPHERE )
-      ;
+      ( "point", POINT )
+     ;
    }
   return _symEType;
 }

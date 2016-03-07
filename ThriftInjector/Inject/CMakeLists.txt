@@ -26,6 +26,9 @@ target_link_libraries( gid_inject inject )
 add_executable( TestParseResultFile TestParseResultFile.cxx )
 target_link_libraries( TestParseResultFile thriftcpp inject )
 
+add_executable( TestParseMeshFile TestParseMeshFile.cxx )
+target_link_libraries( TestParseMeshFile thriftcpp inject )
+
 if( CHECK_HBASE_MODEL )
 add_executable( check_model CheckHBaseModel.cxx Logger.cxx )
 target_include_directories( check_model PRIVATE
