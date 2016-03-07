@@ -16,7 +16,7 @@ typedef boost::uint64_t IdElement;
 typedef boost::uint32_t UInt32;
 typedef boost::uint32_t IdPartition;
 
-enum ElementType { LINE, TETRAHEDRA, TRIANGLE, SPHERE };
+enum ElementType { LINE, TETRAHEDRA, TRIANGLE, SPHERE, POINT };
 enum ValueType { SCALAR, VECTOR };
 enum LocationType { LOC_NODE, LOC_GPOINT };
 enum GaussPointType { GP_TRIANGLE, GP_QUADRILATERAL, GP_TETRAHEDRA,

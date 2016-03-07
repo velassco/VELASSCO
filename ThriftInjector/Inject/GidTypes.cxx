@@ -31,6 +31,7 @@ static void _InitElementTypeMap( )
     _mapEType[TETRAHEDRA] = { "Tetrahedra", { 4, 10 }, 3 };
     _mapEType[TRIANGLE] = { "Triangle", { 3, 6 }, 2 };
     _mapEType[SPHERE] = { "Sphere", { 1 }, 3 };
+    _mapEType[POINT] = { "Point", { 1 }, 0 };
     }
 }
 
