@@ -140,7 +140,7 @@ struct GlobalMeshInfoType
     return meshInfo.InitFromPartition( meshPart, this->headers.size( ) );
   }
 
-  GID::UInt32 GetIndexElementSet( const std::string name )
+  GID::UInt32 GetIndexElementSet( const std::string name ) const
   {
     MapHeaderType::const_iterator it = this->headers.find( name );
     
@@ -948,15 +948,21 @@ void CheckDecodeRowKey_Data( const std::string & rowkey,
 int InsertPartResult_Data( const std::string &host, int port,
                            const std::string &keyModel, 
                            GID::IdPartition indexPart,
-                           GID::UInt32 indexESet,
-                           const GID::MeshResultType &meshPart,
+                           //GID::UInt32 indexESet,
+                           const GlobalMeshInfoType &meshInfo,
+                           const std::list<GID::MeshResultType> &meshesInPartition,
+                           //const GID::MeshResultType &meshPart,
                            const GID::ResultContainerType &resultPart)
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
   boost::shared_ptr<TProtocol> protocol( new TBinaryProtocol( transport ) );
   HbaseClient client( protocol );
-  GID::MeshResultType mesh;
+  //GID::MeshResultType mesh;
+  GID::UInt32 indexESet;
+  size_t numberOfCoordinates = 0;
+  size_t numberOfElements = 0;
+
   int status;
   try 
     {    
@@ -980,58 +986,70 @@ int InsertPartResult_Data( const std::string &host, int port,
       // TODO: first prototype use only one coordinate set
       GID::UInt32 indexCSet = 1;
       const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
-      // HBASE-4658
-      // mutations for coordinate set
-      for( std::vector<GID::MeshNodeType>::const_iterator it = meshPart.nodes.begin( );
-           it != meshPart.nodes.end(); it++ )
+                                                   // HBASE-4658
+      // iterate over all meshes in partition
+      for( std::list<GID::MeshResultType>::const_iterator itm = meshesInPartition.begin();
+           itm != meshesInPartition.end(); itm++ )
         {
-        mutations.push_back( Mutation( ) );
-        
-        status = EncodeColumn_Data( 'M', 'c', indexCSet, "", it->id, mutations.back().column );
-        if ( status != SUCCESS )
-          {
-          break;
-          }
-        binWriter.Write( mutations.back().value, it->x );
-        binWriter.Write( mutations.back().value, it->y );
-        binWriter.Write( mutations.back().value, it->z );
-        }
-      // mutations for element set
-      if ( status == SUCCESS )
-        {
-        for( std::vector<GID::MeshElementType>::const_iterator it = meshPart.elements.begin( );
-             it != meshPart.elements.end(); it++ )
+        const GID::MeshResultType &meshPart = *itm;
+        indexESet = meshInfo.GetIndexElementSet( meshPart.header.name );
+        LOG(trace) << "Processing mesh '" << meshPart.header.name << "' asigned to indexESet = " << indexESet;
+        // mutations for coordinate set
+        for( std::vector<GID::MeshNodeType>::const_iterator it = meshPart.nodes.begin( );
+             it != meshPart.nodes.end(); it++ )
           {
           mutations.push_back( Mutation( ) );
-          status = EncodeColumn_Data( 'M', 'm', indexESet, "cn",
-                                      (*it)[0], mutations.back().column );
+          
+          status = EncodeColumn_Data( 'M', 'c', indexCSet, "", it->id, mutations.back().column );
           if ( status != SUCCESS )
             {
             break;
             }
-          BinarySerializerType binWriter;
-          binWriter.SetConvertToHex( false );
-          binWriter.SetEndianness( GID::BigEndian );
-          for( size_t i = 1; i < it->size(); i++ )
-            {
-            // copy from boost::long_long_type to boost::uint64_t
-            // which must be compatible
-            GID::IdNode idN = (*it)[i];
-            binWriter.Write( mutations.back().value, idN );
-            }
-          GID::UInt64 GG = 0;
-          binWriter.Write( mutations.back().value, GG );
+          binWriter.Write( mutations.back().value, it->x );
+          binWriter.Write( mutations.back().value, it->y );
+          binWriter.Write( mutations.back().value, it->z );
           }
+        // mutations for element set
+        if ( status == SUCCESS )
+          {
+          for( std::vector<GID::MeshElementType>::const_iterator it = meshPart.elements.begin( );
+               it != meshPart.elements.end(); it++ )
+            {
+            mutations.push_back( Mutation( ) );
+            status = EncodeColumn_Data( 'M', 'm', indexESet, "cn",
+                                        (*it)[0], mutations.back().column );
+            if ( status != SUCCESS )
+              {
+              break;
+              }
+            BinarySerializerType binWriter;
+            binWriter.SetConvertToHex( false );
+            binWriter.SetEndianness( GID::BigEndian );
+            for( size_t i = 1; i < it->size(); i++ )
+              {
+              // copy from boost::long_long_type to boost::uint64_t
+              // which must be compatible
+              GID::IdNode idN = (*it)[i];
+              binWriter.Write( mutations.back().value, idN );
+              }
+            GID::UInt64 GG = 0;
+            binWriter.Write( mutations.back().value, GG );
+            }
+          }
+        numberOfCoordinates += meshPart.nodes.size();
+        numberOfElements += meshPart.elements.size();
         }
-      // mutations for results
+      // all mutations OK?
       if( status == SUCCESS )
         {
 #ifndef DONT_APPLY_MUTATIONS
+        // apply mutations
         client.mutateRow( strTableData, keyM, mutations, dummyAttributes);
 #endif
-        LOG(info) << "inserted " << meshPart.nodes.size() << " coordinates";
-        LOG(info) << "inserted " << meshPart.elements.size() << " elements";
-        
+        LOG(info) << "inserted " << numberOfCoordinates << " coordinates";
+        LOG(info) << "inserted " << numberOfElements << " elements";
+
+        // prepare mutations for results
         for( std::vector<GID::ResultBlockType>::const_iterator itR = resultPart.results.begin( );
              itR != resultPart.results.end( ); itR++ )
           {
@@ -1316,8 +1334,9 @@ int ProcessInput( const po::variables_map &vm )
         }
       resultInfo.Update( resultPart );
       status = InsertPartResult_Data( host, port, keyModel, it->first,
-                                      meshInfo.GetIndexElementSet( meshPart.header.name ),
-                                      meshPart, resultPart );
+                                      //meshInfo.GetIndexElementSet( meshPart.header.name ),
+                                      meshInfo,
+                                      meshesInPartition, resultPart );
       if ( status != SUCCESS )
         {
         return status;
