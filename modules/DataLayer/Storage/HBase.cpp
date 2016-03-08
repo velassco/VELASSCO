@@ -913,9 +913,8 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
   } else {
     LOGGER << "ERROR**********\n";
     result = "Error";
-    report = "HBase::getListOfVerticesFromMesh THRIFT could not scan.";
+    report = "HBase::getResultFromVerticesID_thrift_filter THRIFT could not scan.";
   }
-
   return result;
 }
 
@@ -1807,7 +1806,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
 			  
 	  //} else {
 			  
-	 //LOGGER << "ERROR: GetListOfVerticesFromMesh Reort:" << list_of_vertices_report << std::endl;
+	 //LOGGER << "ERROR: getCoordinatesAndElementsFromMesh_thrift Report:" << list_of_vertices_report << std::endl;
 	 //return "Error";
 		
 	  //}
