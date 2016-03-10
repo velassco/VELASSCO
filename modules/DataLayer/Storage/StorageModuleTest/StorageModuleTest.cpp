@@ -56,6 +56,7 @@ void GetCoordinatesAndElementsFromMesh(VELaSSCoSMClient &client, string sessionI
    if (strncmp(meshInfoRV.status.data(), "Error", 5) == 0) {
       printf("Error message: \"%s\"\n", meshInfoRV.report.data());
    } else {
+      printf("Query report:\n%s\n\n", meshInfoRV.report.data());
       //OLI
       printf("Number of vertices transferred: %12llu\n", meshInfoRV.vertex_list.size());
       for (int i = 0; i < 20 && i < meshInfoRV.vertex_list.size(); i++) {
@@ -148,7 +149,10 @@ void GetListOfMeshes(VELaSSCoSMClient &client, string sessionID, char *modelName
    rvGetListOfMeshes rvMeshes;
 
    printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
+   startTime = GetTickCount();
    client.GetListOfMeshes(rvMeshes, sessionID, modelID, "Kratos", 21.0);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetListOfMeshes is %d milliseconds\n", endTime - startTime);
    printf("Return status: %s\n", rvMeshes.status.data());
    printf("%s has %d meshes.\n", modelName, rvMeshes.meshInfos.size());
    for (vector<VELaSSCoSM::MeshInfo>::iterator meshIter = rvMeshes.meshInfos.begin(); meshIter != rvMeshes.meshInfos.end(); meshIter++) {
@@ -187,7 +191,10 @@ void GetListOfAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNa
    rvGetListOfTimeSteps rvTimesteps;
 
    printf("\n--->GetListOfAnalyses - \"%s\"\n", modelName);
+   startTime = GetTickCount();
    client.GetListOfAnalyses(rvAnalysisList, sessionID, modelID);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetListOfAnalyses is %d milliseconds\n", endTime - startTime);
    printf("Return status: %s\n", rvAnalysisList.status.data());
    printf("%s has %d analyses.\n", modelName, rvAnalysisList.analyses.size());
    if (strncmp(rvAnalysisList.status.data(), "Error", 5) == 0) {
@@ -264,11 +271,11 @@ void testListAnalyses(VELaSSCoSMClient &client, string sessionID, char *modelNam
 
 
    //GetResultFromVerticesID(client, sessionID, modelName, modelID);
-   GetCoordinatesAndElementsFromMesh(client, sessionID, modelName, modelID);
+   //GetCoordinatesAndElementsFromMesh(client, sessionID, modelName, modelID);
    //GetResultFromVerticesID(client, sessionID, modelName, modelID);
    //GetListOfAnalyses(client, sessionID, modelName, modelID);
    //GetListOfMeshes(client, sessionID, modelName, modelID);
-   //GetBoundaryOfLocalMesh(client, sessionID, modelName, modelID);
+   GetBoundaryOfLocalMesh(client, sessionID, modelName, modelID);
    //GetListOfResultsFromTimeStepAndAnalysis(client, sessionID, modelName, modelID, "Kratos", 21);
 
 #endif /* ALLEHER */

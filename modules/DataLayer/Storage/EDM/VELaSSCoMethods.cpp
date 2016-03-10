@@ -390,10 +390,10 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          writeErrorMessageForSubQueries(errorMsg); rv.__set_status("Error"); rv.__set_report(errorMsg);
          return;
       }
-      endTime = GetTickCount();
       //printf("Elapsed time for parallel execution is %d milliseconds\n", endTime - startTime);
       nodeRvGetCoordinatesAndElementsFromMesh *retValueWithError = NULL;
       EDMULONG maxNodeID = 0, minNodeID = 0xfffffffffffffff, maxElementID = 0, minElementID = 0xfffffffffffffff;
+      EDMULONG n_vertices = 0, n_elements = 0;
       ReturnedMeshInfo *firstMetaData;
 
       for (int i = 0; i < nOfSubdomains; i++) {
@@ -405,6 +405,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          } else if (firstMetaData->element_record_size != metaData->element_record_size || firstMetaData->element_type != metaData->element_type || firstMetaData->model_type != metaData->model_type) {
             retValueWithError = retVal; break;
          }
+         n_vertices += metaData->n_vertices; n_elements += metaData->n_elements;
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
@@ -418,51 +419,15 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          unsigned char *verticesExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxNodeID + 1));
-         unsigned char *elementExist = (unsigned char *)ma.allocZeroFilled(sizeof(unsigned char) * (maxElementID + 1));
-         EDMULONG nNodeDuplicates = 0, nElementDuplicates = 0, n_vertices = 0, n_elements = 0;
-//OLI
-         //rv.__set_element_record_size(firstMetaData->element_record_size);
-         //rv.__set_n_vertices_pr_element(firstMetaData->n_vertices_pr_element);
-         //rv.__set_vertex_record_size(firstMetaData->vertex_record_size);
-         //rv.__set_element_type(firstMetaData->element_type);
-         //rv.__set_model_type(firstMetaData->model_type);
-         //rv.__set_model_type(1);
-
-         startTime = GetTickCount();
-         for (int i = 0; i < nOfSubdomains; i++) {
-            int prev_n_vertices = n_vertices;
-            int prev_n_elements = n_elements;
-            EDMexecution *e = subQueries->getElementp(i);
-            nodeRvGetCoordinatesAndElementsFromMesh *retVal = (nodeRvGetCoordinatesAndElementsFromMesh *)e->returnValues;
-
-            Container<EDMVD::Vertex> vertices(&ma, retVal->node_array);
-            for (EDMVD::Vertex *v = vertices.firstp(); v; v = vertices.nextp()) {
-               if (verticesExist[v->id] == 0) { verticesExist[v->id] = 1; n_vertices++; } else { nNodeDuplicates++; }
-            }
-            Container<EDMVD::FEMelement> elements(&ma, retVal->elemnt_array);
-            for (EDMVD::FEMelement *e = elements.firstp(); e; e = elements.nextp()) {
-               if (elementExist[e->id] == 0) { elementExist[e->id] = 1; n_elements++; } else { nElementDuplicates++; }
-            }
-            int nNodeThisModel = n_vertices - prev_n_vertices;
-            int nElemThisModel = n_elements - prev_n_elements;
-            prev_n_vertices = n_vertices;
-         }
-         //string vertex_string, element_string;
-         //EDMULONG vertexBufferSize = sizeof(EDMVD::Vertex) * n_vertices;
-         //vertex_string.resize(vertexBufferSize);
-         //element_string.resize(firstMetaData->element_record_size * n_elements);
-         //char *vp = (char*)vertex_string.data();
-         //char *vpEnd = vp + vertexBufferSize;
-         //char *ep = (char*)element_string.data();
+         EDMULONG nNodeDuplicates = 0, nElementDuplicates = 0;
+         int beforeThriftTime = GetTickCount();
 
          vector<VELaSSCoSM::Vertex> vertex_list;
+         vector<VELaSSCoSM::Element> element_list;
          int sizeV = sizeof(VELaSSCoSM::Vertex);
          vertex_list.reserve(n_vertices);
-         vector<VELaSSCoSM::Element> element_list;
          element_list.reserve(n_elements);
 
-         memset(verticesExist, 0, sizeof(unsigned char) * (maxNodeID + 1));
-         memset(elementExist, 0, sizeof(unsigned char) * (maxElementID + 1));
          EDMULONG n_vertices_copied = 0, n_elements_copied = 0;
          EDMULONG n_vertices_pr_element = firstMetaData->n_vertices_pr_element;
 
@@ -476,27 +441,27 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
                   VELaSSCoSM::Vertex vv;
                   vv.__set_id(v->id); vv.__set_x(v->x); vv.__set_y(v->y); vv.__set_z(v->z);
                   vertex_list.push_back(vv);  verticesExist[v->id] = 1;
+               } else {
+                  nNodeDuplicates++;
                }
             }
+#ifdef DATA_returned
             Container<EDMVD::FEMelement> elements(&ma, retVal->elemnt_array);
             for (EDMVD::FEMelement *e = elements.firstp(); e; e = elements.nextp()) {
-               if (elementExist[e->id] == 0) {
-                  VELaSSCoSM::Element el;
-                  el.__set_id(e->id);
-                  vector<NodeID> nodes;
-                  nodes.reserve(n_vertices_pr_element);
-                  for (int i = 0; i < n_vertices_pr_element; i++) nodes.push_back(e->nodes_ids[i]);
-                  el.__set_nodes_ids(nodes);
-                  element_list.push_back(el); elementExist[e->id] = 1;
-               }
+               VELaSSCoSM::Element el;
+               el.__set_id(e->id);
+               vector<NodeID> nodes;
+               nodes.reserve(n_vertices_pr_element);
+               for (int i = 0; i < n_vertices_pr_element; i++) nodes.push_back(e->nodes_ids[i]);
+               el.__set_nodes_ids(nodes);
+               element_list.push_back(el);
             }
+#endif
          }
-         //rv.__set_n_vertices(n_vertices_copied);
-         //rv.__set_n_elements(n_elements_copied);
-         //rv.__set_element_array(element_string);
-         //rv.__set_vertex_array(vertex_string);
+         char tbuf[2000];
+         sprintf(tbuf, "\nTime before thrift: %d\n", beforeThriftTime - startTime);
          string report;
-         printExecutionReport(report);
+         printExecutionReport(report); report += tbuf;
          rv.__set_report(report);
          rv.__set_status("OK");
          rv.__set_vertex_list(vertex_list);
@@ -651,13 +616,16 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
 
 void writeTrianglesToFile(char *fileName, Container<EDMVD::Triangle> *cont)
 {
+   int nError = 0;
    FILE *triangleFile = fopen(fileName, "w");
    if (triangleFile) {
       EDMVD::Triangle *p = NULL;
       for (EDMVD::Triangle *t = cont->firstp(); t; t = cont->nextp()) {
          if (p) {
             if (p->conpare(t) >= 0) {
-               THROW("Merge error in VELaSSCoMethods::GetBoundaryOfLocalMesh.")
+               //THROW("Merge error in VELaSSCoMethods::GetBoundaryOfLocalMesh.")
+               if (++nError < 100)
+                  fprintf(triangleFile, "Merge error in VELaSSCoMethods::GetBoundaryOfLocalMesh.");
             }
          }
          p = t;
@@ -862,12 +830,12 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
 
             for (EDMVD::MeshInfo *mi = mesh_info_container->firstp(); mi; mi = mesh_info_container->nextp()) {
                mi->relocateThis(mesh_info_relocator->bufferInfo);
-               //vector<VELaSSCoSM::MeshInfo>::iterator meshInfoIter;
-               //for (meshInfoIter = meshInfos.begin(); meshInfoIter != meshInfos.end(); meshInfoIter++) {
-               //   if (strEQL(mi->name, meshInfoIter->name.data()))
-               //      break;
-               //}
-               //if (meshInfoIter == meshInfos.end()) {
+               vector<VELaSSCoSM::MeshInfo>::iterator meshInfoIter;
+               for (meshInfoIter = meshInfos.begin(); meshInfoIter != meshInfos.end(); meshInfoIter++) {
+                  if (strEQL(mi->name, meshInfoIter->name.data()))
+                     break;
+               }
+               if (meshInfoIter == meshInfos.end()) {
                   VELaSSCoSM::MeshInfo meshInfo;
                   meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
                   VELaSSCoSM::ElementType elementType;
@@ -876,7 +844,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
                   meshInfo.__set_meshNumber(meshNumber++);
 
                   meshInfos.push_back(meshInfo);
-               //}
+               }
             }
          }
          string report;
