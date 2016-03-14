@@ -9,8 +9,11 @@
 // Thrift
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
+#include <thrift/concurrency/ThreadManager.h>
+#include <thrift/concurrency/PosixThreadFactory.h>
 
 // Boost
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -93,6 +96,7 @@ typedef std::map< OpenModelKey, QMS_FullyQualifiedModelName> ModelMap; // key = 
 
 class QueryManagerServer : virtual public QueryManagerIf {
   static ::apache::thrift::server::TSimpleServer *m_simpleServer;
+  static ::apache::thrift::server::TThreadedServer *m_threadedServer;
   UserMap m_users;
   ModelMap m_models;
   // handles compression between QM and AL
@@ -154,6 +158,11 @@ public:
     if ( m_simpleServer)
       delete m_simpleServer;
     m_simpleServer = simpleServer;
+  }
+  static void SetThreadedServer( ::apache::thrift::server::TThreadedServer *threadedServer) {
+    if ( m_threadedServer)
+      delete m_threadedServer;
+    m_threadedServer = threadedServer;
   }
   void SetDefaultCompression() {
     m_compression.setCompressionType( VL_Compression::CompressionType::Zlib);

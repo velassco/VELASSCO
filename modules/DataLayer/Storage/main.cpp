@@ -119,12 +119,13 @@ int main(int argc, char **argv)
     boost::shared_ptr<VELaSSCoHandler> handler(new VELaSSCoHandler( db_type, db_host, db_port));
     boost::shared_ptr<TProcessor> processor(new VELaSSCoSMProcessor(handler));
     boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(listen_port));
-    boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+//    boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+	boost::shared_ptr<TTransportFactory> transportFactory(new TFramedTransportFactory());
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
     
     
     //TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-    
+//WARNING. FIXME: threadManager is not needed for TThreadServer, only for a pool server ...    
     boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(workerCount);
     boost::shared_ptr<PosixThreadFactory> threadFactory = boost::shared_ptr<PosixThreadFactory>(new PosixThreadFactory());
     threadManager->threadFactory(threadFactory);

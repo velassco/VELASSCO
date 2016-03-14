@@ -24,7 +24,8 @@ bool DataLayerAccess::startConnection( const char *data_layer_hostname, const in
 {
   DEBUG( "Connecting to Data Layer at " << data_layer_hostname << ":" << data_layer_port);
     socket= boost::shared_ptr<TTransport>(new TSocket( data_layer_hostname, data_layer_port));
-    transport = boost::shared_ptr<TTransport>(new TBufferedTransport(socket));
+//    transport = boost::shared_ptr<TTransport>(new TBufferedTransport(socket));
+	transport = boost::shared_ptr<TTransport>(new TFramedTransport(socket));
     protocol = boost::shared_ptr<TProtocol>(new TBinaryProtocol(transport));
     cli = new VELaSSCoSMClient(protocol);
     try
