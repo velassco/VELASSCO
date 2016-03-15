@@ -17,6 +17,8 @@
 
 using namespace std;
 
+int QMiD = 0;
+
 void parse(string cmd)
 {
     if( cmd.find("query") == 0)
@@ -43,24 +45,65 @@ void parse(string cmd)
         }
         
         listOfVertices <<"]}";
+
+
+        string _return;
+        string sessionID;
+        string modelID; // does not matter it's hard coded in the DataLayer
+        double timeStep;
+
+	 string model_name;
+        string analysisID;
+        string resultID;
+
+		if (QMiD == 26267)
+		{
+			cout<<"# Launching getResultFromVerticesID in timeSetp 381" <<endl;
+		    _return = "";
+		    sessionID = "-1564890139288268170";
+		    modelID  = "e863004ceac4190cea39528f81a58fcf"; // does not matter it's hard coded in the DataLayer
+		    timeStep = 381;
+		 	model_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/:fine_mesh";
+		    analysisID  = "Kratos";
+		    resultID = "PRESSURE";
+		 }
+		 else
+		 {
+		 	cout<<"# Launching getResultFromVerticesID in timeSetp 361" <<endl;
+		    _return = "";
+		    sessionID = "-1564890139288268171";
+		    modelID  = "e863004ceac4190cea39528f81a58fcf"; // does not matter it's hard coded in the DataLayer
+		    timeStep = 361;
+		 	model_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/:fine_mesh";
+		    analysisID  = "Kratos";
+		    resultID = "PRESSURE";     
+		 }   
         
-        string _return = "";
-        string sessionID = "sessionID";
-        string modelID  = "0001"; // does not matter it's hard coded in the DataLayer
-        string analysisID  = "DEM";
-        double timeStep = 1;
-	timeStep = 2799000;
-
-	// string model_name = "VELaSSCo_Models_V4CIMNE:/home/jsperez/Sources/CIMNE/VELASSCO-Data/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest-part-";
-        // string analysisID  = "geometry";
-
-        string resultID = "00001";
-	// rvOpenModel om_return;
-	// DataLayerAccess::Instance()->openModel( om_return, sessionID, model_name, "rw");
-	// const string &modelID = om_return.modelID;
-    //    DataLayerAccess::Instance()->getResultFromVerticesID( _return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
-	// DataLayerAccess::Instance()->closeModel();
-        cout<<"#### /Query ####"<<endl;
+        
+        
+		rvOpenModel om_return;
+		DataLayerAccess::Instance()->openModel( om_return, sessionID, model_name, "rw");
+		 //const string &modelID = om_return.modelID;
+		    //DataLayerAccess::Instance()->getResultFromVerticesID( _return ,sessionID ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices.str());
+		    rvGetResultFromVerticesID _return_;
+		    
+		int size = 100000;      
+		    std::vector<int64_t> listOfVertices2(size);
+		for(int i=0; i<size; ++i){
+			listOfVertices2[i] = i;
+		}        
+        
+		DataLayerAccess::Instance()->getResultFromVerticesID( _return_, sessionID, modelID, analysisID, timeStep, resultID, listOfVertices2);     
+ 
+		cout<<" Print results:\n"<<endl;
+		int nRes = 0;
+		for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = _return_.result_list.begin(); resIter != _return_.result_list.end(); resIter++) {
+			vector<double>::iterator valuesIter = resIter->value.begin();
+			if (nRes++ > 16) break;
+			printf("%10ld %0.3f\n", resIter->id, *valuesIter);
+		}
+	 //DataLayerAccess::Instance()->closeModel();
+        cout<<"#### /Query Finished ####\n"<<endl;
         
     }
     else if( cmd.find("ping")  == 0)
@@ -172,6 +215,7 @@ int main(int argc, char **argv)
     {
       DataLayerAccess::Instance()->startConnection( data_layer_hostname, data_layer_port);
 
+	QMiD = listen_port;
 	DEBUG( "listening on port" << listen_port);
 	boost::thread serverThread(StartServer, listen_port);
 

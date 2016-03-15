@@ -47,7 +47,37 @@ VAL_Result Client::UserLogin( /* in */
 	try
 	{
 		m_socket    = boost::shared_ptr<TTransport>(new TSocket(host, port));
-		m_transport = boost::shared_ptr<TTransport>(new TBufferedTransport(m_socket));
+		//m_transport = boost::shared_ptr<TTransport>(new TBufferedTransport(m_socket));
+		
+		
+		
+		// AUTHOR: iCores. This code allows multi-user and single-user behaviour.
+			bool multiUserSupport = false;
+			char *valueEnvV = NULL;
+			valueEnvV = getenv("MULTIUSER_VELASSCO");
+			if (valueEnvV)
+			{
+				if (atoi(valueEnvV))
+				{
+					LOGGER << " WARNING: Multiuser support enabled. Under development ... \n" << std::endl;		
+					multiUserSupport =  true;
+				}
+			}	
+
+			if (multiUserSupport)
+			{
+				//New behaviour. Multiple users per port.
+				m_transport = boost::shared_ptr<TTransport>(new TFramedTransport(m_socket));
+			}
+			else
+			{
+				//Old behaviour. Sigle user per port.
+				m_transport = boost::shared_ptr<TTransport>(new TBufferedTransport(m_socket));
+			}
+		// END: AUTHOR: iCores. This code allows multi-user and single-user behaviour.
+		
+		
+		
 		m_protocol  = boost::shared_ptr<TProtocol>(new TBinaryProtocol(m_transport));
 
 		m_client = boost::shared_ptr<QueryManagerClient>(new QueryManagerClient(m_protocol));

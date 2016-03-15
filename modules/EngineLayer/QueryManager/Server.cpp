@@ -11,6 +11,10 @@
 // Thrift
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TThreadPoolServer.h>
+#include <thrift/server/TThreadedServer.h>
+#include <thrift/concurrency/ThreadManager.h>
+#include <thrift/concurrency/PosixThreadFactory.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
@@ -202,25 +206,78 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
 }
 
 TSimpleServer *QueryManagerServer::m_simpleServer = NULL;
+TThreadedServer *QueryManagerServer::m_threadedServer = NULL;
 
 int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;
 
-  int port = server_port;
-  LOGGER << "  using port: " << port << std::endl;
 
-  boost::shared_ptr<QueryManagerServer> handler(new QueryManagerServer());
-  boost::shared_ptr<TProcessor> processor(new QueryManagerProcessor(handler));
-  boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+	// AUTHOR: iCores. This code allows multi-user and single-user behaviour.
+	bool multiUserSupport = false;
+	char *valueEnvV = NULL;
+	valueEnvV = getenv("MULTIUSER_VELASSCO");
+	if (valueEnvV)
+	{
+		if (atoi(valueEnvV))
+		{
+			std::cout << "\nWARNING: Multiuser support enabled. Under development ... \n" << std::endl;		
+			multiUserSupport =  true;
+		}
+	}	
 
-  TSimpleServer *server = new TSimpleServer(processor, serverTransport, transportFactory, protocolFactory);
-  handler->SetSimpleServer( server);
-  handler->SetDefaultCompression();
-  DEBUG( "  before serving ...");
-  server->serve();
-  DEBUG( "  after serving ...");
+	if (multiUserSupport)
+	{
+		//New behaviour. Multiple users per port.
+		  int port = server_port;
+		  LOGGER << "  using port: " << port << std::endl;
+
+		  boost::shared_ptr<QueryManagerServer> handler(new QueryManagerServer());
+		  boost::shared_ptr<TProcessor> processor(new QueryManagerProcessor(handler));
+		  boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+		  boost::shared_ptr<TTransportFactory> transportFactory(new TFramedTransportFactory());
+		  boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
+		  
+		//FIXME: NOT SURE IF THIS IS NECCESSARY OR NOT, ThreadManager only for TThreadedPoolServer? FUTURE OPTIMIZATION?
+		// using thread pool with maximum 64 threads to handle incoming requests. Client hangs if there is no more thread available in the thread pool.
+		//  const int workerCount = 64;
+		//  boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(workerCount);
+		//  boost::shared_ptr<PosixThreadFactory> threadFactory = boost::shared_ptr<PosixThreadFactory>(new PosixThreadFactory());
+		//  threadManager->threadFactory(threadFactory);
+		//  threadManager->start();
+		// END FIXME
+		  
+		  TThreadedServer *server = new TThreadedServer(processor, serverTransport, transportFactory, protocolFactory);
+		  
+		  handler->SetThreadedServer( server);
+		  handler->SetDefaultCompression();
+		  DEBUG( "  Launching TThreadedServer, before serving ...");
+		  server->serve();
+		  DEBUG( "  after serving ...");	
+	
+	}
+	else
+	{
+		//Old behaviour. Sigle user per port.
+		  int port = server_port;
+		  LOGGER << "  using port: " << port << std::endl;
+
+		  boost::shared_ptr<QueryManagerServer> handler(new QueryManagerServer());
+		  boost::shared_ptr<TProcessor> processor(new QueryManagerProcessor(handler));
+		  boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+		  boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+		  boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
+		  TSimpleServer *server = new TSimpleServer(processor, serverTransport, transportFactory, protocolFactory);
+		  handler->SetSimpleServer( server);
+		  handler->SetDefaultCompression();
+		  DEBUG( "  before serving (Simple server) ...");
+		  server->serve();
+		  DEBUG( "  after serving ...");
+	}
+	// END: AUTHOR: iCores. This code allows multi-user and single-user behaviour.
+  
+  
   exit( 0);
   return 0;
 }

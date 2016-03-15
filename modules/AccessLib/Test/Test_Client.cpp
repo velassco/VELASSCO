@@ -115,6 +115,103 @@ std::string getStringFromCharPointers( const char *str1, const char *str2) {
 
 
 
+
+
+
+
+int doTestiCores( const VAL_SessionID sessionID) {
+  VAL_Result    result;
+  const char *status = NULL;
+  
+  std::cout << "\n\n SLEEP \n\n" << std::endl;
+  sleep(4);
+  std::cout << "=======================>>> Ivan Cores <<<=====================\n";
+
+
+  
+  const char* model_name 		= "FluidizedBed_large";//"FluidizedBed_small";//"FluidizedBed_large";
+  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";// "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
+  const char* model_tablename   = "VELaSSCo_Models";//"VELaSSCo_Models";//"Test_VELaSSCo_Models";
+  
+  
+  std::string model_unique_name = model_tablename;
+  model_unique_name += ":";
+  model_unique_name += model_fullpath;
+  model_unique_name += ":";
+  model_unique_name += model_name;
+  
+  //model_unique_name.erase(remove(model_unique_name.begin(), model_unique_name.end(), ' '), model_unique_name.end());
+  
+  const char *access = "";
+  const char *return_modelID = NULL;
+  result = valOpenModel( sessionID, model_unique_name.c_str(), access, &status, &return_modelID);
+  CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
+  std::cout << "OpenModel: " << std::endl;
+  std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
+  if ( return_modelID) {
+    std::cout << "   model_modelID = " << return_modelID << std::endl;
+  } else {
+    // logout as it is not valid ...
+    std::cout << "   ERROR FEM model could not be opened, login out ..." << std::endl;
+    return EXIT_SUCCESS;
+  }
+  
+  const char* listOfMeshes = 0;
+  std::string modelID( return_modelID );
+
+
+  
+if (modelID.size() == 0)
+{
+	std::cout << "   model_modelID *********ERROR           ******** =00 " << return_modelID << std::endl;
+ 	return EXIT_SUCCESS;
+} 
+else
+{
+	std::cout << "   model_modelID *********OK              ******** =00 " << return_modelID << std::endl;
+}
+  
+  const char* analysisID = "DEM";
+  double      timeStep = 2939000.0;
+  
+  result = valGetListOfMeshes( sessionID, modelID.c_str(), analysisID, timeStep, &status, &listOfMeshes ); 
+  CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
+  std::cout  << "GetListOfMeshes: "    << std::endl
+             << "   status = " << status << std::endl;
+  if(listOfMeshes) std::cout << "List Of Mesehes = \n" << listOfMeshes << std::endl;
+  
+  const char* meshID = "particles";
+   
+  const VELaSSCo::RTFormat::File* mesh_draw_data = NULL;
+  result = valGetMeshDrawData( sessionID, modelID.c_str(), analysisID, timeStep, meshID, &status, &mesh_draw_data );
+  std::cout << "status:  " << status;
+  
+  //const int64_t vertexIDs[] = {2724, 10, 0};
+  std::vector<int64_t> vertexIDs;
+  for(int64_t idx = 1; idx <= 11000; idx+=1)
+    vertexIDs.push_back(idx);
+  vertexIDs.push_back(0);
+	  
+  const int64_t  *resultVertexIDs;
+  const double   *resultValues;
+  size_t          resultNumVertices;
+  result = valGetResultFromVerticesID( sessionID, modelID.c_str(), "Velocity", "DEM", vertexIDs.data(), 2939000.0, &status, &resultVertexIDs, &resultValues, &resultNumVertices);
+  std::cout  << "valGetResultFromVerticesID: "    << std::endl
+             << "   status = " << status << std::endl;
+//  for(size_t i = 0; i < resultNumVertices; i++){
+//	std::cout << resultVertexIDs[i] << "\t" << resultValues[3*i+0] << " " << resultValues[3*i+1] << " " << resultValues[3*i+2] << std::endl;
+//  }
+  
+  
+  std::cout << "=======================>>> Ivan Cores <<<=====================\n";
+  
+  return EXIT_SUCCESS;
+}
+
+
+
+
+
 int doTestMorteza( const VAL_SessionID sessionID) {
   VAL_Result    result;
   const char *status = NULL;
@@ -678,6 +775,7 @@ int main(int argc, char* argv[])
   std::cout << "SetConfiguration: " << std::endl;
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;  
 
+  //ret = doTestiCores(sessionID);
   ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
   //ret= doTestDC (sessionID);
