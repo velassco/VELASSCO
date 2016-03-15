@@ -124,7 +124,7 @@ int doTestiCores( const VAL_SessionID sessionID) {
   const char *status = NULL;
   
   std::cout << "\n\n SLEEP \n\n" << std::endl;
-  sleep(4);
+  //sleep(4);
   std::cout << "=======================>>> Ivan Cores <<<=====================\n";
 
 
