@@ -12,13 +12,18 @@
 
 
 #include "DataLayerAccess.h"
+#include "EdmAccess.h"
 #include "Server.h"
 #include "Helpers.h"
+
+#include "EDMincludes.h"
+
 
 using namespace std;
 
 int QMiD = 0;
-
+VELaSSCoSMClient *clp = NULL;
+	
 void parse(string cmd)
 {
     if( cmd.find("query") == 0)
@@ -136,12 +141,12 @@ void parse(string cmd)
 void printListOfCmd()
 {
     cout << "List of available commands :" << endl;
-    cout << "stop: stop the dataLayer application" << endl;
-    cout << "ping: get Status of DB" << endl;
-    cout << "list: list models in DataLayer" << endl;
-    cout << "query: does a query" << endl;
-    cout << "exit (or quit): stop the current application (enginelayer)" << endl;
-    cout <<" ################################################" << endl << endl;
+    cout << " stop: stop the dataLayer application" << endl;
+    cout << " ping: get Status of DB" << endl;
+    cout << " list: list models in DataLayer" << endl;
+    cout << " query: does a query" << endl;
+    cout << " exit (or quit): stop the current application (enginelayer)" << endl;
+    cout << "################################################" << endl << endl;
 }
 
 bool askForHelp( const char *txt) {
@@ -159,6 +164,8 @@ bool thereIsHelpSwitch( int argc, char **argv) {
   return ret;
 }
 
+
+
 int main(int argc, char **argv)
 {
     srand(time(NULL));
@@ -166,36 +173,45 @@ int main(int argc, char **argv)
     int listen_port = 26267; // standard thrift port : 9090
     const char *data_layer_hostname = "localhost"; // or "pez001";
     int         data_layer_port     = 26266;
+    int         connect_EDM			= 0;
     if ( thereIsHelpSwitch( argc, argv)) {
       printf( "Usage: %s [ options] \n", argv[ 0]);
       printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
       printf( "  -dl_host hostname         host name of the Data Layer Server (default %s)\n", data_layer_hostname);
       printf( "  -dl_port port_number      port of the Data Layer Server (default %d)\n", data_layer_port);
+      printf( "  -dl_EDM 1                 connects to the EDM SM (default %d - OpenVersion)\n", connect_EDM);
       return EXIT_FAILURE;
     }
 
     int processed_args = 1; // first is the program name itself
     for ( int ia = 1; ia + 1 < argc; ia++) {
       if ( !strcasecmp( argv[ ia], "-port")) {
-	ia++;
-	int new_port = listen_port;
-	if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
-	  listen_port = new_port;
-	  processed_args += 2;
-	}
+		ia++;
+		int new_port = listen_port;
+		if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+		  listen_port = new_port;
+		  processed_args += 2;
+		}
       } else if ( !strcasecmp( argv[ ia], "-dl_host")) {
-	ia++;
-	data_layer_hostname = argv[ ia];
-	processed_args += 2;
+		ia++;
+		data_layer_hostname = argv[ ia];
+		processed_args += 2;
       } else if ( !strcasecmp( argv[ ia], "-dl_port")) {
-	ia++;
-	int new_port = data_layer_port;
-	if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
-	  data_layer_port = new_port;
-	  processed_args += 2;
-	}
-      } else {
-	break;
+		ia++;
+		int new_port = data_layer_port;
+		if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+		  data_layer_port = new_port;
+		  processed_args += 2;
+		}
+      } else if ( !strcasecmp( argv[ ia], "-dl_EDM")) {
+		ia++;
+		int new_port = data_layer_port;
+		if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+		  connect_EDM = new_port;
+		  processed_args += 2;
+		}
+      }else {
+		break;
       }
     }
 
@@ -204,37 +220,119 @@ int main(int argc, char **argv)
       return EXIT_FAILURE;
     }
 
+	//FIXME: AUTHOR IVAN CORES: I think this fork can be deleted ...
     // int counter = 0;
-    pid_t pid = fork();
+//    pid_t pid = fork();
     
-    if (pid == 0)
-    {
+//    if (pid == 0)
+//    {
         // child process
-    }
-    else if (pid > 0)
-    {
-      DataLayerAccess::Instance()->startConnection( data_layer_hostname, data_layer_port);
+//    }
+//    else if (pid > 0)
+//    {
 
-	QMiD = listen_port;
-	DEBUG( "listening on port" << listen_port);
-	boost::thread serverThread(StartServer, listen_port);
+	if (connect_EDM == 0)
+	{
+		//Open Source behaviour.
+		DataLayerAccess::Instance()->startConnection( data_layer_hostname, data_layer_port);
 
-        string cmd ="";
-        do
-        {
-            printListOfCmd();
-            cin >> cmd;
-            parse(cmd);
-        }
-        while (cmd.find("exit") != 0 && cmd.find("quit")  != 0);
-        DataLayerAccess::Instance()->stopConnection();
-    }
-    else
-    {
-        // fork failed
-        printf("fork() failed!\n");
-        return 1;
-    }
+		QMiD = listen_port;
+		DEBUG( "listening on port " << listen_port);
+		boost::thread serverThread(StartServer, listen_port);
+
+		cout << endl;
+		string cmd ="";
+		do
+		{
+			printListOfCmd();
+			cin >> cmd;
+			parse(cmd);
+		}
+		while (cmd.find("exit") != 0 && cmd.find("quit")  != 0);
+		DataLayerAccess::Instance()->stopConnection();
+        
+	}
+	else //connect_EDM==1
+	{
+		//EDM connection...
+		
+		//const char *edm_server = "10.0.1.134";
+		//int edm_port = 26266;
+		DEBUG("EDM connection information in ACUARIO: pez010 VM IP: 10.0.1.134, port 26266");	
+		
+		EdmAccess::Instance()->startConnection( data_layer_hostname, data_layer_port);
+		
+		
+//		//This is the code that SHOULD be here in the definitive version.
+//			DEBUG( "listening on port " << listen_port);
+//			boost::thread serverThread(StartServer, listen_port);
+//
+//			cout << endl;
+//			string cmd ="";
+//			do
+//			{
+//				printListOfCmd();
+//				cin >> cmd;
+//				parse(cmd);
+//			}
+//			while (cmd.find("exit") != 0 && cmd.find("quit")  != 0);
+		
+		
+		
+		
+//		//This is only for testing purposes !!
+//		//This is only for testing purposes !!
+//		//This is only for testing purposes !!
+//		//This is only for testing purposes !!		
+			std::string sessionID;
+		EdmAccess::Instance()->userLogin(sessionID, "name", "rol", "pass"); 
+		
+			rvOpenModel rvOM;
+		EdmAccess::Instance()->openModel(rvOM, sessionID, "telescope", "read");
+		
+			rvGetResultFromVerticesID verticesResultRV;
+			vector<int64_t> listOfVertices;
+			listOfVertices.push_back(63327);
+			listOfVertices.push_back(63699);
+			listOfVertices.push_back(63707);
+			listOfVertices.push_back(64285);
+			listOfVertices.push_back(123400);
+
+		EdmAccess::Instance()->getResultFromVerticesID(verticesResultRV, sessionID, rvOM.modelID, "Kratos", 21.0, "PRESSURE", listOfVertices);
+
+			rvGetListOfMeshes rvMeshes;
+		EdmAccess::Instance()->getListOfMeshes( rvMeshes, sessionID, rvOM.modelID, "Kratos", 21.0);		       
+				       
+			rvGetListOfAnalyses rvAnalysisList;		       
+		EdmAccess::Instance()->getListOfAnalyses( rvAnalysisList,sessionID, rvOM.modelID);
+			
+			rvGetListOfResults resultRV;		 
+		EdmAccess::Instance()->getListOfResultsFromTimeStepAndAnalysis( resultRV, sessionID, rvOM.modelID, "Kratos", 21.0);		    
+		
+/*			MeshInfo meshInfo;
+			rvGetCoordinatesAndElementsFromMesh meshInfoRV;
+		EdmAccess::Instance()->getCoordinatesAndElementsFromMesh(meshInfoRV, sessionID, rvOM.modelID, "Kratos", 21.0, meshInfo );
+*/
+	   
+//		// END: This is only for testing purposes !!
+//		// END: This is only for testing purposes !!
+//		// END: This is only for testing purposes !!
+//		// END: This is only for testing purposes !!	
+		
+		
+		
+		EdmAccess::Instance()->stopConnection();
+	
+	} //end else
+
+
+//    }
+//    else
+//    {
+//        // fork failed
+//        printf("fork() failed!\n");
+//        return 1;
+//    }
     
     
     return 0;

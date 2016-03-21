@@ -51,7 +51,7 @@ THRIFT_QUERY_OBJS_TMP = ${THRIFT_QUERY_FILES:.cpp=.o}
 THRIFT_QUERY_OBJS = ${THRIFT_QUERY_OBJS_TMP:%=$(OBJS_DIR)/%}
 THRIFT_QUERY_DEPENDENCIES = $(wildcard $(THRIFT_QUERY_MANAGER_DIR)/*.h)
 
-ENGINE_CPP_FILES = DataLayerAccess.cpp Analytics.cpp Graphics.cpp Helpers.cpp main.cpp \
+ENGINE_CPP_FILES = DataLayerAccess.cpp Analytics.cpp EdmAccess.cpp Graphics.cpp Helpers.cpp main.cpp \
 	Server.cpp                         \
 	Server_direct_result_queries.cpp   \
 	Server_monitoring_queries.cpp      \
