@@ -171,7 +171,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // try reading error file
     bool errorfile_read = false;
     sprintf( filename, "%s/error.txt", output_folder.c_str());
-    fi = fopen( filename, "r");
+/*    fi = fopen( filename, "r");
     if (fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
@@ -181,7 +181,16 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
 	*return_error_str = std::string( buffer);
 	errorfile_read = true;
       }
+    }    */
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
     }
+	ifs.close();
+	
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
@@ -213,7 +222,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // try reading error file
     bool errorfile_read = false;
     sprintf( filename, "%s/error.txt", output_folder.c_str());
-    fi = fopen( filename, "r");
+/*    fi = fopen( filename, "r");
     if ( fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
@@ -223,7 +232,16 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
 	*return_error_str = std::string( buffer);
 	errorfile_read = true;
       }
+    }*/
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
     }
+    ifs.close();
+    
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " results.");
@@ -300,28 +318,38 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
     }
     
     //result stored in HBase and outcome in a file
-    FILE *fi = fopen( "D2C/queryOutcome", "r");
-  
-    if (!fi) {
+//    FILE *fi = fopen( "D2C/queryOutcome", "r");
+//    if (!fi) {
+  	std::ifstream fi("D2C/queryOutcome");
+    if (!fi.is_open()) {
       // try reading error file
       bool errorfile_read = false;
-      fi = fopen( "D2C/queryError", "r");
+/*    fi = fopen( "D2C/queryError", "r");
       if (fi) {
-	const size_t size_buffer = 1024 * 1024;
-	char buffer[ size_buffer + 1];
-	char *ok = fgets( buffer, size_buffer, fi);
-	fclose( fi);
-	if ( ok) {
-	  *return_error_str = std::string( buffer);
-	  errorfile_read = true;
-	}
-      }
+		const size_t size_buffer = 1024 * 1024;
+		char buffer[ size_buffer + 1];
+		char *ok = fgets( buffer, size_buffer, fi);
+		fclose( fi);
+		if ( ok) {
+		  *return_error_str = std::string( buffer);
+		  errorfile_read = true;
+		}
+      }*/
+        std::ifstream ifs("D2C/queryError");
+		if (ifs.is_open()) {
+			std::stringstream buffer;
+			buffer << ifs.rdbuf();
+			*return_error_str = buffer.str();
+			errorfile_read = true;
+		}
+		ifs.close();
+		
       if ( !errorfile_read) {
-	*return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
+		*return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	  ( use_yarn ? " Yarn" : " Java") + std::string( " job.");
-	if ( use_yarn) {
-	  *return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
-	}
+			if ( use_yarn) {
+			  *return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+			}
       }
       return;
     }
@@ -330,14 +358,20 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
     else {
       //QUERY OK
       // not using yarn ...
-      const size_t size_buffer = 1024;
+      
+/*		const size_t size_buffer = 1024;
       char buffer[ size_buffer + 1];
       char *ok = fgets( buffer, size_buffer, fi);
       fclose( fi);
-
+		
       if ( ok)
-	*returnQueryOutcome = std::string( buffer);
-    }
+		*returnQueryOutcome = std::string( buffer);
+*/
+		std::stringstream buffer_ok;
+		buffer_ok << fi.rdbuf();
+		*returnQueryOutcome = buffer_ok.str();
+		fi.close();
+	}
    
     //remove recursevely folder D2C
    
@@ -459,8 +493,8 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
     // try reading error file
     bool errorfile_read = false;
     sprintf( filename, "%s/error.txt", output_folder.c_str());
-    fi = fopen( filename, "r");
-    if (fi) {
+/*    fi = fopen( filename, "r");
+      if (fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
       char *ok = fgets( buffer, size_buffer, fi);
@@ -469,7 +503,15 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
 	return_error_str = std::string( buffer);
 	errorfile_read = true;
       }
+    }*/
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	return_error_str = buffer.str();
+    	errorfile_read = true;
     }
+    
     if ( !errorfile_read) {
       return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
@@ -722,7 +764,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     // try reading error file
     bool errorfile_read = false;
     sprintf( filename, "%s/error.txt", output_folder.c_str());
-    fi = fopen( filename, "r");
+/*    fi = fopen( filename, "r");
     if (fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
@@ -732,7 +774,16 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
 	*return_error_str = std::string( buffer);
 	errorfile_read = true;
       }
+    }*/
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
     }
+	ifs.close();
+    
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
@@ -810,7 +861,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
     // try reading error file
     bool errorfile_read = false;
     sprintf( filename, "%s/error.txt", output_folder.c_str());
-    fi = fopen( filename, "r");
+/*    fi = fopen( filename, "r");
     if ( fi) {
       const size_t size_buffer = 1024 * 1024;
       char buffer[ size_buffer + 1];
@@ -820,7 +871,16 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
 	*return_error_str = std::string( buffer);
 	errorfile_read = true;
       }
+    }*/
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
     }
+	ifs.close();
+		
     if ( !errorfile_read) {
       *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + 
 	( use_yarn ? " Yarn" : " Java") + std::string( " results:\n");
