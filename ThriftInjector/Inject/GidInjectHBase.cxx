@@ -1143,22 +1143,23 @@ int InsertPartResult_Data( const std::string &host, int port,
         unsigned int nthreads = boost::thread::hardware_concurrency();
         std::vector<std::vector<GID::ResultBlockType>::const_iterator> bounds;
         unsigned int threadSize = resultPart.results.size() / nthreads;
-        std::vector<GID::ResultBlockType>::const_iterator itStart = resultPart.results.begin( );
         LOG(info) << "Distributing " << resultPart.results.size() << " results among " << nthreads << " threads";
-        size_t threadID = 0;
-        while( itStart < resultPart.results.end( ) )
+        std::vector<GID::ResultBlockType>::const_iterator itStart = resultPart.results.begin( );
+        size_t threadID;
+        for( threadID = 0; threadID < nthreads - 1; ++threadID )
           {
           std::vector<GID::ResultBlockType>::const_iterator itEnd = itStart + threadSize;
-          if( itEnd > resultPart.results.end( ) )
-            {
-            itEnd = resultPart.results.end( );
-            }
           group.add_thread( new boost::thread( InsertPartResult_Data_Worker,
                                                host, port, 
                                                keyModel, indexPart,
-                                               itStart, itEnd, threadID++ ) );
+                                               itStart, itEnd, threadID ) );
           itStart = itEnd;
           }
+        group.add_thread( new boost::thread( InsertPartResult_Data_Worker,
+                                             host, port, 
+                                             keyModel, indexPart,
+                                             itStart, resultPart.results.end( ), threadID ) );
+        
         group.join_all();
         }
       }
