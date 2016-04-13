@@ -18,7 +18,8 @@
 #  endif
 #endif
 
-#include "../../EngineLayer/QueryManager/RealTimeFormat.h"
+//#include "../../EngineLayer/QueryManager/commonFiles/RealTimeFormat.h"
+#include "../../Platform/commonFiles/RealTimeFormat.h"
 
 /**
  * List of function result codes. Non-zero codes indicate an error.

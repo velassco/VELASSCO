@@ -28,7 +28,7 @@
 
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
-#include "../../EngineLayer/QueryManager/RealTimeFormat.h"
+#include "../../Platform/commonFiles/RealTimeFormat.h"
 
 // the format is shared between the QueryManager, the AccessLibrary and th visualiztion client
 // so it's located in the AccessLibrary folder

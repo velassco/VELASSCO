@@ -129,9 +129,16 @@ int doTestiCores( const VAL_SessionID sessionID) {
 
 
   
-  const char* model_name 		= "FluidizedBed_large";//"FluidizedBed_small";//"FluidizedBed_large";
+/*  const char* model_name 		= "FluidizedBed_large";//"FluidizedBed_small";//"FluidizedBed_large";
   const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";// "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
   const char* model_tablename   = "VELaSSCo_Models";//"VELaSSCo_Models";//"Test_VELaSSCo_Models";
+  */
+  
+    
+  const char* model_name 		= "fine_mesh-ascii_";//"FluidizedBed_small";//"FluidizedBed_large";
+  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";// "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
+  const char* model_tablename   = "VELaSSCo_Models_V4CIMNE";//"VELaSSCo_Models";//"Test_VELaSSCo_Models";
+  
   
   
   std::string model_unique_name = model_tablename;
@@ -170,7 +177,25 @@ else
 {
 	std::cout << "   model_modelID *********OK              ******** =00 " << return_modelID << std::endl;
 }
-  
+
+ 
+/* 
+  const char* analysisID = "";
+  double      timeStep = 0.0;
+  const char* meshID = "Kratos Tetrahedra3D4 Mesh";
+
+				   
+	const char     *resultMesh;
+	size_t         resultMeshByteSize;
+	const char     *resultErrorStr;			   
+				result = valGetBoundaryOfAMesh(sessionID, return_modelID, meshID, analysisID, timeStep, &resultMesh, &resultMeshByteSize, &resultErrorStr);
+	std::cout << "result:  " << result << std::endl;		
+	
+*/	
+	
+			   
+ /*
+ 
   const char* analysisID = "DEM";
   double      timeStep = 2939000.0;
   
@@ -201,7 +226,7 @@ else
 //  for(size_t i = 0; i < resultNumVertices; i++){
 //	std::cout << resultVertexIDs[i] << "\t" << resultValues[3*i+0] << " " << resultValues[3*i+1] << " " << resultValues[3*i+2] << std::endl;
 //  }
-  
+  */
   
   std::cout << "=======================>>> Ivan Cores <<<=====================\n";
   
@@ -775,8 +800,8 @@ int main(int argc, char* argv[])
   std::cout << "SetConfiguration: " << std::endl;
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;  
 
-  //ret = doTestiCores(sessionID);
-  ret = doTestMorteza( sessionID);
+  ret = doTestiCores(sessionID);
+  //ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
   //ret= doTestDC (sessionID);
 
