@@ -960,21 +960,22 @@ void CheckDecodeRowKey_Data( const std::string & rowkey,
     }
 }
 
-int InsertPartResult_Data( const std::string &host, int port,
-                           const std::string &keyModel, 
-                           GID::IdPartition indexPart,
-                           std::vector<GID::ResultBlockType>::const_iterator itBegin,
-                           std::vector<GID::ResultBlockType>::const_iterator itEnd )
+int InsertPartResult_Data_Worker( const std::string &host, int port,
+                                  const std::string &keyModel, 
+                                  GID::IdPartition indexPart,
+                                  std::vector<GID::ResultBlockType>::const_iterator itBegin,
+                                  std::vector<GID::ResultBlockType>::const_iterator itEnd,
+			          size_t threadID )
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
   boost::shared_ptr<TProtocol> protocol( new TBinaryProtocol( transport ) );
+  HbaseClient client( protocol );
 
   int status;
   try 
     {    
     transport->open( );
-    LOG(info) << "inserting data for partition " << indexPart;
     // REVIEW: up to this point the mesh is static
     std::string analysisName( "" );
     double step = 0.0;
@@ -984,7 +985,7 @@ int InsertPartResult_Data( const std::string &host, int port,
     std::vector<Mutation> mutations;
     const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
     // prepare mutations for results
-    for( itR = itBegin; itR != itEnd; itR++ )
+    for( std::vector<GID::ResultBlockType>::const_iterator itR = itBegin; itR != itEnd; itR++ )
       {
       std::string keyR;
       status = EncodeRowKey_Data( keyModel, itR->header.analysis, itR->header.step, indexPart, keyR );
@@ -1021,7 +1022,7 @@ int InsertPartResult_Data( const std::string &host, int port,
       }
     if ( status == SUCCESS )
       {
-      LOG(info) << "inserted " <<  (itEnd - itBegin) << " results";
+      LOG(info) << "Thread(" << threadID << ") inserted " <<  (itEnd - itBegin) << " results";
       }
     transport->close( );
     }
@@ -1138,11 +1139,13 @@ int InsertPartResult_Data( const std::string &host, int port,
         LOG(info) << "inserted " << numberOfCoordinates << " coordinates";
         LOG(info) << "inserted " << numberOfElements << " elements";
 
-        thread_group group;
+        boost::thread_group group;
         unsigned int nthreads = boost::thread::hardware_concurrency();
         std::vector<std::vector<GID::ResultBlockType>::const_iterator> bounds;
-        unsigned int threadSize = resultPart.size() / nthreads;
+        unsigned int threadSize = resultPart.results.size() / nthreads;
         std::vector<GID::ResultBlockType>::const_iterator itStart = resultPart.results.begin( );
+        LOG(info) << "Distributing " << resultPart.results.size() << " results among " << nthreads << " threads";
+        size_t threadID = 0;
         while( itStart < resultPart.results.end( ) )
           {
           std::vector<GID::ResultBlockType>::const_iterator itEnd = itStart + threadSize;
@@ -1150,9 +1153,10 @@ int InsertPartResult_Data( const std::string &host, int port,
             {
             itEnd = resultPart.results.end( );
             }
-          group.add_thread( new boost::thread( InsertPartResult_Data, host, port, 
+          group.add_thread( new boost::thread( InsertPartResult_Data_Worker,
+                                               host, port, 
                                                keyModel, indexPart,
-                                               itStart, itEnd ) );
+                                               itStart, itEnd, threadID++ ) );
           itStart = itEnd;
           }
         group.join_all();
