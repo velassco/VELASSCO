@@ -4,6 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <vector>
 #include "boost/program_options.hpp" 
+#include "boost/thread.hpp"
 
 #include "Logger.h"
 
@@ -960,6 +961,218 @@ void CheckDecodeRowKey_Data( const std::string & rowkey,
 }
 
 int InsertPartResult_Data( const std::string &host, int port,
+                           const std::string &keyModel, 
+                           GID::IdPartition indexPart,
+                           std::vector<GID::ResultBlockType>::const_iterator itBegin,
+                           std::vector<GID::ResultBlockType>::const_iterator itEnd )
+{
+  boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
+  boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
+  boost::shared_ptr<TProtocol> protocol( new TBinaryProtocol( transport ) );
+
+  int status;
+  try 
+    {    
+    transport->open( );
+    LOG(info) << "inserting data for partition " << indexPart;
+    // REVIEW: up to this point the mesh is static
+    std::string analysisName( "" );
+    double step = 0.0;
+    BinarySerializerType binWriter;
+    binWriter.SetConvertToHex( false );
+    binWriter.SetEndianness( GID::BigEndian );
+    std::vector<Mutation> mutations;
+    const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
+    // prepare mutations for results
+    for( itR = itBegin; itR != itEnd; itR++ )
+      {
+      std::string keyR;
+      status = EncodeRowKey_Data( keyModel, itR->header.analysis, itR->header.step, indexPart, keyR );
+      if ( status != SUCCESS )
+        {
+        LOG(error) << "failed creation of result data key with error code " << status;
+        break;
+        }
+#if defined(CHECK_KEY_ENCODING)
+      CheckDecodeRowKey_Data( keyR, keyModel, itR->header.analysis,
+                              itR->header.step, indexPart );
+#endif
+      mutations.clear( );
+      GID::UInt64 indexMData = itR->header.indexMData;
+      for( std::vector<GID::ResultRowType>::const_iterator itV = itR->values.begin( );
+           itV != itR->values.end( ); itV++ ) 
+        {
+        mutations.push_back( Mutation( ) );
+        status = EncodeColumn_Data( 'R', 'r', indexMData, "vl", itV->id, mutations.back().column );
+        if ( status != SUCCESS )
+          {
+          break;
+          }
+        for( std::vector<double>::const_iterator itD = itV->values.begin( );
+             itD != itV->values.end( ); itD++ )
+          {
+          binWriter.Write( mutations.back().value, *itD );
+          }
+        }
+#ifndef DONT_APPLY_MUTATIONS
+      client.mutateRow( strTableData, keyR, mutations, dummyAttributes);
+      __wait_mutation;
+#endif
+      }
+    if ( status == SUCCESS )
+      {
+      LOG(info) << "inserted " <<  (itEnd - itBegin) << " results";
+      }
+    transport->close( );
+    }
+  catch (const TException &tx)
+    {
+    LOG(error) << tx.what( );
+    return ERROR_EXCEPTION;
+    }
+  return status;
+}
+
+int InsertPartResult_Data( const std::string &host, int port,
+                           const std::string &keyModel, 
+                           GID::IdPartition indexPart,
+                           //GID::UInt32 indexESet,
+                           const GlobalMeshInfoType &meshInfo,
+                           const std::list<GID::MeshResultType> &meshesInPartition,
+                           //const GID::MeshResultType &meshPart,
+                           const GID::ResultContainerType &resultPart)
+{
+  boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
+  boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
+  boost::shared_ptr<TProtocol> protocol( new TBinaryProtocol( transport ) );
+  HbaseClient client( protocol );
+  //GID::MeshResultType mesh;
+  GID::UInt32 indexESet;
+  size_t numberOfCoordinates = 0;
+  size_t numberOfElements = 0;
+
+  int status;
+  try 
+    {    
+    transport->open( );
+    LOG(info) << "inserting data for partition " << indexPart;
+    // REVIEW: up to this point the mesh is static
+    std::string analysisName( "" );
+    double step = 0.0;
+    std::string keyM;
+    status = EncodeRowKey_Data( keyModel, analysisName, step, indexPart, keyM );
+    if ( status == SUCCESS )
+      {
+      LOG(info) << "keyM = " << keyM;
+#if defined(CHECK_KEY_ENCODING)
+      CheckDecodeRowKey_Data( keyM, keyModel, analysisName, step, indexPart );
+#endif
+      BinarySerializerType binWriter;
+      binWriter.SetConvertToHex( false );
+      binWriter.SetEndianness( GID::BigEndian );
+      std::vector<Mutation> mutations;
+      // TODO: first prototype use only one coordinate set
+      GID::UInt32 indexCSet = 1;
+      const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
+                                                   // HBASE-4658
+      // iterate over all meshes in partition
+      for( std::list<GID::MeshResultType>::const_iterator itm = meshesInPartition.begin();
+           itm != meshesInPartition.end(); itm++ )
+        {
+        const GID::MeshResultType &meshPart = *itm;
+        indexESet = meshInfo.GetIndexElementSet( meshPart.header.name );
+        LOG(trace) << "Processing mesh '" << meshPart.header.name << "' asigned to indexESet = " << indexESet;
+        // mutations for coordinate set
+        for( std::vector<GID::MeshNodeType>::const_iterator it = meshPart.nodes.begin( );
+             it != meshPart.nodes.end(); it++ )
+          {
+          mutations.push_back( Mutation( ) );
+          
+          status = EncodeColumn_Data( 'M', 'c', indexCSet, "", it->id, mutations.back().column );
+          if ( status != SUCCESS )
+            {
+            break;
+            }
+          binWriter.Write( mutations.back().value, it->x );
+          binWriter.Write( mutations.back().value, it->y );
+          binWriter.Write( mutations.back().value, it->z );
+          }
+        // mutations for element set
+        if ( status == SUCCESS )
+          {
+          for( std::vector<GID::MeshElementType>::const_iterator it = meshPart.elements.begin( );
+               it != meshPart.elements.end(); it++ )
+            {
+            mutations.push_back( Mutation( ) );
+            status = EncodeColumn_Data( 'M', 'm', indexESet, "cn",
+                                        (*it)[0], mutations.back().column );
+            if ( status != SUCCESS )
+              {
+              break;
+              }
+            BinarySerializerType binWriter;
+            binWriter.SetConvertToHex( false );
+            binWriter.SetEndianness( GID::BigEndian );
+            for( size_t i = 1; i < it->size(); i++ )
+              {
+              // copy from boost::long_long_type to boost::uint64_t
+              // which must be compatible
+              GID::IdNode idN = (*it)[i];
+              binWriter.Write( mutations.back().value, idN );
+              }
+            GID::UInt64 GG = 0;
+            binWriter.Write( mutations.back().value, GG );
+            }
+          }
+        numberOfCoordinates += meshPart.nodes.size();
+        numberOfElements += meshPart.elements.size();
+        }
+      // all mutations OK?
+      if( status == SUCCESS )
+        {
+#ifndef DONT_APPLY_MUTATIONS
+        // apply mutations
+        client.mutateRow( strTableData, keyM, mutations, dummyAttributes);
+        __wait_mutation;
+#endif
+        LOG(info) << "inserted " << numberOfCoordinates << " coordinates";
+        LOG(info) << "inserted " << numberOfElements << " elements";
+
+        thread_group group;
+        unsigned int nthreads = boost::thread::hardware_concurrency();
+        std::vector<std::vector<GID::ResultBlockType>::const_iterator> bounds;
+        unsigned int threadSize = resultPart.size() / nthreads;
+        std::vector<GID::ResultBlockType>::const_iterator itStart = resultPart.results.begin( );
+        while( itStart < resultPart.results.end( ) )
+          {
+          std::vector<GID::ResultBlockType>::const_iterator itEnd = itStart + threadSize;
+          if( itEnd > resultPart.results.end( ) )
+            {
+            itEnd = resultPart.results.end( );
+            }
+          group.add_thread( new boost::thread( InsertPartResult_Data, host, port, 
+                                               keyModel, indexPart,
+                                               itStart, itEnd ) );
+          itStart = itEnd;
+          }
+        group.join_all();
+        }
+      }
+    else
+      {
+      LOG(error) << "failed creation of mesh data key with error code " << status;
+      }
+    transport->close( );
+    }
+  catch (const TException &tx)
+    {
+    LOG(error) << tx.what( );
+    return ERROR_EXCEPTION;
+    }
+  return status;
+}
+                   
+int InsertPartResult_Data_OLD( const std::string &host, int port,
                            const std::string &keyModel, 
                            GID::IdPartition indexPart,
                            //GID::UInt32 indexESet,
