@@ -1154,7 +1154,10 @@ int InsertPartResult_Data( const std::string &host, int port,
                                                host, port, 
                                                keyModel, indexPart,
                                                itStart, itEnd, threadID ) );
-          --remainder;
+          if ( remainder )
+            {
+            --remainder;
+            }
           itStart = itEnd;
           }
         group.add_thread( new boost::thread( InsertPartResult_Data_Worker,
