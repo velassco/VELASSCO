@@ -20,6 +20,20 @@
 #include "ParseAsciiResult.h"
 #include "BinarySerialization.h"
 
+#include <unistd.h>
+
+//#define SLEEP_AFTER_MUTATE
+#ifdef SLEEP_AFTER_MUTATE
+#define __wait_mutation \
+do { \
+  LOG(info) << "sleeping after mutation"; \
+  sleep( 2 ); \
+} while( 0 );
+#else
+#define __wait_mutation
+#endif
+
+
 //#define DONT_APPLY_MUTATIONS
 #define CHECK_KEY_ENCODING
 //#define USE_THRIFT_SERIALIZATION
@@ -1045,6 +1059,7 @@ int InsertPartResult_Data( const std::string &host, int port,
 #ifndef DONT_APPLY_MUTATIONS
         // apply mutations
         client.mutateRow( strTableData, keyM, mutations, dummyAttributes);
+        __wait_mutation;
 #endif
         LOG(info) << "inserted " << numberOfCoordinates << " coordinates";
         LOG(info) << "inserted " << numberOfElements << " elements";
@@ -1083,6 +1098,7 @@ int InsertPartResult_Data( const std::string &host, int port,
             }
 #ifndef DONT_APPLY_MUTATIONS
           client.mutateRow( strTableData, keyR, mutations, dummyAttributes);
+          __wait_mutation;
 #endif
           }
         }
