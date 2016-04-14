@@ -37,10 +37,14 @@ OBJS_DIR = $(BIN)
 # WARNING: Check this paths
 # WARNING: Check this paths
 
-# THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/
-# BOOST_ROOT=/exports/applications/apps/community/VELaSSCo/build/boost/
-THRIFT_BASE = $(HOME)
-BOOST_BASE = $(HOME)
+ifeq ($(HOSTNAME),pez001)
+  THRIFT_BASE = $(HOME)
+  BOOST_BASE = $(HOME)
+else 
+  THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp
+  BOOST_BASE=/exports/applications/apps/community/VELaSSCo/build/boost
+endif
+
 
 
 
@@ -118,10 +122,10 @@ ENGINE_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
 	$(STORAGE_MODULE_DEPENDENCIES) $(ANALYTICS_MODULE_DEPENDENCIES) \
 	$(ACCESS_DEPENDENCIES) $(QMM_DEPENDENCIES) $(COMMON_DEPENDENCIES) #$(ENGINE_DEPENDENCIES)
 
-ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_HBASE_DIR) \
-	-I$(GRAPHICS_MODULE_DIR) -I$(STORAGE_MODULE_DIR) -I$(ANALYTICS_MODULE_DIR) \
-	-I$(ACCESS_DIR) -I$(QMM_DIR) -I$(COMMON_DIR) -I$(ENGINE_DIR) \
-	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include -I.
+ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_HBASE_DIR)  \
+	-I$(GRAPHICS_MODULE_DIR) -I$(STORAGE_MODULE_DIR) -I$(ANALYTICS_MODULE_DIR)  \
+	-I$(ACCESS_DIR) -I$(QMM_DIR) -I$(COMMON_DIR)  \
+	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include 
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
 	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl
 

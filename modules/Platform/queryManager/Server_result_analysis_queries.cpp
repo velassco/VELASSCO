@@ -25,11 +25,11 @@
 
 // VELaSSCo
 // AccessLib.h is only used for the return codes ( enum values)
-#include "../AccessLib/AccessLib/AccessLib.h"
+#include "../../AccessLib/AccessLib/AccessLib.h"
 #include "Helpers.h"
 
 // Generated code
-#include "../thrift/QueryManager/gen-cpp/QueryManager.h"
+#include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 
 #include "DataLayerAccess.h"
 //#include "Analytics.h"

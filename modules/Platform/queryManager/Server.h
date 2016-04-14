@@ -26,7 +26,7 @@
 
 
 // Generated code
-#include "../thrift/QueryManager/gen-cpp/QueryManager.h"
+#include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 #include "Compression.h"
 
 // ***************************************************************************
