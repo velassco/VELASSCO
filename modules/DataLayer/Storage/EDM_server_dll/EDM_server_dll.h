@@ -473,8 +473,16 @@ class VELaSSCoEDMplugin
 {
    CMemoryAllocator     *dllMa;
    CMemoryAllocator     *resultInfoMemory;
+
+   char                 *QUERY_RESULT_FOLDER;
+   char                 *repositoryName;
+   char                 *modelName;
+   char                 resultFolderBuffer[2048];
+   char                 *getResultFileName(char *fileName, SdaiModel modelId);
 public:
-   VELaSSCoEDMplugin() { dllMa = new CMemoryAllocator(0x100000); resultInfoMemory = NULL; }
+   VELaSSCoEDMplugin(char *crf, char *rn, char *mn) {
+      dllMa = new CMemoryAllocator(0x100000); resultInfoMemory = NULL; QUERY_RESULT_FOLDER = crf; repositoryName = rn; modelName = mn;
+   }
    ~VELaSSCoEDMplugin();
 
    char                 *handleError(CedmError *e);

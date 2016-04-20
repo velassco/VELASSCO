@@ -11,6 +11,8 @@
 // Windows Header Files:
 #include <windows.h>
 
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 extern "C" {
 #include "sdai.h"
@@ -30,6 +32,7 @@ extern "C" {
 using namespace dem;
 using namespace fem;
 using namespace VELaSSCoSM;
+using namespace boost::interprocess;
 
 
 // TODO: reference additional headers your program requires here

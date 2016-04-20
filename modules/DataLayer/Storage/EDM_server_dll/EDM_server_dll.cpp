@@ -2,8 +2,15 @@
 //
 
 #include "stdafx.h"
+#include <direct.h> 
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "EDM_server_dll.h"
 
+
+
+static char *QUERY_RESULT_FOLDER = NULL;
 
 /*=============================================================================================================================*/
 char *VELaSSCoEDMplugin::handleError(CedmError *e)
@@ -19,6 +26,24 @@ char *VELaSSCoEDMplugin::handleError(CedmError *e)
    sprintf(buf, "Error: %s - file: %s - line %lld", errMsg, e->fileName, e->lineNo);
    printf("\n\n%s\n\n", buf);
    return dllMa->allocString(buf);
+}
+/*=============================================================================================================================*/
+char *VELaSSCoEDMplugin::getResultFileName(char *fileName, SdaiModel modelId)
+/*=============================================================================================================================*/
+{
+   if ((QUERY_RESULT_FOLDER && *QUERY_RESULT_FOLDER == 0) || (_mkdir(QUERY_RESULT_FOLDER) == 0 || errno == EEXIST)) {
+      sprintf(resultFolderBuffer, "%s%s", QUERY_RESULT_FOLDER, repositoryName);
+      if (_mkdir(resultFolderBuffer) == 0 || errno == EEXIST) {
+         strcat(resultFolderBuffer, "/"); strcat(resultFolderBuffer, modelName);
+         if (_mkdir(resultFolderBuffer) == 0 || errno == EEXIST) {
+            strcat(resultFolderBuffer, "/");
+            sprintf(resultFolderBuffer + strlen(resultFolderBuffer), fileName, modelId);
+            return resultFolderBuffer;
+         }
+      }
+   }
+   THROW("Path not found in VELaSSCoEDMplugin::getResultFileName.");
+   return NULL;
 }
 
 /*===============================================================================================*/
@@ -322,6 +347,48 @@ EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt
                      char *rhname = rh->get_name();
                      if (rhname && strEQL(rhname, resultID)) {
                         if (!resultIdFound) {
+                           fem::Mesh *mesh = ts->get_mesh();
+                           char *nodeIdFileName = getResultFileName("nodeId_%llu.dat", mesh->getInstanceId());
+                           bool fileNotFound = true;
+                           for (int nTry = 0; nTry < 2 && fileNotFound; nTry++) {
+                              try {  //Open the file mapping and map it as read-only
+                                 //file_mapping node_file(nodeIdFileName, read_only);
+                                 //mapped_region node_region(node_file, read_only);
+                                 //void * addr = node_region.get_address();
+                                 //EDMLONG size = node_region.get_size();
+                                 //EDMLONG *fileInMemory = (EDMLONG *)addr;
+                              //} catch (boost::interprocess::interprocess_exception exep) {
+                                 nodeIdFileName = "C:/temp/edm_60/hallo_OLI.dat";
+                                 EDMLONG maxID = 0, minID = 0xfffffffffffffff;
+                                 Iterator<fem::Node *, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
+                                 for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                                    EDMLONG id = n->get_id();
+                                    if (id > maxID) maxID = id; if (id < minID) minID = id;
+                                 }
+                                 EDMLONG fileSize = (maxID - minID + 3) * sizeof(EDMLONG);
+                                 file_mapping::remove(nodeIdFileName);
+                                 std::filebuf fbuf;
+                                 fbuf.open(nodeIdFileName, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+                                 //Set the size
+                                 fbuf.pubseekoff(fileSize - 1, std::ios_base::beg);
+                                 fbuf.sputc(0);
+                                 file_mapping node_file(nodeIdFileName, read_write);
+                                 mapped_region node_region(node_file, read_write);
+                                 void * addr = node_region.get_address();
+                                 EDMLONG size = node_region.get_size();
+                                 EDMLONG *nodeIdArray = (EDMLONG *)addr;
+                                 memset(nodeIdArray, 0, fileSize);
+                                 for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                                    EDMLONG id = n->get_id();
+                                    nodeIdArray[id - minID + 2] = n->getInstanceId();
+                                 }
+                                 fileNotFound = false;
+                              } catch (boost::interprocess::interprocess_exception exep) {
+                                 EDMLONG rstat = GetLastError();
+                                 rstat = 0;
+                              }
+                          }
+
                            Iterator<fem::Result*, fem::entityType> resultIter(rh->get_values(), theModel);
                            fem::entityType resType;
                            resultIdFound = true;
@@ -445,17 +512,9 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
                if (ts->get_time_value() == inParam->timeStep->value.realVal) {
                   timeStepFound = true;
                   fem::Mesh *mesh = ts->get_mesh();
-                  char elementFileName[0x1000], *vertexFileName = elementFileName;
-                  
-                  //Container<EDMVD::Vertex> *vertices = new(dllMa) Container<EDMVD::Vertex>(dllMa, 0x10000);
-                  //Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes(), theModel);
-                  //for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                  //   EDMVD::Vertex *v = vertices->createNext();
-                  //   v->id = n->get_id();
-                  //   v->x = n->get_x(); v->y = n->get_y(); v->z = n->get_z();
-                  //   if (v->id > maxID) maxID = v->id; if (v->id < minID) minID = v->id;
-                  //}
-                  sprintf(vertexFileName, "vertices_%llu.dat", mesh->getInstanceId());
+
+
+                  char *vertexFileName = getResultFileName("vertices_%llu.dat", mesh->getInstanceId());
                   FILE *vertexFile = fopen(vertexFileName, "rb");
                   Container<EDMVD::Vertex> *vertices;
                   maxID = 0, minID = 0xfffffffffffffff;
@@ -483,7 +542,7 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
 
 
 
-                  sprintf(elementFileName, "elements_%llu.dat", mesh->getInstanceId());
+                  char *elementFileName = getResultFileName("elements_%llu.dat", mesh->getInstanceId());
                   FILE *elementFile = fopen(elementFileName, "rb");
                   EDMLONG n_vertices_pr_element = mesh->get_numberOfNodes();
                   Container<EDMVD::FEMelement> *elements;
@@ -763,8 +822,9 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
                if (ts->get_time_value() == inParam->timeStep->value.realVal) {
                   timeStepFound = true;
                   fem::Mesh *mesh = ts->get_mesh();
-                  char triangelFileName[0x1000];
-                  sprintf(triangelFileName, "triangles_%llu.dat", theModel->modelId);
+                  //char triangelFileName[0x1000];
+                  char *triangelFileName = getResultFileName("triangles_%llu.dat", theModel->modelId);
+                  //sprintf(triangelFileName, "triangles_%llu.dat", theModel->modelId);
                   FILE *triangelFile = fopen(triangelFileName, "rb");
                   EDMULONG nTrianglesPrContainerBuffer = 0x10000;
                   Container<EDMVD::Triangle>  *triangles;
@@ -953,6 +1013,7 @@ void logError(char *repositoryName, char *modelName, char *methodName, int rstat
 {
    logError(repositoryName, modelName, methodName, edmiGetErrorText(rstat), lineNo);
 }
+
 extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *modelName, char *methodName,
    EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues, void **threadObject)
 {
@@ -964,7 +1025,22 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
       //EdmiError trrstat = edmiTrace(DEFINE_TRACE, TRACE_CALLS | TRACE_ARGS | TRACE_RETURNS | TRACE_ERRORS | TRACE_TO_STDOUT, 0, "");
       //trrstat = edmiTrace(START_TRACE, 0, 0, "");
       
-      VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin(); tr;
+      if (QUERY_RESULT_FOLDER == NULL) {
+         char buf[4096];
+         char *env = getenv("QUERY_RESULT_FOLDER");
+         if (env) {
+            QUERY_RESULT_FOLDER = (char*)malloc(strlen(env) + 2); strcpy(QUERY_RESULT_FOLDER, env);
+            char *ec = QUERY_RESULT_FOLDER + strlen(env) - 1;
+            if (*ec == '\\') {
+               *ec = '/';
+            } else if (*ec != '/') {
+               strcat(QUERY_RESULT_FOLDER, "/");
+            }
+         } else {
+            QUERY_RESULT_FOLDER = "";
+         }
+      }
+      VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin(QUERY_RESULT_FOLDER, repositoryName, modelName); tr;
       CMemoryAllocator *theMA = plugin->getMemoryAllocator(); tr;
       *threadObject = (void*)plugin;
       
