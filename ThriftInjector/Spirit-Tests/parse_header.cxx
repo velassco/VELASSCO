@@ -24,7 +24,7 @@
 
 namespace client
 {
-enum EType { TETRAHEDRA, TRIANGLE, CIRCLE };
+enum EType { TETRAHEDRA, TRIANGLE, CIRCLE, POINT };
 
 struct mesh_header
 {
@@ -64,6 +64,7 @@ struct mesh_header
         ("tetrahedra", TETRAHEDRA)
         ("triangle", TRIANGLE)
         ("circle", CIRCLE)
+        ("point", POINT)
         ;
         bool r = qi::phrase_parse
           (first, last,
