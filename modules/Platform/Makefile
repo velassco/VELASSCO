@@ -1,6 +1,7 @@
 CCPP=g++ -std=c++0x
 CC=gcc
-EXEC=QueryManager
+# let's give them the '.exe' extension ...
+EXEC=QueryManager.exe
 BIN=bin
 
 EXTRA_FLAGS = -Wall -Wcast-align -Wcomment -Wno-unused-local-typedefs
@@ -124,7 +125,7 @@ ENGINE_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
 
 ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_HBASE_DIR)  \
 	-I$(GRAPHICS_MODULE_DIR) -I$(STORAGE_MODULE_DIR) -I$(ANALYTICS_MODULE_DIR)  \
-	-I$(ACCESS_DIR) -I$(QMM_DIR) -I$(COMMON_DIR)  \
+	-I$(ACCESS_DIR) -I$(QMM_DIR) -I$(COMMON_DIR) -I. \
 	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include 
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
 	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl
@@ -146,7 +147,7 @@ $(OBJS_DIR)/%.o : %.cpp $(ENGINE_INCLUDE_DEPENDENCIES)
 
 $(OBJS_DIR)/%.o : %.c $(ENGINE_INCLUDE_DEPENDENCIES)
 	$(CCPP) -c $(C_FLAGS) $(OPTS) $< -o $@
-	
+
 # Storage Thirft API:
 $(OBJS_DIR)/%.o : $(THRIFT_STORAGE_DIR)/%.cpp $(THRIFT_STORAGE_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) -I$(THRIFT_STORAGE_DIR) $(EXTRA_INC_DIRS) $< -o $@
@@ -178,7 +179,7 @@ $(OBJS_DIR)/%.o : $(ACCESS_DIR)/%.cpp $(ACCESS_DEPENDENCIES)
 # QMM module (folder ./queryManagerMod):
 $(OBJS_DIR)/%.o : $(QMM_DIR)/%.cpp $(QMM_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@
-		
+
 # common files (folder ./commonFiles):
 $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.cpp $(COMMON_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@
@@ -186,9 +187,8 @@ $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.cpp $(COMMON_DEPENDENCIES)
 # common C files (folder ./commonFiles):
 $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.c $(COMMON_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@	
-								
-		
-		
+
+
 clean:
 	rm -f $(BIN)/*.o $(BIN)/$(EXEC)
 
