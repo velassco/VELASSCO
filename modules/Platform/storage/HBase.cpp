@@ -54,7 +54,9 @@ bool HBase::startConnection( const char *DB_hostname, const int DB_port) {
 bool HBase::stopConnection() {
   bool disconnected = true;
   try {
-    ( *_transport)->close();
+    if ( _transport) { // needed when doing 'quit' on the QueryManager prompt
+      ( *_transport)->close();
+    }
     LOGGER_SM << "Disconnected from HBase server" << endl;
   } catch ( TException &tx) {
     LOGGER_SM << "Closing HBase connection error: " << tx.what() << endl;

@@ -38,8 +38,8 @@
 #include "DataLayerAccess.h"
 //#include "Analytics.h"
 #include "Graphics.h"
-
 #include "Server.h"
+#include "globalSettings.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -212,8 +212,8 @@ int StartServer( const int server_port) {
   LOGGER << "Starting VELaSSCo Server..." << std::endl;
 
 
-	// AUTHOR: iCores. This code allows multi-user and single-user behaviour.
-	bool multiUserSupport = false;
+  // AUTHOR: iCores. This code allows multi-user and single-user behaviour.
+  bool multiUserSupport = getMultiUserSetting() ? true : false;
 	char *valueEnvV = NULL;
 	valueEnvV = getenv("MULTIUSER_VELASSCO");
 	if (valueEnvV)

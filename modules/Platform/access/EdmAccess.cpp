@@ -159,36 +159,36 @@ void EdmAccess::getCoordinatesAndElementsFromMesh(
 	const std::string& sessionID, const std::string& modelID, const std::string& analysisID, 
 	const double timeStep, const MeshInfo& meshInfo )
 {
-	//Code added by Ivan Cores from StorageModuleTest.cpp
-
-   DEBUG("GetCoordinatesAndElementsFromMesh - " + modelID);
-  	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	long int startTime = tp.tv_sec * 1000 + tp.tv_usec / 1000; //get current timestamp in milliseconds
-   cli->GetCoordinatesAndElementsFromMesh(_return, sessionID, modelID, analysisID, timeStep, meshInfo);
-   	gettimeofday(&tp, NULL);
-   	long int endTime = tp.tv_sec * 1000 + tp.tv_usec / 1000; //get current timestamp in milliseconds
-   printf("Elapsed time for GetCoordinatesAndElementsFromMesh is %0.3f seconds\n", (endTime - startTime)/1000.0 );
-   if (strncmp(_return.status.data(), "Error", 5) == 0) {
-      printf("Error message: \"%s\"\n", _return.report.data());
-   } else {
-      printf("Query report:\n%s\n\n", _return.report.data());
-      //OLI
-      printf("Number of vertices transferred: %12lu\n", _return.vertex_list.size());
-      for (int i = 0; i < 20 && i < _return.vertex_list.size(); i++) {
-         VELaSSCoSM::Vertex v = _return.vertex_list[i];
-         printf("%12ld   %0.3f  %0.3f  %0.3f\n", v.id, v.x, v.y, v.z);
-      }
-      printf("Number of elements transferred: %12ld\n", _return.element_list.size());
-      for (int i = 0; i < 20 && i < _return.element_list.size(); i++) {
-         VELaSSCoSM::Element e = _return.element_list[i];
-         printf("%12ld   ", e.id);
-         for (int j = 0; j < _return.element_list[i].nodes_ids.size(); j++) printf("  %10ld", _return.element_list[i].nodes_ids[j]);
-         printf("\n");
-      }
-   }
+  //Code added by Ivan Cores from StorageModuleTest.cpp
+  
+  DEBUG("GetCoordinatesAndElementsFromMesh - " + modelID);
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  long int startTime = tp.tv_sec * 1000 + tp.tv_usec / 1000; //get current timestamp in milliseconds
+  cli->GetCoordinatesAndElementsFromMesh(_return, sessionID, modelID, analysisID, timeStep, meshInfo);
+  gettimeofday(&tp, NULL);
+  long int endTime = tp.tv_sec * 1000 + tp.tv_usec / 1000; //get current timestamp in milliseconds
+  printf("Elapsed time for GetCoordinatesAndElementsFromMesh is %0.3f seconds\n", (endTime - startTime)/1000.0 );
+  if (strncmp(_return.status.data(), "Error", 5) == 0) {
+    printf("Error message: \"%s\"\n", _return.report.data());
+  } else {
+    printf("Query report:\n%s\n\n", _return.report.data());
+    //OLI
+    printf("Number of vertices transferred: %12lu\n", _return.vertex_list.size());
+    for (size_t i = 0; i < 20 && i < _return.vertex_list.size(); i++) {
+      VELaSSCoSM::Vertex v = _return.vertex_list[i];
+      printf("%12ld   %0.3f  %0.3f  %0.3f\n", v.id, v.x, v.y, v.z);
+    }
+    printf("Number of elements transferred: %12ld\n", _return.element_list.size());
+    for (size_t i = 0; i < 20 && i < _return.element_list.size(); i++) {
+      VELaSSCoSM::Element e = _return.element_list[i];
+      printf("%12ld   ", e.id);
+      for (size_t j = 0; j < _return.element_list[i].nodes_ids.size(); j++) printf("  %10ld", _return.element_list[i].nodes_ids[j]);
+      printf("\n");
+    }
+  }
   return;
-
+  
 }
                   
 void EdmAccess::getListOfMeshes( rvGetListOfMeshes &_return,

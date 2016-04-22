@@ -21,6 +21,12 @@ using namespace std;
 
 int QMiD = 0;
 VELaSSCoSMClient *clp = NULL;
+
+int G_multiUser = 0; // used in queryManager/Server.cpp to start Simple or MultiUser server
+int getMultiUserSetting() { return G_multiUser;}
+// to get the proper location of the Analytics jar's
+char *G_VELaSSCo_base_dir = NULL;
+const char *getVELaSSCoBaseDir() { return G_VELaSSCo_base_dir;}
 	
 void parse(string cmd)
 {
@@ -136,6 +142,43 @@ void parse(string cmd)
     }
 }
 
+void setVELaSSCoBaseDir( const char *argv0) {
+  if ( argv0 && argv0[ 0]) {
+    const size_t full_path_max_size = 10240;
+    char *full_path = ( char *)malloc( full_path_max_size * sizeof( char));
+    *full_path = '\0';
+    if ( argv0[ 0] != '/') {
+      // not an absolute pathname
+      if ( getcwd( full_path, full_path_max_size)) {
+      } else {
+	// coudln't get current working directory ...
+	*full_path = '\0';
+      }
+      strcat( full_path, "/");
+    }
+    strcat( full_path, argv0);
+    // remove exe_name
+    size_t end = strlen( full_path) - 1;
+    while ( end && full_path[ end] && ( full_path[ end] != '/')) {
+      end--;
+    }
+    full_path[ end] = '\0';
+    // now gettng the base_dir
+    // executable should be in ..../bin/QueryManager.exe
+    // so getting rid of the /bin part
+    if ( ( end > 4) && !strcasecmp( &full_path[ end - 4], "/bin")) {
+      end -= 4;
+      full_path[ end] = '\0';
+    }
+    if ( strlen( full_path)) {
+      G_VELaSSCo_base_dir = full_path;
+      printf( "Base path = %s\n", full_path);
+    } else {
+      free( full_path);
+    }
+  }
+}
+
 void printListOfCmd()
 {
     cout << "List of available commands :" << endl;
@@ -171,15 +214,22 @@ int main(int argc, char **argv)
     int listen_port = 26267; // standard thrift port : 9090
     const char *data_layer_hostname = "localhost"; // or "pez001";
     int         data_layer_port     = 26266;
-    int         connect_EDM			= 0;
+    int         connect_EDM	    = 0;
     if ( thereIsHelpSwitch( argc, argv)) {
       printf( "Usage: %s [ options] \n", argv[ 0]);
       printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
       printf( "  -dl_host hostname         host name of the Data Layer Server (default %s)\n", data_layer_hostname);
       printf( "  -dl_port port_number      port of the Data Layer Server (default %d)\n", data_layer_port);
       printf( "  -dl_EDM 1                 connects to the EDM SM (default %d - OpenVersion)\n", connect_EDM);
+      printf( "  -multiuser 0              if 0, uses SimpleServer, if 1, uses MultiUser (default %d)\n", G_multiUser);
       return EXIT_FAILURE;
     }
+
+    // to get the proper location of the Analytics jar's
+    // jar files are relative to Engine.exe location, i.e.
+    // Platform/bin/QueryManager.exe
+    // Platform/AnalyticsYarnJobs/GetBoundaryOfAMesh_pez001.jar
+    setVELaSSCoBaseDir( argv[ 0]);
 
     int processed_args = 1; // first is the program name itself
     for ( int ia = 1; ia + 1 < argc; ia++) {
@@ -208,7 +258,14 @@ int main(int argc, char **argv)
 		  connect_EDM = new_port;
 		  processed_args += 2;
 		}
-      }else {
+      } else if ( !strcasecmp( argv[ ia], "-multiuser")) {
+		ia++;
+		int is_multi = G_multiUser;
+		if ( sscanf( argv[ ia], "%d", &is_multi) == 1) {
+		  G_multiUser = is_multi;
+		  processed_args += 2;
+		}
+      } else {
 		break;
       }
     }

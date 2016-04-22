@@ -56,6 +56,7 @@ AnalyticsModule *AnalyticsModule::getInstance() {
 #include <stdio.h>
 #include <ftw.h>
 #include <unistd.h>
+#include "globalSettings.h"
 
 static int unlink_cb( const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
   int rv = remove( fpath);
@@ -80,7 +81,8 @@ std::string GetFullAnalyticsQualifier( const std::string &jar_name_no_extension)
   std::string suffix = "";
 #endif // USE_HOSTNAME_SUFFIX
 //  return "../Analytics/" + jar_name_no_extension + suffix + ".jar";
-	return "./AnalyticsYarnJobs/" + jar_name_no_extension + suffix + ".jar";
+  const char *base_dir = getVELaSSCoBaseDir();
+  return std::string( base_dir ? base_dir : ".") + "/AnalyticsYarnJobs/" + jar_name_no_extension + suffix + ".jar";
 }
 
 std::string GetFullHBaseConfigurationFilename() {
