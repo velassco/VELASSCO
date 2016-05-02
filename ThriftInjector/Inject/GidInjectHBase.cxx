@@ -583,7 +583,8 @@ int DecodeRowKey_MetaData( const std::string &rowKey,
 int InsertResult_MetaData( const std::string &host, int port,
                            const std::string &keyModel, 
                            const GlobalMeshInfoType &meshInfo,
-                           const GlobalResultInfoType &resultInfo)
+                           const GlobalResultInfoType &resultInfo,
+                           const double bbMin[], const double bbMax[] )
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
@@ -627,6 +628,13 @@ int InsertResult_MetaData( const std::string &host, int port,
             mutations.push_back( Mutation() );
             mutations.back( ).column = "M:c000001nc";
             binWriter.Write( mutations.back( ).value, it->second.numberOfNodes );
+            mutations.push_back( Mutation() );
+            mutations.back( ).column = "M:bb";
+            binWriter.Write( mutations.back().value, bbMin, 3 );
+            binWriter.Write( mutations.back().value, bbMax, 3 );
+            LOG(trace) << "Bounding BOX = " << "(" 
+                       << bbMin[0] << ", " << bbMin[1] << ", " << bbMin[2] << ") - ("
+                       << bbMax[0] << ", " << bbMax[1] << ", " << bbMax[2] << ")";
             csetFound = true;
             }
           }
@@ -778,7 +786,8 @@ int InsertResult_MetaData( const std::string &host, int port,
 
 int EncodeRowKey_Data( const std::string &keyModel,
                        const std::string &analysisName,
-                       double step, GID::IdPartition part, std::string &keyData )
+                       double step, GID::IdPartition part, 
+                       std::string &keyData )
 {
   if ( keyModel.length() != MODEL_ROWKEY_LENGTH )
     {
@@ -1041,7 +1050,8 @@ int InsertPartResult_Data( const std::string &host, int port,
                            const GlobalMeshInfoType &meshInfo,
                            const std::list<GID::MeshResultType> &meshesInPartition,
                            //const GID::MeshResultType &meshPart,
-                           const GID::ResultContainerType &resultPart)
+                           const GID::ResultContainerType &resultPart,
+                           double bbMin[], double bbMax[] )
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
@@ -1076,6 +1086,7 @@ int InsertPartResult_Data( const std::string &host, int port,
       GID::UInt32 indexCSet = 1;
       const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
                                                    // HBASE-4658
+      bool firstCoordinate = true;
       // iterate over all meshes in partition
       for( std::list<GID::MeshResultType>::const_iterator itm = meshesInPartition.begin();
            itm != meshesInPartition.end(); itm++ )
@@ -1097,6 +1108,40 @@ int InsertPartResult_Data( const std::string &host, int port,
           binWriter.Write( mutations.back().value, it->x );
           binWriter.Write( mutations.back().value, it->y );
           binWriter.Write( mutations.back().value, it->z );
+          if ( firstCoordinate )
+            {
+            bbMin[0] = bbMax[0] = it->x;
+            bbMin[1] = bbMax[1] = it->y;
+            bbMin[2] = bbMax[2] = it->z;
+            firstCoordinate = false;
+            }
+          else
+            {
+            if ( it->x < bbMin[0] )
+              {
+              bbMin[0] = it->x;
+              }
+            else if ( it->x > bbMax[0] )
+              {
+              bbMax[0] = it->x;
+              }
+            if ( it->y < bbMin[1] )
+              {
+              bbMin[1] = it->y;
+              }
+            else if ( it->y > bbMax[1] )
+              {
+              bbMax[1] = it->y;
+              }
+            if ( it->z < bbMin[2] )
+              {
+              bbMin[2] = it->z;
+              }
+            else if ( it->z > bbMax[2] )
+              {
+              bbMax[2] = it->z;
+              }
+            }
           }
         // mutations for element set
         if ( status == SUCCESS )
@@ -1131,6 +1176,14 @@ int InsertPartResult_Data( const std::string &host, int port,
       // all mutations OK?
       if( status == SUCCESS )
         {
+        LOG(trace) << "Partition " << indexPart << " has bounding BOX = " << "(" 
+                   << bbMin[0] << ", " << bbMin[1] << ", " << bbMin[2] << ") - ("
+                   << bbMax[0] << ", " << bbMax[1] << ", " << bbMax[2] << ")";
+       
+        mutations.push_back( Mutation( ) );
+        mutations.back().column = "M:bb";
+        binWriter.Write( mutations.back().value, bbMin, 3 );
+        binWriter.Write( mutations.back().value, bbMax, 3 );
 #ifndef DONT_APPLY_MUTATIONS
         // apply mutations
         client.mutateRow( strTableData, keyM, mutations, dummyAttributes);
@@ -1376,9 +1429,29 @@ std::string Int2Array( int x )
   return tmp;
 };
 
+int CreateKeyModel( std::string &keyModel )
+{
+  // the row key is generated as an UUID
+  boost::uuids::uuid uid;
+  //std::stringstream ss;
+  //ss << uid;
+  //LOG(trace) << "UUID as string has length = " << ss.str( ).length( );
+  //keyModel = ss.str( );
+  std::string tmp( uid.begin( ), uid.end( ) );
+#if defined( USE_BINARY_ROWKEY )
+  keyModel = tmp;
+#else
+  keyModel = GID::BinarySerializer::BinToHex( tmp );
+#endif
+  LOG(trace) << "using UUID = " << uid << "( '" << keyModel << "')"
+             << " length = " << keyModel.length( );
+  return SUCCESS;
+}
+
 int InsertModelInfo( const std::string &host, int port,
                      const ModelFileParts &modelInfo, 
-                     std::string &keyModel )
+                     const std::string &keyModel,
+                     const double bbMin[], const double bbMax[] )
 {
   boost::shared_ptr<TTransport> socket( new TSocket( host, port ) );
   boost::shared_ptr<TTransport> transport( new TBufferedTransport( socket ) );
@@ -1403,6 +1476,8 @@ int InsertModelInfo( const std::string &host, int port,
     binBuffer.Write( mutations.back( ).value, modelInfo.GetNumberOfParts( ) );
     mutations.push_back( Mutation( ) );
     mutations.back().column = "Properties:bb";
+    binBuffer.Write( mutations.back().value, bbMin, 3 );
+    binBuffer.Write( mutations.back().value, bbMax, 3 );
     mutations.push_back( Mutation( ) );
     mutations.back().column = "Properties:uAll";
     mutations.back().value = "read-only";
@@ -1416,20 +1491,6 @@ int InsertModelInfo( const std::string &host, int port,
     mutations.back().value = "Not validated";
     const std::map<Text, Text>  dummyAttributes; // see HBASE-6806
                                                  // HBASE-4658
-    // the row key is generated as an UUID
-    boost::uuids::uuid uid;
-    //std::stringstream ss;
-    //ss << uid;
-    //LOG(trace) << "UUID as string has length = " << ss.str( ).length( );
-    //keyModel = ss.str( );
-    std::string tmp( uid.begin( ), uid.end( ) );
-#if defined( USE_BINARY_ROWKEY )
-    keyModel = tmp;
-#else
-    keyModel = GID::BinarySerializer::BinToHex( tmp );
-#endif
-    LOG(trace) << "using UUID = " << uid << "( '" << keyModel << "')"
-               << " length = " << keyModel.length( );
 #ifndef DONT_APPLY_MUTATIONS
     client.mutateRow( strTableModels, keyModel, mutations, dummyAttributes );
 #endif
@@ -1530,7 +1591,12 @@ int ProcessInput( const po::variables_map &vm )
   GlobalMeshInfoType meshInfo;
   GlobalResultInfoType resultInfo;
   std::string keyModel;
-  status = InsertModelInfo( host, port, res_files, keyModel );
+  double bbMinGlobal[3];
+  double bbMaxGlobal[3];
+  bool firstPartition = true;
+
+  CreateKeyModel( keyModel );
+
   for( PathContainerType::const_iterator it = res_files.m_Parts.begin( );
           it != res_files.m_Parts.end( ); it++ )
     {
@@ -1572,17 +1638,50 @@ int ProcessInput( const po::variables_map &vm )
         return status;
         }
       resultInfo.Update( resultPart );
+      double bbMinPart[3];
+      double bbMaxPart[3];
       status = InsertPartResult_Data( host, port, keyModel, it->first,
                                       //meshInfo.GetIndexElementSet( meshPart.header.name ),
                                       meshInfo,
-                                      meshesInPartition, resultPart );
+                                      meshesInPartition, resultPart,
+                                      bbMinPart, bbMaxPart );
       if ( status != SUCCESS )
         {
         return status;
         }
+      if ( firstPartition )
+        {
+        for( int i = 0; i < 3; i++ )
+          {
+          bbMinGlobal[i] = bbMinPart[i];
+          bbMaxGlobal[i] = bbMaxPart[i];
+          }
+        firstPartition = false;
+        }
+      else
+        {
+        for( int i = 0; i < 3; i++ )
+          {
+          if ( bbMinPart[i] < bbMinGlobal[i] )
+            {
+            bbMinGlobal[i] = bbMinPart[i];
+            }
+          if ( bbMaxPart[i] > bbMaxGlobal[i] )
+            {
+            bbMaxGlobal[i] = bbMaxPart[i];
+            }
+          }
+        }
       }
     }
-  status = InsertResult_MetaData( host, port, keyModel, meshInfo, resultInfo );
+  status = InsertModelInfo( host, port, res_files, keyModel,
+                            bbMinGlobal, bbMaxGlobal  );
+  if ( status != SUCCESS )
+    {
+    return status;
+    }  
+  status = InsertResult_MetaData( host, port, keyModel, meshInfo, resultInfo,
+                                  bbMinGlobal, bbMaxGlobal );
   if ( status != SUCCESS )
     {
     return status;
