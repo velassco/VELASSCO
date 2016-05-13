@@ -14,7 +14,7 @@
 
 void FEMmodelCache::calculateBoundingBox(fem::Element *ep, BoundingBox *bb)
 {
-   Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes(), this);
+   Iterator<fem::Node*, fem::entityType> nodeIter(ep->get_nodes());
    fem::Node*np = nodeIter.first();
    if (np) {
       double max_x = np->get_x(), min_x = max_x;

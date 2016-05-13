@@ -312,7 +312,7 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
                      cElement.setInstanceId(elementId);
                      int elemId = cElement.get_id();
 
-                     Iterator<fem::Node*, fem::entityType> nodeOfElemIter(cElement.get_nodes(), fmc);
+                     Iterator<fem::Node*, fem::entityType> nodeOfElemIter(cElement.get_nodes());
                      if (nodeOfElemIter.size() == 4) {
                         fem::Node *np = nodeOfElemIter.first();
                         double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
@@ -355,7 +355,7 @@ void VELaSSCoHandler::GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _re
                for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
                   int elemId = ep->get_id();
 
-                  Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes(), fmc);
+                  Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
                   if (nodeOfElemIter.size() == 4) {
                      fem::Node *np = nodeOfElemIter.first();
                      double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();

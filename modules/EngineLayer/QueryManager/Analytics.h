@@ -16,7 +16,8 @@ public:
   static AnalyticsModule *getInstance();
 
   void calculateBoundingBox( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
-			     const std::string &analysisID, const int numSteps, const double *lstSteps,
+			     const std::string &analysisID, const int numSteps, const double *lstStO:\projects\VELaSSCo\SVN_src\modules\EngineLayer\QueryManager\Server_direct_result_queries.cpp
+eps,
 			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 			     double *return_bbox, std::string *return_error_str);
 
