@@ -18,9 +18,10 @@ int main(int argc, char* argv[])
    int rstat;
    char errTxt[1024];
 
-   if (argc != 5 && argc != 6) {
-      printf("The VELaSSCo Data Layer server shall have four command line parameters:\n   1. Communcation port\n   2. Database folder\n   3. Database name\n   4. Database password");
-      printf("\nOptional prameter: 5. File name for Cluster database init file");
+   printf("The VELaSSCo EDM Query Manager shall have four command line parameters:\n   1. Communcation port\n   2. Database folder\n   3. Database name\n   4. Database password");
+   printf("\nOptional commands can be read from the file specified as the 5. parameter\n\n"); // File name for Cluster database init file");
+   if (argc < 5) {
+      printf("\nAt least 4 command line parameters are needed.");
       exit(0);
    }
    int port = atol(argv[1]);
@@ -32,10 +33,6 @@ int main(int argc, char* argv[])
    boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
    try {
-      WSADATA wsaData = {};
-      WORD wVersionRequested = MAKEWORD(2, 2);
-      int err = WSAStartup(wVersionRequested, &wsaData);
-
       Database VELaSSCo_db(argv[2], argv[3], argv[4]);
       Repository demRepository(&VELaSSCo_db, "DEM_models");
       Repository femRepository(&VELaSSCo_db, "FEM_models");
@@ -44,6 +41,8 @@ int main(int argc, char* argv[])
       femRepository.open(sdaiRO);
       ourVELaSSCoHandler->cDEMrep = &demRepository;
       ourVELaSSCoHandler->cFEMrep = &femRepository;
+
+      int nextCommandPos = 5;
 
 #ifndef Cluster
       SdaiRepository repositoryId;
@@ -56,41 +55,49 @@ int main(int argc, char* argv[])
       Model clusterModel(&clusterRepository, &ma, &EDMcluster_SchemaObject);
       clusterModel.open("EDMcluster", sdaiRW);
       VELaSSCoCluster ourCluster(&clusterModel);
-      if (argc == 6) {
-         ourCluster.initClusterModel(argv[5]);
+      if (argc >= 6) {
+         ourCluster.initClusterModel(argv[nextCommandPos++]);
       }
       ourCluster.startServices();
 
       VELaSSCoMethods findAllModels(&ourCluster);
-      //findAllModels.buildServerContexts("superuser", "", "v");
-      ////findAllModels.ListModels();
-      ////findAllModels.ValidateModels();
-      //findAllModels.getBoundingBox();
 
       ourVELaSSCoHandler->defineCluster(&ourCluster);
 #endif /* Cluster */
+      
 
-
-      //ourVELaSSCoHandler->InitQueryCaches();
       FILE *logFile = fopen("EDMstorageModule.log", "w");
       CLoggWriter    ourLogger(logFile, true, true);
-
-      ourLogger.logg(0, "The EDM VELaSSCo Data.Layer is ready to execute queries.\n\n");
       ourVELaSSCoHandler->defineLogger(&ourLogger);
 
-      TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+      if (argc >= 7) {
+         // Temporarly solution for server file injection
+         ourVELaSSCoHandler->InjectData(argv[nextCommandPos]);
+         printf("\n\nEnter a character to stop the program.\n");
+         getchar();
 
-      //boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(64);
-      //boost::shared_ptr<PosixThreadFactory> threadFactory = boost::shared_ptr<PosixThreadFactory>(new PosixThreadFactory());
-      //threadManager->threadFactory(threadFactory);
-      //threadManager->start();
+      } else {
+         WSADATA wsaData = {};
+         WORD wVersionRequested = MAKEWORD(2, 2);
+         int err = WSAStartup(wVersionRequested, &wsaData);
 
-      //TThreadedServer server(processor,
-      //   serverTransport,
-      //   transportFactory,
-      //   protocolFactory);
+         ourLogger.logg(0, "The EDM VELaSSCo Data.Layer is ready to execute queries.\n\n");
 
-      server.serve();
+         TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+
+         //boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(64);
+         //boost::shared_ptr<PosixThreadFactory> threadFactory = boost::shared_ptr<PosixThreadFactory>(new PosixThreadFactory());
+         //threadManager->threadFactory(threadFactory);
+         //threadManager->start();
+
+         //TThreadedServer server(processor,
+         //   serverTransport,
+         //   transportFactory,
+         //   protocolFactory);
+
+         server.serve();
+
+      }
    } catch (CedmError *e) {
       rstat = e->rstat;
       if (e->message) {

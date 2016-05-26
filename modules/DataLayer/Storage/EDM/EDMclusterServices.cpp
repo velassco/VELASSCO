@@ -257,14 +257,20 @@ void EDMclusterExecution::writeErrorMessageForSubQueries(string &allMsg)
 }
 /*==============================================================================================================================*/
 bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string& modelID)
+/*==============================================================================================================================*/
+{
+   return OpenClusterModelAndPrepareExecution(EDM_ATOI64(modelID.data()), NULL, 0, 0);
+}
+/*==============================================================================================================================*/
+bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo)
 /*
    modelID is object id of the ClusterModel object retrn by the open model method.
 ================================================================================================================================*/
-{
+{   
    tEdmiInstData cmd;
    theServer->clusterModel->reset();
    ecl::ClusterModel cm(theServer->clusterModel, theServer->clusterModel->initInstData(ecl::et_ClusterModel, &cmd));
-   cm.setInstanceId(EDM_ATOI64(modelID.data()));
+   cm.setInstanceId(modelID);
    if (cm.getEntityType() == ecl::et_ClusterModel) {
       Set<EDMmodel*> *theEDMmodels = cm.get_consists_of();
       if (theEDMmodels) {
@@ -273,20 +279,32 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
             Iterator<EDMmodel*, ecl::entityType> modelIter(theEDMmodels);
             EDMmodel*m = modelIter.first();
             subQueries = new(&ma)Container<EDMexecution>(&ma, nOfEDMmodels);
-            //for (EDMLONG i = 0; m && i < nOfEDMmodels; i++) {
+            int nextModelNo = FirstModelNo;
+            char modelName[2048];
+
             for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
                if (m) {
-                  EDMexecution *exp = subQueries->createNext();
-                  exp->modelName = m->get_name();
-                  ecl::EDMrepository *r = m->get_repository();
-                  exp->repositoryName = r ? r->get_name() : "";
-                  exp->ema = new CMemoryAllocator(0x100000);
-                  exp->serverCtxtRecord = theServer->getServerContext("superuser", "", "v", m);
-                  exp->error = NULL;
-
+                  EDMexecution *exp = NULL;
+                  char *cModelName = m->get_name();
+                  if (ModelNameFormat) {
+                     sprintf(modelName, ModelNameFormat, nextModelNo);
+                     if (strEQL(modelName, cModelName)) {
+                        exp = subQueries->createNext(); exp->modelName = cModelName;
+                        exp->modelNumber = nextModelNo;  nextModelNo++;
+                     }
+                  } else {
+                     exp = subQueries->createNext(); exp->modelName = cModelName;
+                  }
+                  if (exp) {
+                     ecl::EDMrepository *r = m->get_repository();
+                     exp->repositoryName = r ? r->get_name() : "";
+                     exp->ema = new CMemoryAllocator(0x100000);
+                     exp->serverCtxtRecord = theServer->getServerContext("superuser", "", "v", m);
+                     exp->error = NULL;
+                     if (ModelNameFormat && nextModelNo > LastModelNo)
+                        break;
+                  }
                   m = modelIter.next();
-               } else {
-                  printf("Error in Model list, i=%llu\n", i);
                }
             }
             return true;

@@ -66,7 +66,7 @@ namespace EDMVD {
 
 
    typedef struct ElementType {
-      ElementShapeType                    shape; // to avoid ambiguity meshinfo.type.type
+//      ElementShapeType                    shape; // to avoid ambiguity meshinfo.type.type
       EDMULONG32                          num_nodes;
    } ElementType;
 
@@ -147,7 +147,7 @@ namespace EDMVD {
    */
    typedef struct ReturnedMeshInfo {
       EDMULONG                            model_type;
-      ElementShapeType                    element_type;
+//      ElementShapeType                    element_type;
       EDMULONG                            n_vertices;
       EDMULONG                            vertex_record_size;
       EDMULONG                            n_elements;
@@ -452,6 +452,44 @@ struct nodeInGetListOfMeshes : public CppParameterClass
 };
 
 
+/*===================================================================================================================*/
+struct nodeRvInjectFiles : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[2];
+   cppRemoteParameter                    *status;
+   cppRemoteParameter                    *report;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeRvInjectFiles(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&status, rptSTRING);
+      addAddribute(&report, rptSTRING);
+   }
+};
+#define MAX_INJECT_FILES 6
+struct nodeInInjectFiles : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[MAX_INJECT_FILES];
+   cppRemoteParameter                    *fileName_0;
+   cppRemoteParameter                    *fileName_1;
+   cppRemoteParameter                    *fileName_2;
+   cppRemoteParameter                    *fileName_3;
+   cppRemoteParameter                    *fileName_4;
+   cppRemoteParameter                    *fileName_5;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeInInjectFiles(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&fileName_0, rptUndefined);
+      addAddribute(&fileName_1, rptUndefined);
+      addAddribute(&fileName_2, rptUndefined);
+      addAddribute(&fileName_3, rptUndefined);
+      addAddribute(&fileName_4, rptUndefined);
+      addAddribute(&fileName_5, rptUndefined);
+   }
+};
+
+
 struct relocateResultOnVertex : public RelocateInfo
 {
    Container<EDMVD::ResultOnVertex> *vertexResults;
@@ -498,6 +536,7 @@ public:
    EDMLONG              GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam, nodeRvGetCoordinatesAndElementsFromMesh *retVal);
    EDMLONG              GetBoundaryOfLocalMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam, nodeRvGetBoundaryOfLocalMesh *retVal);
    EDMLONG              GetListOfMeshes(Model *theModel, ModelType mt, nodeInGetListOfMeshes *inParam, nodeRvGetListOfMeshes *retVal);
+   EDMLONG              InjectFiles(Model *theModel, ModelType mt, nodeInInjectFiles *inParam, nodeRvInjectFiles *retVal);
 };
 
 

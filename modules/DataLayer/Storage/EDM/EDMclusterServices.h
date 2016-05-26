@@ -58,12 +58,14 @@ struct EDMexecution
    char                             *modelName;
    EDMserverContext                 *serverCtxtRecord;
    CppParameterClass                *returnValues;
+   CppParameterClass                *inParams;
    CedmError                        *error;
    int                              executionTime;
+   int                              modelNumber;  // used when model names have increaing integer in their names
 };
 /*================================================================================================*/
 /*!
-EDMexecution contains all necessary data to execute one query on one edmappserver.exe.
+EDMserverContext
 */
 struct EDMserverContext
 {
@@ -99,6 +101,7 @@ public:
    EDMclusterExecution(EDMclusterServices *cs);
    ~EDMclusterExecution();
    bool                             OpenClusterModelAndPrepareExecution(const std::string& modelID);
+   bool                             OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo);
    /*!
    addInputParameter.
    */

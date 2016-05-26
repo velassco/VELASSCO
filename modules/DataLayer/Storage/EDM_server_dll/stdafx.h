@@ -31,6 +31,7 @@ extern "C" {
 
 using namespace dem;
 using namespace fem;
+using namespace std;
 using namespace VELaSSCoSM;
 using namespace boost::interprocess;
 

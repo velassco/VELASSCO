@@ -8,47 +8,6 @@
 
 
 
-///*=============================================================================================================================*/
-//void VELaSSCoMethods::ListModels()
-///*=============================================================================================================================*/
-//{
-//   if (serverContexts) {
-////      SdaiServerContext *scs = serverContexts->getElementArray();
-////      EDMULONG nsc = serverContexts->size();
-////#pragma omp parallel for
-////      for (int i = 0; i < nsc; i++) {
-////         SdaiString        *foundNames;
-////         CHECK(edmiRemoteListModels(scs[i], NULL, NULL, NULL, NULL, NULL, 0, &foundNames, NULL));
-////         printf("Thread number %llu\n", omp_get_thread_num());
-////         for (int i = 0; foundNames[i]; i++) {
-////            printf("%s\n", foundNames[i]);
-////         }
-////         printf("\n\n");
-////      }
-//   }
-//}
-
-///*=============================================================================================================================*/
-//void VELaSSCoMethods::ValidateModels()
-///*=============================================================================================================================*/
-//{
-//   int startTime = GetTickCount();
-////   if (serverContexts) {
-////      SdaiServerContext *scs = serverContexts->getElementArray();
-////      EDMULONG nsc = serverContexts->size();
-////#pragma omp parallel for
-////      for (int i = 0; i < nsc; i++) {
-////         SdaiInteger        warnings, errors;
-////         char diaFileName[2048];
-////         sprintf(diaFileName, "O:\\projects\\VELaSSCo\\SVN_src\\EDM_plug_in\\db_cluster\\validate_%d.txt", i);
-////         CHECK(edmiRemoteValidateModel(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", diaFileName, 0, NULL, FULL_VALIDATION,
-////            NULL, NULL, 0, NULL, 0, &warnings, &errors, NULL));
-////      }
-////   }
-//   int endTime = GetTickCount();
-//   //printf("Elapsed time for the validation is %d millisecponds\n", endTime - startTime);
-//}
-
 
 /*=============================================================================================================================*/
 void VELaSSCoMethods::getBoundingBox()
@@ -402,7 +361,8 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)retVal->returned_mesh_info->value.blobVal;
          if (i == 0) {
             firstMetaData = metaData;
-         } else if (firstMetaData->element_record_size != metaData->element_record_size || firstMetaData->element_type != metaData->element_type || firstMetaData->model_type != metaData->model_type) {
+         //} else if (firstMetaData->element_record_size != metaData->element_record_size || firstMetaData->element_type != metaData->element_type || firstMetaData->model_type != metaData->model_type) {
+         } else if (firstMetaData->element_record_size != metaData->element_record_size || firstMetaData->model_type != metaData->model_type) {
             retValueWithError = retVal; break;
          }
          n_vertices += metaData->n_vertices; n_elements += metaData->n_elements;
@@ -839,7 +799,8 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
                   VELaSSCoSM::MeshInfo meshInfo;
                   meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
                   VELaSSCoSM::ElementType elementType;
-                  elementType.__set_shape(mi->elementType.shape); elementType.__set_num_nodes(mi->nVertices);
+                  //elementType.__set_shape(mi->elementType.shape);
+                  elementType.__set_num_nodes(mi->nVertices);
                   meshInfo.__set_elementType(elementType);
                   meshInfo.__set_meshNumber(meshNumber++);
 
@@ -853,6 +814,42 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          rv.__set_status("OK");
          rv.__set_meshInfos(meshInfos);
       }
+   }
+}
+/*=============================================================================================================================*/
+void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int FirstModelNo, int LastModelNo,
+   char *EDMmodelNameFormat, Container<char*> *msgs)
+/*=============================================================================================================================*/
+{
+   int startTime, endTime;
+   if (subQueries) {
+      EDMULONG nOfSubdomains = subQueries->size();
+      bool errorFound = false;
+      for (EDMexecution *e = subQueries->firstp(); e; e = subQueries->nextp()) {
+         nodeInInjectFiles *inParams = new(&ma)nodeInInjectFiles(&ma, NULL);
+         int i = 0, cModelno = FirstModelNo;
+         for (char *fnf = FileNameFormats->first(); fnf && i < MAX_INJECT_FILES && cModelno <= LastModelNo; fnf = FileNameFormats->next()) {
+            char fnbuf[2048];
+            sprintf(fnbuf, fnf, e->modelNumber);
+            inParams->attrPointerArr[i++]->putString(ma.allocString(fnbuf));
+         }
+         nodeRvInjectFiles *retVal = new(e->ema)nodeRvInjectFiles(e->ema, NULL);
+         e->returnValues = retVal; e->inParams = inParams;
+      }
+      EDMexecution *e;
+
+      startTime = GetTickCount();
+#pragma omp parallel for private (e)
+      for (int i = 0; i < nOfSubdomains; i++) {
+         e = subQueries->getElementp(i);
+         ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
+#pragma omp critical
+         msgs->add(ma.allocString(((nodeRvInjectFiles *)e->returnValues)->report->value.stringVal));
+      }
+      endTime = GetTickCount();
+      char t[1024];
+      sprintf(t, "   Time used %d millisec", endTime - startTime);
+      msgs->add(ma.allocString(t));
    }
 }
 

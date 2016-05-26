@@ -5,6 +5,8 @@ class VELaSSCoHandler : public VELaSSCoSMIf, public EDM_interface
    std::map<SdaiModel, EDMmodelCache*>          caches;
    CLoggWriter                                  *thelog;
    EDMclusterServices                           *theCluster;
+
+   SdaiInstance                                 getClusterModelID(const char *repName, const char *modelName, EDMLONG *rstatp, SdaiInteger *nOfNameMatches);
 public:
    Repository                                   *cFEMrep;
    Repository                                   *cDEMrep;
@@ -222,4 +224,5 @@ public:
    void GetFEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, FEMmodelCache *fmc);
    void GetDEMresultFromVerticesID(rvGetResultFromVerticesID_B& _return, bool allNodes, std::map<int, int> & nodesInParameter, const char *resultID, const double time_step, const char *analysisID, DEMmodelCache *dmc);
    void defineCluster(EDMclusterServices *cs) { theCluster = cs; }
+   void InjectData(char *commandFileName);
 };

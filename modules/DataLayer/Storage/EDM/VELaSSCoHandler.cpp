@@ -520,6 +520,22 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
 }
 
 
+SdaiInstance VELaSSCoHandler::getClusterModelID(const char *repName, const char *modelName, EDMLONG *rstatp, SdaiInteger *nOfNameMatches)
+{
+   char condition[1024];
+   SdaiInteger  maxBufferSize = sizeof(SdaiInstance)* 2, index = 0;
+   SdaiInstance resultBuffer[2], sdaiModelID;
+
+   *nOfNameMatches = 2;
+   sprintf(condition, "(name like '%s*') and (belongs_to.name = '%s')", modelName, repName);
+   if (*rstatp = edmiSelectInstancesBN(theCluster->clusterModel->modelId, "ClusterModel", condition, 0,
+      maxBufferSize, &index, nOfNameMatches, resultBuffer) == OK && *nOfNameMatches == 1) {
+      return resultBuffer[0];
+   } else {
+      return 0;
+   }
+}
+
 /**
 * Returns a model GUID (from now on ModelID). The model host may do housekeeping actions,
 * such as caching, and update its session model accordingly..
@@ -528,20 +544,29 @@ void VELaSSCoHandler::GetListOfModelNames(rvGetListOfModels& _return, const std:
 * @param modelName
 * @param requestedAccess
 */
-
 void VELaSSCoHandler::FindModel(rvOpenModel& _return, const std::string& sessionID, const std::string& modelName, const std::string& requestedAccess)
 {
    SdaiInteger  maxBufferSize = sizeof(SdaiInstance) * 2, index = 0, numberOfHits = 2;
    SdaiInstance resultBuffer[2], sdaiModelID;
    bool notFound = true;
-   int rstat;
-   char condition[1024];
+   EDMLONG rstat;
 
    try {
       thelog->logg(3, "-->FindModel\nsessionID=%s\nmodelName=%s\nrequestedAccess=%s\n\n", sessionID.data(), modelName.data(), requestedAccess.data());
-      sprintf(condition, "(name like '%s*') and (belongs_to.name = 'DataRepository')", modelName.data());
-      if (rstat = edmiSelectInstancesBN(theCluster->clusterModel->modelId, "ClusterModel", condition, 0,
-         maxBufferSize, &index, &numberOfHits, resultBuffer)) {
+      //char condition[1024];
+      //sprintf(condition, "(name like '%s*') and (belongs_to.name = 'DataRepository')", modelName.data());
+      //if (rstat = edmiSelectInstancesBN(theCluster->clusterModel->modelId, "ClusterModel", condition, 0,
+      //   maxBufferSize, &index, &numberOfHits, resultBuffer)) {
+      //   _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
+      //} else if (numberOfHits == 0) {
+      //   _return.__set_modelID("0"); _return.__set_report("No model match the given model name pattern");
+      //} else if (numberOfHits == 1) {
+      //   char smodelID[512];
+      //   sprintf(smodelID, "%llu", resultBuffer[0]);
+      //   _return.__set_modelID(smodelID); _return.__set_report("");
+      //}
+      sdaiModelID = getClusterModelID("DataRepository", modelName.data(), &rstat, &numberOfHits);
+      if (rstat) {
          _return.__set_modelID("0"); _return.__set_report(getErrorMsg(rstat));
       } else if (numberOfHits == 0) {
          _return.__set_modelID("0"); _return.__set_report("No model match the given model name pattern");
