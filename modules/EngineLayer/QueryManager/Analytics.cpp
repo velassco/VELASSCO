@@ -805,14 +805,14 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   if ( ok) {
     bool use_data_layer = false;
     if ( use_data_layer) {
-    std::cout << "doing DataLayer::getListOfVerticesFromMesh" << std::endl;
-    DataLayerAccess::Instance()->getListOfVerticesFromMesh( return_data,
-							    DataLayer_sessionID,
-							    modelID, analysisID, stepValue,
-							    meshID);
+      DEBUG( "doing DataLayer::getListOfVerticesFromMesh");
+      DataLayerAccess::Instance()->getListOfVerticesFromMesh( return_data,
+							      DataLayer_sessionID,
+							      modelID, analysisID, stepValue,
+							      meshID);
     } else {
       // the MapReduce version
-      std::cout << "doing MapReduce::getListOfVerticesFromMesh" << std::endl;
+      DEBUG( "doing MapReduce::getListOfVerticesFromMesh");
       std::string error_str = MRgetListOfVerticesFromMesh( return_data,
 							   sessionID, modelID, 
 							   dataTableName,
@@ -821,7 +821,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
       ok = ( error_str.length() == 0);
     }
     
-    std::cout << "     status: " << return_data.status << std::endl;
+    DEBUG( "     status: " << return_data.status);
     if ( return_data.status == "Error") {
       ok = false;
       // const std::string not_found( "Not found");
