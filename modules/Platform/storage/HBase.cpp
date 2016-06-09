@@ -27,7 +27,7 @@ using namespace VELaSSCo;
 /////////////////////////////////
 // Curl + Json
 /////////////////////////////////
-#include <curl/curl.h>
+
 #include "cJSON.h"
 
 #include "Curl_cmd.h"
