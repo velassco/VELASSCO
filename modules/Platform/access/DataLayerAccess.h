@@ -21,6 +21,9 @@ using namespace ::apache::thrift::transport;
 using boost::shared_ptr;
 using namespace std;
 
+
+//THIS COMMENTED CODE IS NOW LOCATED IN VELaSSCo_VQueries.h
+/*
 typedef enum {
   DL_SM_DB_UNKNOWN = 0,
   DL_SM_DB_HBASE = 1,
@@ -47,14 +50,15 @@ inline DL_SM_DB_TYPE getDBTypeFromString( const char *str) {
   }
   return ret;
 }
+*/
 
-
+#include "VELaSSCo_VQueries.h"
 #include "VELaSSCoSM.h"
 
 using namespace VELaSSCoSM;
 
 // handles connection to Storage Module:
-class DataLayerAccess
+class DataLayerAccess : public VELaSSCo_VQueries
 {
 public:
     static DataLayerAccess *Instance();

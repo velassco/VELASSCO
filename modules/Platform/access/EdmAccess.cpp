@@ -305,11 +305,56 @@ void EdmAccess::getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return,
 	return;
 }
 
-void EdmAccess::stopAll()
+
+/*void EdmAccess::stopAll()
 {
     DEBUG( " Function EdmAccess::stopAll not implemented (QueryManager/EdmAccess.cpp).");
 	return;
+}*/
+
+
+
+
+void EdmAccess::calculateBoundingBox( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
+			     const std::string &analysisID, const int numSteps, const double *lstSteps,
+			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+			     double *return_bbox, std::string *return_error_str) {
+			     
+	return;
 }
+
+
+void EdmAccess::calculateDiscrete2Continuum( const std::string &sessionID, const std::string &modelID,
+				    const std::string &analysisName, const std::string &staticMeshID, const std::string &tSOptions, 
+				    const int numSteps, const double *lstSteps, const std::string &coarseGrainingMethod, 
+				    const double width, const double cutoffFactor,
+				    const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGoptions, 
+				    const double deltaT,
+				    std::string *returnQueryOutcome, std::string *return_error_str) {
+			     
+	return;
+}
+
+
+std::string EdmAccess::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+				    const std::string &sessionID, const std::string &modelID, 
+				    const std::string &dataTableName,
+				    const std::string &analysisID, const double stepValue, 
+				    const int32_t meshID) {
+			     
+	return NULL;
+}
+
+
+void EdmAccess::calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+				 const std::string &modelID, const std::string &dataTableName,
+				 const int meshID, const std::string &elementType,
+				 const std::string &analysisID, const double stepValue,
+				 std::string *return_binary_mesh, std::string *return_error_str) {
+			     
+	return;
+}
+    
 
 
 

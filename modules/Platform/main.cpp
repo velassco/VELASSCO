@@ -275,23 +275,14 @@ int main(int argc, char **argv)
       return EXIT_FAILURE;
     }
 
-	//FIXME: AUTHOR IVAN CORES: I think this fork can be deleted ...
-    // int counter = 0;
-//    pid_t pid = fork();
-    
-//    if (pid == 0)
-//    {
-        // child process
-//    }
-//    else if (pid > 0)
-//    {
+
 
 	if (connect_EDM == 0)
 	{
 		//Open Source behaviour.
 		
 		const char *hbase_host = "localhost"; // or pez001
-    	int hbase_port = 9090; // hbase thrift server
+    		int hbase_port = 9090; // hbase thrift server
     
 		DataLayerAccess::Instance()->startConnection( hbase_host, hbase_port);
 
@@ -322,76 +313,52 @@ int main(int argc, char **argv)
 		EdmAccess::Instance()->startConnection( data_layer_hostname, data_layer_port);
 		
 		
-//		//This is the code that SHOULD be here in the definitive version.
-//			DEBUG( "listening on port " << listen_port);
-//			boost::thread serverThread(StartServer, listen_port);
-//
-//			cout << endl;
-//			string cmd ="";
-//			do
-//			{
-//				printListOfCmd();
-//				cin >> cmd;
-//				parse(cmd);
-//			}
-//			while (cmd.find("exit") != 0 && cmd.find("quit")  != 0);
-		
-		
-		
-		
-//		//This is only for testing purposes !!
-//		//This is only for testing purposes !!
-//		//This is only for testing purposes !!
-//		//This is only for testing purposes !!		
-			std::string sessionID;
-		EdmAccess::Instance()->userLogin(sessionID, "name", "rol", "pass"); 
-		
-			rvOpenModel rvOM;
-		EdmAccess::Instance()->openModel(rvOM, sessionID, "telescope", "read");
-		
-			rvGetResultFromVerticesID verticesResultRV;
-			vector<int64_t> listOfVertices;
-			listOfVertices.push_back(63327);
-			listOfVertices.push_back(63699);
-			listOfVertices.push_back(63707);
-			listOfVertices.push_back(64285);
-			listOfVertices.push_back(123400);
+		//This is the code that SHOULD be here in the definitive version.
+		DEBUG( "listening on port " << listen_port);
+		boost::thread serverThread(StartServer, listen_port);
 
-		EdmAccess::Instance()->getResultFromVerticesID(verticesResultRV, sessionID, rvOM.modelID, "Kratos", 21.0, "PRESSURE", listOfVertices);
-
-			rvGetListOfMeshes rvMeshes;
-		EdmAccess::Instance()->getListOfMeshes( rvMeshes, sessionID, rvOM.modelID, "Kratos", 21.0);		       
-				       
-			rvGetListOfAnalyses rvAnalysisList;		       
-		EdmAccess::Instance()->getListOfAnalyses( rvAnalysisList,sessionID, rvOM.modelID);
+		cout << endl;
+		string cmd ="";
+		do
+		{
+			printListOfCmd();
+			cin >> cmd;
+			parse(cmd);
+		}
+		while (cmd.find("exit") != 0 && cmd.find("quit")  != 0);
+		
+		
 			
-			rvGetListOfResults resultRV;		 
-		EdmAccess::Instance()->getListOfResultsFromTimeStepAndAnalysis( resultRV, sessionID, rvOM.modelID, "Kratos", 21.0);		    
-		
-/*			MeshInfo meshInfo;
-			rvGetCoordinatesAndElementsFromMesh meshInfoRV;
-		EdmAccess::Instance()->getCoordinatesAndElementsFromMesh(meshInfoRV, sessionID, rvOM.modelID, "Kratos", 21.0, meshInfo );
-*/
-	   
-//		// END: This is only for testing purposes !!
-//		// END: This is only for testing purposes !!
-//		// END: This is only for testing purposes !!
-//		// END: This is only for testing purposes !!	
-		
-		
+//		std::string sessionID;
+//		EdmAccess::Instance()->userLogin(sessionID, "name", "rol", "pass"); 
+//		
+//		rvOpenModel rvOM;
+//		EdmAccess::Instance()->openModel(rvOM, sessionID, "telescope", "read");
+//		
+//		rvGetResultFromVerticesID verticesResultRV;
+//		vector<int64_t> listOfVertices;
+//		listOfVertices.push_back(63327);
+//		listOfVertices.push_back(63699);
+//		listOfVertices.push_back(63707);
+//		listOfVertices.push_back(64285);
+//		listOfVertices.push_back(123400);
+//
+//		EdmAccess::Instance()->getResultFromVerticesID(verticesResultRV, sessionID, rvOM.modelID, "Kratos", 21.0, "PRESSURE", li//stOfVertices);
+//
+//		rvGetListOfMeshes rvMeshes;
+//		EdmAccess::Instance()->getListOfMeshes( rvMeshes, sessionID, rvOM.modelID, "Kratos", 21.0);		       
+//				       
+//		rvGetListOfAnalyses rvAnalysisList;		       
+//		EdmAccess::Instance()->getListOfAnalyses( rvAnalysisList,sessionID, rvOM.modelID);
+//			
+//		rvGetListOfResults resultRV;		 
+//		EdmAccess::Instance()->getListOfResultsFromTimeStepAndAnalysis( resultRV, sessionID, rvOM.modelID, "Kratos", 21.0);		    
 		
 		EdmAccess::Instance()->stopConnection();
 	
 	} //end else
 
 
-//    }
-//    else
-//    {
-//        // fork failed
-//        printf("fork() failed!\n");
-//        return 1;
-//    }
     
     
     return 0;

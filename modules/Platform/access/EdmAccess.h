@@ -18,12 +18,13 @@ using boost::shared_ptr;
 using namespace std;
 
 
+#include "VELaSSCo_VQueries.h"
 #include "VELaSSCoSM.h"
 
 using namespace VELaSSCoSM;
 
 // handles connection to Storage Module:
-class EdmAccess
+class EdmAccess : public VELaSSCo_VQueries
 {
 public:
     static EdmAccess *Instance();
@@ -80,12 +81,39 @@ public:
 				  const std::string &analysisID, const double stepValue, 
 				  const int32_t meshInfo);
 
-    void stopAll();
+//    void stopAll();
+    void calculateBoundingBox( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
+			     const std::string &analysisID, const int numSteps, const double *lstSteps,
+			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+			     double *return_bbox, std::string *return_error_str);
+
+  void calculateDiscrete2Continuum( const std::string &sessionID, const std::string &modelID,
+				    const std::string &analysisName, const std::string &staticMeshID, const std::string &tSOptions, 
+				    const int numSteps, const double *lstSteps, const std::string &coarseGrainingMethod, 
+				    const double width, const double cutoffFactor,
+				    const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGoptions, 
+				    const double deltaT,
+				    std::string *returnQueryOutcome, std::string *return_error_str);
+
+  std::string MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+				    const std::string &sessionID, const std::string &modelID, 
+				    const std::string &dataTableName,
+				    const std::string &analysisID, const double stepValue, 
+				    const int32_t meshID);
   
+  void calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+				 const std::string &modelID, const std::string &dataTableName,
+				 const int meshID, const std::string &elementType,
+				 const std::string &analysisID, const double stepValue,
+				 std::string *return_binary_mesh, std::string *return_error_str);
+    
+    
+    
+  	//EdmAccess(){};
+  	
 private:
     EdmAccess(){};
     EdmAccess(EdmAccess const&){};
-  // DataLayerAccess& operator=(DataLayerAccess const&){};
     
     static EdmAccess *m_pInstance;
     VELaSSCoSMClient *cli;
@@ -94,6 +122,7 @@ private:
     boost::shared_ptr<TTransport> socket;
     boost::shared_ptr<TTransport> transport;
     boost::shared_ptr<TProtocol> protocol;
+    
 };
 
 #endif
