@@ -6,10 +6,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "EDM_server_dll.h"
+#include "EDM_plugin_1.h"
 #include "FEM_InjectorHandler.h"
 
-
+using namespace VELaSSCoSM;
 
 static char *QUERY_RESULT_FOLDER = NULL;
 
@@ -349,46 +349,46 @@ EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt
                      if (rhname && strEQL(rhname, resultID)) {
                         if (!resultIdFound) {
                            fem::Mesh *mesh = ts->get_mesh();
-                           char *nodeIdFileName = getResultFileName("nodeId_%llu.dat", mesh->getInstanceId());
-                           bool fileNotFound = true;
-                           for (int nTry = 0; nTry < 2 && fileNotFound; nTry++) {
-                              try {  //Open the file mapping and map it as read-only
-                                 //file_mapping node_file(nodeIdFileName, read_only);
-                                 //mapped_region node_region(node_file, read_only);
-                                 //void * addr = node_region.get_address();
-                                 //EDMLONG size = node_region.get_size();
-                                 //EDMLONG *fileInMemory = (EDMLONG *)addr;
-                              //} catch (boost::interprocess::interprocess_exception exep) {
-                                 nodeIdFileName = "C:/temp/edm_60/hallo_OLI.dat";
-                                 EDMLONG maxID = 0, minID = 0xfffffffffffffff;
-                                 Iterator<fem::Node *, fem::entityType> nodeIter(mesh->get_nodes());
-                                 for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                                    EDMLONG id = n->get_id();
-                                    if (id > maxID) maxID = id; if (id < minID) minID = id;
-                                 }
-                                 EDMLONG fileSize = (maxID - minID + 3) * sizeof(EDMLONG);
-                                 file_mapping::remove(nodeIdFileName);
-                                 std::filebuf fbuf;
-                                 fbuf.open(nodeIdFileName, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
-                                 //Set the size
-                                 fbuf.pubseekoff(fileSize - 1, std::ios_base::beg);
-                                 fbuf.sputc(0);
-                                 file_mapping node_file(nodeIdFileName, read_write);
-                                 mapped_region node_region(node_file, read_write);
-                                 void * addr = node_region.get_address();
-                                 EDMLONG size = node_region.get_size();
-                                 EDMLONG *nodeIdArray = (EDMLONG *)addr;
-                                 memset(nodeIdArray, 0, fileSize);
-                                 for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                                    EDMLONG id = n->get_id();
-                                    nodeIdArray[id - minID + 2] = n->getInstanceId();
-                                 }
-                                 fileNotFound = false;
-                              } catch (boost::interprocess::interprocess_exception exep) {
-                                 EDMLONG rstat = GetLastError();
-                                 rstat = 0;
-                              }
-                          }
+                          // char *nodeIdFileName = getResultFileName("nodeId_%llu.dat", mesh->getInstanceId());
+                          // bool fileNotFound = true;
+                          // for (int nTry = 0; nTry < 2 && fileNotFound; nTry++) {
+                          //    try {  //Open the file mapping and map it as read-only
+                          //       //file_mapping node_file(nodeIdFileName, read_only);
+                          //       //mapped_region node_region(node_file, read_only);
+                          //       //void * addr = node_region.get_address();
+                          //       //EDMLONG size = node_region.get_size();
+                          //       //EDMLONG *fileInMemory = (EDMLONG *)addr;
+                          //    //} catch (boost::interprocess::interprocess_exception exep) {
+                          //       nodeIdFileName = "C:/temp/edm_60/hallo_OLI.dat";
+                          //       EDMLONG maxID = 0, minID = 0xfffffffffffffff;
+                          //       Iterator<fem::Node *, fem::entityType> nodeIter(mesh->get_nodes());
+                          //       for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                          //          EDMLONG id = n->get_id();
+                          //          if (id > maxID) maxID = id; if (id < minID) minID = id;
+                          //       }
+                          //       EDMLONG fileSize = (maxID - minID + 3) * sizeof(EDMLONG);
+                          //       file_mapping::remove(nodeIdFileName);
+                          //       std::filebuf fbuf;
+                          //       fbuf.open(nodeIdFileName, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+                          //       //Set the size
+                          //       fbuf.pubseekoff(fileSize - 1, std::ios_base::beg);
+                          //       fbuf.sputc(0);
+                          //       file_mapping node_file(nodeIdFileName, read_write);
+                          //       mapped_region node_region(node_file, read_write);
+                          //       void * addr = node_region.get_address();
+                          //       EDMLONG size = node_region.get_size();
+                          //       EDMLONG *nodeIdArray = (EDMLONG *)addr;
+                          //       memset(nodeIdArray, 0, fileSize);
+                          //       for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                          //          EDMLONG id = n->get_id();
+                          //          nodeIdArray[id - minID + 2] = n->getInstanceId();
+                          //       }
+                          //       fileNotFound = false;
+                          //    } catch (boost::interprocess::interprocess_exception exep) {
+                          //       EDMLONG rstat = GetLastError();
+                          //       rstat = 0;
+                          //    }
+                          //}
 
                            Iterator<fem::Result*, fem::entityType> resultIter(rh->get_values());
                            fem::entityType resType;
@@ -482,7 +482,12 @@ EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt
 }
 //typedef enum { ElementType_POINT, ElementType_LINE, ElementType_TRIANGLE, ElementType_QUADRILATERAL, ElementType_TETRAHEDRA, ElementType_HEXAHEDRA, ElementType_PRISM, ElementType_PYRAMID, ElementType_SPHERE, ElementType_CIRCLE } ElementType;
 
-static VELaSSCoSM::ElementShapeType elementTypeConvert[] = {PointElement, LineElement,  TriangleElement, QuadrilateralElement, TetrahedraElement, HexahedraElement, PrismElement, PyramidElement, SphereElement, CircleElement, ComplexParticleElement};
+static ElementShapeType::type elementTypeConvert[] = {
+   ElementShapeType::type::PointElement, ElementShapeType::type::LineElement,  ElementShapeType::type::TriangleElement,
+   ElementShapeType::type::QuadrilateralElement, ElementShapeType::type::TetrahedraElement, ElementShapeType::type::HexahedraElement,
+   ElementShapeType::type::PrismElement, ElementShapeType::type::PyramidElement, ElementShapeType::type::SphereElement, ElementShapeType::type::CircleElement,
+   ElementShapeType::type::ComplexParticleElement
+};
 /*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam,
    nodeRvGetCoordinatesAndElementsFromMesh *retVal)
