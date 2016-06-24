@@ -34,6 +34,7 @@
 #include "DataLayerAccess.h"
 #include "Analytics.h"
 #include "Graphics.h"
+#include "VELaSSCo_VQueries.h"
 
 #include "Server.h"
 
@@ -45,6 +46,9 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
+
+extern VELaSSCo_VQueries *queryServer;
+
 
 // ***************************************************************************
 //
@@ -69,8 +73,8 @@ void QueryManagerServer::UserLogin(UserLogin_Result& _return, const std::string&
   LOGGER << "  password : " << password << std::endl;
 
   std::string dl_return;
-  DataLayerAccess::Instance()->userLogin( dl_return,
-						name, "administrator", password);
+
+  queryServer->userLogin( dl_return, name, "administrator", password);
   // we accept the user_name if it was succesfully logged into DataLayer->UserLogin() or it's one of the internal users
   if ( ( dl_return.size() != 0) 
        || (name == "velassco" && password == "VELaSSCo")
@@ -145,7 +149,7 @@ void QueryManagerServer::UserLogout(UserLogout_Result& _return, const SessionID 
     // may be it's an external user, so logout first from the DataLayer
     if ( user.dataLayerSessionID.size() != 0) {
       dl_return = "external user";
-      DataLayerAccess::Instance()->userLogout( dl_return,
+      queryServer->userLogout( dl_return,
 						user.dataLayerSessionID);
     }
     m_users.erase(sessionID);
@@ -177,7 +181,7 @@ void QueryManagerServer::ManageGetListOfModels( Query_Result &_return, const Ses
   std::cout << "P   " << name_pattern    << std::endl;
   
   rvGetListOfModels _return_;
-  DataLayerAccess::Instance()->getListOfModels( _return_,
+  queryServer->getListOfModels( _return_,
 						dl_sessionID, group_qualifier, name_pattern);
   		  
   std::cout << _return_ << std::endl;
@@ -239,7 +243,7 @@ void QueryManagerServer::ManageOpenModel( Query_Result &_return, const SessionID
   std::cout << "A   " << requested_access << std::endl;
   
   rvOpenModel _return_;
-  DataLayerAccess::Instance()->openModel( _return_,
+  queryServer->openModel( _return_,
 					  dl_sessionID, unique_name, requested_access);
   		  
   std::cout << _return_ << std::endl;
@@ -285,7 +289,7 @@ void QueryManagerServer::ManageCloseModel( Query_Result &_return, const SessionI
   std::cout << "M " << modelID    << std::endl;
   
   std::string _return_;
-  DataLayerAccess::Instance()->closeModel( _return_,
+  queryServer->closeModel( _return_,
 					   dl_sessionID, modelID);
   std::cout << _return_ << std::endl;
 

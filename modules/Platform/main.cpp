@@ -12,9 +12,34 @@
 
 
 #include "DataLayerAccess.h"
-#include "EdmAccess.h"
 #include "Server.h"
 #include "Helpers.h"
+
+#include "VELaSSCo_VQueries.h"
+
+#ifdef EDM
+
+extern "C" {
+#include "sdai.h"
+#include "cpp10_EDM_interface.h"
+}
+
+#include "EDMcluster_entityTypes.h"
+#include "container.h"
+#include "EDMcluster.hpp"
+
+using namespace std;
+using namespace ecl;
+
+#include "CppParameterClass.h"
+#include "EDMclusterServices.h"
+
+#include "EDM_interface.h"
+#include "CLogger.h"
+#include "VELaSSCoHandler.h"
+#include "VELaSSCoMethods.h"
+
+#endif /* EDM */
 
 
 using namespace std;
@@ -30,6 +55,7 @@ const char *getVELaSSCoBaseDir() { return G_VELaSSCo_base_dir;}
 	
 void parse(string cmd)
 {
+#ifndef EDM
     if( cmd.find("query") == 0)
     {
         cout<<"#### Query ####"<<endl;
@@ -140,6 +166,7 @@ void parse(string cmd)
         cout<<"#### /stop ####"<<endl;
 	exit( 0);
     }
+#endif /* ndef EDM */
 }
 
 void setVELaSSCoBaseDir( const char *argv0) {
@@ -206,6 +233,8 @@ bool thereIsHelpSwitch( int argc, char **argv) {
 }
 
 
+VELaSSCo_VQueries *queryServer = NULL;
+
 
 int main(int argc, char **argv)
 {
@@ -213,6 +242,8 @@ int main(int argc, char **argv)
     
     int listen_port = 26267; // standard thrift port : 9090
     const char *data_layer_hostname = "localhost"; // or "pez001";
+    char *EDM_qm_database_folder = ""; // or "pez001";
+    char *EDM_qm_init_file = ""; // or "pez001";
     int         data_layer_port     = 26266;
     int         connect_EDM	    = 0;
     if ( thereIsHelpSwitch( argc, argv)) {
@@ -220,7 +251,7 @@ int main(int argc, char **argv)
       printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
       printf( "  -dl_host hostname         host name of the Data Layer Server (default %s)\n", data_layer_hostname);
       printf( "  -dl_port port_number      port of the Data Layer Server (default %d)\n", data_layer_port);
-      printf( "  -dl_EDM 1                 connects to the EDM SM (default %d - OpenVersion)\n", connect_EDM);
+      printf( "  -dl_EDM EDM_qm_database_folder EDM_qm_init_file  \n");
       printf( "  -multiuser 0              if 0, uses SimpleServer, if 1, uses MultiUser (default %d)\n", G_multiUser);
       return EXIT_FAILURE;
     }
@@ -241,23 +272,20 @@ int main(int argc, char **argv)
 		  processed_args += 2;
 		}
       } else if ( !strcasecmp( argv[ ia], "-dl_host")) {
-		ia++;
-		data_layer_hostname = argv[ ia];
-		processed_args += 2;
+		   ia++;
+		   data_layer_hostname = argv[ ia];
+		   processed_args += 2;
       } else if ( !strcasecmp( argv[ ia], "-dl_port")) {
-		ia++;
-		int new_port = data_layer_port;
-		if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
-		  data_layer_port = new_port;
-		  processed_args += 2;
-		}
+		   ia++;
+		   int new_port = data_layer_port;
+		   if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+		     data_layer_port = new_port;
+		     processed_args += 2;
+		   }
       } else if ( !strcasecmp( argv[ ia], "-dl_EDM")) {
-		ia++;
-		int new_port = data_layer_port;
-		if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
-		  connect_EDM = new_port;
-		  processed_args += 2;
-		}
+		   EDM_qm_database_folder = argv[ ++ia];
+		   EDM_qm_init_file = argv[ ++ia];
+		   processed_args += 3;
       } else if ( !strcasecmp( argv[ ia], "-multiuser")) {
 		ia++;
 		int is_multi = G_multiUser;
@@ -276,6 +304,70 @@ int main(int argc, char **argv)
     }
 
 
+#ifdef EDM
+    int rstat;
+    char errTxt[1024];
+    VELaSSCoHandler *ourVELaSSCoHandler;
+
+    FILE *logFile = fopen("EDMstorageModule.log", "w");
+    CLoggWriter    ourLogger(logFile, true, true);
+
+    try {
+       ourVELaSSCoHandler = new VELaSSCoHandler();
+       queryServer = ourVELaSSCoHandler;
+       ourVELaSSCoHandler->defineLogger(&ourLogger);
+
+       Database VELaSSCo_db(EDM_qm_database_folder, "VELaSSCo", "v");
+       VELaSSCo_db.open();
+
+       SdaiRepository repositoryId;
+       CMemoryAllocator ma(0x100000);
+       int rstat = edmiCreateRepository("EDMcluster", &repositoryId);
+       if (rstat == OK) {
+          rstat = edmiCreateModelBN(repositoryId, "EDMcluster", "EDMcluster", 0);
+       }
+       Repository clusterRepository(&VELaSSCo_db, "EDMcluster");
+       Model clusterModel(&clusterRepository, &ma, &EDMcluster_SchemaObject);
+       clusterModel.open("EDMcluster", sdaiRW);
+       VELaSSCoCluster ourCluster(&clusterModel);
+       if (EDM_qm_init_file && *EDM_qm_init_file) {
+          ourLogger.logg(2, "EDMqueryManager starts with\nEDM_qm_database_folder=%s\nEDM_qm_init_file=%s\n\n, ", EDM_qm_database_folder, EDM_qm_init_file);
+          ourCluster.initClusterModel(EDM_qm_init_file);
+
+          ourCluster.startServices();
+          ourVELaSSCoHandler->defineCluster(&ourCluster);
+          QMiD = listen_port;
+          DEBUG("listening on port " << listen_port);
+          boost::thread serverThread(StartServer, listen_port);
+
+          cout << endl;
+          string cmd = "";
+          do
+          {
+             printListOfCmd();
+             cin >> cmd;
+             parse(cmd);
+          } while (cmd.find("exit") != 0 && cmd.find("quit") != 0);
+
+       } else {
+          ourLogger.error(0, "EDMqueryManager init file must be specified.\n");
+       }
+
+    } catch (CedmError *e) {
+       rstat = e->rstat;
+       if (e->message) {
+          strncpy(errTxt, e->message, sizeof(errTxt));
+       } else {
+          strncpy(errTxt, edmiGetErrorText(rstat), sizeof(errTxt));
+       }
+       delete e;
+       ourLogger.error(1, "Exception\n\n%s\n\n", errTxt);
+    } catch (int thrownRstat) {
+       strncpy(errTxt, edmiGetErrorText(thrownRstat), sizeof(errTxt));
+       ourLogger.error(1, "Exception\n\n%s\n\n", errTxt);
+    }
+
+#else /* ndef EDM */
 
 	if (connect_EDM == 0)
 	{
@@ -302,65 +394,9 @@ int main(int argc, char **argv)
 		DataLayerAccess::Instance()->stopConnection();
         
 	}
-	else //connect_EDM==1
-	{
-		//EDM connection...
-		
-		//const char *edm_server = "10.0.1.134";
-		//int edm_port = 26266;
-		DEBUG("EDM connection information in ACUARIO: pez010 VM IP: 10.0.1.134, port 26266");	
-		
-		EdmAccess::Instance()->startConnection( data_layer_hostname, data_layer_port);
-		
-		
-		//This is the code that SHOULD be here in the definitive version.
-		DEBUG( "listening on port " << listen_port);
-		boost::thread serverThread(StartServer, listen_port);
 
-		cout << endl;
-		string cmd ="";
-		do
-		{
-			printListOfCmd();
-			cin >> cmd;
-			parse(cmd);
-		}
-		while (cmd.find("exit") != 0 && cmd.find("quit")  != 0);
-		
-		
-			
-//		std::string sessionID;
-//		EdmAccess::Instance()->userLogin(sessionID, "name", "rol", "pass"); 
-//		
-//		rvOpenModel rvOM;
-//		EdmAccess::Instance()->openModel(rvOM, sessionID, "telescope", "read");
-//		
-//		rvGetResultFromVerticesID verticesResultRV;
-//		vector<int64_t> listOfVertices;
-//		listOfVertices.push_back(63327);
-//		listOfVertices.push_back(63699);
-//		listOfVertices.push_back(63707);
-//		listOfVertices.push_back(64285);
-//		listOfVertices.push_back(123400);
-//
-//		EdmAccess::Instance()->getResultFromVerticesID(verticesResultRV, sessionID, rvOM.modelID, "Kratos", 21.0, "PRESSURE", li//stOfVertices);
-//
-//		rvGetListOfMeshes rvMeshes;
-//		EdmAccess::Instance()->getListOfMeshes( rvMeshes, sessionID, rvOM.modelID, "Kratos", 21.0);		       
-//				       
-//		rvGetListOfAnalyses rvAnalysisList;		       
-//		EdmAccess::Instance()->getListOfAnalyses( rvAnalysisList,sessionID, rvOM.modelID);
-//			
-//		rvGetListOfResults resultRV;		 
-//		EdmAccess::Instance()->getListOfResultsFromTimeStepAndAnalysis( resultRV, sessionID, rvOM.modelID, "Kratos", 21.0);		    
-		
-		EdmAccess::Instance()->stopConnection();
-	
-	} //end else
+#endif /* ndef EDM */
 
-
-    
-    
-    return 0;
+   return 0;
 }
 

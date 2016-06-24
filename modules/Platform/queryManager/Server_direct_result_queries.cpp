@@ -35,6 +35,7 @@
 #include "Analytics.h"
 #include "Graphics.h"
 #include "base64.h"
+#include "VELaSSCo_VQueries.h"
 
 #include "Server.h"
 
@@ -46,6 +47,8 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
+
+extern VELaSSCo_VQueries *queryServer;
 
 /* 1xx - Direct Result Queries */
 
@@ -145,7 +148,7 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   
   rvGetResultFromVerticesID _return_;
 
-  DataLayerAccess::Instance()->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices);
+  queryServer->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,timeStep ,resultID ,listOfVertices);
   
   std::vector<int64_t> resultVertexIDs;
   std::vector<double>  resultValues;
@@ -360,7 +363,7 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 
 	  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
 	  rvGetListOfMeshes _return_;
-	  DataLayerAccess::Instance()->getListOfMeshes( _return_,
+	  queryServer->getListOfMeshes( _return_,
 							dl_sessionID, modelID, analysisID, timeStep);
 	  MeshInfo meshInfo;
 	  meshInfo.meshNumber = -1;      //<<< To mark the meshInfo as non-initalized.
@@ -390,24 +393,24 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 		  
 			try {
 			  rvGetCoordinatesAndElementsFromMesh _return_;
-			  DataLayerAccess::Instance()->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo );
+			  queryServer->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo );
 			  
 			  std::vector<std::vector<Vertex>> vertex_list;
 			  if(meshInfo.name == "p2p contacts"){
 				rvGetListOfVerticesFromMesh _return_vertices;
-			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, 1 );
+			    queryServer->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, 1 );
 			    vertex_list.push_back( _return_vertices.vertex_list );
-			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
+			    queryServer->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
 			    vertex_list.push_back( _return_vertices.vertex_list );
 			  } else if(meshInfo.name == "p2w contacts"){
 				rvGetListOfVerticesFromMesh _return_vertices;
-			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, 1 );
+			    queryServer->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, 1 );
 			    vertex_list.push_back( _return_vertices.vertex_list );
-			    DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
+			    queryServer->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
 			    vertex_list.push_back( _return_vertices.vertex_list );
 			  } else {
 				rvGetListOfVerticesFromMesh _return_vertices;
-				DataLayerAccess::Instance()->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
+				queryServer->getListOfVerticesFromMesh( _return_vertices, dl_sessionID, modelID ,analysisID ,timeStep, meshInfo.meshNumber );
 			    vertex_list.push_back( _return_vertices.vertex_list );
 			  }
 			  
@@ -484,7 +487,7 @@ void QueryManagerServer::ManageGetListOfMeshes( Query_Result &_return, const Ses
   std::cout << "Sv -" << stepValue       << "-" << std::endl;
 
   rvGetListOfMeshes _return_;
-  DataLayerAccess::Instance()->getListOfMeshes( _return_,
+  queryServer->getListOfMeshes( _return_,
 						dl_sessionID, modelID, analysisID, stepValue);
   
   std::cout << _return_ << std::endl;
@@ -550,7 +553,7 @@ void QueryManagerServer::ManageGetListOfAnalyses( Query_Result &_return, const S
   std::cout << "M  -" << modelID          << "-" << std::endl;
 
   rvGetListOfAnalyses _return_;
-  DataLayerAccess::Instance()->getListOfAnalyses( _return_,
+  queryServer->getListOfAnalyses( _return_,
 						  dl_sessionID, modelID);
   
   std::cout << _return_ << std::endl;
@@ -604,7 +607,7 @@ void QueryManagerServer::ManageGetListOfTimeSteps( Query_Result &_return, const 
   std::cout << "An -" << analysisID       << "-" << std::endl;
 
   rvGetListOfTimeSteps _return_;
-  DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
+  queryServer->getListOfTimeSteps( _return_,
 						   dl_sessionID, modelID, analysisID,
 						   "ALL", 0, NULL);
   
@@ -670,7 +673,7 @@ void QueryManagerServer::ManageGetListOfResults( Query_Result &_return, const Se
   std::cout << "Sv -" << stepValue       << "-" << std::endl;
 
   rvGetListOfResults _return_;
-  DataLayerAccess::Instance()->getListOfResultsFromTimeStepAndAnalysis( _return_,
+  queryServer->getListOfResultsFromTimeStepAndAnalysis( _return_,
 									dl_sessionID, 
 									modelID, analysisID, stepValue);
   

@@ -34,6 +34,7 @@
 #include "DataLayerAccess.h"
 #include "Analytics.h"
 #include "Graphics.h"
+#include "VELaSSCo_VQueries.h"
 
 #include "Server.h"
 
@@ -45,6 +46,8 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
+
+extern VELaSSCo_VQueries *queryServer;
 
 void QueryManagerServer::GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) {
   LOGGER                              << std::endl;
@@ -67,7 +70,7 @@ void QueryManagerServer::GetStatusDB(StatusDB_Result& _return, const SessionID s
     }
 
   std::string status;
-  DataLayerAccess::Instance()->getStatusDB( status);
+  queryServer->getStatusDB( status);
   _return.__set_result( (Result::type)VAL_SUCCESS );
   _return.__set_status( status );
 
@@ -98,13 +101,13 @@ void QueryManagerServer::StopVELaSSCo(StopVELaSSCo_Result& _return, const Sessio
     }
 
   std::string status;
-  // DataLayerAccess::Instance()->stopVELaSSCo( status);
+  // queryServer->stopVELaSSCo( status);
   // do a user logout first
   UserLogout_Result logout_result;
   this->UserLogout( logout_result, sessionID);
 
   // stop Data Layer
-  DataLayerAccess::Instance()->stopAll( );
+  queryServer->stopAll( );
   _return.__set_result( (Result::type)VAL_SUCCESS );
   status = " StorageModule and QueryManager servers stopped.";
   _return.__set_status( status );

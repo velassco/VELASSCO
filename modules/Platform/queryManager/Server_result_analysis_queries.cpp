@@ -34,6 +34,7 @@
 #include "DataLayerAccess.h"
 //#include "Analytics.h"
 #include "Graphics.h"
+#include "VELaSSCo_VQueries.h"
 
 #include "Server.h"
 
@@ -45,6 +46,8 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
+
+extern VELaSSCo_VQueries *queryServer;
 
 /* 2xx - Result Analysis Queries */
 
@@ -83,12 +86,12 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   std::cout << "Ss -" << strSteps       << "-" << std::endl;
 
   // in theory should check first if it has already been calculated by doing a
-  // DataLayerAccess::Instance()->getBoundingBox( sessionID, query);
+  // queryServer->getBoundingBox( sessionID, query);
   // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
   
   // not implemented yet:
   // std::string _return_; // status
-  // DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
+  // queryServer->getListOfTimeSteps( _return_,
   // 						      dl_sessionID, modelID,
   // 						      analysisID,
   // 						      stepOptions, numSteps, lstSteps);
@@ -98,7 +101,7 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   std::string error_str;
   try {
     //AnalyticsModule::getInstance()->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
-    DataLayerAccess::Instance()->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+    queryServer->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
 							  simulation_data_table_name,
 							  // analysisID, numSteps, lstSteps,
 							  "", 0, NULL,
@@ -177,14 +180,14 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   try {
     // not implemented yet:
     // std::string _return_; // status
-    // DataLayerAccess::Instance()->getListOfTimeSteps( _return_,
+    // queryServer->getListOfTimeSteps( _return_,
     // 						      dl_sessionID, modelID,
     // 						      analysisID,
     // 						      stepOptions, numSteps, lstSteps);
     // parse _return_ into a double *lstSteps
     
     //AnalyticsModule::getInstance()->calculateDiscrete2Continuum ( GetQueryManagerSessionID( sessionID), modelID,
-    DataLayerAccess::Instance()->calculateDiscrete2Continuum ( GetQueryManagerSessionID( sessionID), modelID,
+    queryServer->calculateDiscrete2Continuum ( GetQueryManagerSessionID( sessionID), modelID,
 								 analysisName, staticMeshID, stepOptions, numSteps, lstSteps.data(),
 								 coarseGrainingMethod, width, cutoffFactor, processContacts, 
 								 doTemporalAVG, temporalAVGOptions, deltaT, &query_outcome, &error_str);
@@ -235,7 +238,7 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
   std::cout << "Sv -" << stepValue       << "-" << std::endl;
 
   // in theory should check first if it has already been calculated by doing a
-  // DataLayerAccess::Instance()->getBoundingBox( sessionID, query);
+  // queryServer->getBoundingBox( sessionID, query);
   // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
 
   std::string error_str;
@@ -245,7 +248,7 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
 
   std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
   rvGetListOfMeshes _return_;
-  DataLayerAccess::Instance()->getListOfMeshes( _return_,
+  queryServer->getListOfMeshes( _return_,
 						dl_sessionID, modelID, analysisID, stepValue);
   int meshID = -1;
   std::string elementType = "";
@@ -273,7 +276,7 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
     std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
     try {
       //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
-      DataLayerAccess::Instance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
+      queryServer->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
 								dl_sessionID,
 								modelID,
 								simulation_data_table_name,
