@@ -92,60 +92,78 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
    ecl::EDMdatabase *cEDMdatabase = NULL;
    char *cClusterRepositoryName, *cClusterModelName, *cEDMmodelName;
 
-   if (serverListFileName && (serverListFile = fopen(serverListFileName, "r"))) {
-      clusterModel->open("EDMcluster", sdaiRW);
-      CHECK(edmiDeleteModelContents(clusterModel->modelId));
-      CMemoryAllocator *ma = clusterModel->ma;
-      while (fgets(buf, sizeof(buf), serverListFile)){
-         int nCoulmn = sscanf(buf, "%s %s %s %s %s %s", command, param1, param2, param3, param4, param5);
-         if (strEQL(command, "EDMcluster")) {
-            if (ourCluster == NULL) {
-               ourCluster = newObject(ecl::EDMcluster);
-               ourCluster->put_name(ma->allocString(param1));
-            }
-         } else if (strEQL(command, "ClusterRepository")) {
-            cClusterRepository = newObject(ecl::ClusterRepository); cClusterRepository->put_name(ma->allocString(param1));
-            if (ourCluster) {
-               cClusterRepository->put_platform(ourCluster);
-            }
-         } else if (strEQL(command, "ClusterModel")) {
-            cClusterModel = newObject(ecl::ClusterModel); cClusterModel->put_name(ma->allocString(param1));
-            if (cClusterRepository) {
-               cClusterModel->put_belongs_to(cClusterRepository);
-            }
-         } else if (strEQL(command, "EDMrepository")) {
-            cEDMrepository = newObject(ecl::EDMrepository); cEDMrepository->put_name(ma->allocString(param1));
-            if (cEDMdatabase) {
-               cEDMrepository->put_belongs_to(cEDMdatabase);
-            }
-         } else if (strEQL(command, "EDMmodel")) {
-            cClusterRepositoryName = param1; cClusterModelName = param2; cEDMmodelName = param3;
-            cEDMmodel = newObject(ecl::EDMmodel); cEDMmodel->put_name(ma->allocString(cEDMmodelName));
-            ecl::ClusterModel *ccm = getClusterModel(cClusterModelName, cClusterRepositoryName);
-            if (ccm) {
-               cEDMmodel->put_clusterModel(ccm);
-            }
-            if (cEDMrepository) {
-               cEDMmodel->put_repository(cEDMrepository);
-            }
-         } else if (strEQL(command, "EDMdatabase")) {
-            // EDMdatabase "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_cluster\db1" VELaSSCo VELaSSCo loaclhost 9090
-            cEDMdatabase = newObject(ecl::EDMdatabase);
-            cEDMdatabase->put_path(ma->allocString(param1)); cEDMdatabase->put_name(ma->allocString(param2));
-            cEDMdatabase->put_password(ma->allocString(param3));
-            ecl::EDMServer *srv = newObject(ecl::EDMServer);
-            srv->put_Host(ma->allocString(param4)); srv->put_Port(ma->allocString(param5));
-            cEDMdatabase->put_server(srv);
-            if (ourCluster) {
-               ourCluster->put_databases_element(cEDMdatabase); ourCluster->put_servers_element(srv);
+   printf("\ninit_file=%s\n", serverListFileName);
+   if (serverListFileName) {
+      serverListFile = fopen(serverListFileName, "r");
+      if (serverListFile) {
+         printf("init_file opened\n", serverListFileName);
+         clusterModel->open("EDMcluster", sdaiRW);
+         printf("EDMclusterServices::initClusterModel - 1\n");
+         CHECK(edmiDeleteModelContents(clusterModel->modelId));
+         printf("EDMclusterServices::initClusterModel - 2\n");
+         CMemoryAllocator *ma = clusterModel->ma;
+         printf("EDMclusterServices::initClusterModel - 3\n");
+         while (fgets(buf, sizeof(buf), serverListFile)){
+            printf("init_file_line=%s\n", buf);
+            int nCoulmn = sscanf(buf, "%s %s %s %s %s %s", command, param1, param2, param3, param4, param5);
+            if (strEQL(command, "EDMcluster")) {
+         printf("EDMclusterServices::initClusterModel - 4\n");
+               if (ourCluster == NULL) {
+         printf("EDMclusterServices::initClusterModel - 5\n");
+                  ourCluster = newObject(ecl::EDMcluster);
+         printf("EDMclusterServices::initClusterModel - 6\n");
+         printf("param1=%s\n", param1);
+                  char *thisName = ma->allocString(param1);
+         printf("EDMclusterServices::initClusterModel - 6B\n");
+                  ourCluster->put_name(thisName);
+         printf("EDMclusterServices::initClusterModel - 7\n");
+               }
+            } else if (strEQL(command, "ClusterRepository")) {
+               cClusterRepository = newObject(ecl::ClusterRepository); cClusterRepository->put_name(ma->allocString(param1));
+               if (ourCluster) {
+                  cClusterRepository->put_platform(ourCluster);
+               }
+            } else if (strEQL(command, "ClusterModel")) {
+               cClusterModel = newObject(ecl::ClusterModel); cClusterModel->put_name(ma->allocString(param1));
+               if (cClusterRepository) {
+                  cClusterModel->put_belongs_to(cClusterRepository);
+               }
+            } else if (strEQL(command, "EDMrepository")) {
+               cEDMrepository = newObject(ecl::EDMrepository); cEDMrepository->put_name(ma->allocString(param1));
+               if (cEDMdatabase) {
+                  cEDMrepository->put_belongs_to(cEDMdatabase);
+               }
+            } else if (strEQL(command, "EDMmodel")) {
+               cClusterRepositoryName = param1; cClusterModelName = param2; cEDMmodelName = param3;
+               cEDMmodel = newObject(ecl::EDMmodel); cEDMmodel->put_name(ma->allocString(cEDMmodelName));
+               ecl::ClusterModel *ccm = getClusterModel(cClusterModelName, cClusterRepositoryName);
+               if (ccm) {
+                  cEDMmodel->put_clusterModel(ccm);
+               }
+               if (cEDMrepository) {
+                  cEDMmodel->put_repository(cEDMrepository);
+               }
+            } else if (strEQL(command, "EDMdatabase")) {
+               // EDMdatabase "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_cluster\db1" VELaSSCo VELaSSCo loaclhost 9090
+               cEDMdatabase = newObject(ecl::EDMdatabase);
+               cEDMdatabase->put_path(ma->allocString(param1)); cEDMdatabase->put_name(ma->allocString(param2));
+               cEDMdatabase->put_password(ma->allocString(param3));
+               ecl::EDMServer *srv = newObject(ecl::EDMServer);
+               srv->put_Host(ma->allocString(param4)); srv->put_Port(ma->allocString(param5));
+               cEDMdatabase->put_server(srv);
+               if (ourCluster) {
+                  ourCluster->put_databases_element(cEDMdatabase); ourCluster->put_servers_element(srv);
+               }
             }
          }
+         clusterModel->close();
+         fclose(serverListFile);
+      } else {
+         perror("error: ");
+         printf("\ncannot open file=%s.\n", serverListFileName);
       }
-      //clusterModel->writeAllObjectsToDatabase();
-      clusterModel->close();
-      //ma->reset();
-      fclose(serverListFile);
    } else {
+      printf("\nno init_file.\n");
    }
 }
 
@@ -210,8 +228,19 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
    bool *errorFound)
 /*==============================================================================================================================*/
 {
+   SdaiString              serverContextName, userName, groupName, password, communicationType, edmServerPortNumber;
+   SdaiString              edmServerHostName, edmiHttpTunnelName, edmiHttpTunnelPortNumber, edmiHttpTunnelHostName, proxyServerPortNumber, proxyServerName;
+   
+   
+         edmiGetServerContextProperties(execParams->serverCtxtRecord->srvCtxt, &serverContextName, &userName, &groupName, &password, &communicationType,
+            &edmServerPortNumber, &edmServerHostName, &edmiHttpTunnelName, &edmiHttpTunnelPortNumber, &edmiHttpTunnelHostName,
+            &proxyServerPortNumber, &proxyServerName);
+
+         printf("ExecuteRemoteCppMethod On server %s:%s\n", edmServerHostName, edmServerPortNumber);
+   
    EDMLONG rstat = OK;
    int startTime = GetTickCount();
+   
    try {
       int nTimeouts = 0; execParams->executionTime = -1;
       do {
@@ -268,12 +297,15 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
 ================================================================================================================================*/
 {   
    tEdmiInstData cmd;
+   printf("OpenClusterModelAndPrepareExecution  - 1\n");
    theServer->clusterModel->reset();
    ecl::ClusterModel cm(theServer->clusterModel, theServer->clusterModel->initInstData(ecl::et_ClusterModel, &cmd));
    cm.setInstanceId(modelID);
    if (cm.getEntityType() == ecl::et_ClusterModel) {
+   printf("OpenClusterModelAndPrepareExecution  - 2\n");
       Set<EDMmodel*> *theEDMmodels = cm.get_consists_of();
       if (theEDMmodels) {
+   printf("OpenClusterModelAndPrepareExecution  - 3\n");
          EDMLONG nOfEDMmodels = theEDMmodels->size();
          if (nOfEDMmodels > 0) {
             Iterator<EDMmodel*, ecl::entityType> modelIter(theEDMmodels);
@@ -281,6 +313,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
             subQueries = new(&ma)Container<EDMexecution>(&ma, nOfEDMmodels);
             int nextModelNo = FirstModelNo;
             char modelName[2048];
+   printf("OpenClusterModelAndPrepareExecution  - 4\n");
 
             for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
                if (m) {
@@ -314,6 +347,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
    } else {
       THROW("Invalid modelId");
    }
+   printf("OpenClusterModelAndPrepareExecution  - 5\n");
    return true;
 }
 /*==============================================================================================================================*/

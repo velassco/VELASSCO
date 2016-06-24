@@ -8,11 +8,25 @@
 
 #include "EDM_interface.h"
 #include "CLogger.h"
-#include "EdmAccess.h"
+#include "VELaSSCo_VQueries.h"
 #include "VELaSSCoHandler.h"
 #include "VELaSSCoMethods.h"
 
 
+void UseCase_FEM_M1_02(VELaSSCoHandler *server, string sessionID)
+{
+   string modelID;
+   rvOpenModel rvOM;
+   char *modelName = "telescope";
+
+   server->openModel(rvOM, sessionID, modelName, "read");
+   modelID = rvOM.modelID;
+   
+   rvGetResultFromVerticesID rv;
+   std::vector<int64_t> listOfVertices;
+   listOfVertices.push_back(2814146);
+   server->getResultFromVerticesID(rv, sessionID, modelID, "Kratos", 61.0, "PRESSURE", listOfVertices);
+}
 void GetListOfAnalyses(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
 {
    int endTime, startTime;
@@ -33,7 +47,8 @@ void GetListOfAnalyses(VELaSSCoHandler *server, string sessionID, char *modelNam
       for (vector<string>::iterator nameIter = rvAnalysisList.analyses.begin(); nameIter != rvAnalysisList.analyses.end(); nameIter++) {
          printf("Analysis name : %s\n", (char*)nameIter->data());
          double lsteps = 0.0;
-         server->getListOfTimeSteps(rvTimesteps, sessionID, modelID, *nameIter, NULL, 1, &lsteps);
+         string stepOptions = "";
+         server->getListOfTimeSteps(rvTimesteps, sessionID, modelID, *nameIter, stepOptions, 1, &lsteps);
          printf("   %s has %d time steps:\n", (char*)nameIter->data(), rvTimesteps.time_steps.size());
          printf("   %s has the following time steps:\n", (char*)nameIter->data());
          int i = 0;
@@ -45,7 +60,11 @@ void GetListOfAnalyses(VELaSSCoHandler *server, string sessionID, char *modelNam
 }
 
 
+/*=================================================================================================
+9000 E:\VELaSSCo\installation\database\EDMcluster VELaSSCo v "E:\VELaSSCo\installation\scripts\VELaSSCo_cluster_0_127.txt"
 
+9000 "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_template" VELaSSCo v "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\scripts\VELaSSCo_cluster_1_0_9.txt"
+*/
 
 
 int main(int argc, char* argv[])
@@ -76,7 +95,7 @@ int main(int argc, char* argv[])
 
       SdaiRepository repositoryId;
       CMemoryAllocator ma(0x100000);
-      int rstat = edmiCreateRepository("EDMcluster", &repositoryId);
+      EDMLONG rstat = edmiCreateRepository("EDMcluster", &repositoryId);
       if (rstat == OK) {
          rstat = edmiCreateModelBN(repositoryId, "EDMcluster", "EDMcluster", 0);
       }
@@ -112,6 +131,8 @@ int main(int argc, char* argv[])
       printf("Returned modelID: %s\n", rvOM.modelID.data());
       printf("Comments: %s\n", rvOM.report.data());
       modelID = rvOM.modelID;
+
+      UseCase_FEM_M1_02(ourVELaSSCoHandler, sessionID);
 
       GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
 

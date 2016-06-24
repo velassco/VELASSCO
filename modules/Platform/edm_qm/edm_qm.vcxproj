@@ -146,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\access\EdmAccess.h" />
+    <ClInclude Include="..\access\VELaSSCo_VQueries.h" />
     <ClInclude Include="CLogger.h" />
     <ClInclude Include="EDMmodelCache.h" />
     <ClInclude Include="EDM_interface.h" />

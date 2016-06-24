@@ -6,6 +6,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>O:\edm\v6.0.xxx\output\x64\Debug</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>9000 O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_template VELaSSCo v "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\scripts\VELaSSCo_cluster_1_0_9.txt"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>9000 "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_template" VELaSSCo v "O:\projects\VELaSSCo\SVN_src\EDM_plug_in\scripts\VELaSSCo_cluster_1_0_9.txt"</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

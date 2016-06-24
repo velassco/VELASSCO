@@ -1,8 +1,9 @@
-#ifdef _WINDOWS
+#ifndef CLOGGER_H
+#define CLOGGER_H
+
+
 #include <time.h>
-#else
-#include <sys/time.h>
-#endif
+
 
 #define indent "    "
 #define ENTER_FUNCTION
@@ -34,7 +35,9 @@ public:
 };
 
 
+/*================================================================================================*/
 class CLoggWriter : public CLogger
+/*================================================================================================*/
 {
 public:
    CLoggWriter(FILE *_fp) : CLogger(_fp, _fp == NULL, true) { }
@@ -42,44 +45,13 @@ public:
 
    void                    error(EDMLONG nParams, const char *format, ...);
    void                    rstatError(EDMLONG rstat, int nParams, const char *format, ...);
-   void                    printStatistics() {
-      logg(1, nErrors > 1 ? "%d errors found" : (nErrors == 0 ? "No errors found." : "One error found"), nErrors);
-      newLine();
-   }
-   void                    newLine() { logg(0, "\n"); }
-   void                    sectionHeader() {
-      newLine(); newLine();
-      logg(0, "========================================================================="); newLine();
-   }
-   void                    sectionHeader(char *text) {
-      sectionHeader(); logg(0, text); newLine();
-   }
-   void                    sectionTrailer() {
-      logg(0, "========================================================================="); newLine();
-   }
-   void                    printTimeUsed(char *format, time_t startTime) {
-      time_t now;
-      time(&now);
-      char buf[128], tbuf[256], *bp = buf;
-      EDMULONG timeUsed = now - startTime;
-      EDMULONG nHours = timeUsed / 3600, nMin = (timeUsed % 3600) / 60, nSec = timeUsed % 60;
-      if (timeUsed == 0) {
-         sprintf(tbuf, format, "less than one second.");
-      } else {
-         if (nHours) {
-            bp += sprintf(bp, "%d hours%s", nHours, (nMin && nSec) ? ", " : ((nMin || nSec) ? " and " : ""));
-         }
-         if (nMin) {
-            bp += sprintf(bp, "%d minutes%s", nMin, nSec ? " and " : "");
-         }
-         if (nSec) {
-            bp += sprintf(bp, "%d seconds", nSec);
-         }
-         sprintf(tbuf, format, buf);
-      }
-      logg(0, tbuf);
-   }
-   void                    aLine() {
-      logg(0, indent"-------------------------------------------------------------------------"); newLine();
-   }
+   void                    printStatistics();
+   void                    newLine();
+   void                    sectionHeader();
+   void                    sectionTrailer();
+   void                    sectionHeader(char *text);
+   void                    printTimeUsed(char *format, time_t startTime);
+   void                    aLine();
 };
+
+#endif 

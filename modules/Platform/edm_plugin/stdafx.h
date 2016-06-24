@@ -33,5 +33,9 @@ using namespace dem;
 using namespace fem;
 using namespace std;
 
-
+#ifdef _WINDOWS
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT
+#endif
 // TODO: reference additional headers your program requires here

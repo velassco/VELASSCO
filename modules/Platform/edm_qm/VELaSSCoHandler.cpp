@@ -7,14 +7,10 @@
 
 #include "EDM_interface.h"
 #include "CLogger.h"
-#include "EdmAccess.h"
+#include "VELaSSCo_VQueries.h"
 #include "VELaSSCoHandler.h"
-//#include "Matrix.h"
-#ifdef _WINDOWS
 #include <time.h>
-#else
-#include <sys/time.h>
-#endif
+
 /* ================================================================================================
 string	statusDL(),
 rvGetListOfModels GetListOfModelNames(1: string sessionID,

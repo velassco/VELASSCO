@@ -1,3 +1,5 @@
+
+
 class VELaSSCoHandler : public VELaSSCo_VQueries, public EDM_interface
 {
    char                                         errmsg[2048];

@@ -42,12 +42,12 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       EDMULONG nOfSubdomains = subQueries->size();
       int nError = 0;
       bool errorFound = false;
-
-#pragma omp parallel for
+printf("GetListOfAnalyses - 1\n");
+//#pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
          try {
             EDMexecution *e = subQueries->getElementp(i);
-//            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL");
+            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL");
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
@@ -55,12 +55,14 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             delete e; nError++;
          }
       }
+printf("GetListOfAnalyses - 2\n");
       if (errorFound) {
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg);
          rv.__set_status("Error"); rv.__set_report(errorMsg);
          return;
       }
+printf("GetListOfAnalyses - 3\n");
       nodervGetListOfAnalyses *retValueWithError = NULL;
       Container<char*> analysisNames(&ma);
       vector<string> names;
@@ -80,11 +82,13 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
          }
       }
       if (retValueWithError) {
+printf("GetListOfAnalyses - 4\n");
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          string report;
          printExecutionReport(report);
+printf("GetListOfAnalyses - 5\n");
          rv.__set_status("OK");
          rv.__set_report(report);
          rv.__set_analyses(names);

@@ -2,12 +2,18 @@
 //
 
 #include "stdafx.h"
+#ifdef _WINDOWS
 #include <direct.h> 
+#endif
 #include <iostream>
 #include <fstream>
 #include <string>
 #include "EDM_plugin_1.h"
 #include "FEM_InjectorHandler.h"
+
+#ifndef _WINDOWS
+#include "../edm_qm/WindowsFunctionsForLinux.h"
+#endif
 
 using namespace VELaSSCoSM;
 
@@ -270,12 +276,13 @@ EDMLONG VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis(Model *theMod
                   Iterator<fem::ResultHeader*, fem::entityType> resultIter(ts->get_results());
                   for (fem::ResultHeader *rh = resultIter.first(); rh; rh = resultIter.next()) {
                      EDMVD::ResultInfo *ri = resInfo->createNext();
+                     static char *empty = (char*)"";
                      ri->name = resultInfoMemory->allocString(rh->get_name());
-                     ri->type = resultInfoMemory->allocString(rh->exists_rType() ? ValueTypes[rh->get_rType()] : "");
-                     ri->location = resultInfoMemory->allocString(rh->exists_location() ? LocationTypes[rh->get_location()] : "");
-                     ri->gaussPointName = resultInfoMemory->allocString(rh->exists_gpName() ? rh->get_gpName() : "");
-                     ri->coordinatesName = resultInfoMemory->allocString("");
-                     ri->units = resultInfoMemory->allocString("");
+                     ri->type = resultInfoMemory->allocString(rh->exists_rType() ? ValueTypes[rh->get_rType()] : empty);
+                     ri->location = resultInfoMemory->allocString(rh->exists_location() ? LocationTypes[rh->get_location()] : empty);
+                     ri->gaussPointName = resultInfoMemory->allocString(rh->exists_gpName() ? rh->get_gpName() : empty);
+                     ri->coordinatesName = resultInfoMemory->allocString(empty);
+                     ri->units = resultInfoMemory->allocString(empty);
                      ri->resultNumber = 0;
                      sdaiErrorQuery();
                      ri->componentNames = new(resultInfoMemory)Container<char*>(resultInfoMemory);
@@ -968,7 +975,7 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
                      fem::Mesh *mesh = ts->get_mesh();
 
                      EDMVD::MeshInfo *mi = meshContainer->createNext();
-                     mi->name = resultInfoMemory->allocString(mesh->exists_name() ? mesh->get_name() : "");
+                     mi->name = resultInfoMemory->allocString(mesh->exists_name() ? mesh->get_name() : (char*)"");
                     // mi->elementType.shape = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
                      List<fem::Element*>* elems = mesh->get_elements();
                      List<fem::Node*>* nodes = mesh->get_nodes();
@@ -1073,7 +1080,7 @@ void setWrongNumberErrorMsg(cppRemoteParameter *status, cppRemoteParameter *repo
    if (returValue) returValue->type = rptUndefined;
 }
 
-extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *modelName, char *methodName,
+extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, char *methodName,
    EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues, void **threadObject)
 {
    EdmiError rstat = OK;
@@ -1112,7 +1119,7 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
          tr;
          SdaiRepository  repositoryId;
          bool FEM = strEQL(methodName, "InjectFEMfiles");
-         char *schemaName = FEM ? "fem_schema_velassco" : "dem_schema_velassco";
+         const char *schemaName = FEM ? "fem_schema_velassco" : "dem_schema_velassco";
          
          nodeRvInjectFiles *results = new(theMA)nodeRvInjectFiles(NULL, returnValues);
          nodeInInjectFiles *inParams = new(theMA)nodeInInjectFiles(NULL, parameters);
@@ -1234,12 +1241,12 @@ extern "C" EDMLONG __declspec(dllexport) dll_main(char *repositoryName, char *mo
    return rstat;
 }
 
-extern "C" EDMLONG __declspec(dllexport) dll_version()
+extern "C" EDMLONG DLL_EXPORT dll_version()
 {
    return 1;
 }
 
-extern "C" void  __declspec(dllexport) *dll_malloc(void *threadObject, EDMLONG bufSize)
+extern "C" void  DLL_EXPORT *dll_malloc(void *threadObject, EDMLONG bufSize)
 {
    VELaSSCoEDMplugin *plugin = (VELaSSCoEDMplugin*)threadObject;
    if (plugin) {
@@ -1249,7 +1256,7 @@ extern "C" void  __declspec(dllexport) *dll_malloc(void *threadObject, EDMLONG b
    }
 }
 
-extern "C" EDMLONG  __declspec(dllexport) dll_freeAll(void *threadObject)
+extern "C" EDMLONG  DLL_EXPORT dll_freeAll(void *threadObject)
 {
    VELaSSCoEDMplugin *plugin = (VELaSSCoEDMplugin*)threadObject;
    delete plugin;

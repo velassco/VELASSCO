@@ -3,7 +3,7 @@
 
 #define MAX_COLUMNS 20
 
-class FEM_InjectorHandler : public EDM_Injector
+class FEM_InjectorHandler
 {
    map<EDMULONG, fem::Mesh*>              meshes;
    map<EDMULONG, fem::Node*>              nodes;
@@ -12,6 +12,14 @@ class FEM_InjectorHandler : public EDM_Injector
    fem::ResultHeader                      *cResultHeader;
    fem::Analysis                          *cAnalysis;
    fem::TimeStep                          *cTimeStep;
+
+   Database                               *db;
+
+   Model                                  *m; // The opened EDM model
+   Repository                             *currentRepository;
+   CMemoryAllocator                       model_ma;
+   dbSchema                               *currentSchema;
+   char                                   *currentSchemaName;
 
    // Data when injecting from files
    char                                   line[10240];
@@ -24,16 +32,22 @@ public:
 
    FEM_InjectorHandler(dbSchema *s)  {
       currentSchema = s; cLineno = 0; cAnalysis = NULL; cTimeStep = NULL;
-   }
+      currentRepository = NULL; model_ma.init(0x100000); m = NULL;
+}
    
-   int scanInputLine();
-   void InjectMeshFile();
-   void InjectResultFile();
-   char *readNextLine();
-   void flushObjectsAndClose();
-   void DeleteCurrentModelContent();
-   void InitiateFileInjection();
-   void printError(char *msg) {
+   void                                   setDatabase(Database *_db) { db = _db; }
+   void                                   setCurrentSession(const char *sessionID) { } 
+   void                                   setCurrentModel(const char *modelName);
+   void                                   setCurrentRepository(Repository *r) { currentRepository = r; }
+   void                                   setCurrentSchemaName(const char *sn) { currentSchemaName = (char*)sn; }
+   int                                    scanInputLine();
+   void                                   InjectMeshFile();
+   void                                   InjectResultFile();
+   char                                   *readNextLine();
+   void                                   flushObjectsAndClose();
+   void                                   DeleteCurrentModelContent();
+   void                                   InitiateFileInjection();
+   void                                   printError(char *msg) {
       printf("Error: %s\n   File: %s, line %d", msg, injectorFileName, cLineno);
    }
    fem::Analysis                          *getAnalysis(char *name);
