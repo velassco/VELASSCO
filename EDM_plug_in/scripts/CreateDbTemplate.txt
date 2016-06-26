@@ -51,6 +51,8 @@ Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\EDMclust
 Schemata>GenerateInterface>Cpp2010(dem_schema_velassco, O:\projects\VELaSSCo\SVN_src\EDM_Interface, dem, $, $, GENERATE_USE_EDMI)
 Schemata>GenerateInterface>Cpp2010(fem_schema_velassco, O:\projects\VELaSSCo\SVN_src\EDM_Interface, fem, $, $, GENERATE_USE_EDMI)
 Schemata>GenerateInterface>Cpp2010(EDMcluster, O:\projects\VELaSSCo\SVN_src\EDM_Interface, ecl, $, $, GENERATE_USE_EDMI)
+Schemata>AttributeHashTable>DefineAttributeHashTable(fem_schema_velassco, element, id, $, $, UNIQUE_ATTRIBUTE_VALUES)
+Schemata>AttributeHashTable>DefineAttributeHashTable(fem_schema_velassco, node, id, $, $, UNIQUE_ATTRIBUTE_VALUES)
 Data>Create>Repository(DEM_models, OPEN_REPOSITORY)
 Data>Create>Repository(FEM_models, OPEN_REPOSITORY)
 Data>Create>Repository(EDMcluster, OPEN_REPOSITORY)
