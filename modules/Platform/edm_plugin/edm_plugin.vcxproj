@@ -22,6 +22,7 @@
     <ProjectGuid>{B3670420-BF3E-4899-92D7-A6CED1C3436F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>edm_plugin</RootNamespace>
+    <ProjectName>edm_plugin_1</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -103,6 +104,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>cpp10_edmi.lib;appserver600.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\boost\boost_1_58_0\lib64-msvc-12.0;O:\edm\v6.0.xxx\output\x64\Debug</AdditionalLibraryDirectories>
+      <OutputFile>O:\edm\v6.0.xxx\output\x64\Debug\VELaSSCo_plugins\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

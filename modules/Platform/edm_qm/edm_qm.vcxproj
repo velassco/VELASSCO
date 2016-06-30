@@ -170,6 +170,7 @@
     <ClCompile Include="EDMcluster.cpp" />
     <ClCompile Include="EDMclusterServices.cpp" />
     <ClCompile Include="edm_qm.cpp" />
+    <ClCompile Include="InjectData.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>

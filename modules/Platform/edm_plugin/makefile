@@ -21,20 +21,23 @@ OPTS = -g -funroll-loops -fopenmp -fno-strict-aliasing -DNDEBUG -fPIC
 THRIFT_BASE = /home/VELaSSCo/lib/thrift-0.9.3/lib/cpp
 BOOST_BASE=/usr/lib/x86_64-linux-gnu
 PLUGIN_DIR = /home/VELaSSCo/modules/Platform/edm_plugin
+QM_DIR = /home/VELaSSCo/modules/Platform/edm_qm
 PLUGIN_OBJ_DIR = $(PLUGIN_DIR)/objs
-PLUGIN_BIN = $(PLUGIN_DIR)/bin
 
 EDM_BASE=/home/edm/v6.0.xxx
 EDM_BIN=$(EDM_BASE)/output/sunosx/release
+PLUGIN_BIN = $(EDM_BIN)/VELaSSCo_plugins
 
 EDM_INC_DIRS = -I$(EDM_BASE)/edmsys/sdai/include -I$(EDM_BASE)/cpp_edmi/web.services -I$(EDM_BASE)/cpp_edmi/cpp10
 #EDM_INC_DIRS = -I$(EDM_BASE)/cpp_edmi/web.services -I$(EDM_BASE)/cpp_edmi/cpp10
 INCLS = $(EDM_INC_DIRS) -I$(THRIFT_BASE)/include -I$(BOOST_BASE)/include -I$(PLUGIN_DIR)
 EDM_LIB_DIRS = -L$(EDM_BASE)/output/sunosx/release
+CPP10_OBJ_DIR = $(EDM_LIB_DIRS)/libcpp10_edmi_files
 
-LIBS = $(EDM_BIN)/libEdmiMulti.so $(EDM_BIN)/libcpp10.so
-CPPPLUGIN_1 = $(PLUGIN_BIN)/edm_plugin_1.so
-OBJS_1 = $(PLUGIN_OBJ_DIR)/dem_schema_velassco.o $(PLUGIN_OBJ_DIR)/EDM_plugin_1.o $(PLUGIN_OBJ_DIR)/FEM_InjectorHandler.o $(PLUGIN_OBJ_DIR)/fem_schema_velassco.o
+LIBS = $(EDM_BIN)/libedmappserver.so
+CPPPLUGIN_1 = $(PLUGIN_BIN)/libedm_plugin_1.so
+OBJS_1 = $(PLUGIN_OBJ_DIR)/dem_schema_velassco.o $(PLUGIN_OBJ_DIR)/EDM_plugin_1.o $(PLUGIN_OBJ_DIR)/FEM_InjectorHandler.o $(PLUGIN_OBJ_DIR)/fem_schema_velassco.o $(PLUGIN_OBJ_DIR)/WindowsFunctionsForLinux.o
+CPP10_OBJS = $(CPP10_OBJ_DIR)/dbInterface.o $(CPP10_OBJ_DIR)/memoryAllocator.o
 
 all: $(CPPPLUGIN_1)
 
@@ -50,9 +53,12 @@ $(PLUGIN_OBJ_DIR)/FEM_InjectorHandler.o: $(PLUGIN_DIR)/FEM_InjectorHandler.cpp
 $(PLUGIN_OBJ_DIR)/fem_schema_velassco.o: $(PLUGIN_DIR)/fem_schema_velassco.cpp
 	$(CCPP) -c $(EDM_FLAGS) $(EXTRA_FLAGS) $(OPTS) $(INCLS) -o $(PLUGIN_OBJ_DIR)/fem_schema_velassco.o $(PLUGIN_DIR)/fem_schema_velassco.cpp
 
+$(PLUGIN_OBJ_DIR)/WindowsFunctionsForLinux.o: $(QM_DIR)/WindowsFunctionsForLinux.cpp
+	$(CCPP) -c $(EDM_FLAGS) $(EXTRA_FLAGS) $(OPTS) $(INCLS) -o $(PLUGIN_OBJ_DIR)/WindowsFunctionsForLinux.o $(QM_DIR)/WindowsFunctionsForLinux.cpp
+
 $(CPPPLUGIN_1): $(OBJS_1)  $(LIBS)
-	$(CCPP) -shared -o $(CPPPLUGIN_1) $(OBJS_1) $(LIBS) 
+	$(CCPP) -shared -o $(CPPPLUGIN_1) $(OBJS_1) $(CPP10_OBJS) $(LIBS) 
 
 clean:
-	rm -f $(PLUGIN_OBJS)/*.o $(BIN)/$(EXEC)
+	rm -f $(OBJS_1) $(CPPPLUGIN_1)
 

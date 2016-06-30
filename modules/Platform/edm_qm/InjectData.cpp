@@ -1,16 +1,11 @@
 
 #include "stdafx.h"
+
 #include "VELaSSCoMethods.h"
-
-
-//using namespace  ::dli;
-
-#include "..\..\..\..\EDM_Interface\EDM_interface.h"
+#include "EDM_interface.h"
 #include "CLogger.h"
-#include "EDMmodelCache.h"
+#include "VELaSSCo_VQueries.h"
 #include "VELaSSCoHandler.h"
-
-
 
 
 /*=============================================================================================================================*/

@@ -297,15 +297,13 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
 ================================================================================================================================*/
 {   
    tEdmiInstData cmd;
-   printf("OpenClusterModelAndPrepareExecution  - 1\n");
+
    theServer->clusterModel->reset();
    ecl::ClusterModel cm(theServer->clusterModel, theServer->clusterModel->initInstData(ecl::et_ClusterModel, &cmd));
    cm.setInstanceId(modelID);
    if (cm.getEntityType() == ecl::et_ClusterModel) {
-   printf("OpenClusterModelAndPrepareExecution  - 2\n");
       Set<EDMmodel*> *theEDMmodels = cm.get_consists_of();
       if (theEDMmodels) {
-   printf("OpenClusterModelAndPrepareExecution  - 3\n");
          EDMLONG nOfEDMmodels = theEDMmodels->size();
          if (nOfEDMmodels > 0) {
             Iterator<EDMmodel*, ecl::entityType> modelIter(theEDMmodels);
@@ -313,7 +311,6 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
             subQueries = new(&ma)Container<EDMexecution>(&ma, nOfEDMmodels);
             int nextModelNo = FirstModelNo;
             char modelName[2048];
-   printf("OpenClusterModelAndPrepareExecution  - 4\n");
 
             for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
                if (m) {
@@ -347,7 +344,6 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
    } else {
       THROW("Invalid modelId");
    }
-   printf("OpenClusterModelAndPrepareExecution  - 5\n");
    return true;
 }
 /*==============================================================================================================================*/

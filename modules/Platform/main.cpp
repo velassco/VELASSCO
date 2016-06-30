@@ -242,8 +242,11 @@ int main(int argc, char **argv)
     
     int listen_port = 26267; // standard thrift port : 9090
     const char *data_layer_hostname = "localhost"; // or "pez001";
-    char *EDM_qm_database_folder = ""; // or "pez001";
-    char *EDM_qm_init_file = ""; // or "pez001";
+    char *EDM_qm_database_folder = "";
+    char *EDM_qm_init_file = "";
+    char *EDM_inject_file = "";
+    bool EDM_execute = false;
+    bool EDM_inject = false;
     int         data_layer_port     = 26266;
     int         connect_EDM	    = 0;
     if ( thereIsHelpSwitch( argc, argv)) {
@@ -251,7 +254,8 @@ int main(int argc, char **argv)
       printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
       printf( "  -dl_host hostname         host name of the Data Layer Server (default %s)\n", data_layer_hostname);
       printf( "  -dl_port port_number      port of the Data Layer Server (default %d)\n", data_layer_port);
-      printf( "  -dl_EDM EDM_qm_database_folder EDM_qm_init_file  \n");
+      printf( "  -dl_EDM                   EDM_qm_database_folder EDM_qm_init_file  \n");
+      printf( "  -dl_EDM_inject            EDM_qm_database_folder EDM_inject_file  \n");
       printf( "  -multiuser 0              if 0, uses SimpleServer, if 1, uses MultiUser (default %d)\n", G_multiUser);
       return EXIT_FAILURE;
     }
@@ -285,7 +289,12 @@ int main(int argc, char **argv)
       } else if ( !strcasecmp( argv[ ia], "-dl_EDM")) {
 		   EDM_qm_database_folder = argv[ ++ia];
 		   EDM_qm_init_file = argv[ ++ia];
-		   processed_args += 3;
+		   processed_args += 3; EDM_execute = true;
+      } else if ( !strcasecmp( argv[ ia], "-dl_EDM_inject")) {
+		   EDM_qm_database_folder = argv[ ++ia];
+		   EDM_qm_init_file = argv[ ++ia];
+		   EDM_inject_file = argv[ ++ia];
+		   processed_args += 4; EDM_inject = true;
       } else if ( !strcasecmp( argv[ ia], "-multiuser")) {
 		ia++;
 		int is_multi = G_multiUser;
@@ -330,10 +339,11 @@ int main(int argc, char **argv)
        Model clusterModel(&clusterRepository, &ma, &EDMcluster_SchemaObject);
        clusterModel.open("EDMcluster", sdaiRW);
        VELaSSCoCluster ourCluster(&clusterModel);
-       if (EDM_qm_init_file && *EDM_qm_init_file) {
+       if (!EDM_execute && !EDM_inject) {
+          ourLogger.logg(0, "\nThe command line must have eiter a -dl_EDM command or a -dl_EDM_inject cpommand.\nExecution stops.\n\n");
+       } else if (EDM_execute && EDM_qm_init_file && *EDM_qm_init_file) {
           ourLogger.logg(2, "EDMqueryManager starts with\nEDM_qm_database_folder=%s\nEDM_qm_init_file=%s\n\n, ", EDM_qm_database_folder, EDM_qm_init_file);
           ourCluster.initClusterModel(EDM_qm_init_file);
-
           ourCluster.startServices();
           ourVELaSSCoHandler->defineCluster(&ourCluster);
           QMiD = listen_port;
@@ -348,6 +358,15 @@ int main(int argc, char **argv)
              cin >> cmd;
              parse(cmd);
           } while (cmd.find("exit") != 0 && cmd.find("quit") != 0);
+
+       } else if (EDM_inject_file && *EDM_inject_file) {
+         
+         ourLogger.logg(3, "EDMqueryManager starts injection with\nEDM_qm_database_folder=%s\nEDM_qm_init_file=%s\nEDM_inject_file=%s\n\n, ",
+            EDM_qm_database_folder, EDM_qm_init_file, EDM_inject_file);
+         ourCluster.initClusterModel(EDM_qm_init_file);
+         ourCluster.startServices();
+         ourVELaSSCoHandler->defineCluster(&ourCluster);
+         ourVELaSSCoHandler->InjectData(EDM_inject_file);
 
        } else {
           ourLogger.error(0, "EDMqueryManager init file must be specified.\n");
@@ -366,6 +385,8 @@ int main(int argc, char **argv)
        strncpy(errTxt, edmiGetErrorText(thrownRstat), sizeof(errTxt));
        ourLogger.error(1, "Exception\n\n%s\n\n", errTxt);
     }
+   printf("\n\nEnter a character to stop the program.\n");
+   getchar();
 
 #else /* ndef EDM */
 

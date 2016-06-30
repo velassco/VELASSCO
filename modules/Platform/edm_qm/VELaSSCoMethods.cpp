@@ -972,7 +972,9 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
          e = subQueries->getElementp(i);
          ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
 #pragma omp critical
-         msgs->add(ma.allocString(((nodeRvInjectFiles *)e->returnValues)->report->value.stringVal));
+         if (! errorFound) {
+            msgs->add(ma.allocString(((nodeRvInjectFiles *)e->returnValues)->report->value.stringVal));
+         }
       }
       endTime = GetTickCount();
       char t[1024];
@@ -985,7 +987,11 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
 char* VELaSSCoMethods::getPluginName()
 /*==============================================================================================================================*/
 {
-   return "EDM_server_dll";
+#ifdef _WINDOWS
+   return "edm_plugin_1";
+#else
+   return "libedm_plugin_1.so";
+#endif
 }
 /*==============================================================================================================================*/
 char* VELaSSCoMethods::getPluginPath()

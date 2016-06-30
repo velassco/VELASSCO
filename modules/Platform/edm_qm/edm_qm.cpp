@@ -17,7 +17,7 @@ void UseCase_FEM_M1_02(VELaSSCoHandler *server, string sessionID)
 {
    string modelID;
    rvOpenModel rvOM;
-   char *modelName = "telescope";
+   char *modelName = "telescope_copy";
 
    server->openModel(rvOM, sessionID, modelName, "read");
    modelID = rvOM.modelID;
@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
       string sessionID;
       string modelID;
       rvOpenModel rvOM;
-      char *modelName = "telescope";
+      char *modelName = "telescope_copy";
 
       printf("\n--->UserLogin\n");
       ourVELaSSCoHandler->userLogin(sessionID, "olav", "myRole", "myPassword");
