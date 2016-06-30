@@ -398,7 +398,8 @@ int main(int argc, char **argv)
     		int hbase_port = 9090; // hbase thrift server
     
 		DataLayerAccess::Instance()->startConnection( hbase_host, hbase_port);
-
+		queryServer =  DataLayerAccess::Instance();
+		
 		QMiD = listen_port;
 		DEBUG( "listening on port " << listen_port);
 		boost::thread serverThread(StartServer, listen_port);
