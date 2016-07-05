@@ -8,8 +8,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits>
 #include "EDM_plugin_1.h"
+#include "VELaSSCoEDMplugin.h"
 #include "FEM_InjectorHandler.h"
+
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 #ifndef _WINDOWS
 #include "../edm_qm/WindowsFunctionsForLinux.h"
@@ -38,6 +43,7 @@ char *VELaSSCoEDMplugin::handleError(CedmError *e)
 char *VELaSSCoEDMplugin::getResultFileName(char *fileName, SdaiModel modelId)
 /*=============================================================================================================================*/
 {
+   QUERY_RESULT_FOLDER = "E:/VELaSSCo/installation/database/results/";
    if ((QUERY_RESULT_FOLDER && *QUERY_RESULT_FOLDER == 0) || (_mkdir(QUERY_RESULT_FOLDER) == 0 || errno == EEXIST)) {
       sprintf(resultFolderBuffer, "%s%s", QUERY_RESULT_FOLDER, repositoryName);
       if (_mkdir(resultFolderBuffer) == 0 || errno == EEXIST) {
@@ -318,6 +324,42 @@ EDMLONG VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis(Model *theMod
    return rstat;
 }
 
+using namespace boost::interprocess;
+
+/*===================================================================================================================*/
+void VELaSSCoEDMplugin::addNewResult(Container<EDMVD::ResultOnVertex> *resultsOnVertices, fem::entityType resType, void *vres,
+                                 int nOfValuesPrVertex, EDMULONG *maxID, EDMULONG *minID, EDMLONG nodeID)
+/*===================================================================================================================*/
+{
+   fem::Result *res;
+   fem::ScalarResult *scalar;
+   fem::VectorResult *vector;
+   if (resType == fem::et_ScalarResult) {
+      scalar = (ScalarResult *)vres; res = scalar;
+   } else if (resType == fem::et_VectorResult) {
+      vector = (VectorResult *)vres; res = vector;
+   }
+   if (nodeID == 0) {
+      fem::Node *node = res->get_result_for();
+      nodeID = node ? node->get_id() : 0;
+   }
+   EDMVD::ResultOnVertex *rov = resultsOnVertices->createNext();
+   if (resType == fem::et_ScalarResult) {
+      rov->value[0] = scalar->get_val();
+   } else if (resType == fem::et_VectorResult) {
+      SdaiAggr cnAID = vector->get_values_aggrId();
+      for (int vi = 0; vi < nOfValuesPrVertex; vi++) {
+         double d;
+         if (!edmiGetAggrElement(cnAID, vi, sdaiREAL, &d)) CHECK(sdaiErrorQuery());
+         rov->value[vi] = d;
+      }
+   } else {
+      THROW("Resulttype not supported in GetResultFromVerticesID.");
+   }
+   rov->id = nodeID;
+   if (rov->id > *maxID) *maxID = rov->id;
+   if (rov->id < *minID) *minID = rov->id;
+}
 
 /*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFromVerticesID *inParam,
@@ -356,108 +398,118 @@ EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt
                      if (rhname && strEQL(rhname, resultID)) {
                         if (!resultIdFound) {
                            fem::Mesh *mesh = ts->get_mesh();
-                          // char *nodeIdFileName = getResultFileName("nodeId_%llu.dat", mesh->getInstanceId());
-                          // bool fileNotFound = true;
-                          // for (int nTry = 0; nTry < 2 && fileNotFound; nTry++) {
-                          //    try {  //Open the file mapping and map it as read-only
-                          //       //file_mapping node_file(nodeIdFileName, read_only);
-                          //       //mapped_region node_region(node_file, read_only);
-                          //       //void * addr = node_region.get_address();
-                          //       //EDMLONG size = node_region.get_size();
-                          //       //EDMLONG *fileInMemory = (EDMLONG *)addr;
-                          //    //} catch (boost::interprocess::interprocess_exception exep) {
-                          //       nodeIdFileName = "C:/temp/edm_60/hallo_OLI.dat";
-                          //       EDMLONG maxID = 0, minID = 0xfffffffffffffff;
-                          //       Iterator<fem::Node *, fem::entityType> nodeIter(mesh->get_nodes());
-                          //       for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                          //          EDMLONG id = n->get_id();
-                          //          if (id > maxID) maxID = id; if (id < minID) minID = id;
-                          //       }
-                          //       EDMLONG fileSize = (maxID - minID + 3) * sizeof(EDMLONG);
-                          //       file_mapping::remove(nodeIdFileName);
-                          //       std::filebuf fbuf;
-                          //       fbuf.open(nodeIdFileName, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
-                          //       //Set the size
-                          //       fbuf.pubseekoff(fileSize - 1, std::ios_base::beg);
-                          //       fbuf.sputc(0);
-                          //       file_mapping node_file(nodeIdFileName, read_write);
-                          //       mapped_region node_region(node_file, read_write);
-                          //       void * addr = node_region.get_address();
-                          //       EDMLONG size = node_region.get_size();
-                          //       EDMLONG *nodeIdArray = (EDMLONG *)addr;
-                          //       memset(nodeIdArray, 0, fileSize);
-                          //       for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                          //          EDMLONG id = n->get_id();
-                          //          nodeIdArray[id - minID + 2] = n->getInstanceId();
-                          //       }
-                          //       fileNotFound = false;
-                          //    } catch (boost::interprocess::interprocess_exception exep) {
-                          //       EDMLONG rstat = GetLastError();
-                          //       rstat = 0;
-                          //    }
-                          //}
-
-                           Iterator<fem::Result*, fem::entityType> resultIter(rh->get_values());
-                           fem::entityType resType;
-                           resultIdFound = true;
+                           InstanceId resultId = rh->getInstanceId();
+                           char *nodeIdFileName = getResultFileName("nodeId_%llu.dat", mesh->getInstanceId());
                            int nOfValuesPrVertex;
+
+                           Iterator<fem::Result*, fem::entityType> valuestIter(rh->get_values());
+                           fem::entityType resType;
                            
-                           void *vres = resultIter.first(&resType);
+                           void *vres = valuestIter.first(&resType);
+                           fem::Result *res;
+                           fem::ScalarResult *scalar;
+                           fem::VectorResult *vector;
                            if (resType == fem::et_ScalarResult) {
-                              nOfValuesPrVertex = 1;
-                           } else {
-                              fem::VectorResult *vector = (VectorResult *)vres;
+                              scalar = (ScalarResult *)vres; res = scalar; nOfValuesPrVertex = 1;
+                           } else if (resType == fem::et_VectorResult) {
+                              vector = (VectorResult *)vres; res = vector;
                               SdaiAggr cnAID = vector->get_values_aggrId();
                               nOfValuesPrVertex = (int)sdaiGetMemberCount(cnAID);
                            }
-                           retVal->nOfValuesPrVertex->putInteger(nOfValuesPrVertex);
-                           
+
                            relocateResultOnVertex *relocateInfo = (relocateResultOnVertex *)resultInfoMemory->createRelocateInfo(sizeof(relocateResultOnVertex));
                            Container<EDMVD::ResultOnVertex> *resultsOnVertices = new(resultInfoMemory)Container<EDMVD::ResultOnVertex>(resultInfoMemory, 1024, (sizeof(double) * (nOfValuesPrVertex - 1)));
                            relocateInfo->vertexResults = resultsOnVertices;
-                           
-                           EDMULONG maxInputID = 0, minInputID = 0xfffffffffffffff;
-                           char *vertixSpecified = NULL;
+
+                           EDMLONG *nodeIdArray = NULL;
+                           EDMLONG bufferSize;
+
                            EDMULONG nOfInputVertices = inParam->listOfVertices->getAggrSize();
                            if (nOfInputVertices > 0) {
-                              EDMLONG *vertices = inParam->listOfVertices->value.intAggrVal;
-                              for (int i = 0; i < nOfInputVertices; i++) {
-                                 if (vertices[i] > maxInputID) maxInputID = vertices[i]; if (vertices[i] < minInputID) minInputID = vertices[i];
-                              }
-                              vertixSpecified = (char*)dllMa->allocZeroFilled((maxInputID - minInputID + 1) * sizeof(char));
-                              for (int i = 0; i < nOfInputVertices; i++) vertixSpecified[vertices[i] - minInputID] = 1;
-                           }
-                           for (void *vres = resultIter.first(&resType); vres; vres = resultIter.next(&resType)) {
-                              fem::Result *res;
-                              fem::ScalarResult *scalar;
-                              fem::VectorResult *vector;
-                              if (resType == fem::et_ScalarResult) {
-                                 scalar = (ScalarResult *)vres; res = scalar;
-                              } else if (resType == fem::et_VectorResult) {
-                                 vector = (VectorResult *)vres; res = vector;
-                              }
-                              fem::Node *node = res->get_result_for();
-                              EDMLONG nodeID = node ? node->get_id() : 0;
+                              bool haveTriedToOpen = false;
+getResultValues:
+                              try {
+                                 //Open the file mapping and map it as read-only
+                                 file_mapping node_file(nodeIdFileName, read_only);
+                                 mapped_region node_region(node_file, read_only);
+                                 nodeIdArray = (EDMLONG*)node_region.get_address();
+                                 bufferSize = node_region.get_size();
+                                 
+                                 maxID = nodeIdArray[1]; minID = nodeIdArray[0];
+                                 EDMLONG *vertices = inParam->listOfVertices->value.intAggrVal;
+                                 for (int i = 0; i < nOfInputVertices; i++) {
+                                    if (vertices[i] >= minID && vertices[i] <= maxID) {
+                                       SdaiInstance nodeId = nodeIdArray[vertices[i] - minID + 2];
+                                       if (nodeId) {
+                                          tEdmiInstData nd;
+                                          nd.instanceId = nodeId; nd.entityData = &theModel->theEntities[fem::et_Node];
+                                          fem::Node thisNode(theModel, &nd);
+                                          Iterator<fem::Result*, fem::entityType> valuesOfNodeIter(thisNode.get_results());
+                                          fem::entityType resType;
 
-                              if (vertixSpecified == NULL || (nodeID >= minInputID && nodeID <= maxInputID && vertixSpecified[nodeID - minInputID])) {
-                                 EDMVD::ResultOnVertex *rov = resultsOnVertices->createNext();
-                                 if (resType == fem::et_ScalarResult) {
-                                    rov->value[0] = scalar->get_val();
-                                 } else if (resType == fem::et_VectorResult) {
-                                    SdaiAggr cnAID = vector->get_values_aggrId();
-                                    for (int vi = 0; vi < nOfValuesPrVertex; vi++) {
-                                       double d;
-                                       if (!edmiGetAggrElement(cnAID, vi, sdaiREAL, &d)) CHECK(sdaiErrorQuery());
-                                       rov->value[vi] = d;
+                                          for (void *vres = valuesOfNodeIter.first(&resType); vres; vres = valuesOfNodeIter.next(&resType)) {
+                                             fem::Result *res;
+                                             fem::ScalarResult *scalar;
+                                             fem::VectorResult *vector;
+                                             if (resType == fem::et_ScalarResult) {
+                                                scalar = (ScalarResult *)vres; res = scalar;
+                                             } else if (resType == fem::et_VectorResult) {
+                                                vector = (VectorResult *)vres; res = vector;
+                                             }
+                                             fem::ResultHeader *thisRes = res->get_result_header();
+                                             if (thisRes && thisRes->getInstanceId() == resultId) {
+                                                addNewResult(resultsOnVertices, resType, vres, nOfValuesPrVertex, &maxID, &minID, thisNode.get_id());
+                                             }
+                                          }
+                                          //EDMLONG id = thisNode.get_id();
+                                          //if (id != vertices[i]) {
+                                          //   id = 1;
+                                          //}
+                                       }
                                     }
-                                 } else {
-                                    emsg = "Resulttype not supported in GetResultFromVerticesID.";
                                  }
-                                 rov->id = nodeID;
-                                 if (rov->id > maxID) maxID = rov->id;
-                                 if (rov->id < minID) minID = rov->id;
+                              } catch (boost::interprocess::interprocess_exception exep) {
+                                 EDMLONG rstat = GetLastError();
+                                 rstat = 0;
+                                 EDMLONG maxID = 0, minID = 0xfffffffffffffff;
+                                 if (haveTriedToOpen) {
+                                    THROW("EERRRROOORRR");
+                                 }
+                                 haveTriedToOpen = true;
+                                 Iterator<fem::Node *, fem::entityType> nodeIter(mesh->get_nodes());
+                                 for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                                    EDMLONG id = n->get_id();
+                                    if (id > maxID) maxID = id; if (id < minID) minID = id;
+                                 }
+                                 const std::size_t fileSize = (maxID - minID + 3) * sizeof(EDMLONG);
+
+                                 nodeIdArray = (EDMLONG *)dllMa->alloc(fileSize);
+                                 memset(nodeIdArray, 0, fileSize);
+                                 nodeIdArray[0] = minID;
+                                 nodeIdArray[1] = maxID;
+                                 for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                                    EDMLONG id = n->get_id();
+                                    nodeIdArray[id - minID + 2] = n->getInstanceId();
+                                 }
+                                 FILE *bfp = fopen(nodeIdFileName, "wb");
+                                 if (bfp) {
+                                    size_t nWritten = fwrite(nodeIdArray, 1, fileSize, bfp);
+                                    if (nWritten != fileSize) THROW("Error when writing to binary file in VELaSSCoEDMplugin::GetResultFromVerticesID.");
+                                    fclose(bfp);
+                                 } else {
+                                    THROW("Cannot open binary file in VELaSSCoEDMplugin::GetResultFromVerticesID.");
+                                 }
+                                 goto getResultValues;
+                              }
+                           } else {
+                              // get result for all nodes in the mesh!!
+                              for (void *vres = valuestIter.first(&resType); vres; vres = valuestIter.next(&resType)) {
+
+                                 addNewResult(resultsOnVertices, resType, vres, nOfValuesPrVertex, &maxID, &minID, 0);
+
                               }
                            }
+                           retVal->nOfValuesPrVertex->putInteger(nOfValuesPrVertex);
                            // Add info about the memory blocks within one memory block
                            resultInfoMemory->prepareForRelocationBeforeTransfer();
                            // Link the memory allocator to the return value.
@@ -1007,6 +1059,78 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
    }
    return rstat;
 }
+/*===================================================================================================================*/
+EDMLONG VELaSSCoEDMplugin::CalculateBoundingBox(Model *theModel, ModelType mt,
+   nodeInCalculateBoundingBox *inParam, nodeRvCalculateBoundingBox *retVal)
+/*
+===================================================================================================================*/
+{
+   EdmiError rstat = OK;
+   char *emsg = NULL;
+   int startTime, endTime;
+   double return_bbox[6];
+
+   try {
+      return_bbox[min_X] = return_bbox[min_Y] = return_bbox[min_Z] = DBL_MAX;
+      return_bbox[max_X] = return_bbox[max_Y] = return_bbox[max_Z] = DBL_MIN;
+
+      bool timeStepFound = false, resultIdFound = false;
+      char *analysisID = inParam->analysisID->value.stringVal;
+      int nOfTimeSteps = inParam->timeSteps->getAggrSize();
+      int nOfVertices = inParam->vertexIDs->getAggrSize();
+      double *timeSteps = inParam->timeSteps->value.realAggrVal;
+
+      startTime = GetTickCount();
+      if (mt == mtDEM) {
+         emsg = "CalculateBoundingBox is not implemented for DEM models.";
+      } else {
+         emsg = "Analysis with specified name not found.";
+         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+         fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
+         if (cAnalysis) {
+            Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps());
+            for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+               double cts = ts->get_time_value();
+               int i;
+               for (i=0; i < nOfTimeSteps && timeSteps[i] != cts; i++) ;
+               if (i < nOfTimeSteps) {
+                  timeStepFound = true;
+                  fem::Mesh *mesh = ts->get_mesh();
+                  if (mesh) {
+                     if (nOfVertices == 0) {
+                        Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
+                        for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                           double x = n->get_x(), y = n->get_y(), z = n->get_z();
+                           if (x > return_bbox[max_X]) return_bbox[max_X] = x;
+                           if (x < return_bbox[min_X]) return_bbox[min_X] = x;
+                           if (y > return_bbox[max_Y]) return_bbox[max_Y] = y;
+                           if (y < return_bbox[min_Y]) return_bbox[min_Y] = y;
+                           if (z > return_bbox[max_Z]) return_bbox[max_Z] = z;
+                           if (z < return_bbox[min_Z]) return_bbox[min_Z] = z;
+                        }
+                     }
+                     retVal->return_bbox->putRealAggr(return_bbox, 6);
+                     emsg = NULL;
+                  } else {
+                     emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: Mesh not found.";
+                  }
+               }
+            }
+         }
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+      delete e;
+   }
+   endTime = GetTickCount();
+   int execTime = endTime - startTime;
+   if (emsg) {
+      retVal->return_error_str->putString(emsg);
+   } else {
+      retVal->return_error_str->putString("OK");
+   }
+   return rstat;
+}
 
 /*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::InjectFiles(Model *theModel, ModelType mt, nodeInInjectFiles *inParam, nodeRvInjectFiles *retVal)
@@ -1226,6 +1350,14 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
                setWrongNumberErrorMsg(results->status, results->report, results->mesh_info_list);
             } else {
                rstat = plugin->GetListOfMeshes(&VELaSSCo_model, vmt, inParams, results); tr;
+            }
+         } else if (strEQL(methodName, "CalculateBoundingBox")) { tr;
+            nodeInCalculateBoundingBox *inParams = new(theMA)nodeInCalculateBoundingBox(NULL, parameters);
+            nodeRvCalculateBoundingBox *results = new(theMA)nodeRvCalculateBoundingBox(NULL, returnValues);
+            if (nOfParameters != 3 || nOfReturnValues != 2) {
+               results->return_error_str->putString("Wrong number of input parameters or result values.");
+            } else {
+               rstat = plugin->CalculateBoundingBox(&VELaSSCo_model, vmt, inParams, results); tr;
             }
          }
       }

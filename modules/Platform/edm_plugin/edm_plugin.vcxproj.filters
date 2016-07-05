@@ -27,6 +27,9 @@
     <ClInclude Include="EDM_plugin_1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VELaSSCoEDMplugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EDM_Injector.cpp">

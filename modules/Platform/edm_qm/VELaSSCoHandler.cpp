@@ -663,59 +663,6 @@ void VELaSSCoHandler::getListOfAnalyses(rvGetListOfAnalyses& _return, const std:
 }
 
 /**
-* Retrieves the list of time steps for a given model and analysis.
-*
-* @param sessionID
-* @param modelID
-*/
-void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
-   const std::string &analysisID, const int numSteps, const double *lstSteps,
-   const int64_t numVertexIDs, const int64_t *lstVertexIDs,
-   double *return_bbox, std::string *return_error_str)
-{
-   *return_error_str = "calculateBoundingBox is not implemented";
-}
-//void VELaSSCoHandler::CalculateBoundingBox(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID)
-//{
-//   try {
-//      thelog->logg(2, "-->CalculateBoundingBox\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
-//      setCurrentSession(sessionID.data());
-//      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
-//      if (emc) {
-//         vector<string> analysisNames;
-//        if (emc->type == mtDEM) {
-//            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-//            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
-//
-//
-//            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
-//         } else if (emc->type == mtFEM) {
-//            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-//            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem ::et_Mesh), fmc);
-//            fem::Mesh *mesh = meshIter.first();
-//            //while (mesh) {
-//            //   Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
-//            //   for (fem::Node *n = nodeIter.first(); n; )
-//            //}
-//
-//
-//
-//
-//            _return.__set_status("OK"); _return.__set_analyses(analysisNames);
-//            thelog->logg(0, "status=OK\n\n");
-//        }
-//      } else {
-//         char *emsg = "Model does not exist.";
-//         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
-//      }
-//   } catch (CedmError *e) {
-//      string errMsg;
-//      handleError(errMsg, e);
-//      _return.__set_status("Error"); _return.__set_report(errMsg);
-//   }
-//}
-
-/**
 * Description: Given a session id, model id and a list of vertices ID, compute the axis
 * aligned Bounding Box (BBox) of the model. For dynamic meshes, a time-step option and
 * a list of time-steps need also to be provided as input parameters. Based on the values
@@ -730,46 +677,29 @@ void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const s
 * @param timeStepOption
 * @param timeSteps
 */
-//void VELaSSCoHandler::GetBoundingBox(rvGetBoundingBox& _return, const std::string& sessionID, const std::string& modelID, const std::vector<int64_t> & verticesID, const std::string& analysisID, const std::string& timeStepOption, const std::vector<double> & timeSteps)
-//{
-//   try {
-//      thelog->logg(2, "-->GetBoundingBox\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
-//      setCurrentSession(sessionID.data());
-//      EDMmodelCache *emc = setCurrentModelCache(EDM_ATOI64(modelID.data()));
-//      if (emc) {
-//         vector<string> analysisNames;
-//         if (emc->type == mtDEM) {
-//            DEMmodelCache *dmc = dynamic_cast<DEMmodelCache*>(emc);
-//            Iterator<dem::Simulation*, dem::entityType> simIter(dmc->getObjectSet(dem::et_Simulation), dmc);
-//
-//
-//            _return.__set_status("OK"); 
-//         } else if (emc->type == mtFEM) {
-//            FEMmodelCache *fmc = dynamic_cast<FEMmodelCache*>(emc);
-//            Iterator<fem::Mesh*, fem::entityType> meshIter(fmc->getObjectSet(fem::et_Mesh), fmc);
-//            fem::Mesh *mesh = meshIter.first();
-//            //while (mesh) {
-//            //   Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
-//            //   for (fem::Node *n = nodeIter.first(); n; )
-//            //}
-//
-//
-//
-//
-//            _return.__set_status("OK"); 
-//            thelog->logg(0, "status=OK\n\n");
-//         }
-//      } else {
-//         char *emsg = "Model does not exist.";
-//         _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
-//      }
-//   } catch (CedmError *e) {
-//      string errMsg;
-//      handleError(errMsg, e);
-//      _return.__set_status("Error"); _return.__set_report(errMsg);
-//   }
-//}
-
+void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
+   const std::string &analysisID, const int numSteps, const double *lstSteps,
+   const int64_t numVertexIDs, const int64_t *lstVertexIDs,
+   double *return_bbox, std::string *return_error_str)
+{
+   VELaSSCoMethods theQuery(theCluster);
+   try {
+      thelog->logg(2, "-->calculateBoundingBox\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
+      setCurrentSession(sessionID.data());
+      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+         theQuery.calculateBoundingBox(dataTableName, analysisID, numSteps, lstSteps, numVertexIDs, lstVertexIDs, return_bbox, return_error_str);
+      } else {
+         char *emsg = "Error - Model does not exist.";
+         *return_error_str = emsg;
+         thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+      }
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      delete e;
+      *return_error_str = errMsg;
+   }
+}
 
 
 /**

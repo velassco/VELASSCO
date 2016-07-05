@@ -22,6 +22,9 @@ public:
    void                 GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& analysisID, const double stepValue);
    void                 InjectFileSequence(Container<char*> *FileNameFormats, int FirstModelNo, int LastModelNo, char *EDMmodelNameFormat, Container<char*> *msgs);
    void                 calculateBoundaryOfLocalMesh(const int meshID, const std::string &elementType, const std::string &analysisID, const double stepValue, std::string *return_binary_mesh, std::string *return_error_str);
+   void                 calculateBoundingBox(const std::string &dataTableName, const std::string &analysisID, const int numSteps, const double *lstSteps,
+                           const int64_t numVertexIDs, const int64_t *lstVertexIDs,
+                           double *return_bbox, std::string *return_error_str);
 };
 
 

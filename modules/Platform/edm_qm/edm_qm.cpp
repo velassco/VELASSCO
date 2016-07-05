@@ -12,6 +12,110 @@
 #include "VELaSSCoHandler.h"
 #include "VELaSSCoMethods.h"
 
+void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
+{
+   int endTime, startTime;
+   rvGetResultFromVerticesID verticesResultRV;
+   vector<int64_t> listOfVertices;
+
+//   listOfVertices.push_back(63327);
+   listOfVertices.push_back(2814146);
+//   listOfVertices.push_back(123400);
+
+   printf("\n--->GetResultFromVerticesID - \"%s\"\n", modelName);
+   startTime = GetTickCount();
+   server->getResultFromVerticesID(verticesResultRV, sessionID, modelID, "Kratos", 61, "VELOCITY", listOfVertices);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetResultFromVerticesID is %d milliseconds\n", endTime - startTime);
+   printf("Return status: %s\n", verticesResultRV.status.data());
+   if (strncmp(verticesResultRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", verticesResultRV.report.data());
+   } else {
+      int nRes = 0;
+//#define BLOB 1
+#ifdef BLOB
+      printf("%s has %d results.\n", modelName, verticesResultRV.n_result_records);
+      char *cp = (char*)verticesResultRV.result_array.data();
+      for (int i = 0; i < 16 && i < verticesResultRV.n_result_records; i++) {
+         EDMVD::ResultOnVertex *vertexResult = (EDMVD::ResultOnVertex*)cp;
+         printf("%10llu %Lf\n", vertexResult->id, vertexResult->value[0]);
+         cp += verticesResultRV.result_record_size;
+      }
+#else
+      for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
+         vector<double>::iterator valuesIter = resIter->value.begin();
+         if (nRes++ > 16) break;
+         printf("%10llu %Lf\n", resIter->id, *valuesIter);
+      }
+#endif
+      printf(verticesResultRV.report.data());
+   }
+   int timeStep = 21;
+   for (int i=1; i < 6; i++) {
+      server->getResultFromVerticesID(verticesResultRV, sessionID, modelID, "Kratos", timeStep, "PRESSURE", listOfVertices);
+      printf("\n%10d %10d", i, timeStep);
+      timeStep += 20;
+      for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
+         vector<double>::iterator valuesIter = resIter->value.begin();
+         printf("%12Lf", *valuesIter);
+      }
+   }
+   printf("\n\nVELOCITY\n");
+   timeStep = 21;
+   for (int i=1; i < 6; i++) {
+      server->getResultFromVerticesID(verticesResultRV, sessionID, modelID, "Kratos", timeStep, "VELOCITY", listOfVertices);
+      printf("\n%10d %10d", i, timeStep);
+      timeStep += 20;
+      for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
+         vector<double>::iterator valuesIter = resIter->value.begin();
+         printf("%12Lf", *valuesIter);
+      }
+   }
+}
+
+
+
+void GetListOfMeshes(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
+{
+   int endTime, startTime;
+   rvGetListOfMeshes rvMeshes;
+
+   printf("\n--->GetListOfMeshes - \"%s\"\n", modelName);
+   startTime = GetTickCount();
+   server->getListOfMeshes(rvMeshes, sessionID, modelID, "Kratos", 21.0);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetListOfMeshes is %d milliseconds\n", endTime - startTime);
+   printf("Return status: %s\n", rvMeshes.status.data());
+   printf("%s has %d meshes.\n", modelName, rvMeshes.meshInfos.size());
+   for (vector<VELaSSCoSM::MeshInfo>::iterator meshIter = rvMeshes.meshInfos.begin(); meshIter != rvMeshes.meshInfos.end(); meshIter++) {
+      printf("   %20s  %10llu  %10llu\n", meshIter->name.data(), meshIter->nElements, meshIter->nVertices);
+   }
+}
+void GetListOfResultsFromTimeStepAndAnalysis(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID, string analysisID, double timeStep)
+{
+   int endTime, startTime;
+   rvGetListOfResults resultRV;
+   printf("\n--->GetListOfResultsFromTimeStepAndAnalysis - \"%s\"\n", modelName);
+   startTime = GetTickCount();
+   server->getListOfResultsFromTimeStepAndAnalysis(resultRV, sessionID, modelID, analysisID, timeStep);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetListOfResultsFromTimeStepAndAnalysis is %d milliseconds\n", endTime - startTime);
+   printf("Return status: %s\n", resultRV.status.data());
+   printf("%s has %d result headers.\n", modelName, resultRV.result_list.size());
+   int nRes = 0;
+   if (strncmp(resultRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", resultRV.report.data());
+   } else {
+      for (vector<VELaSSCoSM::ResultInfo>::iterator resIter = resultRV.result_list.begin(); resIter != resultRV.result_list.end(); resIter++) {
+         if (nRes++ > 16) break;
+         printf("%20s %15s %15s %10d\n", (char*)resIter->name.data(), (char*)resIter->type.data(), (char*)resIter->location.data(), resIter->numberOfComponents);
+         for (vector<string>::iterator compName = resIter->componentNames.begin(); compName != resIter->componentNames.end(); compName++) {
+            printf("                                     %s\n", compName->data());
+         }
+      }
+   }
+}
+
 
 void UseCase_FEM_M1_02(VELaSSCoHandler *server, string sessionID)
 {
@@ -27,6 +131,31 @@ void UseCase_FEM_M1_02(VELaSSCoHandler *server, string sessionID)
    listOfVertices.push_back(2814146);
    server->getResultFromVerticesID(rv, sessionID, modelID, "Kratos", 61.0, "PRESSURE", listOfVertices);
 }
+
+void CalculateBoundingBox(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
+{
+   int64_t listOfVertices[1];
+   string dataTableName;
+   double steps[3];
+   double return_bbox[6];
+   string return_error_str;
+
+   listOfVertices[0]= 2814146;
+   steps[0] = 21.0; steps[1] = 41.0; steps[2] = 61.0;
+   server->calculateBoundingBox(sessionID, modelID, dataTableName, "Kratos", 3, steps, 0, listOfVertices, return_bbox, &return_error_str);
+   for (int i=0; i < 6; i++) {
+      printf("%12Lf\n", return_bbox[i]);
+   }
+}
+
+//
+//calculateBoundingBox(const std::string &sessionID, const std::string &modelID, const e,
+//   const std::string &analysisID, const int numSteps, const double *lstSteps,
+//   const int64_t numVertexIDs, const int64_t *lstVertexIDs,
+//   double *return_bbox, std::string *return_error_str)
+//{
+//
+
 void GetListOfAnalyses(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
 {
    int endTime, startTime;
@@ -113,28 +242,35 @@ int main(int argc, char* argv[])
       ourVELaSSCoHandler->defineCluster(&ourCluster);
 
       FILE *logFile = fopen("EDMstorageModule.log", "w");
-      CLoggWriter    ourLogger(logFile, true, true);
+      //CLoggWriter    ourLogger(logFile, true, true);
+      CLoggWriter    ourLogger(logFile, false, false);
       ourVELaSSCoHandler->defineLogger(&ourLogger);
 
 
       string sessionID;
       string modelID;
       rvOpenModel rvOM;
-      char *modelName = "telescope_copy";
+      char *modelName = "telescope";
 
       printf("\n--->UserLogin\n");
       ourVELaSSCoHandler->userLogin(sessionID, "olav", "myRole", "myPassword");
-      printf("User logged on with session ID: %s\n", sessionID.data());
+      //printf("User logged on with session ID: %s\n", sessionID.data());
 
-      printf("\n--->OpenModel - \"telescope\"\n");
+      //printf("\n--->OpenModel - \"telescope\"\n");
       ourVELaSSCoHandler->openModel(rvOM, sessionID, modelName, "read");
-      printf("Returned modelID: %s\n", rvOM.modelID.data());
-      printf("Comments: %s\n", rvOM.report.data());
+      //printf("Returned modelID: %s\n", rvOM.modelID.data());
+      //printf("Comments: %s\n", rvOM.report.data());
       modelID = rvOM.modelID;
 
-      UseCase_FEM_M1_02(ourVELaSSCoHandler, sessionID);
+      CalculateBoundingBox(ourVELaSSCoHandler, sessionID, modelName, modelID);
+
+      GetResultFromVerticesID(ourVELaSSCoHandler, sessionID, modelName, modelID);
+
+      GetListOfMeshes(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
       GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
+
+      UseCase_FEM_M1_02(ourVELaSSCoHandler, sessionID);
 
 
    } catch (CedmError *e) {

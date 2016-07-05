@@ -228,16 +228,6 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
    bool *errorFound)
 /*==============================================================================================================================*/
 {
-   SdaiString              serverContextName, userName, groupName, password, communicationType, edmServerPortNumber;
-   SdaiString              edmServerHostName, edmiHttpTunnelName, edmiHttpTunnelPortNumber, edmiHttpTunnelHostName, proxyServerPortNumber, proxyServerName;
-   
-   
-         edmiGetServerContextProperties(execParams->serverCtxtRecord->srvCtxt, &serverContextName, &userName, &groupName, &password, &communicationType,
-            &edmServerPortNumber, &edmServerHostName, &edmiHttpTunnelName, &edmiHttpTunnelPortNumber, &edmiHttpTunnelHostName,
-            &proxyServerPortNumber, &proxyServerName);
-
-         printf("ExecuteRemoteCppMethod On server %s:%s\n", edmServerHostName, edmServerPortNumber);
-   
    EDMLONG rstat = OK;
    int startTime = GetTickCount();
    

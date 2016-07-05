@@ -67,7 +67,7 @@ namespace EDMVD {
 
    typedef struct ElementType {
 //      ElementShapeType                    shape; // to avoid ambiguity meshinfo.type.type
-      EDMULONG32                          num_nodes;
+      EDMULONG                            num_nodes;
    } ElementType;
 
 
@@ -78,7 +78,7 @@ namespace EDMVD {
       EDMULONG                            nElements;    // used to calculate buffer sizes
       char                                *meshUnits;   // not used yet
       char                                *meshColor;   // not used yet
-      EDMULONG32                          meshNumber;   // not relevant for EDM
+      EDMULONG                            meshNumber;   // not relevant for EDM
       char                                *coordsName;  // not used yet
 
       void                                relocateThis(CMemoryAllocatorInfo *mai) {
@@ -489,6 +489,42 @@ struct nodeInInjectFiles : public CppParameterClass
    }
 };
 
+#define min_X 0
+#define min_Y 1
+#define min_Z 2
+#define max_X 3
+#define max_Y 4
+#define max_Z 5
+/*===================================================================================================================*/
+struct nodeRvCalculateBoundingBox : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[2];
+   cppRemoteParameter                    *return_bbox;
+   cppRemoteParameter                    *return_error_str;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeRvCalculateBoundingBox(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&return_bbox, rptSTRING);
+      addAddribute(&return_error_str, rptSTRING);
+   }
+};
+struct nodeInCalculateBoundingBox : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[3];
+   cppRemoteParameter                    *analysisID;
+   cppRemoteParameter                    *timeSteps;
+   cppRemoteParameter                    *vertexIDs;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeInCalculateBoundingBox(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&analysisID, rptSTRING);
+      addAddribute(&timeSteps, rptLongAggrREAL);
+      addAddribute(&vertexIDs, rptLongAggrINTEGER);
+   }
+};
+
 
 struct relocateResultOnVertex : public RelocateInfo
 {
@@ -505,38 +541,6 @@ struct relocateResultInfo : public RelocateInfo
 struct relocateMeshInfo : public RelocateInfo
 {
    Container<EDMVD::MeshInfo> *meshes;
-};
-
-class VELaSSCoEDMplugin
-{
-   CMemoryAllocator     *dllMa;
-   CMemoryAllocator     *resultInfoMemory;
-
-   char                 *QUERY_RESULT_FOLDER;
-   char                 *repositoryName;
-   char                 *modelName;
-   char                 resultFolderBuffer[2048];
-   char                 *getResultFileName(char *fileName, SdaiModel modelId);
-public:
-   VELaSSCoEDMplugin(char *crf, char *rn, char *mn) {
-      dllMa = new CMemoryAllocator(0x100000); resultInfoMemory = NULL; QUERY_RESULT_FOLDER = crf; repositoryName = rn; modelName = mn;
-   }
-   ~VELaSSCoEDMplugin();
-
-   char                 *handleError(CedmError *e);
-   EDMVD::ModelType     getModelType(SdaiModel sdaiModelID);
-   CMemoryAllocator     *getMemoryAllocator() { return dllMa; }
-   void                 *alloc(EDMLONG size) { return dllMa->alloc(size); }
-
-   EDMLONG              GetListOfAnalyses(Model *theModel, EDMVD::ModelType mt, nodervGetListOfAnalyses *retVal);
-   EDMLONG              GetListOfTimeSteps(Model *theModel, ModelType mt, nodeInGetListOfTimeSteps *inParam, nodeRvGetListOfTimeSteps *retVal);
-   EDMLONG              GetListOfVerticesFromMesh(Model *theModel, ModelType mt, nodeInGetListOfVerticesFromMesh *inParam, nodeRvGetListOfVerticesFromMesh *retVal);
-   EDMLONG              GetListOfResultsFromTimeStepAndAnalysis(Model *theModel, ModelType mt, nodeInGetListOfResultsFromTimeStepAndAnalysis *inParam, nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal);
-   EDMLONG              GetResultFromVerticesID(Model *theModel, ModelType mt, nodeInGetResultFromVerticesID *inParam, nodeRvGetResultFromVerticesID *retVal);
-   EDMLONG              GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam, nodeRvGetCoordinatesAndElementsFromMesh *retVal);
-   EDMLONG              GetBoundaryOfLocalMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam, nodeRvGetBoundaryOfLocalMesh *retVal);
-   EDMLONG              GetListOfMeshes(Model *theModel, ModelType mt, nodeInGetListOfMeshes *inParam, nodeRvGetListOfMeshes *retVal);
-   EDMLONG              InjectFiles(Model *theModel, ModelType mt, nodeInInjectFiles *inParam, nodeRvInjectFiles *retVal);
 };
 
 

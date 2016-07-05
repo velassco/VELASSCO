@@ -435,6 +435,70 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
    }
 }
 /*=============================================================================================================================*/
+void VELaSSCoMethods::calculateBoundingBox(const std::string &dataTableName, const std::string &analysisID, const int numSteps,
+   const double *lstSteps, const int64_t numVertexIDs, const int64_t *lstVertexIDs, double *return_bbox, std::string *return_error_str)
+/*=============================================================================================================================*/
+{
+   int startTime, startTime2, endTime, timeSubQueryExecytion, timeCollectingReturnValues, t2, t3, t4, t5, t6;
+   if (subQueries) {
+      EDMULONG nOfSubdomains = subQueries->size();
+      nodeInCalculateBoundingBox *inParams = new(&ma)nodeInCalculateBoundingBox(&ma, NULL);
+      inParams->analysisID->putString((char*)analysisID.data());
+      inParams->timeSteps->putRealAggr((double *)lstSteps, numSteps);
+      inParams->vertexIDs->putIntegerAggr((int64_t *)lstVertexIDs, numVertexIDs);
+      bool errorFound = false;
+
+      startTime = GetTickCount();
+
+#pragma omp parallel for 
+      for (int i = 0; i < nOfSubdomains; i++) {
+         EDMexecution *e = subQueries->getElementp(i);
+         if (!e) {
+            int asdfsdg = 9999;
+         }
+         nodeRvCalculateBoundingBox *retVal = new(e->ema)nodeRvCalculateBoundingBox(e->ema, NULL);
+         e->returnValues = retVal;
+         ExecuteRemoteCppMethod(e, "CalculateBoundingBox", inParams, &errorFound);
+      }
+      t2 = GetTickCount();
+      if (errorFound) {
+         writeErrorMessageForSubQueries(*return_error_str);
+         return;
+      }
+      nodeRvCalculateBoundingBox *retValueWithError = NULL;
+      for (int i = 0; i < nOfSubdomains; i++) {
+         EDMexecution *e = subQueries->getElementp(i);
+         nodeRvCalculateBoundingBox *retVal = (nodeRvCalculateBoundingBox *)e->returnValues;
+         if (strnNEQ(retVal->return_error_str->value.stringVal, "OK", 2)) {
+            retValueWithError = retVal; break;
+         }
+      }
+      t3 = GetTickCount();
+      if (retValueWithError) {
+         *return_error_str = retValueWithError->return_error_str->value.stringVal;
+      } else {
+         double *aggregated_bbox = (double *)ma.alloc(sizeof(double) * 6);
+         aggregated_bbox[min_X] = aggregated_bbox[min_Y] = aggregated_bbox[min_Z] = DBL_MAX;
+         aggregated_bbox[max_X] = aggregated_bbox[max_Y] = aggregated_bbox[max_Z] = DBL_MIN;
+   
+         for (int i = 0; i < nOfSubdomains; i++) {
+            EDMexecution *e = subQueries->getElementp(i);
+            nodeRvCalculateBoundingBox *retVal = (nodeRvCalculateBoundingBox *)e->returnValues;
+            if (retVal->return_bbox->value.realAggrVal[min_X] < aggregated_bbox[min_X]) aggregated_bbox[min_X] = retVal->return_bbox->value.realAggrVal[min_X];
+            if (retVal->return_bbox->value.realAggrVal[min_Y] < aggregated_bbox[min_Y]) aggregated_bbox[min_Y] = retVal->return_bbox->value.realAggrVal[min_Y];
+            if (retVal->return_bbox->value.realAggrVal[min_Z] < aggregated_bbox[min_Z]) aggregated_bbox[min_Z] = retVal->return_bbox->value.realAggrVal[min_Z];
+            if (retVal->return_bbox->value.realAggrVal[max_X] > aggregated_bbox[max_X]) aggregated_bbox[max_X] = retVal->return_bbox->value.realAggrVal[max_X];
+            if (retVal->return_bbox->value.realAggrVal[max_Y] > aggregated_bbox[max_Y]) aggregated_bbox[max_Y] = retVal->return_bbox->value.realAggrVal[max_Y];
+            if (retVal->return_bbox->value.realAggrVal[max_Z] > aggregated_bbox[max_Z]) aggregated_bbox[max_Z] = retVal->return_bbox->value.realAggrVal[max_Z];
+         }
+         *return_error_str = "OK";
+         memmove(return_bbox, aggregated_bbox, sizeof(double) * 6);
+         endTime = GetTickCount(); timeSubQueryExecytion = endTime - startTime;
+      }
+   }
+}
+
+/*=============================================================================================================================*/
 void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, const std::string& analysisID, const double timeStep,
    const std::string& resultID, const std::vector<int64_t> & listOfVertices)
 /*=============================================================================================================================*/
@@ -904,6 +968,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          vector<VELaSSCoSM::MeshInfo> meshInfos;
+         Container<EDMVD::MeshInfo> *aggregated_mesh_info = new(&ma)Container<EDMVD::MeshInfo>(&ma);
 
          for (int i = 0; i < nOfSubdomains; i++) {
             int meshNumber = 1;
@@ -918,23 +983,33 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
 
             for (EDMVD::MeshInfo *mi = mesh_info_container->firstp(); mi; mi = mesh_info_container->nextp()) {
                mi->relocateThis(mesh_info_relocator->bufferInfo);
-               vector<VELaSSCoSM::MeshInfo>::iterator meshInfoIter;
-               for (meshInfoIter = meshInfos.begin(); meshInfoIter != meshInfos.end(); meshInfoIter++) {
-                  if (strEQL(mi->name, meshInfoIter->name.data()))
+               EDMVD::MeshInfo *aggrmi;
+               for (aggrmi = aggregated_mesh_info->firstp(); aggrmi; aggrmi = aggregated_mesh_info->nextp()) {
+                  if (strEQL(mi->name, aggrmi->name))
                      break;
                }
-               if (meshInfoIter == meshInfos.end()) {
-                  VELaSSCoSM::MeshInfo meshInfo;
-                  meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
-                  VELaSSCoSM::ElementType elementType;
-                  //elementType.__set_shape(mi->elementType.shape);
-                  elementType.__set_num_nodes(mi->nVertices);
-                  meshInfo.__set_elementType(elementType);
-                  meshInfo.__set_meshNumber(meshNumber++);
-
-                  meshInfos.push_back(meshInfo);
+               if (aggrmi == NULL) {
+                  aggrmi = aggregated_mesh_info->createNext(); aggrmi->name = mi->name;
+                  aggrmi->meshUnits = mi->meshUnits;
+                  aggrmi->meshColor = mi->meshColor;
+                  aggrmi->coordsName = mi->coordsName;
+                  aggrmi->nElements = aggrmi->nVertices = 0;
                }
+               aggrmi->nElements += mi->nElements;
+               aggrmi->nVertices += mi->nVertices;
             }
+         }
+         int meshNumber = 1;
+         for (EDMVD::MeshInfo *mi = aggregated_mesh_info->firstp(); mi; mi = aggregated_mesh_info->nextp()) {
+            VELaSSCoSM::MeshInfo meshInfo;
+            meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
+            VELaSSCoSM::ElementType elementType;
+            //elementType.__set_shape(mi->elementType.shape);
+            elementType.__set_num_nodes(mi->nVertices);
+            meshInfo.__set_elementType(elementType);
+            meshInfo.__set_meshNumber(meshNumber++);
+
+            meshInfos.push_back(meshInfo);
          }
          string report;
          printExecutionReport(report);
