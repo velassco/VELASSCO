@@ -263,12 +263,12 @@ int main(int argc, char* argv[])
       modelID = rvOM.modelID;
 
       CalculateBoundingBox(ourVELaSSCoHandler, sessionID, modelName, modelID);
-
-      GetResultFromVerticesID(ourVELaSSCoHandler, sessionID, modelName, modelID);
+      
+      GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
       GetListOfMeshes(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
-      GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
+      GetResultFromVerticesID(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
       UseCase_FEM_M1_02(ourVELaSSCoHandler, sessionID);
 

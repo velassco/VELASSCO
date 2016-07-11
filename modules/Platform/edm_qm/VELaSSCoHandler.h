@@ -7,6 +7,9 @@ class VELaSSCoHandler : public VELaSSCo_VQueries, public EDM_interface
    //std::map<SdaiModel, EDMmodelCache*>          caches;
    CLoggWriter                                  *thelog;
    EDMclusterServices                           *theCluster;
+   char                                         *QUERY_RESULT_FOLDER;
+   char                                         resultFolderBuffer[2048];
+   char                                         *getResultFileName(char *fileName, const char *modelId);
 
    SdaiInstance                                 getClusterModelID(const char *repName, const char *modelName, EDMLONG *rstatp, SdaiInteger *nOfNameMatches);
 public:

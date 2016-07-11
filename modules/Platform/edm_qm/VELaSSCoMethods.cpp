@@ -8,29 +8,9 @@
 
 
 
-
-
-/*=============================================================================================================================*/
-void VELaSSCoMethods::getBoundingBox()
-/*=============================================================================================================================*/
-{
-   int startTime = GetTickCount();
-//   if (serverContexts) {
-//      SdaiServerContext *scs = serverContexts->getElementArray();
-//      EDMULONG nsc = serverContexts->size();
-//      SdaiInteger          edmSystemType;
-//
-//#pragma omp parallel for
-//      for (int i = 0; i < nsc; i++) {
-//         SdaiInteger        warnings, errors;
-//         //CHECK(edmiRemoteExecuteCppMethod(scs[i], "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", "cpp_plugins", "VELaSSCo", "getBoundingBox",
-//         //   0, 0, NULL, NULL, &returnValue, NULL));
-//      }
-//   }
-   int endTime = GetTickCount();
-   //printf("Elapsed time is %d milliseconds\n", endTime - startTime);
-}
-
+//#define PRAGMA_OMP_PARALLEL_FOR #pragma omp parallel for
+#define PARALLEL
+//#define #pragma omp parallel for
 
 
 /*=============================================================================================================================*/
@@ -42,27 +22,26 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       EDMULONG nOfSubdomains = subQueries->size();
       int nError = 0;
       bool errorFound = false;
-printf("GetListOfAnalyses - 1\n");
-//#pragma omp parallel for
+#pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
          try {
+            int QstartTime = GetTickCount();
             EDMexecution *e = subQueries->getElementp(i);
-            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL");
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
+            int QendTime = GetTickCount();
+            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s, time=%d\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL", QendTime - QstartTime);
          } catch (CedmError *e) {
             delete e; nError++;
          }
       }
-printf("GetListOfAnalyses - 2\n");
       if (errorFound) {
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg);
          rv.__set_status("Error"); rv.__set_report(errorMsg);
          return;
       }
-printf("GetListOfAnalyses - 3\n");
       nodervGetListOfAnalyses *retValueWithError = NULL;
       Container<char*> analysisNames(&ma);
       vector<string> names;
@@ -82,13 +61,11 @@ printf("GetListOfAnalyses - 3\n");
          }
       }
       if (retValueWithError) {
-printf("GetListOfAnalyses - 4\n");
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          string report;
          printExecutionReport(report);
-printf("GetListOfAnalyses - 5\n");
          rv.__set_status("OK");
          rv.__set_report(report);
          rv.__set_analyses(names);
@@ -96,26 +73,6 @@ printf("GetListOfAnalyses - 5\n");
    }
    int endTime = GetTickCount();
 }
-
-
-///*=============================================================================================================================*/
-//void VELaSSCoMethods::GetListOfResults(char *modelId, char *analysisID, double timeStep)
-///*=============================================================================================================================*/
-//{
-//   int startTime = GetTickCount();
-////   if (serverContexts) {
-////      SdaiServerContext *scs = serverContexts->getElementArray();
-////      EDMULONG nsc = serverContexts->size();
-////      SdaiInteger          edmSystemType;
-////
-////#pragma omp parallel for
-////      for (int i = 0; i < nsc; i++) {
-////
-////      }
-////   }
-//   int endTime = GetTickCount();
-//   //printf("Elapsed time for the validation is %d millisecponds\n", endTime - startTime);
-//}
 
 
 /*=============================================================================================================================*/
@@ -445,7 +402,7 @@ void VELaSSCoMethods::calculateBoundingBox(const std::string &dataTableName, con
       nodeInCalculateBoundingBox *inParams = new(&ma)nodeInCalculateBoundingBox(&ma, NULL);
       inParams->analysisID->putString((char*)analysisID.data());
       inParams->timeSteps->putRealAggr((double *)lstSteps, numSteps);
-      inParams->vertexIDs->putIntegerAggr((int64_t *)lstVertexIDs, numVertexIDs);
+      inParams->vertexIDs->putIntegerAggr((EDMLONG *)lstVertexIDs, (EDMLONG)numVertexIDs);
       bool errorFound = false;
 
       startTime = GetTickCount();
@@ -484,14 +441,15 @@ void VELaSSCoMethods::calculateBoundingBox(const std::string &dataTableName, con
          for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvCalculateBoundingBox *retVal = (nodeRvCalculateBoundingBox *)e->returnValues;
-            if (retVal->return_bbox->value.realAggrVal[min_X] < aggregated_bbox[min_X]) aggregated_bbox[min_X] = retVal->return_bbox->value.realAggrVal[min_X];
-            if (retVal->return_bbox->value.realAggrVal[min_Y] < aggregated_bbox[min_Y]) aggregated_bbox[min_Y] = retVal->return_bbox->value.realAggrVal[min_Y];
-            if (retVal->return_bbox->value.realAggrVal[min_Z] < aggregated_bbox[min_Z]) aggregated_bbox[min_Z] = retVal->return_bbox->value.realAggrVal[min_Z];
-            if (retVal->return_bbox->value.realAggrVal[max_X] > aggregated_bbox[max_X]) aggregated_bbox[max_X] = retVal->return_bbox->value.realAggrVal[max_X];
-            if (retVal->return_bbox->value.realAggrVal[max_Y] > aggregated_bbox[max_Y]) aggregated_bbox[max_Y] = retVal->return_bbox->value.realAggrVal[max_Y];
-            if (retVal->return_bbox->value.realAggrVal[max_Z] > aggregated_bbox[max_Z]) aggregated_bbox[max_Z] = retVal->return_bbox->value.realAggrVal[max_Z];
+            double *sub_bbox = retVal->return_bbox->value.realAggrVal;
+            if (sub_bbox[min_X] < aggregated_bbox[min_X]) aggregated_bbox[min_X] = sub_bbox[min_X];
+            if (sub_bbox[min_Y] < aggregated_bbox[min_Y]) aggregated_bbox[min_Y] = sub_bbox[min_Y];
+            if (sub_bbox[min_Z] < aggregated_bbox[min_Z]) aggregated_bbox[min_Z] = sub_bbox[min_Z];
+            if (sub_bbox[max_X] > aggregated_bbox[max_X]) aggregated_bbox[max_X] = sub_bbox[max_X];
+            if (sub_bbox[max_Y] > aggregated_bbox[max_Y]) aggregated_bbox[max_Y] = sub_bbox[max_Y];
+            if (sub_bbox[max_Z] > aggregated_bbox[max_Z]) aggregated_bbox[max_Z] = sub_bbox[max_Z];
          }
-         *return_error_str = "OK";
+         *return_error_str = "";
          memmove(return_bbox, aggregated_bbox, sizeof(double) * 6);
          endTime = GetTickCount(); timeSubQueryExecytion = endTime - startTime;
       }
@@ -1042,11 +1000,15 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
       EDMexecution *e;
 
       startTime = GetTickCount();
+#ifdef PARALLEL
 #pragma omp parallel for private (e)
+#endif
       for (int i = 0; i < nOfSubdomains; i++) {
          e = subQueries->getElementp(i);
          ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
+#ifdef PARALLEL
 #pragma omp critical
+#endif
          if (! errorFound) {
             msgs->add(ma.allocString(((nodeRvInjectFiles *)e->returnValues)->report->value.stringVal));
          }

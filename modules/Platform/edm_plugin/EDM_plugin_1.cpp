@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <limits>
+#include <float.h>
 #include "EDM_plugin_1.h"
 #include "VELaSSCoEDMplugin.h"
 #include "FEM_InjectorHandler.h"
@@ -19,6 +19,9 @@
 #ifndef _WINDOWS
 #include "../edm_qm/WindowsFunctionsForLinux.h"
 #endif
+
+#define PRINT_EXECTIMES 1
+
 
 using namespace VELaSSCoSM;
 
@@ -36,14 +39,34 @@ char *VELaSSCoEDMplugin::handleError(CedmError *e)
    }
    char buf[20480];
    sprintf(buf, "Error: %s - file: %s - line %lld", errMsg, e->fileName, e->lineNo);
-   printf("\n\n%s\n\n", buf);
+   printf("%s\n\n", buf);
    return dllMa->allocString(buf);
 }
+/*=============================================================================================================================*/
+void VELaSSCoEDMplugin::setNodeId(fem::Node *n, EDMLONG nodeId)
+/*=============================================================================================================================*/
+{
+   if (nodeIdArray == NULL) {
+      THROW("VELaSSCoEDMplugin::setNodeId - initNodeIdMapping is required")
+   }
+}
+/*=============================================================================================================================*/
+void VELaSSCoEDMplugin::initNodeIdMapping(char *fileName)
+/*=============================================================================================================================*/
+{
+   ////Open the file mapping and map it as read-only
+   //file_mapping node_file(fileName, read_only);
+   //nodeIdRegion = new mapped_region(node_file, read_only);
+   //nodeIdArray = (EDMLONG*)nodeIdRegion->get_address();
+   //nodeIdArraySize = nodeIdRegion->get_size();
+}
+
 /*=============================================================================================================================*/
 char *VELaSSCoEDMplugin::getResultFileName(char *fileName, SdaiModel modelId)
 /*=============================================================================================================================*/
 {
-   QUERY_RESULT_FOLDER = "E:/VELaSSCo/installation/database/results/";
+   //QUERY_RESULT_FOLDER = "E:/VELaSSCo/installation/database/results/";
+   QUERY_RESULT_FOLDER = getenv("QUERY_RESULT_FOLDER");
    if ((QUERY_RESULT_FOLDER && *QUERY_RESULT_FOLDER == 0) || (_mkdir(QUERY_RESULT_FOLDER) == 0 || errno == EEXIST)) {
       sprintf(resultFolderBuffer, "%s%s", QUERY_RESULT_FOLDER, repositoryName);
       if (_mkdir(resultFolderBuffer) == 0 || errno == EEXIST) {
@@ -90,12 +113,294 @@ EDMVD::ModelType VELaSSCoEDMplugin::getModelType(SdaiModel sdaiModelID)
    return mType;
 }
 
+
+
+
+#define newObject(className) new(m)className(m)
+
+// point inside first tetrahedron of the VELaSSCo_HbaseBasicTest example
+// is 0.034967938,0.689002752,0.025866667
+// it is the centre of the first tetrahedron
+// assuming numbering starts with 1, then:
+// first tetrahedron ( id = 1) has nodes = 1794 1660 1802 1768
+// in c/c++, numberations starts with 0, so nodes = 1793 1659 1801 1767
+// coordinates of these nodes are:
+//    1660 0.07139438390731812 0.7269042730331421 0.0
+//    1768 0.0 0.683978796005249 0.10346666723489761
+//    1794 0.06847736984491348 0.6451279520988464 0.0
+//    1802 0.0 0.699999988079071 0.0
+
+bool IsPointInsideTetrahedron(double p_in_x, double p_in_y, double p_in_z,
+   double a_x, double a_y, double a_z,
+   double b_x, double b_y, double b_z,
+   double c_x, double c_y, double c_z,
+   double d_x, double d_y, double d_z,
+   double epsilon,
+   double r_a, double r_b, double r_c, double r_d, double *dst)
+{
+   double r, s, t;
+   r = s = t = 0;
+
+   double da_x = a_x - d_x;
+   double da_y = a_y - d_y;
+   double da_z = a_z - d_z;
+   double db_x = b_x - d_x;
+   double db_y = b_y - d_y;
+   double db_z = b_z - d_z;
+   double dc_x = c_x - d_x;
+   double dc_y = c_y - d_y;
+   double dc_z = c_z - d_z;
+   double dp_x = p_in_x - d_x;
+   double dp_y = p_in_y - d_y;
+   double dp_z = p_in_z - d_z;
+   double r_denominator = da_x * (db_y * dc_z - dc_y * db_z) + db_x * (dc_y * da_z - da_y * dc_z) + dc_x * (da_y * db_z - db_y * da_z);
+   double r_numerator = dp_x * (db_y * dc_z - dc_y * db_z) + db_x * (dc_y * dp_z - dp_y * dc_z) + dc_x * (dp_y * db_z - db_y * dp_z);
+
+   if (fabs(r_numerator) < epsilon)
+      r_numerator = 0.0f;
+   if (fabs(r_denominator) > epsilon)
+      r = r_numerator / r_denominator;
+   else
+      r = 0.0f;
+   if ((r < 0.0f) || (r > 1.0f))
+      return false;
+
+   double s_denominator = db_y * dc_z - dc_y * db_z;
+   double s_numerator = dp_y * dc_z - dc_y * dp_z + r * (dc_y * da_z - da_y * dc_z);
+   if (fabs(s_numerator) < epsilon)
+      s_numerator = 0.0f;
+   if (fabs(s_denominator) > epsilon)
+      s = s_numerator / s_denominator;
+   else {
+      s_denominator = db_y * dc_x - dc_y * db_x;
+      s_numerator = dp_y * dc_x - dc_y * dp_x + r * (dc_y * da_x - da_y * dc_x);
+      if (fabs(s_denominator) > epsilon) {
+         s = s_numerator / s_denominator;
+      } else {
+         s_denominator = db_x * dc_z - dc_x * db_z;
+         s_numerator = dp_x * dc_z - dc_x * dp_z + r * (dc_x * da_z - da_x * dc_z);
+         if (fabs(s_denominator) > epsilon) {
+            s = s_numerator / s_denominator;
+         } else {
+            s = 0.0f;
+         }
+      }
+   }
+   if ((s < 0.0f) || (s > 1.0f))
+      return false;
+
+   double t_denominator = dc_z;
+   double t_numerator = dp_z - r * da_z - s * db_z;
+   if (fabs(t_numerator) < epsilon)
+      t_numerator = 0.0f;
+   if (fabs(t_denominator) > epsilon)
+      t = t_numerator / t_denominator;
+   else {
+      t_denominator = dc_x;
+      t_numerator = dp_x - r * da_x - s * db_x;
+      if (fabs(t_denominator) > epsilon)
+         t = t_numerator / t_denominator;
+      else {
+         t_denominator = dc_y;
+         t_numerator = dp_y - r * da_y - s * db_y;
+         if (fabs(t_denominator) > epsilon)
+            t = t_numerator / t_denominator;
+         else {
+            t = 0.0f;
+         }
+      }
+   }
+   if ((t < 0.0f) || (t > 1.0f))
+      return false;
+
+   if (((r + s + t) >= -0.0) && ((r + s + t) <= 1.0f)) {
+      double v = 1.0 - r - s - t;
+      *dst = r_a * r + r_b * s + r_c * t + r_d * v;
+      return true;
+   } else {
+      return false;
+   }
+}
+
+
+/**
+* For each point in the input parameter points, the method returns data about the element that contains the point.
+* The number of elements in the returned list of elements shall be the same as the number of points in the input parameter.
+* If the method does not find an element for a point it shall return a dummy element with id equal to -1.
+*
+* @param sessionID
+* @param modelName
+* @param points
+*/
+//
+
+EDMLONG VELaSSCoEDMplugin::GetResultAtPoints(Model *theModel, ModelType mt, nodeInGetResultAtPoints *inParam, nodeRvGetResultAtPoints *retVal)
+{
+   EdmiError rstat = OK;
+   char *emsg = NULL;
+   int startTime, endTime;
+#ifdef afadf
+   try {
+      startTime = GetTickCount();
+      if (mt == mtDEM) {
+         emsg = "GetListOfResultsFromTimeStepAndAnalysis is not implemented for DEM models.";
+      } else {
+
+         Iterator<fem::Element*, fem::entityType> elemIter(theModel->getObjectSet(fem::et_Element), theModel);
+         Iterator<fem::Node*, fem::entityType> nodeIter(theModel->getObjectSet(fem::et_Node), theModel);
+
+
+         bool sequentialSearch = false;
+         bool boxSearch = true;
+         int n_IsPointInsideTetrahedron_1 = 0;
+         int n_IsPointInsideTetrahedron_2 = 0;
+         int n_Points = 0;
+         std::vector<VELaSSCoSM::Element>  returnedElements_1;
+         std::vector<VELaSSCoSM::Element>  returnedElements_2;
+         tEdmiInstData elementData;
+         elementData.cppObject = NULL; elementData.entityData = &theModel->theEntities[fem::et_Element];
+         fem::Element cElement(theModel, &elementData);
+
+         int startTime = GetTickCount();
+         if (boxSearch) {
+            Matrix<Container<InstanceId>*> *elemBoxMatrix = (Matrix<Container<InstanceId>*> *)theModel->voidElemBoxMatrix;
+            int nInside = 0, nPointsInsideSeveralElements = 0;
+            std::vector<VELaSSCoSM::Point> myPoints = points;
+            for (std::vector<VELaSSCoSM::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
+
+               n_Points++;
+               double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
+               int bx = p_in_x / fmc->dx, by = p_in_y / fmc->dy, bz = p_in_z / fmc->dz;
+               bool outsideAll = true;
+               if (bx < fmc->nOf_x && by < fmc->nOf_y && bz < fmc->nOf_z) {
+                  Container<InstanceId> *elemBox = elemBoxMatrix->getElement(bx, by, bz);
+
+                  for (InstanceId elementId = elemBox->first(); elementId; elementId = elemBox->next()) {
+                     cElement.setInstanceId(elementId);
+                     int elemId = cElement.get_id();
+
+                     Iterator<fem::Node*, fem::entityType> nodeOfElemIter(cElement.get_nodes());
+                     if (nodeOfElemIter.size() == 4) {
+                        fem::Node *np = nodeOfElemIter.first();
+                        double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
+                        double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
+                        double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
+                        double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
+                        double dst, epsilon = 0.000;
+                        double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
+                        n_IsPointInsideTetrahedron_1++;
+                        if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
+                           epsilon, r_a, r_b, r_c, r_d, &dst)) {
+                           int elemId = cElement.get_id();
+                           nInside++;
+                           if (outsideAll) {
+                              VELaSSCoSM::Element de;
+                              de.__set_id(elemId); returnedElements_1.push_back(de);
+                           } else {
+                              nPointsInsideSeveralElements++;
+                           }
+                           outsideAll = false;
+                        }
+                     }
+                  }
+               }
+               if (outsideAll) {
+                  VELaSSCoSM::Element de;
+                  de.__set_id(-1); returnedElements_1.push_back(de);
+               }
+            }
+         }
+         int endTime = GetTickCount();
+
+         if (sequentialSearch) {
+            int nInside = 0, nPointsInsideSeveralElements = 0;
+            std::vector<VELaSSCoSM::Point> myPoints = points;
+            for (std::vector<VELaSSCoSM::Point>::iterator p = myPoints.begin(); p != myPoints.end(); p++) {
+
+               double p_in_x = p->x, p_in_y = p->y, p_in_z = p->z;
+               bool outsideAll = true;
+               for (fem::Element *ep = elemIter.first(); ep; ep = elemIter.next()) {
+                  int elemId = ep->get_id();
+
+                  Iterator<fem::Node*, fem::entityType> nodeOfElemIter(ep->get_nodes());
+                  if (nodeOfElemIter.size() == 4) {
+                     fem::Node *np = nodeOfElemIter.first();
+                     double a_x = np->get_x(), a_y = np->get_y(), a_z = np->get_z(); np = nodeOfElemIter.next();
+                     double b_x = np->get_x(), b_y = np->get_y(), b_z = np->get_z(); np = nodeOfElemIter.next();
+                     double c_x = np->get_x(), c_y = np->get_y(), c_z = np->get_z(); np = nodeOfElemIter.next();
+                     double d_x = np->get_x(), d_y = np->get_y(), d_z = np->get_z(); np = nodeOfElemIter.next();
+                     double dst, epsilon = 0.000;
+                     double r_a = 0.0, r_b = 0.0, r_c = 0.0, r_d = 0.0;
+                     n_IsPointInsideTetrahedron_2++;
+                     if (IsPointInsideTetrahedron(p_in_x, p_in_y, p_in_z, a_x, a_y, a_z, b_x, b_y, b_z, c_x, c_y, c_z, d_x, d_y, d_z,
+                        epsilon, r_a, r_b, r_c, r_d, &dst)) {
+                        int elemId = ep->get_id();
+                        nInside++;
+                        if (outsideAll) {
+                           VELaSSCoSM::Element de;
+                           de.__set_id(ep->get_id()); returnedElements_2.push_back(de);
+                        } else {
+                           nPointsInsideSeveralElements++;
+                        }
+                        outsideAll = false;
+                     }
+                  }
+               }
+               if (outsideAll) {
+                  VELaSSCoSM::Element de;
+                  de.__set_id(-1); returnedElements_2.push_back(de);
+               }
+            }
+         }
+         if (sequentialSearch && boxSearch) {
+            std::vector<VELaSSCoSM::Element>::iterator e1 = returnedElements_1.begin();
+            for (std::vector<VELaSSCoSM::Element>::iterator e2 = returnedElements_2.begin(); e2 != returnedElements_2.end(); e2++) {
+               if (e1 != returnedElements_1.end()) {
+                  if (e1->id != e2->id) {
+                     printf("Difference between box search and sequential search!!!");
+                  }
+               } else {
+                  printf("Different length of box search and sequential search!!!");
+               }
+               e1++;
+            }
+         }
+         if (boxSearch) {
+            char msg[10000];
+            sprintf(msg, "Containing element found for %d points.\nIsPointInsideTetrahedron is executed %d times.\nElapsed time for the search is %d millisecponds\n",
+               n_Points, n_IsPointInsideTetrahedron_1, endTime - startTime);
+            _return.__set_report(msg);
+         }
+         _return.__set_status("OK");
+         _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
+      } else {
+         _return.__set_status("Error"); _return.__set_report("Model does not exist.");
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+   }
+   //if (emsg) {
+   //   retVal->status->putString("Error"); retVal->report->putString(emsg);
+   //   retVal->vertices->type = rptINTEGER;
+   //} else {
+   //   retVal->status->putString("OK");
+   //   retVal->report->putString("");
+   //}
+#endif
+   return rstat;
+}
+
+
+
 /*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::GetListOfAnalyses(Model *theModel, ModelType mt, nodervGetListOfAnalyses *retVal)
 /*===================================================================================================================*/
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
+#ifdef PRINT_EXECTIMES
+   int startTime = GetTickCount();
+#endif
 
    try {
       char* np;
@@ -108,12 +413,10 @@ EDMLONG VELaSSCoEDMplugin::GetListOfAnalyses(Model *theModel, ModelType mt, node
          }
          retVal->analysis_name_list->putStringContainer(nameList);
       } else if (mt == mtFEM) {
-         Iterator<fem::ResultHeader*, fem::entityType> rhIter(theModel->getObjectSet(fem::et_ResultHeader), theModel);
-         for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
-            char* anName = rh->get_analysis();
-            for (np = nameList->first(); np && strNEQ(anName, np); np = nameList->next());
-            if (np == NULL) {
-               nameList->add(dllMa->allocString(anName));
+         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+         for (fem::Analysis *an = analysisIter.first(); an; an = analysisIter.next()) {
+            if (an->exists_name()) {
+               nameList->add(dllMa->allocString(an->get_name()));
             }
          }
          retVal->analysis_name_list->putStringContainer(nameList);
@@ -130,6 +433,10 @@ EDMLONG VELaSSCoEDMplugin::GetListOfAnalyses(Model *theModel, ModelType mt, node
       retVal->status->putString("OK");
       retVal->report->type = rptINTEGER;
    }
+#ifdef PRINT_EXECTIMES
+   int endTime = GetTickCount();
+   printf("VELaSSCoEDMplugin::GetListOfAnalyses - exec time=%d\n", endTime - startTime);
+#endif
    return rstat;
 }
 
@@ -139,6 +446,9 @@ EDMLONG VELaSSCoEDMplugin::GetListOfTimeSteps(Model *theModel, ModelType mt, nod
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
+#ifdef PRINT_EXECTIMES
+   int startTime = GetTickCount();
+#endif
 
    try {
       char *anid = inParam->analysisID->value.stringVal;
@@ -174,6 +484,10 @@ EDMLONG VELaSSCoEDMplugin::GetListOfTimeSteps(Model *theModel, ModelType mt, nod
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
+#ifdef PRINT_EXECTIMES
+   int endTime = GetTickCount();
+   printf("VELaSSCoEDMplugin::GetListOfTimeSteps - exec time=%d\n", endTime - startTime);
+#endif
    return rstat;
 }
 
@@ -192,7 +506,7 @@ EDMLONG VELaSSCoEDMplugin::GetListOfVerticesFromMesh(Model *theModel, ModelType 
       //   xx = xx * xx;
       //}
       endTime = GetTickCount();
-      printf("\n\nElapsed time for parallel execution is %d milliseconds\n\n", endTime - startTime);
+      printf("Elapsed time for parallel execution is %d milliseconds\n\n", endTime - startTime);
       char *anid = inParam->analysisID->value.stringVal;
       Container<EDMVD::Vertex> vertices(dllMa, 1024);
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
@@ -253,10 +567,11 @@ EDMLONG VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis(Model *theMod
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-   int startTime, endTime;
+#ifdef PRINT_EXECTIMES
+   int startTime = GetTickCount();
+#endif
 
    try {
-      startTime = GetTickCount();
 
 
       char *anid = inParam->analysisID->value.stringVal;
@@ -320,7 +635,10 @@ EDMLONG VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis(Model *theMod
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
-   endTime = GetTickCount();
+#ifdef PRINT_EXECTIMES
+   int endTime = GetTickCount();
+   printf("VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis - exec time=%d\n", endTime - startTime);
+#endif
    return rstat;
 }
 
@@ -402,6 +720,8 @@ EDMLONG VELaSSCoEDMplugin::GetResultFromVerticesID(Model *theModel, ModelType mt
                            char *nodeIdFileName = getResultFileName("nodeId_%llu.dat", mesh->getInstanceId());
                            int nOfValuesPrVertex;
 
+                           initNodeIdMapping(nodeIdFileName);
+
                            Iterator<fem::Result*, fem::entityType> valuestIter(rh->get_values());
                            fem::entityType resType;
                            
@@ -469,11 +789,8 @@ getResultValues:
                                     }
                                  }
                               } catch (boost::interprocess::interprocess_exception exep) {
-                                 EDMLONG rstat = GetLastError();
-                                 rstat = 0;
-                                 EDMLONG maxID = 0, minID = 0xfffffffffffffff;
                                  if (haveTriedToOpen) {
-                                    THROW("EERRRROOORRR");
+                                    THROW("VELaSSCoEDMplugin::GetResultFromVerticesID - Internal error.");
                                  }
                                  haveTriedToOpen = true;
                                  Iterator<fem::Node *, fem::entityType> nodeIter(mesh->get_nodes());
@@ -554,7 +871,9 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-   int startTime, endTime;
+#ifdef PRINT_EXECTIMES
+   int startTime = GetTickCount();
+#endif
 
    try {
       bool timeStepFound = false, resultIdFound = false;
@@ -666,14 +985,16 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
    } catch (CedmError *e) {
       emsg = handleError(e);
    }
-   endTime = GetTickCount();
-   int execTime = endTime - startTime;
    if (emsg) {
       retVal->status->putString("Error"); retVal->report->putString(emsg);
    } else {
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
+#ifdef PRINT_EXECTIMES
+   int endTime = GetTickCount();
+   printf("VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh - exec time=%d\n", endTime - startTime);
+#endif
    return rstat;
 }
 
@@ -864,7 +1185,9 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-   int startTime, endTime;
+#ifdef PRINT_EXECTIMES
+   int startTime = GetTickCount();
+#endif
 
    try {
       bool timeStepFound = false, resultIdFound = false;
@@ -874,7 +1197,6 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
       ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)dllMa->alloc(sizeof(metaData));
 
-      startTime = GetTickCount();
       if (mt == mtDEM) {
          emsg = "GetCoordinatesAndElementsFromMesh is not implemented for DEM models.";
       } else {
@@ -976,25 +1298,47 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
    } catch (CedmError *e) {
       emsg = handleError(e);
    }
-   endTime = GetTickCount();
-   int execTime = endTime - startTime;
    if (emsg) {
       retVal->status->putString("Error"); retVal->report->putString(emsg);
    } else {
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
+#ifdef PRINT_EXECTIMES
+   int endTime = GetTickCount();
+   printf("VELaSSCoEDMplugin::GetBoundaryOfLocalMesh - exec time=%d\n", endTime - startTime);
+#endif
    return rstat;
+}
+void VELaSSCoEDMplugin::addMeshInfo(Container<EDMVD::MeshInfo> *meshContainer, fem::Mesh *mesh)
+{
+   if (mesh) {
+      EDMVD::MeshInfo *mi = meshContainer->createNext();
+      mi->name = resultInfoMemory->allocString(mesh->exists_name() ? mesh->get_name() : (char*)"");
+      // mi->elementType.shape = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
+      List<fem::Element*>* elems = mesh->get_elements();
+      List<fem::Node*>* nodes = mesh->get_nodes();
+      mi->nElements = elems ? elems->size() : 0;
+      mi->nVertices = nodes ? nodes->size() : 0;
+      mi->elementType.num_nodes = (EDMULONG32)mi->nVertices;
+      mi->meshUnits = mi->meshColor = mi->coordsName = NULL;
+   }
 }
 /*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeInGetListOfMeshes *inParam,
    nodeRvGetListOfMeshes *retVal)
 /*
+	Description: returns a list of meshes present for the given time-step of that analysis.
+   If analysis == "" and step-value == -1 then the list will be of the 'static' meshes.
+   If analysis != "" and step-value != -1 then the list will be of the 'dynamic' meshes that
+   are present on that step-values of that analysis.
 ===================================================================================================================*/
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-   int startTime, endTime;
+#ifdef PRINT_EXECTIMES
+   int startTime = GetTickCount();
+#endif
 
    try {
       bool timeStepFound = false, resultIdFound = false;
@@ -1004,65 +1348,110 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
       ReturnedMeshInfo *metaData = (ReturnedMeshInfo*)dllMa->alloc(sizeof(metaData));
 
       if (!resultInfoMemory) resultInfoMemory = new CMemoryAllocator(0x100000);
-      startTime = GetTickCount();
       if (mt == mtDEM) {
          emsg = "GetListOfMeshes is not implemented for DEM models.";
       } else {
          emsg = "Analysis with specified name not found.";
-         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
-         //fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
-         for (fem::Analysis *cAnalysis = analysisIter.first(); cAnalysis; cAnalysis = analysisIter.next()) {
-            char *anid = cAnalysis->get_name();
-            if ((anid && strEQL(analysisID, anid)) || strEQL(analysisID, "")) {
-               emsg = "Specified time step not found.";
-               Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps());
-               resultInfoMemory->freeAllMemory();
-               relocateMeshInfo *relocateInfo = (relocateMeshInfo *)resultInfoMemory->createRelocateInfo(sizeof(relocateMeshInfo));
-               Container<EDMVD::MeshInfo> *meshContainer = new(resultInfoMemory)Container<EDMVD::MeshInfo>(resultInfoMemory, 16);
-               relocateInfo->meshes = meshContainer;
+         resultInfoMemory->freeAllMemory();
+         relocateMeshInfo *relocateInfo = (relocateMeshInfo *)resultInfoMemory->createRelocateInfo(sizeof(relocateMeshInfo));
+         Container<EDMVD::MeshInfo> *meshContainer = new(resultInfoMemory)Container<EDMVD::MeshInfo>(resultInfoMemory, 16);
+         relocateInfo->meshes = meshContainer;
 
-               for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
-                  if (ts->get_time_value() == inParam->timeStep->value.realVal || inParam->timeStep->value.realVal == 0.0) {
-                     timeStepFound = true;
-                     fem::Mesh *mesh = ts->get_mesh();
+         if (analysisID == NULL || *analysisID == 0) {
+            Iterator<fem::Mesh*, fem::entityType> meshIter(theModel->getObjectSet(fem::et_Mesh), theModel);
+            for (fem::Mesh *mesh = meshIter.first(); mesh; mesh = meshIter.next()) {
+               addMeshInfo(meshContainer, mesh);
+            }
+         } else {
+            Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+            for (fem::Analysis *cAnalysis = analysisIter.first(); cAnalysis; cAnalysis = analysisIter.next()) {
+               char *anid = cAnalysis->get_name();
+               if (anid && strEQL(analysisID, anid)) {
+                  emsg = "Specified time step not found.";
+                  Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps());
 
-                     EDMVD::MeshInfo *mi = meshContainer->createNext();
-                     mi->name = resultInfoMemory->allocString(mesh->exists_name() ? mesh->get_name() : (char*)"");
-                    // mi->elementType.shape = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
-                     List<fem::Element*>* elems = mesh->get_elements();
-                     List<fem::Node*>* nodes = mesh->get_nodes();
-                     mi->nElements = elems ? elems->size() : 0;
-                     mi->nVertices = nodes ? nodes->size() : 0;
-                     mi->elementType.num_nodes = (EDMULONG32)mi->nVertices;
-                     mi->meshUnits = mi->meshColor = mi->coordsName = NULL;
+                  for (fem::TimeStep *ts = tsIter.first(); ts && !timeStepFound; ts = tsIter.next()) {
+                     if (ts->get_time_value() == inParam->timeStep->value.realVal || inParam->timeStep->value.realVal == -1.0) {
+                        timeStepFound = true;
 
-                     // Add info about the memory blocks within one memory block
-                     resultInfoMemory->prepareForRelocationBeforeTransfer();
-                     // Link the memory allocator to the return value.
-                     retVal->mesh_info_list->putCMemoryAllocator(resultInfoMemory);
-                     emsg = NULL;
+                        addMeshInfo(meshContainer, ts->get_mesh());
+
+                     }
                   }
                }
             }
+         }
+         if (meshContainer->size() > 0) {
+            // Add info about the memory blocks within one memory block
+            resultInfoMemory->prepareForRelocationBeforeTransfer();
+            // Link the memory allocator to the return value.
+            retVal->mesh_info_list->putCMemoryAllocator(resultInfoMemory);
+            emsg = NULL;
+         } else {
+            emsg = "No mesh satisfying the search criteria found.";
          }
       }
    } catch (CedmError *e) {
       emsg = handleError(e);
    }
-   endTime = GetTickCount();
-   int execTime = endTime - startTime;
    if (emsg) {
       retVal->status->putString("Error"); retVal->report->putString(emsg);
    } else {
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
+#ifdef PRINT_EXECTIMES
+   int endTime = GetTickCount();
+   printf("VELaSSCoEDMplugin::GetListOfMeshes - exec time=%d\n", endTime - startTime);
+#endif
    return rstat;
 }
+
+double maxZ = 0.0, maxX = 0.0;
+
+void calculateTheBox(fem::Mesh*mesh, double *return_bbox, int nOfVertices, EDMLONG *vertices, char **errmsgp)
+{
+   if (mesh) {
+      if (nOfVertices == 0) {
+         Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
+         for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+            double x = n->get_x(), y = n->get_y(), z = n->get_z();
+            if (x > return_bbox[max_X]) return_bbox[max_X] = x;
+            if (x < return_bbox[min_X]) return_bbox[min_X] = x;
+            if (y > return_bbox[max_Y]) return_bbox[max_Y] = y;
+            if (y < return_bbox[min_Y]) return_bbox[min_Y] = y;
+            if (z > return_bbox[max_Z]) return_bbox[max_Z] = z;
+            if (z < return_bbox[min_Z]) return_bbox[min_Z] = z;
+            if (z > maxZ)
+               maxZ = z;
+            if (x > maxX)
+               maxX = x;
+         }
+      }
+      *errmsgp = NULL;
+   } else {
+      *errmsgp = "VELaSSCoEDMplugin::CalculateBoundingBox error: Mesh not found.";
+   }
+}
+
+
 /*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::CalculateBoundingBox(Model *theModel, ModelType mt,
    nodeInCalculateBoundingBox *inParam, nodeRvCalculateBoundingBox *retVal)
 /*
+   The VQ calculates the axis aligned Bounding Box of a model id for a static (FEM) or a dynamic (DEM) mesh taking into
+   account an input list of Vertices ID. If the list of Vertices ID is empty, then all vertices are considered.
+   For dynamic mesh, the Bounding Box is calculated considering one of the following time_step_options:
+   •	ALL: the meshes of all time-steps are considered.
+   •	SINGLE: only the mesh of the specified time-step is considered.
+   •	INTERVAL: the meshes of the time-steps within an interval defined in the input list of time-steps are considered.
+      The input list of time-steps must contain two values. The first value of input list (time_steps[0]) corresponds
+      to the first time-step of the interval and the second value (time_steps[1]) to the last time-step of the interval.
+      Time_steps[0] must be lower or equal to time_steps[1]. 
+   •	SET: the meshes of the time-steps included in the input list of time-steps are considered. The time-steps in
+      the list do not need to be correlative.
+
+   The VQ returns the coordinates (x,y,z) of the vertices that define the Bounding Box (6 doubles) 
 ===================================================================================================================*/
 {
    EdmiError rstat = OK;
@@ -1079,40 +1468,55 @@ EDMLONG VELaSSCoEDMplugin::CalculateBoundingBox(Model *theModel, ModelType mt,
       int nOfTimeSteps = inParam->timeSteps->getAggrSize();
       int nOfVertices = inParam->vertexIDs->getAggrSize();
       double *timeSteps = inParam->timeSteps->value.realAggrVal;
+      EDMLONG *vertices = inParam->vertexIDs->value.intAggrVal;
 
       startTime = GetTickCount();
       if (mt == mtDEM) {
          emsg = "CalculateBoundingBox is not implemented for DEM models.";
       } else {
-         emsg = "Analysis with specified name not found.";
-         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
-         fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
-         if (cAnalysis) {
-            Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps());
-            for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
-               double cts = ts->get_time_value();
-               int i;
-               for (i=0; i < nOfTimeSteps && timeSteps[i] != cts; i++) ;
-               if (i < nOfTimeSteps) {
-                  timeStepFound = true;
-                  fem::Mesh *mesh = ts->get_mesh();
-                  if (mesh) {
-                     if (nOfVertices == 0) {
-                        Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
-                        for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                           double x = n->get_x(), y = n->get_y(), z = n->get_z();
-                           if (x > return_bbox[max_X]) return_bbox[max_X] = x;
-                           if (x < return_bbox[min_X]) return_bbox[min_X] = x;
-                           if (y > return_bbox[max_Y]) return_bbox[max_Y] = y;
-                           if (y < return_bbox[min_Y]) return_bbox[min_Y] = y;
-                           if (z > return_bbox[max_Z]) return_bbox[max_Z] = z;
-                           if (z < return_bbox[min_Z]) return_bbox[min_Z] = z;
-                        }
-                     }
-                     retVal->return_bbox->putRealAggr(return_bbox, 6);
-                     emsg = NULL;
-                  } else {
-                     emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: Mesh not found.";
+         if (analysisID == NULL || *analysisID == 0) {
+            Iterator<fem::Mesh*, fem::entityType> meshIter(theModel->getObjectSet(fem::et_Mesh), theModel);
+            if (meshIter.size() > 1) {
+               emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: More than one mesh in the specified model.";
+            } if (meshIter.size() == 0) {
+               emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: No mesh in the specified model.";
+            } else {
+               for (fem::Mesh *mesh = meshIter.first(); mesh; mesh = meshIter.next()) {
+                  calculateTheBox(mesh, return_bbox, nOfVertices, vertices, &emsg);
+               }
+            }
+         } else {
+            emsg = "Analysis with specified name not found.";
+            Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+            fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
+            if (cAnalysis) {
+               Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps());
+               for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+                  double cts = ts->get_time_value();
+                  int i;
+                  for (i=0; i < nOfTimeSteps && timeSteps[i] != cts; i++) ;
+                  if (i < nOfTimeSteps) {
+                     timeStepFound = true;
+
+                     calculateTheBox(ts->get_mesh(), return_bbox, nOfVertices, vertices, &emsg);
+                     //if (mesh) {
+                     //   if (nOfVertices == 0) {
+                     //      Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
+                     //      for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+                     //         double x = n->get_x(), y = n->get_y(), z = n->get_z();
+                     //         if (x > return_bbox[max_X]) return_bbox[max_X] = x;
+                     //         if (x < return_bbox[min_X]) return_bbox[min_X] = x;
+                     //         if (y > return_bbox[max_Y]) return_bbox[max_Y] = y;
+                     //         if (y < return_bbox[min_Y]) return_bbox[min_Y] = y;
+                     //         if (z > return_bbox[max_Z]) return_bbox[max_Z] = z;
+                     //         if (z < return_bbox[min_Z]) return_bbox[min_Z] = z;
+                     //      }
+                     //   }
+                     //   retVal->return_bbox->putRealAggr(return_bbox, 6);
+                     //   emsg = NULL;
+                     //} else {
+                     //   emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: Mesh not found.";
+                     //}
                   }
                }
             }
@@ -1127,6 +1531,7 @@ EDMLONG VELaSSCoEDMplugin::CalculateBoundingBox(Model *theModel, ModelType mt,
    if (emsg) {
       retVal->return_error_str->putString(emsg);
    } else {
+      retVal->return_bbox->putRealAggr(return_bbox, 6);
       retVal->return_error_str->putString("OK");
    }
    return rstat;
@@ -1401,4 +1806,7 @@ VELaSSCoEDMplugin::~VELaSSCoEDMplugin()
    if (resultInfoMemory) {
       delete resultInfoMemory;
    }
+   //if (nodeIdRegion) {
+   //   delete nodeIdRegion;
+   //}
 }

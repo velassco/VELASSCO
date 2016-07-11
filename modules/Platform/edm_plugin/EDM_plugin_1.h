@@ -290,6 +290,47 @@ struct nodeInGetListOfResultsFromTimeStepAndAnalysis : public CppParameterClass
 };
 
 /*===================================================================================================================*/
+struct nodeRvGetResultAtPoints : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[6];
+   cppRemoteParameter                    *status;
+   cppRemoteParameter                    *report;
+   cppRemoteParameter                    *result_list;
+   cppRemoteParameter                    *minID;
+   cppRemoteParameter                    *maxID;
+   cppRemoteParameter                    *nOfValuesPrVertex;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeRvGetResultAtPoints(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&status, rptSTRING);
+      addAddribute(&report, rptSTRING);
+      addAddribute(&result_list, rptCMemoryAllocator);
+      addAddribute(&minID, rptINTEGER);
+      addAddribute(&maxID, rptINTEGER);
+      addAddribute(&nOfValuesPrVertex, rptINTEGER);
+   }
+};
+struct nodeInGetResultAtPoints : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[4];
+   cppRemoteParameter                    *analysisID;
+   cppRemoteParameter                    *timeStep;
+   cppRemoteParameter                    *resultID;
+   cppRemoteParameter                    *listOfPoints;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeInGetResultAtPoints(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&analysisID, rptSTRING);
+      addAddribute(&timeStep, rptREAL);
+      addAddribute(&resultID, rptSTRING);
+      addAddribute(&listOfPoints, rptContainer);
+   }
+};
+
+
+/*===================================================================================================================*/
 struct nodeRvGetResultFromVerticesID : public CppParameterClass
 {
    cppRemoteParameter                    *attrPointerArr[6];

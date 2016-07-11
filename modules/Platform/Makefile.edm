@@ -63,6 +63,7 @@ EDM_INC_DIRS = -I$(EDM_BASE)/edmsys/sdai/include -I$(EDM_BASE)/cpp_edmi/web.serv
 EXTRA_LIB_DIRS = -L$(THRIFT_BASE)/lib -L$(BOOST_BASE)/lib
 EDM_LIB_DIRS = -L$(EDM_BASE)/output/sunosx/release
 #EXTRA_LIB_DIRS = -L/exports/applications/apps/community/VELaSSCo/build/lib
+EDM_OBJS = $(EDM_BASE)/output/sunosx/release/libcpp10_edmi_files/dbInterface.o $(EDM_BASE)/output/sunosx/release/libcpp10_edmi_files/memoryAllocator.o 
 
 
 THRIFT_STORAGE_FILES = VELaSSCoSM_constants.cpp VELaSSCoSM_types.cpp VELaSSCoSM.cpp
@@ -107,7 +108,7 @@ ACCESS_DEPENDENCIES = $(wildcard $(ACCESS_DIR)/*.h)
 
 EDM_QM_DIR=./edm_qm
 EDM_QM_FILES = EDMcluster.cpp EDMclusterServices.cpp WindowsFunctionsForLinux.cpp CLogger.cpp \
-					VELaSSCoHandler.cpp VELaSSCoMethods.cpp VELaSSCo_utils.cpp InjectData.cpp
+		VELaSSCoHandler.cpp VELaSSCoMethods.cpp VELaSSCo_utils.cpp InjectData.cpp
 EDM_QM_OBJS_TMP = ${EDM_QM_FILES:.cpp=.o}
 EDM_QM_OBJS = ${EDM_QM_OBJS_TMP:%=$(OBJS_DIR)/%}
 EDM_QM_DEPENDENCIES = $(wildcard $(EDM_QM_DIR)/*.h)
@@ -146,14 +147,15 @@ ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_H
 	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include 
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
 	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl
-EDM_LIBS = $(EDM_LIB_DIRS) -lcpp10_edmi -lEdmiMulti
+#EDM_LIBS = $(EDM_LIB_DIRS) -lcpp10_edmi -lEdmiMulti
+	EDM_LIBS = $(EDM_LIB_DIRS) -lEdmiMulti
 
 all: $(BIN) $(BIN)/$(EXEC)
 
 $(BIN)/$(EXEC):  $(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) $(GRAPHICS_MODULE_OBJS) $(ANALYTICS_MODULE_OBJS) $(EDM_QM_OBJS) $(ACCESS_OBJS) $(QMM_OBJS) $(COMMON_OBJS) 
 	$(CCPP) $(OPTS) $(CPP_FLAGS) \
-		$(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) $(GRAPHICS_MODULE_OBJS) $(EDM_QM_OBJS) $(QMM_OBJS) $(COMMON_OBJS) \
-		$(ENGINE_LIBS) $(EDM_LIBS) -o $(BIN)/$(EXEC)
+	$(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) $(GRAPHICS_MODULE_OBJS) $(EDM_QM_OBJS) $(QMM_OBJS) 		$(COMMON_OBJS) $(EDM_OBJS) \
+	$(ENGINE_LIBS) $(EDM_LIBS) -o $(BIN)/$(EXEC)
 
 #		$(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) $(GRAPHICS_MODULE_OBJS) $(ANALYTICS_MODULE_OBJS) $(EDM_QM_OBJS) $(ACCESS_OBJS) $(QMM_OBJS) $(COMMON_OBJS) \
 

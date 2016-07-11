@@ -28,6 +28,7 @@ extern "C" {
 #include "fem_schema_velassco.hpp"
 
 #include "CppParameterClass.h"
+#include "Matrix.h"
 
 using namespace dem;
 using namespace fem;
