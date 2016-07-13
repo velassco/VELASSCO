@@ -15,7 +15,7 @@
 #include "Server.h"
 #include "Helpers.h"
 
-#include "VELaSSCo_VQueries.h"
+#include "VELaSSCo_Operations.h"
 
 #ifdef EDM
 
@@ -233,7 +233,7 @@ bool thereIsHelpSwitch( int argc, char **argv) {
 }
 
 
-VELaSSCo_VQueries *queryServer = NULL;
+VELaSSCo_Operations *queryServer = NULL;
 
 
 int main(int argc, char **argv)
