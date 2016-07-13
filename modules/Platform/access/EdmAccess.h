@@ -18,13 +18,13 @@ using boost::shared_ptr;
 using namespace std;
 
 
-#include "VELaSSCo_VQueries.h"
+#include "VELaSSCo_Operations.h"
 #include "VELaSSCoSM.h"
 
 using namespace VELaSSCoSM;
 
 // handles connection to Storage Module:
-class EdmAccess : public VELaSSCo_VQueries
+class EdmAccess : public VELaSSCo_Operations
 {
 public:
     static EdmAccess *Instance();

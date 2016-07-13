@@ -22,7 +22,7 @@ using boost::shared_ptr;
 using namespace std;
 
 
-//THIS COMMENTED CODE IS NOW LOCATED IN VELaSSCo_VQueries.h
+//THIS COMMENTED CODE IS NOW LOCATED IN VELaSSCo_Operations.h
 /*
 typedef enum {
   DL_SM_DB_UNKNOWN = 0,
@@ -52,13 +52,13 @@ inline DL_SM_DB_TYPE getDBTypeFromString( const char *str) {
 }
 */
 
-#include "VELaSSCo_VQueries.h"
+#include "VELaSSCo_Operations.h"
 #include "VELaSSCoSM.h"
 
 using namespace VELaSSCoSM;
 
 // handles connection to Storage Module:
-class DataLayerAccess : public VELaSSCo_VQueries
+class DataLayerAccess : public VELaSSCo_Operations
 {
 public:
     static DataLayerAccess *Instance();

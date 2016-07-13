@@ -47,7 +47,7 @@ inline DL_SM_DB_TYPE getDBTypeFromString( const char *str) {
 using namespace VELaSSCoSM;
 
 // handles connection to Storage Module:
-class VELaSSCo_VQueries
+class VELaSSCo_Operations
 {
 
 public:
