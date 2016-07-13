@@ -8,7 +8,7 @@
 
 #include "EDM_interface.h"
 #include "CLogger.h"
-#include "VELaSSCo_VQueries.h"
+#include "VELaSSCo_Operations.h"
 #include "VELaSSCoHandler.h"
 #include "VELaSSCoMethods.h"
 

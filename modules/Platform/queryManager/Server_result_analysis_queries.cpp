@@ -34,7 +34,7 @@
 #include "DataLayerAccess.h"
 //#include "Analytics.h"
 #include "Graphics.h"
-#include "VELaSSCo_VQueries.h"
+#include "VELaSSCo_Operations.h"
 
 #include "Server.h"
 
@@ -47,7 +47,7 @@ using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
 
-extern VELaSSCo_VQueries *queryServer;
+extern VELaSSCo_Operations *queryServer;
 
 /* 2xx - Result Analysis Queries */
 

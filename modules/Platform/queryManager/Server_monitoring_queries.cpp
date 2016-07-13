@@ -34,7 +34,7 @@
 #include "DataLayerAccess.h"
 #include "Analytics.h"
 #include "Graphics.h"
-#include "VELaSSCo_VQueries.h"
+#include "VELaSSCo_Operations.h"
 
 #include "Server.h"
 
@@ -47,7 +47,7 @@ using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
 
-extern VELaSSCo_VQueries *queryServer;
+extern VELaSSCo_Operations *queryServer;
 
 void QueryManagerServer::GetStatusDB(StatusDB_Result& _return, const SessionID sessionID) {
   LOGGER                              << std::endl;
@@ -107,7 +107,7 @@ void QueryManagerServer::StopVELaSSCo(StopVELaSSCo_Result& _return, const Sessio
   this->UserLogout( logout_result, sessionID);
 
   // stop Data Layer
-  queryServer->stopAll( );
+  // queryServer->stopAll( );
   _return.__set_result( (Result::type)VAL_SUCCESS );
   status = " StorageModule and QueryManager servers stopped.";
   _return.__set_status( status );

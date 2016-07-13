@@ -11,7 +11,7 @@
 
 #include "EDM_interface.h"
 #include "CLogger.h"
-#include "VELaSSCo_VQueries.h"
+#include "VELaSSCo_Operations.h"
 #include "VELaSSCoHandler.h"
 #include <time.h>
 
@@ -44,7 +44,7 @@ rvGetBoundaryOfLocalMesh GetBoundaryOfLocalMesh(
 * VELaSSCoHandler constructor
 *
 */
-VELaSSCoHandler::VELaSSCoHandler() : VELaSSCo_VQueries() {
+VELaSSCoHandler::VELaSSCoHandler() : VELaSSCo_Operations() {
    thelog = NULL;
 }
 

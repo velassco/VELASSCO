@@ -1,6 +1,6 @@
 
 
-class VELaSSCoHandler : public VELaSSCo_VQueries, public EDM_interface
+class VELaSSCoHandler : public VELaSSCo_Operations, public EDM_interface
 {
    char                                         errmsg[2048];
    //EDMmodelCache                                *setCurrentModelCache(SdaiModel modelID);
