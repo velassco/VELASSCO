@@ -12,6 +12,32 @@
 #include "VELaSSCoHandler.h"
 #include "VELaSSCoMethods.h"
 
+
+void GetBoundaryOfLocalMesh(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
+{
+   int endTime, startTime;
+
+   rvGetBoundaryOfLocalMesh boundaryRV;
+   printf("\n--->GetBoundaryOfLocalMesh - \"%s\"\n", modelName);
+   startTime = GetTickCount();
+   server->getBoundaryOfLocalMesh(boundaryRV, sessionID, modelID, "meshID", "Kratos", 21);
+   endTime = GetTickCount();
+   printf("Elapsed time for GetBoundaryOfLocalMesh is %d milliseconds\n", endTime - startTime);
+   if (strncmp(boundaryRV.status.data(), "Error", 5) == 0) {
+      printf("Error message: \"%s\"\n", boundaryRV.report.data());
+   } else {
+      printf("Query report:\n%s\n\n\n", boundaryRV.report.data());
+      printf("Mesh boundary of %s has %d triangles.\n", modelName, boundaryRV.elements.size());
+      int nn = 0;
+      for (vector<VELaSSCoSM::Triangle>::iterator bufferIter = boundaryRV.elements.begin(); bufferIter != boundaryRV.elements.end() && nn++ < 20; bufferIter++) {
+         for (vector<VELaSSCoSM::NodeID>::iterator nodeIter = bufferIter->nodes.begin(); nodeIter != bufferIter->nodes.end(); nodeIter++) {
+            printf("%10llu", *nodeIter);
+         }
+         printf("\n");
+      }
+   }
+}
+
 void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
 {
    int endTime, startTime;
@@ -261,6 +287,8 @@ int main(int argc, char* argv[])
       //printf("Returned modelID: %s\n", rvOM.modelID.data());
       //printf("Comments: %s\n", rvOM.report.data());
       modelID = rvOM.modelID;
+
+      GetBoundaryOfLocalMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
       CalculateBoundingBox(ourVELaSSCoHandler, sessionID, modelName, modelID);
       

@@ -446,34 +446,43 @@ EDMLONG VELaSSCoEDMplugin::GetListOfTimeSteps(Model *theModel, ModelType mt, nod
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
+   char fnb[64];
 #ifdef PRINT_EXECTIMES
    int startTime = GetTickCount();
 #endif
 
    try {
       char *anid = inParam->analysisID->value.stringVal;
-      Container<double> timeSteps(dllMa);
-
-      if (mt == mtDEM) {
-         Iterator<dem::Simulation*, dem::entityType> simIter(theModel->getObjectSet(dem::et_Simulation), theModel);
-         for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
-            if (strEQL(s->get_name(), anid)) {
-               Iterator<dem::Timestep*, dem::entityType> tsIter(s->get_consists_of());
-               for (dem::Timestep *ts = tsIter.first(); ts; ts = tsIter.next()) {
-                  timeSteps.add(ts->get_time_value());
+      Container<double> *timeSteps = NULL;
+      
+      sprintf(fnb, "timesteps_%s_%%llu.dat", mt == mtDEM ? "DEM" : "FEM");
+      char *timeStepFileName = getResultFileName(fnb, theModel->modelId);
+      FILE *timeStepFile = fopen(timeStepFileName, "rb");
+      if (timeStepFile) {
+         timeSteps = new(dllMa)Container<double>(dllMa, timeStepFile);
+      } else {
+         timeSteps = new(dllMa)Container<double>(dllMa);
+         if (mt == mtDEM) {
+            Iterator<dem::Simulation*, dem::entityType> simIter(theModel->getObjectSet(dem::et_Simulation), theModel);
+            for (dem::Simulation *s = simIter.first(); s; s = simIter.next()) {
+               if (strEQL(s->get_name(), anid)) {
+                  Iterator<dem::Timestep*, dem::entityType> tsIter(s->get_consists_of());
+                  for (dem::Timestep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+                     timeSteps->add(ts->get_time_value());
+                  }
+               }
+            }
+         } else {
+            Iterator<fem::ResultHeader*, fem::entityType> rhIter(theModel->getObjectSet(fem::et_ResultHeader), theModel);
+            for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
+               if (strEQL(rh->get_analysis(), anid)) {
+                  timeSteps->add(rh->get_step());
                }
             }
          }
-         retVal->ListOfTimeSteps->putContainer(&timeSteps);
-      } else {
-         Iterator<fem::ResultHeader*, fem::entityType> rhIter(theModel->getObjectSet(fem::et_ResultHeader), theModel);
-         for (fem::ResultHeader *rh = rhIter.first(); rh; rh = rhIter.next()) {
-            if (strEQL(rh->get_analysis(), anid)) {
-               timeSteps.add(rh->get_step());
-            }
-         }
-         retVal->ListOfTimeSteps->putContainer(&timeSteps);
+         timeSteps->writeToBinaryFile(timeStepFileName);
       }
+      if (timeSteps) retVal->ListOfTimeSteps->putContainer(timeSteps);
    } catch (CedmError *e) {
       emsg = handleError(e);
    }
@@ -1216,6 +1225,8 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
                   EDMULONG nTrianglesPrContainerBuffer = 0x10000;
                   Container<EDMVD::Triangle>  *triangles;
 
+                  int nmilliSec = GetTickCount() - startTime;
+                  printf("Finding mesh time=%d\n", nmilliSec);
                   if (triangelFile) {
                      triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, triangelFile);
                   } else {
