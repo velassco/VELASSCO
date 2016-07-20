@@ -241,6 +241,8 @@ int main(int argc, char **argv)
     srand(time(NULL));
     
     int listen_port = 26267; // standard thrift port : 9090
+    const char *hbase_hostname = "localhost"; // or "pez001";
+    int         hbase_port     = 9090; // hbase thrift server
     char *EDM_qm_database_folder = "";
     char *EDM_qm_init_file = "";
     char *EDM_inject_file = "";
@@ -250,6 +252,8 @@ int main(int argc, char **argv)
     if ( thereIsHelpSwitch( argc, argv)) {
       printf( "Usage: %s [ options] \n", argv[ 0]);
       printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
+      printf( "  -hbase_host hostname         host name of the HBase Thrift Server (default %s)\n", hbase_hostname);
+      printf( "  -hbase_port port_number      port of the HBase Thrift Server (default %d)\n", hbase_port);
       printf( "  -dl_EDM                   EDM_qm_database_folder EDM_qm_init_file  \n");
       printf( "  -dl_EDM_inject            EDM_qm_database_folder EDM_inject_file  \n");
       printf( "  -multiuser 0              if 0, uses SimpleServer, if 1, uses MultiUser (default %d)\n", G_multiUser);
@@ -271,6 +275,17 @@ int main(int argc, char **argv)
 		  listen_port = new_port;
 		  processed_args += 2;
 		}
+      } else if ( !strcasecmp( argv[ ia], "-hbase_host")) {
+		   ia++;
+		   hbase_hostname = argv[ ia];
+		   processed_args += 2;
+      } else if ( !strcasecmp( argv[ ia], "-hbase_port")) {
+		   ia++;
+		   int new_port = hbase_port;
+		   if ( sscanf( argv[ ia], "%d", &new_port) == 1) {
+		     hbase_port = new_port;
+		     processed_args += 2;
+		   }
       } else if ( !strcasecmp( argv[ ia], "-dl_EDM")) {
 		   EDM_qm_database_folder = argv[ ++ia];
 		   EDM_qm_init_file = argv[ ++ia];
@@ -379,10 +394,10 @@ int main(int argc, char **argv)
 	{
 		//Open Source behaviour.
 		
-		const char *hbase_host = "localhost"; // or pez001
-    		int hbase_port = 9090; // hbase thrift server
+		// const char *hbase_host = "localhost"; // or pez001
+    		// int hbase_port = 9090; // hbase thrift server
     
-		DataLayerAccess::Instance()->startConnection( hbase_host, hbase_port);
+		DataLayerAccess::Instance()->startConnection( hbase_hostname, hbase_port);
 		queryServer =  DataLayerAccess::Instance();
 		
 		QMiD = listen_port;
