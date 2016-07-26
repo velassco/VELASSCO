@@ -163,7 +163,6 @@ int doTestiCores( const VAL_SessionID sessionID) {
     return EXIT_SUCCESS;
   }
   
-  const char* listOfMeshes = 0;
   std::string modelID( return_modelID );
 
 
@@ -198,6 +197,7 @@ else
  
   const char* analysisID = "DEM";
   double      timeStep = 2939000.0;
+  const char* listOfMeshes = 0;
   
   result = valGetListOfMeshes( sessionID, modelID.c_str(), analysisID, timeStep, &status, &listOfMeshes ); 
   CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
@@ -751,13 +751,15 @@ int main(int argc, char* argv[])
   int velassco_default_port  = 26268;
   if ( argc == 2) {
     if ( askForHelp( argv[ 1])) {
-      printf( "Usage: %s [ hostname [ port (default %d, VELaSSCo EngineLayer/QueryManager default port = %d)]]\n", 
+      printf( "Usage: %s [ hostname [ port (default %d, VELaSSCo EngineLayer/QueryManager default port = %d) [ url_parameters]]]\n", 
 	      argv[ 0], remote_port, velassco_default_port);
       return EXIT_FAILURE;
     }
     sprintf( hostname_port, "%s:%d", argv[ 1], remote_port);
   } else if ( argc == 3) {
     sprintf( hostname_port, "%s:%s", argv[ 1], argv[ 2]);
+  } else if ( argc == 4) {
+    sprintf( hostname_port, "%s:%s?%s", argv[ 1], argv[ 2], argv[ 3]);
   } else {
     strcpy( hostname_port, "localhost:9990");
   }
