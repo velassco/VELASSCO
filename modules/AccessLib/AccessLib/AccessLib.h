@@ -88,6 +88,7 @@ extern "C" {
    * The user provides credentials to get access to VELaSSCo data.  The
    * credentials are verified, and, if approved, a session identifier is
    * returned.
+   * url may end have this parameter '?multiuser' for a multi-user connection
    */
   VAL_Result VAL_API valUserLogin(               /* in */
 				  const char*     url,
