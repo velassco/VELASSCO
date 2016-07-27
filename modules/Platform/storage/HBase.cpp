@@ -584,7 +584,7 @@ std::string HBase::getResultFromVerticesID_curl( const std::string &sessionID,
 // ==============================================
 //#define READ_GROUPED_ROWS_FILTERS
 
-//#define USE_HASHING_FILTER
+// #define USE_HASHING_FILTER
 
 /* GetResultsFromVerticesID */
 static bool getResultsFromRow_filter( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t> &listOfVerticesID, const int64_t &minVertexID, const int64_t &maxVertexID ) {
@@ -929,7 +929,6 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 /* GetResultsFromVerticesID */
 static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t>& listOfVerticesID) {
   int num_results = 0;
-  unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
 	it != rowResult.columns.end(); ++it) {
     const char *cq_str = it->first.c_str();
@@ -956,24 +955,15 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
             for(int i = 0; i < resultInfo.numberOfComponents; i++)
       	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
       	    ResultOnVertex result;
-			result.__set_id( node_id );
-			result.__set_value( result_values );
-			listOfResults.push_back( result );
-			num_results++;
-
-#if __cplusplus < 201103L
-	    // c++ < c++11
-      	    //resultOnVertexListMap.insert (std::make_pair< int64_t, std::vector< double > >(node_id, result_values));  
-#else
-	    // c++ <= c++98
-      	    //resultOnVertexListMap.insert (std::pair< int64_t, std::vector< double > >(node_id, result_values));  
-#endif
+	    result.__set_id( node_id );
+	    result.__set_value( result_values );
+	    listOfResults.push_back( result );
+	    num_results++;
       	  }
       	}
       }
     }
   }
-  
   return num_results;
 }
 
@@ -1099,7 +1089,34 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 #ifdef READ_GROUPED_ROWS
   }
 #endif
+
+  // remove repeated vertices:
+  size_t orig_num_vertices = listOfResults.size();
+  std::unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
+  for ( size_t i = 0; i < listOfResults.size(); i++) {
+    const ResultOnVertex &vertexAndResult = listOfResults[ i];
+    int64_t vertexId = vertexAndResult.id;
+    resultOnVertexListMap[ vertexId] = vertexAndResult.value;
+  }
+
+  // get only asked vertices and 
+  listOfResults.clear();
+  for ( size_t i = 0; i < listOfVerticesID.size(); i++) {
+    int64_t vertexId = listOfVerticesID[ i];
+    std::unordered_map< int64_t, std::vector< double > >::const_iterator it_vertexAndResult = resultOnVertexListMap.find( vertexId);
+    if ( it_vertexAndResult == resultOnVertexListMap.end()) {
+      // LOGGER_SM << "not found";
+    } else {
+      // LOGGER_SM << " found";
+      ResultOnVertex result;
+      result.__set_id( it_vertexAndResult->first );
+      result.__set_value( it_vertexAndResult->second );
+      listOfResults.push_back( result );
+    }
+  }
   
+  LOGGER_SM << "Found " << listOfResults.size() << " verticesID from the retrieved " << orig_num_vertices << " ones." << std::endl; 
+
  // 	#define DEBUG_RESULTS
 	#ifdef  DEBUG_RESULTS
 	size_t n_debug_results = listOfResults.size() < 10 ? listOfResults.size() : 10;
