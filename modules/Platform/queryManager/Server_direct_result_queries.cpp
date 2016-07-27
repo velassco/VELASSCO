@@ -161,18 +161,23 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
 		  
   // Pack into string
   if(_return_.result_list.size() > 0){
-	std::string result;
+    std::string result;
     std::ostringstream oss;
     size_t nVertices = _return_.result_list.size();
-    size_t nElements = _return_.result_list[0].value.size();
+    size_t nComponents = _return_.result_list[0].value.size();
+    LOGGER << "--> returned numVertices = " << nVertices << " ." << std::endl;
+    LOGGER << "--> returned numComponents = " << nComponents << " ." << std::endl;
     oss.write((char*)&nVertices, sizeof(int64_t));
-    oss.write((char*)&nElements, sizeof(int64_t));
+    oss.write((char*)&nComponents, sizeof(int64_t));
     oss.write((char*)(&resultVertexIDs[0]), sizeof(int64_t)*resultVertexIDs.size());
     oss.write((char*)(&resultValues[0]),    sizeof(double)*resultValues.size());
+    LOGGER << "--> returned resultVertexIDs.size() = " << resultVertexIDs.size() << " ." << std::endl;
+    LOGGER << "--> returned resultValues.size() = " << resultValues.size() << " ." << std::endl;
     result = oss.str();
     _return.__set_data(result);  
   } else {
-	std::string result;
+    LOGGER << "--> nothing returned ." << std::endl;
+    std::string result;
     std::ostringstream oss;
     int64_t zero = 0;
     oss.write((char*)&zero, sizeof(size_t));
