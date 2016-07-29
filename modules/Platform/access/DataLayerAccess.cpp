@@ -331,6 +331,23 @@ void DataLayerAccess::getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_r
   _return.__set_vertex_list( listOfVertices);
 }
 
+void DataLayerAccess::getListOfSelectedVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+							 const std::string &sessionID, const std::string &modelID, 
+							 const std::string &analysisID, const double stepValue, 
+							 const int32_t meshID, const std::vector<int64_t> &listOfVerticesID) {
+/*  try {
+    cli->GetListOfVerticesFromMesh( _return, sessionID, modelID, analysisID, stepValue, meshID);
+  } catch ( TException& tx) {
+    cout << "ERROR: " << tx.what() << endl;
+  }*/
+  std::string report;
+  std::vector< Vertex> listOfVertices;
+  std::string status = _db->getListOfSelectedVerticesFromMesh( report, listOfVertices, sessionID, modelID, analysisID, stepValue, meshID, listOfVerticesID);
+  _return.__set_status( status);
+  _return.__set_report( report);
+  _return.__set_vertex_list( listOfVertices);
+}
+
 void DataLayerAccess::stopAll()
 {
 /*    try

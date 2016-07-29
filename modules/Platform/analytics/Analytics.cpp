@@ -432,10 +432,10 @@ bool getMeshVerticesFromJavaOutput( const char *filename, rvGetListOfVerticesFro
 }
 
 std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &return_data, 
-						   const std::string &sessionID, const std::string &modelID, 
-						   const std::string &dataTableName,
-						   const std::string &analysisID, const double stepValue, 
-						   const int32_t meshID) {
+							  const std::string &sessionID, const std::string &modelID, 
+							  const std::string &dataTableName,
+							  const std::string &analysisID, const double stepValue, 
+							  const int32_t meshID) {
   // at the moment only CLI interface:
   // modelID, if it's binary, convert it to 32-digit hexastring:
   char model_ID_hex_string[ 1024];
@@ -456,7 +456,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 static
   std::string analytics_program = GetFullAnalyticsQualifier( "GetListOfVerticesFromMesh");
 
-  bool use_yarn = false; // true;;
+  bool use_yarn = true;//false; // true;;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
@@ -803,16 +803,29 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle> lst_triangles;
   bool ok = getBoundaryTrianglesFromJavaOutput( filename, lst_triangles);
   if ( !ok) step_error = "error in getBoundaryTrianglesFromJavaOutput";
+
+  // get the unique Node IDs used in the skin mesh
+  std::unordered_set< int64_t> lst_UsedNodeIDs;
+  if ( ok) {
+    // get only the vertices we need
+    ok = getListOfUsedNodeIDs( lst_UsedNodeIDs, lst_triangles);
+  }
+  if ( !ok) step_error = "error in getListOfUsedNodeIDs";
+
   // needs to get the vertices from the DataLayer ...
   rvGetListOfVerticesFromMesh return_data;
   if ( ok) {
-    bool use_data_layer = false;
+    bool use_data_layer = true;
     if ( use_data_layer) {
-    std::cout << "doing DataLayer::getListOfVerticesFromMesh" << std::endl;
-    DataLayerAccess::Instance()->getListOfVerticesFromMesh( return_data,
-							    DataLayer_sessionID,
-							    modelID, analysisID, stepValue,
-							    meshID);
+      std::cout << "doing DataLayer::getListOfSelectedVerticesFromMesh" << std::endl;
+      std::vector< int64_t> lstVertexIds;
+      for ( std::unordered_set< int64_t>::const_iterator itr = lst_UsedNodeIDs.begin(); itr != lst_UsedNodeIDs.end(); itr++) {
+	lstVertexIds.push_back( *itr);
+      }
+      DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
+								      DataLayer_sessionID,
+								      modelID, analysisID, stepValue,
+								      meshID, lstVertexIds);
     } else {
       // the MapReduce version
       std::cout << "doing MapReduce::getListOfVerticesFromMesh" << std::endl;
@@ -841,13 +854,6 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
   }
   if ( !ok) step_error = "error in getListOfVerticesFromMesh";
 
-  // now should process them ...
-  std::unordered_set< int64_t> lst_UsedNodeIDs;
-  if ( ok) {
-    // get only the vertices we need
-    ok = getListOfUsedNodeIDs( lst_UsedNodeIDs, lst_triangles);
-  }
-  if ( !ok) step_error = "error in getListOfUsedNodeIDs";
   std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> lst_vertices;
   VELaSSCo::BoundaryBinaryMesh boundary_mesh;
   if ( ok) {

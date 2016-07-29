@@ -71,6 +71,15 @@ namespace VELaSSCo
 					   const std::string &sessionID, const std::string &modelID, 
 					   const std::string &analysisID, const double stepValue, 
 					   const int32_t meshID);
+    bool getListOfSelectedVerticesFromTables( std::string &report, std::vector< Vertex> &listOfVertices,
+					      const std::string &sessionID, const std::string &modelID,
+					      const std::string &analysisID, const double stepValue, 
+					      const int32_t meshID, const std::vector<int64_t> &listOfVerticesID,
+					      const char *format="%02x"); // for the stepvalue hex string
+    std::string getListOfSelectedVerticesFromMesh( std::string &report, std::vector< Vertex> &listOfVertices,
+						   const std::string &sessionID, const std::string &modelID, 
+						   const std::string &analysisID, const double stepValue, 
+						   const int32_t meshID, const std::vector<int64_t> &listOfVerticesID);
 					   
     bool getResultFromVerticesIDFromTables( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& table_name,
            const std::string &sessionID,  const std::string &modelID,

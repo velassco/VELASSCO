@@ -112,7 +112,11 @@ public:
   void getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
 				  const std::string &sessionID, const std::string &modelID, 
 				  const std::string &analysisID, const double stepValue, 
-				  const int32_t meshInfo);
+				  const int32_t meshID);
+  void getListOfSelectedVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+					  const std::string &sessionID, const std::string &modelID, 
+					  const std::string &analysisID, const double stepValue, 
+					  const int32_t meshID, const std::vector<int64_t> &listOfVerticesID);
 
     void stopAll();
     
