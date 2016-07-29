@@ -671,7 +671,12 @@ bool getBoundaryTrianglesFromJavaOutput( const char *filename,
 bool getBoundaryVerticesFromDataLayerOutput( const std::vector< Vertex> &DL_vertices, 
 					     const std::unordered_set< int64_t> &lst_UsedNodeIDs,
 					     std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> &lst_vertices) {
+
+  LOGGER << "--> before getBoundaryVerticesFromDataLayerOutput" << std::endl;
+
   for ( std::vector< Vertex>::const_iterator it = DL_vertices.begin(); it != DL_vertices.end(); ++it) {
+    // in theory this is check is not needed as we use getListOfSelectedVerticesFromMesh
+    // but for the other cases, and it seems that it does not add a significant overhead ...
     if ( lst_UsedNodeIDs.find( it->id) != lst_UsedNodeIDs.end()) {
       VELaSSCo::BoundaryBinaryMesh::MeshPoint tmp;
       tmp._id = it->id;
@@ -681,6 +686,7 @@ bool getBoundaryVerticesFromDataLayerOutput( const std::vector< Vertex> &DL_vert
       lst_vertices.push_back( tmp);
     }
   }
+  LOGGER << "--> after getBoundaryVerticesFromDataLayerOutput" << std::endl;
   return lst_vertices.size() != 0;
 }
 

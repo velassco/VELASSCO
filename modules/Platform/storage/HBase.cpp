@@ -753,7 +753,7 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   ScannerID scan_id = _hbase_client->scannerOpenWithScan(data_table, ts, m); 
   //LOGGER_SM << "The scanner id is " << scan_id << std::endl;
   
-  LOGGER_SM << "\tAccessing table '" << data_table << "' with";
+  LOGGER_SM << "\tAccessing table '" << data_table << "' with" << std::endl;
   LOGGER_SM << "\t startRowKey = " << startRowKey << std::endl;
   LOGGER_SM << "\t  stopRowKey = " << stopRowKey << std::endl;
 
@@ -1026,7 +1026,7 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 	  ScannerID scan_id = _hbase_client->scannerOpenWithStop( data_table, startRowKey, stopRowKey, cols, m);
 	  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
-	  //LOGGER_SM << "\tAccessing table '" << data_table << "' with";
+	  //LOGGER_SM << "\tAccessing table '" << data_table << "' with" << std::endl;
 	  //LOGGER_SM << "\t startRowKey = " << startRowKey << std::endl;
 	  //LOGGER_SM << "\t  stopRowKey = " << stopRowKey << std::endl;
 	  
@@ -1697,7 +1697,7 @@ bool HBase::getMeshElementsFromTable(std::string& report,
 	  ScannerID scan_id = _hbase_client->scannerOpenWithStop( table_name, startRowKey, stopRowKey, cols, m);
 	  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
-	  //LOGGER_SM << "\tAccessing table '" << data_table << "' with";
+	  //LOGGER_SM << "\tAccessing table '" << data_table << "' with" << std::endl;
 	  //LOGGER_SM << "\t startRowKey = " << startRowKey << std::endl;
 	  //LOGGER_SM << "\t  stopRowKey = " << stopRowKey << std::endl;
 	  
