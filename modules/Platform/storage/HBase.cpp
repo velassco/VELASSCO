@@ -1090,6 +1090,7 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
   }
 #endif
 
+  LOGGER_SM << "Processing " << listOfResults.size() << " retrieved results." << std::endl;
   // remove repeated vertices:
   size_t orig_num_vertices = listOfResults.size();
   std::unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
