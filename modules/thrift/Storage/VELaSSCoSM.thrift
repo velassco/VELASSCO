@@ -411,11 +411,19 @@ service VELaSSCoSM
 	  4: double                           stepValue
 	  5: i32                              meshID // actually it's the coordsID, i.e. cXXXXX ...
 	    ),
+	  rvGetListOfVerticesFromMesh GetListOfSelectedVerticesFromMesh(
+	  1: string                           sessionID
+	  2: string                           modelID
+	  3: string                           analysisID
+	  4: double                           stepValue
+	  5: i32                              meshID // actually it's the coordsID, i.e. cXXXXX ...
+	  6: list<i64>                        listOfVerticesID
+	    ),
 
   /**
    Return the status of the different services 
    which run on the Data Layer.
-   @return string - returns a structured list of avialbe vertices, 
+   @return string - returns a structured list of availabe vertices, 
    with the attached list of double 
    if errors occur the contect is also returned here?
    string	GetResultFormVerticesID(1: string sessionID,
