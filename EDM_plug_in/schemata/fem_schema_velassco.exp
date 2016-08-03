@@ -75,10 +75,16 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       results  : Result FOR result_for;
   END_ENTITY;
 
+  ENTITY Element;
+      nodes : LIST [1:?] OF Node;
+      id    : INTEGER;
+  END_ENTITY;
+
   ENTITY Result
     ABSTRACT SUPERTYPE;
-      result_for    : Node;
-      result_header : ResultHeader;
+      result_for     : Node;
+      result_header  : ResultHeader;
+      NodeTimestepId : INTEGER;
   END_ENTITY;
 
   ENTITY ScalarResult
@@ -125,11 +131,6 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       GPtype          : GaussPointType;
   END_ENTITY;
 
-  ENTITY Element;
-      nodes : LIST [1:?] OF Node;
-      id    : INTEGER;
-  END_ENTITY;
-
   ENTITY Analysis;
       name       : STRING;
     INVERSE
@@ -142,6 +143,7 @@ SCHEMA FEM_SCHEMA_VELASSCO;
       mesh       : Mesh;
       results    : LIST OF ResultHeader;
       name       : STRING;
+      id         : INTEGER;
   END_ENTITY;
 
 END_SCHEMA;
