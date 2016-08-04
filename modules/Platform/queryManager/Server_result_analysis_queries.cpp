@@ -96,18 +96,16 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   // 						      analysisID,
   // 						      stepOptions, numSteps, lstSteps);
   // parse _return_ into a double *lstSteps
-  std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
   double bbox[ 6];
   std::string error_str;
   try {
     //AnalyticsModule::getInstance()->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
     queryServer->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
-							  simulation_data_table_name,
-							  // analysisID, numSteps, lstSteps,
-							  "", 0, NULL,
-							  // numVertexIDs, lstVertexIDs,
-							  0, NULL,
-							  &bbox[ 0], &error_str);
+				       // analysisID, numSteps, lstSteps,
+				       "", 0, NULL,
+				       // numVertexIDs, lstVertexIDs,
+				       0, NULL,
+				       &bbox[ 0], &error_str);
     // GraphicsModule *graphics = GraphicsModule::getInstance();
     // just to link to the GraphicsModule;
   } catch ( TException &e) {
@@ -273,16 +271,14 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
   std::string binary_mesh = "";
   if ( error_str.length() == 0) {
     std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << " and elementType = " << elementType << std::endl;
-    std::string simulation_data_table_name = GetDataTableName( sessionID, modelID);
     try {
       //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
       queryServer->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
-								dl_sessionID,
-								modelID,
-								simulation_data_table_name,
-								meshID, elementType,
-								analysisID, stepValue, 
-								&binary_mesh, &error_str);
+					     dl_sessionID,
+					     modelID,
+					     meshID, elementType,
+					     analysisID, stepValue, 
+					     &binary_mesh, &error_str);
       // GraphicsModule *graphics = GraphicsModule::getInstance();
       // just to link to the GraphicsModule;
     } catch ( TException &e) {

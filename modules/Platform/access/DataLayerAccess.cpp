@@ -16,97 +16,99 @@ DataLayerAccess* DataLayerAccess::m_pInstance = NULL;
 
 DataLayerAccess* DataLayerAccess::Instance()
 {
-    // Only allow one instance of class to be generated.
-    if (!m_pInstance)
+  // Only allow one instance of class to be generated.
+  if (!m_pInstance)
     {
-        m_pInstance = new DataLayerAccess;
+      m_pInstance = new DataLayerAccess;
     }
-    return m_pInstance;
+  return m_pInstance;
 }
 
 
 bool DataLayerAccess::startConnection( const char *data_layer_hostname, const int data_layer_port)
 {
-/*  DEBUG( "Connecting to Data Layer at " << data_layer_hostname << ":" << data_layer_port);
-    socket= boost::shared_ptr<TTransport>(new TSocket( data_layer_hostname, data_layer_port));
-//    transport = boost::shared_ptr<TTransport>(new TBufferedTransport(socket));
-	transport = boost::shared_ptr<TTransport>(new TFramedTransport(socket));
-    protocol = boost::shared_ptr<TProtocol>(new TBinaryProtocol(transport));
-    cli = new VELaSSCoSMClient(protocol);
-    try
-    {
+  /*  DEBUG( "Connecting to Data Layer at " << data_layer_hostname << ":" << data_layer_port);
+      socket= boost::shared_ptr<TTransport>(new TSocket( data_layer_hostname, data_layer_port));
+      //    transport = boost::shared_ptr<TTransport>(new TBufferedTransport(socket));
+      transport = boost::shared_ptr<TTransport>(new TFramedTransport(socket));
+      protocol = boost::shared_ptr<TProtocol>(new TBinaryProtocol(transport));
+      cli = new VELaSSCoSMClient(protocol);
+      try
+      {
         
-        transport->open();
-	// just testing connection:
-	// string status;
-        // getStatusDB( status);
-        // cout << "\t########## getStatus - " << status << endl;
-	// now it's a VQuery so it can be issued by the Viz Client
-    }
-    catch (TException& tx)
-    {
-        cout << "ERROR: " << tx.what() << endl;
-    }
+      transport->open();
+      // just testing connection:
+      // string status;
+      // getStatusDB( status);
+      // cout << "\t########## getStatus - " << status << endl;
+      // now it's a VQuery so it can be issued by the Viz Client
+      }
+      catch (TException& tx)
+      {
+      cout << "ERROR: " << tx.what() << endl;
+      }
     
-    return true;
-*/
+      return true;
+  */
 
-	//stopConnection(); // close any previous connections
-	_db = (AbstractDB*)  new HBase();
-	return _db->startConnection( data_layer_hostname, data_layer_port);
+  //stopConnection(); // close any previous connections
+  // no need for AbstractDB.h anymore ...
+  // _db = (AbstractDB*)  new HBase();
+  _db = new HBase();
+  return _db->startConnection( data_layer_hostname, data_layer_port);
 }
 
 bool DataLayerAccess::stopConnection()
 {
-   /* try
-    {
+  /* try
+     {
         
-        transport->close();
-    } catch (TException& tx) {
-        cout << "ERROR: " << tx.what() << endl;
-    }*/
-    bool ok = true;
-	  if ( _db) {
-		ok = _db->stopConnection();
-		delete _db;
-		_db = NULL;
-	  }
-	  return ok;
+     transport->close();
+     } catch (TException& tx) {
+     cout << "ERROR: " << tx.what() << endl;
+     }*/
+  bool ok = true;
+  if ( _db) {
+    ok = _db->stopConnection();
+    delete _db;
+    _db = NULL;
+  }
+  return ok;
 }
 
 void DataLayerAccess::getStatusDB( std::string& _return) {
-	_return = _db->getStatusDB();
+  _return = _db->getStatusDB();
 }
 
 void DataLayerAccess::userLogin( std::string &_return, 
 				 const std::string &name, const std::string &role, const std::string &password) {
-/*  try {
-    cli->UserLogin( _return, name, role, password);
-  } catch (TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->UserLogin( _return, name, role, password);
+      } catch (TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
 }
 
 void DataLayerAccess::userLogout( std::string &_return, const std::string &sessionID) {
-/*  try {
-    cli->UserLogout( _return, sessionID);
-  } catch (TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->UserLogout( _return, sessionID);
+      } catch (TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
 }
 
 void DataLayerAccess::getListOfModels( rvGetListOfModels &_return,
 				       const std::string &sessionID, 
 				       const std::string &model_group_qualifier, const std::string &model_name_pattern) {
-/*  try {
-    cli->GetListOfModelNames( _return, sessionID, model_group_qualifier, model_name_pattern);
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->GetListOfModelNames( _return, sessionID, model_group_qualifier, model_name_pattern);
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
   std::string report;
   std::vector< FullyQualifiedModelName>listOfModelNames;
   std::string status = _db->getListOfModelNames( report, listOfModelNames, sessionID, 
-  												model_group_qualifier, model_name_pattern);
+						 model_group_qualifier, model_name_pattern);
   _return.__set_status( status);
   _return.__set_report( report);
   _return.__set_models( listOfModelNames);
@@ -114,13 +116,13 @@ void DataLayerAccess::getListOfModels( rvGetListOfModels &_return,
 }
 
 void DataLayerAccess::openModel( rvOpenModel &_return,
-				    const std::string &sessionID, 
-				    const std::string &unique_name, const std::string &requested_access) {
-/*  try {
-    cli->FindModel( _return, sessionID, unique_name, requested_access); // requested_access not used at the momemnt
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+				 const std::string &sessionID, 
+				 const std::string &unique_name, const std::string &requested_access) {
+  /*  try {
+      cli->FindModel( _return, sessionID, unique_name, requested_access); // requested_access not used at the momemnt
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
   std::string report;
   std::string modelID;
   FullyQualifiedModelName model_info;
@@ -134,27 +136,27 @@ void DataLayerAccess::openModel( rvOpenModel &_return,
 void DataLayerAccess::closeModel( std::string &_return,
 				  const std::string &sessionID, 
 				  const std::string &modelID) {
-/*  try {
-    cli->CloseModel( _return, sessionID, modelID); // requested_access not used at the momemnt
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->CloseModel( _return, sessionID, modelID); // requested_access not used at the momemnt
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
 }
 
 void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_return,
-				  const std::string &sessionID, const std::string &modelID, 
-				  const std::string &analysisID, const double timeStep,
-				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ){
-/*    try
-    {
+					       const std::string &sessionID, const std::string &modelID, 
+					       const std::string &analysisID, const double timeStep,
+					       const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ){
+  /*    try
+	{
         
         cli->GetResultFromVerticesID( _return, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
         // cout << "########## getResultFromVerticesID - " << _return << endl;
-    }
-    catch (TException& tx)
-    {
+	}
+	catch (TException& tx)
+	{
         cout << "ERROR: " << tx.what() << endl;
-    }*/
+	}*/
   std::string report;
   std::vector< ResultOnVertex > listOfResults;
   std::string status  = _db->getResultFromVerticesID(report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID);	
@@ -165,34 +167,34 @@ void DataLayerAccess::getResultFromVerticesID( rvGetResultFromVerticesID &_retur
 }
 
 void DataLayerAccess::getCoordinatesAndElementsFromMesh( 
-	rvGetCoordinatesAndElementsFromMesh& _return,
-	const std::string& sessionID, const std::string& modelID, const std::string& analysisID, 
-	const double timeStep, const MeshInfo& meshInfo )
+							rvGetCoordinatesAndElementsFromMesh& _return,
+							const std::string& sessionID, const std::string& modelID, const std::string& analysisID, 
+							const double timeStep, const MeshInfo& meshInfo )
 {
-/*	try
-    {
+  /*	try
+	{
         
         cli->GetCoordinatesAndElementsFromMesh( _return, sessionID, modelID, analysisID, timeStep, meshInfo );
         //cout << "########## getCoordinatesAndElementsFromMesh - " << _return << endl;
-    }
-    catch (TException& tx)
-    {
+	}
+	catch (TException& tx)
+	{
         cout << "ERROR: " << tx.what() << endl;
-    }*/
-	std::string                  report;
-	std::vector< Vertex        > listOfVertices;
-	std::vector< Element       > listOfElements;
-	std::vector< ElementAttrib > listOfElementAttribs;
-	std::vector< ElementGroup  > listOfElementGroupInfo;
-	std::string status = _db->getCoordinatesAndElementsFromMesh(
-	  	report, listOfVertices, listOfElements, listOfElementAttribs, listOfElementGroupInfo, 
-	  	sessionID, modelID, analysisID, timeStep, meshInfo);
-	_return.__set_status( status );
-	_return.__set_report( report );
-	_return.__set_vertex_list ( listOfVertices );
-	_return.__set_element_list( listOfElements );
-	_return.__set_element_attrib_list( listOfElementAttribs );
-	_return.__set_element_group_info_list( listOfElementGroupInfo );	
+	}*/
+  std::string                  report;
+  std::vector< Vertex        > listOfVertices;
+  std::vector< Element       > listOfElements;
+  std::vector< ElementAttrib > listOfElementAttribs;
+  std::vector< ElementGroup  > listOfElementGroupInfo;
+  std::string status = _db->getCoordinatesAndElementsFromMesh(
+							      report, listOfVertices, listOfElements, listOfElementAttribs, listOfElementGroupInfo, 
+							      sessionID, modelID, analysisID, timeStep, meshInfo);
+  _return.__set_status( status );
+  _return.__set_report( report );
+  _return.__set_vertex_list ( listOfVertices );
+  _return.__set_element_list( listOfElements );
+  _return.__set_element_attrib_list( listOfElementAttribs );
+  _return.__set_element_group_info_list( listOfElementGroupInfo );	
 }
                   
 void DataLayerAccess::getListOfMeshes( rvGetListOfMeshes &_return,
@@ -200,11 +202,11 @@ void DataLayerAccess::getListOfMeshes( rvGetListOfMeshes &_return,
 				       const std::string &modelID,
 				       const std::string &analysisID,
 				       const double stepValue) {
-/*  try {
-    cli->GetListOfMeshes( _return, sessionID, modelID, analysisID, stepValue);
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->GetListOfMeshes( _return, sessionID, modelID, analysisID, stepValue);
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
   std::string report;
   std::vector< MeshInfo>listOfMeshes;
   std::string status = _db->getListOfMeshes( report, listOfMeshes, sessionID, modelID, analysisID, stepValue);
@@ -216,11 +218,11 @@ void DataLayerAccess::getListOfMeshes( rvGetListOfMeshes &_return,
 void DataLayerAccess::getListOfAnalyses( rvGetListOfAnalyses &_return,
 					 const std::string &sessionID,
 					 const std::string &modelID) {
-/*  try {
-    cli->GetListOfAnalyses( _return, sessionID, modelID);
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->GetListOfAnalyses( _return, sessionID, modelID);
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
   std::string report;
   std::vector< std::string>listOfAnalyses;
   std::string status = _db->getListOfAnalyses( report, listOfAnalyses, sessionID, modelID);
@@ -244,12 +246,12 @@ void DataLayerAccess::getListOfTimeSteps( rvGetListOfTimeSteps &_return,
     //cli->GetListOfTimeSteps( _return, sessionID, modelID, analysisID);
     
     
-	std::string report;
-	std::vector< double>listOfSteps;
-	std::string status = _db->getListOfSteps( report, listOfSteps, sessionID, modelID, analysisID);
-	_return.__set_status( status);
-	_return.__set_report( report);
-	_return.__set_time_steps( listOfSteps);
+    std::string report;
+    std::vector< double>listOfSteps;
+    std::string status = _db->getListOfSteps( report, listOfSteps, sessionID, modelID, analysisID);
+    _return.__set_status( status);
+    _return.__set_report( report);
+    _return.__set_time_steps( listOfSteps);
     
     
     
@@ -300,11 +302,11 @@ void DataLayerAccess::getListOfResultsFromTimeStepAndAnalysis( rvGetListOfResult
 							       const std::string &modelID,
 							       const std::string &analysisID,
 							       const double stepValue) {
-/*  try {
-    cli->GetListOfResultsFromTimeStepAndAnalysis( _return, sessionID, modelID, analysisID, stepValue);
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->GetListOfResultsFromTimeStepAndAnalysis( _return, sessionID, modelID, analysisID, stepValue);
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
   std::string report;
   std::vector< ResultInfo>listOfResults;
   std::string status = _db->getListOfResults( report, listOfResults, sessionID, modelID, analysisID, stepValue);
@@ -318,11 +320,11 @@ void DataLayerAccess::getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_r
 						 const std::string &sessionID, const std::string &modelID, 
 						 const std::string &analysisID, const double stepValue, 
 						 const int32_t meshID) {
-/*  try {
-    cli->GetListOfVerticesFromMesh( _return, sessionID, modelID, analysisID, stepValue, meshID);
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->GetListOfVerticesFromMesh( _return, sessionID, modelID, analysisID, stepValue, meshID);
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
   std::string report;
   std::vector< Vertex> listOfVertices;
   std::string status = _db->getListOfVerticesFromMesh( report, listOfVertices, sessionID, modelID, analysisID, stepValue, meshID);
@@ -335,11 +337,11 @@ void DataLayerAccess::getListOfSelectedVerticesFromMesh( rvGetListOfVerticesFrom
 							 const std::string &sessionID, const std::string &modelID, 
 							 const std::string &analysisID, const double stepValue, 
 							 const int32_t meshID, const std::vector<int64_t> &listOfVerticesID) {
-/*  try {
-    cli->GetListOfVerticesFromMesh( _return, sessionID, modelID, analysisID, stepValue, meshID);
-  } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
-  }*/
+  /*  try {
+      cli->GetListOfVerticesFromMesh( _return, sessionID, modelID, analysisID, stepValue, meshID);
+      } catch ( TException& tx) {
+      cout << "ERROR: " << tx.what() << endl;
+      }*/
   std::string report;
   std::vector< Vertex> listOfVertices;
   std::string status = _db->getListOfSelectedVerticesFromMesh( report, listOfVertices, sessionID, modelID, analysisID, stepValue, meshID, listOfVerticesID);
@@ -350,17 +352,17 @@ void DataLayerAccess::getListOfSelectedVerticesFromMesh( rvGetListOfVerticesFrom
 
 void DataLayerAccess::stopAll()
 {
-/*    try
-    {
+  /*    try
+	{
         
         cli->stopAll();
         cout << "\t########## stopAll "  << endl;
-    }
-    catch (TException& tx)
-    {
+	}
+	catch (TException& tx)
+	{
         cout << "ERROR: " << tx.what() << endl;
-    }
-    this->stopConnection();*/
+	}
+	this->stopConnection();*/
 }
 
 
@@ -368,16 +370,17 @@ void DataLayerAccess::stopAll()
 
 
 void DataLayerAccess::calculateBoundingBox( const std::string &sessionID, const std::string &modelID, 
-					    const std::string &dataTableName,
 					    const std::string &analysisID, const int numSteps, const double *lstSteps,
 					    const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 					    double *return_bbox, std::string *return_error_str) {
-	    
+  HBase::TableModelEntry table_name_set;
+  if ( _db->getTableNames(sessionID, modelID, table_name_set)) {
     AnalyticsModule::getInstance()->calculateBoundingBox( sessionID, modelID,
-							  dataTableName,
+							  table_name_set._data,
 							  analysisID, numSteps, lstSteps,
 							  numVertexIDs, lstVertexIDs,
-							  return_bbox, return_error_str);					    
+							  return_bbox, return_error_str);
+  }
 }
 
 
@@ -388,45 +391,44 @@ void DataLayerAccess::calculateDiscrete2Continuum(const std::string &sessionID, 
 						  const std::string &cGMethod, const double width, const double cutoffFactor,
 						  const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGOptions,
 						  const double deltaT, std::string *returnQueryOutcome, std::string *return_error_str) {
-						  
-	AnalyticsModule::getInstance()->calculateDiscrete2Continuum( sessionID, modelID,
-							analysisID, staticMeshID, 
-							stepOptions, numSteps, lstSteps,
-							cGMethod, width, cutoffFactor, 
-							processContacts, doTemporalAVG, temporalAVGOptions, 
-							deltaT, returnQueryOutcome, return_error_str);	
+  
+  AnalyticsModule::getInstance()->calculateDiscrete2Continuum( sessionID, modelID,
+							       analysisID, staticMeshID, 
+							       stepOptions, numSteps, lstSteps,
+							       cGMethod, width, cutoffFactor, 
+							       processContacts, doTemporalAVG, temporalAVGOptions, 
+							       deltaT, returnQueryOutcome, return_error_str);	
 }
 
-
-
-std::string DataLayerAccess::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &return_data, 
-						   const std::string &sessionID, const std::string &modelID, 
-						   const std::string &dataTableName,
-						   const std::string &analysisID, const double stepValue, 
-						   const int32_t meshID) {
-						   
-	return AnalyticsModule::getInstance()->MRgetListOfVerticesFromMesh(return_data,
-							sessionID, modelID,
-							dataTableName,
-							analysisID, stepValue,
-							meshID);
-}
+// std::string DataLayerAccess::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &return_data, 
+// 							  const std::string &sessionID, const std::string &modelID, 
+// 							  const std::string &dataTableName,
+// 							  const std::string &analysisID, const double stepValue, 
+// 							  const int32_t meshID) {
+//     return AnalyticsModule::getInstance()->MRgetListOfVerticesFromMesh(return_data,
+// 								       sessionID, modelID,
+// 								       dataTableName,
+// 								       analysisID, stepValue,
+// 								       meshID);
+// }
 
 
 
 void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
-						const std::string &modelID, const std::string &dataTableName,
+						const std::string &modelID,
 						const int meshID, const std::string &elementType,
 						const std::string &analysisID, const double stepValue,
 						std::string *return_binary_mesh, std::string *return_error_str) {
-									
-	AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID, 
-								DataLayer_sessionID,
-								modelID,
-								dataTableName,
-								meshID, elementType,
-								analysisID, stepValue, 
-								return_binary_mesh, return_error_str);										
+  HBase::TableModelEntry table_name_set;
+  if ( _db->getTableNames(sessionID, modelID, table_name_set)) {
+    AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID, 
+							      DataLayer_sessionID,
+							      modelID,
+							      table_name_set._data,
+							      meshID, elementType,
+							      analysisID, stepValue, 
+							      return_binary_mesh, return_error_str);
+  }
 }
 
 

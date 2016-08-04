@@ -50,62 +50,6 @@ using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
 
-// internal information:
-std::string QMS_FullyQualifiedModelName::GetDBType () const {
-  // this.location is of the form: EDM or HBase:table_name
-  const std::string &location = this->location;
-  std::size_t found = location.find_first_of( ":");
-  if ( found == std::string::npos)
-    found = location.length();
-  else
-    found--; // get rid of ':'
-  std::string ret = location.substr( 0, found);
-  assert( AreEqualNoCase( ret, "edm") || AreEqualNoCase( ret, "hbase"));
-  return ret;
-}
-
-void QMS_FullyQualifiedModelName::GetTableNames( std::string &model_table, std::string &metadata_table, std::string &data_table) const {
-  const std::string &location = this->location;
-  std::size_t found = location.find_first_of( ":");
-  bool no_table_name = false;
-  if ( found == std::string::npos) {
-    no_table_name = true;
-    found = location.length();
-  }
-  std::string db_type = location.substr( 0, found);
-  if ( AreEqualNoCase( db_type, "hbase")) {
-    std::string table_name;
-    if ( no_table_name) {
-      table_name = "VELaSSCo_Models";
-    } else {
-      table_name = location.substr( found + 1, location.length());
-    }
-    if ( AreEqualNoCase( table_name, "VELaSSCo_Models")) {
-      model_table = "VELaSSCo_Models";
-      metadata_table = "Simulations_Metadata";
-      data_table = "Simulations_Data";
-    } else if ( AreEqualNoCase( table_name, "VELaSSCo_Models_V4CIMNE")) {
-      model_table = "VELaSSCo_Models_V4CIMNE";
-      metadata_table = "Simulations_Metadata_V4CIMNE";
-      data_table = "Simulations_Data_V4CIMNE";
-    } else if ( AreEqualNoCase( table_name, "VELaSSCo_Models_V4CIMNE_Test")) {
-      model_table = "VELaSSCo_Models_V4CIMNE_Test";
-      metadata_table = "Simulations_Metadata_V4CIMNE_Test";
-      data_table = "Simulations_Data_V4CIMNE_Test";
-    } else if ( AreEqualNoCase( table_name, "Test_VELaSSCo_Models")) {
-      model_table == "Test_VELaSSCo_Models";
-      metadata_table = "Test_Simulations_Metadata";
-      data_table = "Test_Simulations_Data";
-    } else if ( AreEqualNoCase( table_name, "T_VELaSSCo_Models")) {
-      model_table == "T_VELaSSCo_Models";
-      metadata_table = "T_Simulations_Metadata";
-      data_table = "T_Simulations_Data";
-    } else {
-      assert( 0 && "Unkonwn data table name"); //  + table_name
-    }
-  }
-}
-
 /*
  * function offered by the QueryManager 
  */

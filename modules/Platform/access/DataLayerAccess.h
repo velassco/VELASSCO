@@ -10,7 +10,9 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#include "AbstractDB.h"
+// no need for AbstractDB.h anymore ...
+// #include "AbstractDB.h"
+#include "HBase.h"
 #include "base64.h"
 #include "Analytics.h"
 
@@ -24,13 +26,13 @@ using namespace std;
 
 //THIS COMMENTED CODE IS NOW LOCATED IN VELaSSCo_Operations.h
 /*
-typedef enum {
+  typedef enum {
   DL_SM_DB_UNKNOWN = 0,
   DL_SM_DB_HBASE = 1,
   DL_SM_DB_EDM = 2
-} DL_SM_DB_TYPE;
+  } DL_SM_DB_TYPE;
 
-inline const char *getStringFromDBType( DL_SM_DB_TYPE db) {
+  inline const char *getStringFromDBType( DL_SM_DB_TYPE db) {
   const char *ret = "N/A";
   switch( db) {
   case DL_SM_DB_UNKNOWN:  ret = "unknown"; break;
@@ -39,17 +41,17 @@ inline const char *getStringFromDBType( DL_SM_DB_TYPE db) {
   default:                ret = "N/A"; break;
   }
   return ret;
-}
+  }
 
-inline DL_SM_DB_TYPE getDBTypeFromString( const char *str) {
+  inline DL_SM_DB_TYPE getDBTypeFromString( const char *str) {
   DL_SM_DB_TYPE ret = DL_SM_DB_UNKNOWN;
   if ( !strcasecmp( str, "hbase")) {
-    ret = DL_SM_DB_HBASE;
+  ret = DL_SM_DB_HBASE;
   } else if ( !strcasecmp( str, "edm")) {
-    ret = DL_SM_DB_EDM;
+  ret = DL_SM_DB_EDM;
   }
   return ret;
-}
+  }
 */
 
 #include "VELaSSCo_Operations.h"
@@ -61,47 +63,47 @@ using namespace VELaSSCoSM;
 class DataLayerAccess : public VELaSSCo_Operations
 {
 public:
-    static DataLayerAccess *Instance();
-    bool startConnection( const char *data_layer_hostname, const int data_layer_port);
-    bool stopConnection();
-
-    void getStatusDB( std::string& _return);
-    void getResultFromVerticesID( rvGetResultFromVerticesID &_return, 
-				  const std::string &sessionID, const std::string &modelID, 
-				  const std::string &analysisID, const double timeStep,
-				  const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ); 
-	void getCoordinatesAndElementsFromMesh( rvGetCoordinatesAndElementsFromMesh& _return,
-                  const std::string& sessionID, const std::string& modelID, 
-                  const std::string& analysisID, const double timeStep, const MeshInfo& meshID ) ;
+  static DataLayerAccess *Instance();
+  bool startConnection( const char *data_layer_hostname, const int data_layer_port);
+  bool stopConnection();
+  
+  void getStatusDB( std::string& _return);
+  void getResultFromVerticesID( rvGetResultFromVerticesID &_return, 
+				const std::string &sessionID, const std::string &modelID, 
+				const std::string &analysisID, const double timeStep,
+				const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ); 
+  void getCoordinatesAndElementsFromMesh( rvGetCoordinatesAndElementsFromMesh& _return,
+					  const std::string& sessionID, const std::string& modelID, 
+					  const std::string& analysisID, const double timeStep, const MeshInfo& meshID ) ;
   // session queries
   
-    void userLogin( std::string &_return, const std::string &name, const std::string &role, const std::string &password);
-    void userLogout( std::string &_return, const std::string &sessionID);
+  void userLogin( std::string &_return, const std::string &name, const std::string &role, const std::string &password);
+  void userLogout( std::string &_return, const std::string &sessionID);
     
-    void getListOfModels( rvGetListOfModels &_return,
-			  const std::string &sessionID, 
-			  const std::string &group_qualifier, const std::string &name_pattern);
-    void openModel( rvOpenModel &_return,
-		    const std::string &sessionID, 
-		    const std::string &unique_name, const std::string &requested_access);
+  void getListOfModels( rvGetListOfModels &_return,
+			const std::string &sessionID, 
+			const std::string &group_qualifier, const std::string &name_pattern);
+  void openModel( rvOpenModel &_return,
+		  const std::string &sessionID, 
+		  const std::string &unique_name, const std::string &requested_access);
   void closeModel( std::string &_return,
 		   const std::string &sessionID, 
 		   const std::string &modelID);
   // direct result queries
-    void getListOfMeshes( rvGetListOfMeshes &_return,
+  void getListOfMeshes( rvGetListOfMeshes &_return,
+			const std::string &sessionID,
+			const std::string &modelID,
+			const std::string &analysisID,
+			const double stepValue);
+  void getListOfAnalyses( rvGetListOfAnalyses &_return,
 			  const std::string &sessionID,
-			  const std::string &modelID,
-			  const std::string &analysisID,
-			  const double stepValue);
-    void getListOfAnalyses( rvGetListOfAnalyses &_return,
-			    const std::string &sessionID,
-			    const std::string &modelID);
+			  const std::string &modelID);
   /* as of OP-22.113 */
-    void getListOfTimeSteps( rvGetListOfTimeSteps &_return,
-			     const std::string &sessionID,
-			     const std::string &modelID,
-			     const std::string &analysisID,
-			     const std::string &stepOptions, const int numSteps, const double *lstSteps);
+  void getListOfTimeSteps( rvGetListOfTimeSteps &_return,
+			   const std::string &sessionID,
+			   const std::string &modelID,
+			   const std::string &analysisID,
+			   const std::string &stepOptions, const int numSteps, const double *lstSteps);
   /* as of OP-22.115 */
   void getListOfResultsFromTimeStepAndAnalysis( rvGetListOfResults &_return,
 						const std::string &sessionID,
@@ -118,7 +120,7 @@ public:
 					  const std::string &analysisID, const double stepValue, 
 					  const int32_t meshID, const std::vector<int64_t> &listOfVerticesID);
 
-    void stopAll();
+  void stopAll();
     
     
     
@@ -126,7 +128,7 @@ public:
   //THis functions calls to analytics module  
   //INFO: Author Ivan Cores: This are the old funtions called directly from Server_result_analysis_queries.cpp to 
   //the analytics module. Now all queries are called throught the "Access" modules.
-  void calculateBoundingBox( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
+  void calculateBoundingBox( const std::string &sessionID, const std::string &modelID,
 			     const std::string &analysisID, const int numSteps, const double *lstSteps,
 			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 			     double *return_bbox, std::string *return_error_str);
@@ -139,14 +141,15 @@ public:
 				    const double deltaT,
 				    std::string *returnQueryOutcome, std::string *return_error_str);
 
-  std::string MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
-				    const std::string &sessionID, const std::string &modelID, 
-				    const std::string &dataTableName,
-				    const std::string &analysisID, const double stepValue, 
-				    const int32_t meshID);
+  // not used anymore ...
+  // std::string MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+  // 					   const std::string &sessionID, const std::string &modelID, 
+  // 					   const std::string &dataTableName,
+  // 					   const std::string &analysisID, const double stepValue, 
+  // 					   const int32_t meshID);
   
   void calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
-				 const std::string &modelID, const std::string &dataTableName,
+				 const std::string &modelID,
 				 const int meshID, const std::string &elementType,
 				 const std::string &analysisID, const double stepValue,
 				 std::string *return_binary_mesh, std::string *return_error_str);
@@ -154,21 +157,21 @@ public:
     
     
 private:
-   // DataLayerAccess(){};
-    DataLayerAccess(DataLayerAccess const&){};
+  // DataLayerAccess(){};
+  DataLayerAccess(DataLayerAccess const&){};
   // DataLayerAccess& operator=(DataLayerAccess const&){};
 
   DataLayerAccess(): _db( NULL) {};
   ~DataLayerAccess() { stopConnection();}    
-  VELaSSCo::AbstractDB *_db;
+  VELaSSCo::HBase *_db;
   
-    static DataLayerAccess *m_pInstance;
-    VELaSSCoSMClient *cli;
+  static DataLayerAccess *m_pInstance;
+  VELaSSCoSMClient *cli;
     
     
-    boost::shared_ptr<TTransport> socket;
-    boost::shared_ptr<TTransport> transport;
-    boost::shared_ptr<TProtocol> protocol;
+  boost::shared_ptr<TTransport> socket;
+  boost::shared_ptr<TTransport> transport;
+  boost::shared_ptr<TProtocol> protocol;
 };
 
 #endif

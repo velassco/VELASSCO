@@ -336,14 +336,14 @@ void EdmAccess::calculateDiscrete2Continuum( const std::string &sessionID, const
 }
 
 
-std::string EdmAccess::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
-				    const std::string &sessionID, const std::string &modelID, 
-				    const std::string &dataTableName,
-				    const std::string &analysisID, const double stepValue, 
-				    const int32_t meshID) {
-			     
-	return NULL;
-}
+// std::string EdmAccess::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+// 				    const std::string &sessionID, const std::string &modelID, 
+// 				    const std::string &dataTableName,
+// 				    const std::string &analysisID, const double stepValue, 
+// 				    const int32_t meshID) {
+// 			     
+// 	return NULL;
+// }
 
 
 void EdmAccess::calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,

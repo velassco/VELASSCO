@@ -45,28 +45,7 @@ public:
   QMS_FullyQualifiedModelName( ) {};
   QMS_FullyQualifiedModelName( const QMS_FullyQualifiedModelName &inf): FullyQualifiedModelName( ( FullyQualifiedModelName)inf) {};
   QMS_FullyQualifiedModelName( const FullyQualifiedModelName &inf): FullyQualifiedModelName( inf) {};
-  std::string GetDBType () const;
-  std::string GetModelsTableName() const;
-  std::string GetMetaDataTableName() const;
-  std::string GetDataTableName() const;
-  void GetTableNames( std::string &model_table, std::string &metadata_table, std::string &data_table) const;
 };
-
-inline std::string QMS_FullyQualifiedModelName::GetModelsTableName() const {
-  std::string model, metadata, data;
-  GetTableNames( model, metadata, data);
-  return model;
-}
-inline std::string QMS_FullyQualifiedModelName::GetMetaDataTableName() const {
-  std::string model, metadata, data;
-  GetTableNames( model, metadata, data);
-  return metadata;
-}
-inline std::string QMS_FullyQualifiedModelName::GetDataTableName() const {
-  std::string model, metadata, data;
-  GetTableNames( model, metadata, data);
-  return data;
-}
 
 // to have information about sessions
 struct User
@@ -109,17 +88,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   // but a std::string between QueryManager and DataLayer
   std::string GetQueryManagerSessionID( const SessionID &sessionID) const;
   std::string GetDataLayerSessionID( const SessionID &sessionID) const;
-  // support simulation data in several tables: 
-  //    VELaSSCo_Models & co.
-  //    VELaSSCo_Models_V4CIMNE & co.
-  //    Test_VELaSSCo_Models & co.
-  //    T_VELaSSCo_Models & co.
   bool GetModelInfo( const SessionID &sessionID, const ModelID &model, QMS_FullyQualifiedModelName &ret) const;
-  bool GetTableNames( const SessionID &sessionID, const ModelID &modelID,
-		      std::string &model_table, std::string &metadata_table, std::string &data_table) const;
-  std::string GetModelsTableName( const SessionID &sessionID, const ModelID &modelID) const;
-  std::string GetMetaDataTableName( const SessionID &sessionID, const ModelID &modelID) const;
-  std::string GetDataTableName( const SessionID &sessionID, const ModelID &modelID) const;
   
   // queries:
   /* Session Queries */
@@ -200,37 +169,6 @@ inline bool QueryManagerServer::GetModelInfo( const SessionID &sessionID, const 
   } else {
     return false;
   }
-}
-
-inline bool QueryManagerServer::GetTableNames( const SessionID &sessionID, const ModelID &modelID,
-					       std::string &model_table, std::string &metadata_table, std::string &data_table) const {
-  QMS_FullyQualifiedModelName mi;
-  bool found = this->GetModelInfo( sessionID, modelID, mi);
-  if ( found) {
-    mi.GetTableNames( model_table, metadata_table, data_table);
-  }
-  return found;
-}
-inline std::string QueryManagerServer::GetModelsTableName( const SessionID &sessionID, const ModelID &modelID) const {
-  std::string model, metadata, data;
-  bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
-  // assert( found);
-  if ( !found) model = "";
-  return model;
-}
-inline std::string QueryManagerServer::GetMetaDataTableName( const SessionID &sessionID, const ModelID &modelID) const {
-  std::string model, metadata, data;
-  bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
-  // assert( found);
-  if ( !found) metadata = "";
-  return metadata;
-}
-inline std::string QueryManagerServer::GetDataTableName( const SessionID &sessionID, const ModelID &modelID) const {
-  std::string model, metadata, data;
-  bool found = this->GetTableNames( sessionID, modelID, model, metadata, data);
-  // assert( found);
-  if ( !found) data = "";
-  return data;
 }
 
 template <typename T>

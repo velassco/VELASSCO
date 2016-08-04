@@ -3,15 +3,42 @@
 
 // STD
 #include <string>
+#include <vector>
 
 //VELaSSCo
-#include "AbstractDB.h"
+// no need for AbstractDB.h anymore ...
+// #include "AbstractDB.h"
+
+/////////////////////////////////
+// Thrift communication to HBase:
+/////////////////////////////////
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/server/TSimpleServer.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TTransportUtils.h>
+#include <thrift/transport/TBufferTransports.h>
+using namespace ::apache::thrift;
+using namespace ::apache::thrift::protocol;
+using namespace ::apache::thrift::transport;
+using namespace ::apache::thrift::server;
+
+// from the Hbase thrift 1:
+#include "Hbase.h"
+using namespace  ::apache::hadoop::hbase::thrift;
+typedef std::map<std::string,TCell> CellMap;
+
+// for the common structures in the Access module
+// from the former StorageModule thrift:
+#include "VELaSSCoSM.h"
+using namespace VELaSSCoSM;
+
 #include "Helpers.h"
 
 namespace VELaSSCo
 {
 
-  class HBase : public AbstractDB
+  class HBase // : public AbstractDB
   {
   
   public:
@@ -140,6 +167,21 @@ namespace VELaSSCo
 				std::vector< FullyQualifiedModelName> &listOfModelNames,
 				std::string buffer, const std::string &table_name);
 
+  public:
+    // to store information on where is the model stored
+    // support simulation data in several tables: 
+    //    VELaSSCo_Models & co.
+    //    VELaSSCo_Models_V4CIMNE & co.
+    //    Test_VELaSSCo_Models & co.
+    //    T_VELaSSCo_Models & co.
+    class TableModelEntry {
+    public:
+      std::string _list_models;
+      std::string _metadata;
+      std::string _data;
+    } ;
+    // returns true if info is found ( i.e. OpenModel was issued)
+    bool getTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const;
 
   private:
     HbaseClient *_hbase_client;
@@ -148,17 +190,8 @@ namespace VELaSSCo
     boost::shared_ptr<TProtocol> *_protocol;
     std::string _db_host;
 
-    // to store information on where is the model stored
-    class TableModelEntry {
-    public:
-      std::string _list_models;
-      std::string _metadata;
-      std::string _data;
-    } ;
     typedef std::map< std::string, TableModelEntry> DicTableModels; // key is sessionID + modelID
     DicTableModels _table_models;
-    // returns true if info is found ( i.e. OpenModel was issued)
-    bool getTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const;
     // return true if velassco_model_table_name is known and could be inserted
     bool storeTableNames( const std::string &sessionID, const std::string &modelID, const std::string &velassco_model_table_name);
     std::vector< std::string> getModelListTables() const;
