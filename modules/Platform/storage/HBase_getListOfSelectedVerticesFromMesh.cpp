@@ -217,7 +217,7 @@ std::string HBase::getListOfSelectedVerticesFromMesh( std::string &report, std::
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
     // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getListOfSelectedVerticesFromTables( report, listOfVertices, table_set._data, modelID, analysisID, stepValue, meshID, listOfVerticesID);

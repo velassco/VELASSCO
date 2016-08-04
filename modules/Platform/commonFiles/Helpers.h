@@ -207,9 +207,15 @@
 	inline std::string toHexStringSwap(T value, const char *format="%02x") {
 	  char buffer[2*sizeof(value) + 1]; // the '\0' and avoid memory corruption
 	  ToHexStringSwap(buffer, sizeof(buffer), (char*)(&value), sizeof(value), format);
-	  
 	  return std::string(buffer, 2*sizeof(value));
 	}
+
+  inline std::string toHexString( const std::string &data, const char *format="%02x") {
+    const size_t len_buf = 2 * data.length();
+    char buffer[ len_buf + 1]; // the '\0' and avoid memory corruption
+    ToHexString( buffer, len_buf, data.data(), data.length(), format);
+    return std::string( buffer, len_buf);
+  }
 
   inline const char *FromHexStringSwap( char *dst, size_t dst_len, const char *src, const size_t src_len) {
     if ( !dst) return NULL;

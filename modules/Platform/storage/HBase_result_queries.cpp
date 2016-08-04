@@ -284,7 +284,7 @@ std::string HBase::getListOfMeshes( std::string &report, std::vector< MeshInfo> 
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
     // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getListOfMeshInfoFromTables( report, listOfMeshes, table_set._metadata, modelID, analysisID, stepValue);
@@ -449,7 +449,7 @@ std::string HBase::getListOfAnalyses( std::string &report, std::vector< std::str
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
     scan_ok = getListOfAnalysesNamesFromTables( report, listOfAnalyses, table_set._metadata, modelID);
   } else {
@@ -590,7 +590,7 @@ std::string HBase::getListOfSteps( std::string &report, std::vector< double> &li
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
     scan_ok = getListOfStepsFromTables( report, listOfSteps, table_set._metadata, modelID, analysisID);
   } else {
@@ -838,7 +838,7 @@ std::string HBase::getListOfResults( std::string &report, std::vector< ResultInf
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
     // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getListOfResultsFromTables( report, listOfResults, table_set._metadata, modelID, analysisID, stepValue);
@@ -1023,7 +1023,7 @@ std::string HBase::getListOfVerticesFromMesh( std::string &report, std::vector< 
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
     // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getListOfVerticesFromTables( report, listOfVertices, table_set._data, modelID, analysisID, stepValue, meshID);

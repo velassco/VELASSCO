@@ -189,6 +189,8 @@ $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.cpp $(COMMON_DEPENDENCIES)
 $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.c $(COMMON_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@	
 
+debug:
+	+make "OPTS=-g"
 
 clean:
 	rm -f $(BIN)/*.o $(BIN)/$(EXEC)

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <openssl/md5.h>
+
 //VELaSSCo
 // no need for AbstractDB.h anymore ...
 // #include "AbstractDB.h"
@@ -167,6 +169,11 @@ namespace VELaSSCo
 				      const int meshID, const std::string &elementType,
 				      const std::string &analysisID, const double stepValue,
 				      std::string *return_error_str);
+    bool saveBoundaryOfAMesh( const std::string &sessionID,
+			      const std::string &modelID,
+			      const int meshID, const std::string &elementType,
+			      const std::string &analysisID, const double stepValue,
+			      const std::string &binary_mesh, std::string *return_error_str);
 
     // retrieve only the 'Q' column family of the Simulations_VQuery_Results_Data table
     bool getStoredVQueryExtraData( const std::string &sessionID,
@@ -203,7 +210,7 @@ namespace VELaSSCo
       std::string _stored_vquery_data;
     } ;
     // returns true if info is found ( i.e. OpenModel was issued)
-    bool getTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const;
+    bool getVELaSSCoTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const;
 
   private:
     HbaseClient *_hbase_client;
@@ -221,11 +228,22 @@ namespace VELaSSCo
     std::string createMetaRowKey( const std::string modelID, const std::string &analysysID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
     std::string createDataRowKey( const std::string modelID, const std::string &analysysID, const double stepValue, const int partitionID, const char *format="%02x"); // for the stepvalue hex string
     std::string createMetaRowKeyPrefix( const std::string modelID, const std::string &analysysID);
+    // to access stored data
+    bool checkIfTableExists( const std::string table_name);
+    std::string getVQueryID( const std::string &vqueryName, const std::string &vqueryParameters);
+    std::string createStoredMetadataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue,
+					    const std::string &vqueryName, const std::string &vqueryParameters);
+    std::string createStoredDataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue,
+					const std::string &vqueryName, const std::string &vqueryParameters, const int partitionID);
+    bool createStoredMetadataTable( const std::string &table_name);
+    bool createStoredDataTable( const std::string &table_name);
   };
 
-  typedef std::vector<std::string> StrVec;
+  typedef std::vector< std::string> StrVec;
+  typedef std::vector< ColumnDescriptor> ColVec;
+  typedef std::map< std::string, std::string> StrMap;
 
-  inline bool HBase::getTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const {
+  inline bool HBase::getVELaSSCoTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const {
     const DicTableModels::const_iterator it = _table_models.find( sessionID + modelID);
     if ( it != _table_models.end())
       tables = it->second;
@@ -261,6 +279,46 @@ namespace VELaSSCo
     std::string step_hex( toHexStringSwap< double>( stepValue, format));
     std::string part_hex( toHexStringSwap< int>( partitionID, format));
     return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex + part_hex) : ( modelID_hex + length_hex + step_hex + part_hex));
+  }
+
+  inline std::string HBase::getVQueryID( const std::string &vqueryName, const std::string &vqueryParameters) {
+    MD5_CTX md5ctx;
+    unsigned char digest[ MD5_DIGEST_LENGTH];
+    MD5_Init( &md5ctx);
+    MD5_Update( &md5ctx, vqueryName.data(), vqueryName.length());
+    MD5_Update( &md5ctx, vqueryParameters.data(), vqueryParameters.length());
+    MD5_Final( digest, &md5ctx);
+    return std::string( ( const char *)digest, MD5_DIGEST_LENGTH);
+  }
+
+  inline std::string HBase::createStoredMetadataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue,
+							const std::string &vqueryName, const std::string &vqueryParameters) {
+    const size_t tmp_buf_size = 256;
+    char tmp_buf[ tmp_buf_size];
+    std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
+    size_t analysis_length = analysisID.length();
+    // needs to be swapped !!!!!!!!
+    std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
+    const char *format = "%02x";
+    std::string step_hex( toHexStringSwap< double>( stepValue, format));
+    std::string qid_str = toHexString( getVQueryID( vqueryName, vqueryParameters));
+    return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex + qid_str) : ( modelID_hex + length_hex + step_hex + qid_str));
+  }
+
+  inline std::string HBase::createStoredDataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue,
+						    const std::string &vqueryName, const std::string &vqueryParameters,
+						    const int partitionID) {
+    const size_t tmp_buf_size = 256;
+    char tmp_buf[ tmp_buf_size];
+    std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
+    size_t analysis_length = analysisID.length();
+    // needs to be swapped !!!!!!!!
+    std::string length_hex( toHexStringSwap< int>( ( int)analysis_length));
+    const char *format = "%02x";
+    std::string step_hex( toHexStringSwap< double>( stepValue, format));
+    std::string qid_str = toHexString( getVQueryID( vqueryName, vqueryParameters));
+    std::string part_hex( toHexStringSwap< int>( partitionID, format));
+    return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex + qid_str + part_hex) : ( modelID_hex + length_hex + step_hex + qid_str + part_hex));
   }
 
 

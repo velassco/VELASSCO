@@ -374,7 +374,7 @@ void DataLayerAccess::calculateBoundingBox( const std::string &sessionID, const 
 					    const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 					    double *return_bbox, std::string *return_error_str) {
   HBase::TableModelEntry table_name_set;
-  if ( _db->getTableNames(sessionID, modelID, table_name_set)) {
+  if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
     AnalyticsModule::getInstance()->calculateBoundingBox( sessionID, modelID,
 							  table_name_set._data,
 							  analysisID, numSteps, lstSteps,
@@ -419,14 +419,26 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
 						const int meshID, const std::string &elementType,
 						const std::string &analysisID, const double stepValue,
 						std::string *return_binary_mesh, std::string *return_error_str) {
-  HBase::TableModelEntry table_name_set;
-  if ( _db->getTableNames( sessionID, modelID, table_name_set)) {
-    AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID,
-							      modelID,
-							      table_name_set._data,
-							      meshID, elementType,
-							      analysisID, stepValue, 
-							      return_binary_mesh, return_error_str);
+  if ( return_binary_mesh) {
+    return_binary_mesh->clear();
+    _db->getStoredBoundaryOfAMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue,
+				   return_binary_mesh, return_error_str);
+    if ( return_binary_mesh->length() == 0) { // nothing found
+      HBase::TableModelEntry table_name_set;
+      if ( _db->getVELaSSCoTableNames( sessionID, modelID, table_name_set)) {
+	AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID,
+								  modelID,
+								  table_name_set._data,
+								  meshID, elementType,
+								  analysisID, stepValue, 
+								  return_binary_mesh, return_error_str);
+	if ( return_binary_mesh->length() != 0) {
+	  std::string save_err_str;
+	  _db->saveBoundaryOfAMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue,
+				    *return_binary_mesh, &save_err_str);
+	}
+      }
+    }
   }
 }
 

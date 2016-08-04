@@ -854,7 +854,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
 	
 	std::string report;
@@ -1150,7 +1150,7 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
 
   // look into the modelInfo table to get the correct table name
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
 	
 	std::string report;
@@ -1360,7 +1360,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_curl(const std::string &ses
   LOGGER_SM << "P " << partitionID    << std::endl;
 
   TableModelEntry tableModel;
-  if(getTableNames(sessionID, modelID, tableModel) == false)
+  if(getVELaSSCoTableNames(sessionID, modelID, tableModel) == false)
     cout << "No table containing the model with " << modelID << "Model ID.\n";
   else
     cout << "Model Table: " << tableModel._list_models
@@ -1795,7 +1795,7 @@ std::string HBase::getCoordinatesAndElementsFromMesh_thrift( std::string& report
 
   bool scan_ok = true;
   TableModelEntry table_set;
-  bool found = getTableNames( sessionID, modelID, table_set);
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
 	
 	  /*std::string list_of_vertices_report;
