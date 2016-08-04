@@ -109,6 +109,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetDiscrete2Continuum(_return, sessionID, query);
   } else if ( name == "GetBoundaryOfAMesh") {
     ManageGetBoundaryOfAMesh( _return, sessionID, query);
+  } else if ( name == "DeleteBoundaryOfAMesh") {
+    ManageDeleteBoundaryOfAMesh( _return, sessionID, query);
   } else if ( name == "GetConfiguration") {
     ManageGetConfiguration( _return, sessionID, query);
   } else if ( name == "SetConfiguration") {

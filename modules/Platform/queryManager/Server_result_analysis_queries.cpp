@@ -246,8 +246,7 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
 
   std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
   rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_,
-						dl_sessionID, modelID, analysisID, stepValue);
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
   int meshID = -1;
   std::string elementType = "";
   if ( _return_.meshInfos.size() == 0) {
@@ -304,6 +303,110 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
   if ( error_str.length() == 0) {
     LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
   } else {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
+}
+
+void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string name       = pt.get<std::string>( "name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string meshName     = pt.get<std::string>( "meshID"); // in fact it's the mesh name
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "Msh-" << meshName           << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue       << "-" << std::endl;
+
+  std::string error_str;
+
+  _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
+
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes _return_;
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
+  int meshID = -1;
+  std::string elementType = "";
+  if ( _return_.meshInfos.size() == 0) {
+    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+    error_str = "There is no mesh metadata.";
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	elementType = getStrFromElementType( it->elementType.shape);
+	break;
+      }
+    }
+    if ( meshID == -1) { // not found
+      error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
+    }
+  }
+  
+  bool storedBoundaryFound = false;
+  if ( error_str.length() == 0) {
+    std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << " and elementType = " << elementType << std::endl;
+    // std::string binary_mesh = "";
+    try {
+      //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
+      error_str = "";
+      queryServer->getStoredBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
+					     dl_sessionID,
+					     modelID,
+					     meshID, elementType,
+					     analysisID, stepValue, 
+					     // &binary_mesh,
+					     NULL, // we don't want the mesh, only check if it's there
+					     &error_str);
+      if ( error_str.length() == 0) {
+	storedBoundaryFound = true;
+      }
+      if ( storedBoundaryFound) {
+	queryServer->deleteStoredBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
+						  dl_sessionID,
+						  modelID,
+						  meshID, elementType,
+						  analysisID, stepValue, 
+						  &error_str);
+      }
+      // GraphicsModule *graphics = GraphicsModule::getInstance();
+      // just to link to the GraphicsModule;
+    } catch ( TException &e) {
+      std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+    } catch ( exception &e) {
+      std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+    }
+  }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( binary_mesh);
+  } else {
+    if ( !storedBoundaryFound) {
+      _return.__set_result( (Result::type)VAL_BOUNDARY_MESH_NOT_FOUND);
+    }
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  if ( error_str.length() != 0) {
     LOGGER << "  error  : \n" << _return.data << std::endl;
   }
 }

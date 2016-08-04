@@ -431,8 +431,30 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID, co
   }
 }
 
+void DataLayerAccess::getStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+						const std::string &modelID,
+						const int meshID, const std::string &elementType,
+						const std::string &analysisID, const double stepValue,
+						std::string *return_binary_mesh, std::string *return_error_str) {
+    _db->getStoredBoundaryOfAMesh( sessionID, 
+				   DataLayer_sessionID,
+				   modelID,
+				   meshID, elementType,
+				   analysisID, stepValue, 
+				   return_binary_mesh, return_error_str);
+}
 
-
-
+void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+						   const std::string &modelID,
+						   const int meshID, const std::string &elementType,
+						   const std::string &analysisID, const double stepValue,
+						   std::string *return_error_str) {
+  _db->deleteStoredBoundaryOfAMesh( sessionID, 
+				    DataLayer_sessionID,
+				    modelID,
+				    meshID, elementType,
+				    analysisID, stepValue, 
+				    return_error_str);
+}
 
 

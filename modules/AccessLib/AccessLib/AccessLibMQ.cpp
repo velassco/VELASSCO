@@ -191,8 +191,9 @@ VAL_Result VAL_API valErrorMessage( /* in */
 	  /* GetBoundingBox */
 	case VAL_MODEL_ID_NOT_FOUND:            *message = "Model ID not found.";   break;
 
-	  /* GetBoundaryOfAMesh */
+	  /* GetBoundaryOfAMesh & DeleteBoundaryOfAMesh */
 	case VAL_MESH_ID_NOT_FOUND:             *message = "Mesh ID not found.";   break;
+	case VAL_BOUNDARY_MESH_NOT_FOUND:       *message = "Boundary mesh not found.";   break;
 	default:                                *message = "Invalid error code.";            break;
 	}
 	

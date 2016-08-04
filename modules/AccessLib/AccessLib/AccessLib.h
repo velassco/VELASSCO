@@ -68,6 +68,7 @@ typedef enum
 
 	/* GetBoundaryOfAMesh */
 	VAL_MESH_ID_NOT_FOUND               = 0x2001,
+	VAL_BOUNDARY_MESH_NOT_FOUND         = 0x2002,
 
 	/* GetDiscrete2ContinuumOfAModel */
 	// also uses VAL_INVALID_MODEL_ID
@@ -244,9 +245,17 @@ extern "C" {
 					   const char     *meshID,
 					   const char     *analysisID,
 					   const double    stepValue,
-				       /* out */
+					   /* out */
 					   const char     **resultMesh, // binary data with the mesh vertices and elements
 					   size_t         *resultMeshByteSize,
+					   const char     **resultErrorStr); // in case of error
+  VAL_Result VAL_API valDeleteBoundaryOfAMesh( /* in */
+					   VAL_SessionID   sessionID,
+					   const char     *modelID,
+					   const char     *meshID,
+					   const char     *analysisID,
+					   const double    stepValue,
+					   /* out */
 					   const char     **resultErrorStr); // in case of error
 
 

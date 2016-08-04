@@ -156,6 +156,19 @@ namespace VELaSSCo
 					std::vector< ElementGroup > &listOfElementInfoGroups,
 					const std::string &sessionID, const std::string &modelID,
                     const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo);
+
+    void getStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+				      const std::string &modelID,
+				      const int meshID, const std::string &elementType,
+				      const std::string &analysisID, const double stepValue,
+				      std::string *return_binary_mesh, std::string *return_error_str);
+    void deleteStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+				      const std::string &modelID,
+				      const int meshID, const std::string &elementType,
+				      const std::string &analysisID, const double stepValue,
+				      std::string *return_error_str);
+    
+
   private:
 
     double fRand(double fMin, double fMax);
