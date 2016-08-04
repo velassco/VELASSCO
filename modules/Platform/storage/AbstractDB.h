@@ -31,6 +31,9 @@ typedef std::map<std::string,TCell> CellMap;
 using namespace VELaSSCoSM;
 // class FullyQualifiedModelName;
 
+#pragma message("AbstractDB.h not needed anymore, as this abstraction is handled in the access module")
+#error "AbstractDB.h not needed anymore, as this abstraction is handled in the access module"
+
 namespace VELaSSCo
 {
 
@@ -40,7 +43,6 @@ namespace VELaSSCo
    * such as EDM or HBase.
    * 
    */
-
 
   class AbstractDB
   {
