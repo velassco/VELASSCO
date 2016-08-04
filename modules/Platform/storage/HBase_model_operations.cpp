@@ -324,28 +324,46 @@ bool HBase::storeTableNames( const std::string &sessionID, const std::string &mo
     _table_models.erase( it);
   }
 
-  std::string metadata_table_name, data_table_name;
+  std::string metadata_table_name = "", data_table_name = "";
+  std::string stored_vquery_metadata_table_name = "", stored_vquery_data_table_name = "";
   bool known = true;
+
   if ( model_table_name == "VELaSSCo_Models") {
     metadata_table_name = "Simulations_Metadata";
     data_table_name = "Simulations_Data";
+    stored_vquery_metadata_table_name = "Simulations_VQuery_Results_Metadata";
+    stored_vquery_data_table_name = "Simulations_VQuery_Results_Data";
+
   } else if ( model_table_name == "VELaSSCo_Models_V4CIMNE") {
     metadata_table_name = "Simulations_Metadata_V4CIMNE";
     data_table_name = "Simulations_Data_V4CIMNE";
+    stored_vquery_metadata_table_name = "Simulations_VQuery_Results_Metadata_V4CIMNE";
+    stored_vquery_data_table_name = "Simulations_VQuery_Results_Data_V4CIMNE";
+
   } else if ( model_table_name == "VELaSSCo_Models_V4CIMNE_Test") {
     metadata_table_name = "Simulations_Metadata_V4CIMNE_Test";
     data_table_name = "Simulations_Data_V4CIMNE_Test";
+    stored_vquery_metadata_table_name = "Simulations_VQuery_Results_Metadata_V4CIMNE_Test";
+    stored_vquery_data_table_name = "Simulations_VQuery_Results_Data_V4CIMNE_Test";
+
   } else if ( model_table_name == "Test_VELaSSCo_Models") {
     metadata_table_name = "Test_Simulations_Metadata";
     data_table_name = "Test_Simulations_Data";
+    stored_vquery_metadata_table_name = "Test_Simulations_VQuery_Results_Metadata";
+    stored_vquery_data_table_name = "Test_Simulations_VQuery_Results_Data";
+
   } else if ( model_table_name == "T_VELaSSCo_Models") {
     metadata_table_name = "T_Simulations_Metadata";
     data_table_name = "T_Simulations_Data";
+    stored_vquery_metadata_table_name = "T_Simulations_VQuery_Results_Metadata";
+    stored_vquery_data_table_name = "T_Simulations_VQuery_Results_Data";
+
   } else {
     known = false;
   }
   if ( known) {
-    TableModelEntry entry = { model_table_name, metadata_table_name, data_table_name};
+    TableModelEntry entry = { model_table_name, metadata_table_name, data_table_name,
+			      stored_vquery_metadata_table_name, stored_vquery_data_table_name};
     _table_models[ sessionID + modelID] = entry;
   }
   return known;

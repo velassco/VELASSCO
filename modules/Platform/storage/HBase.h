@@ -157,17 +157,24 @@ namespace VELaSSCo
 					const std::string &sessionID, const std::string &modelID,
                     const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo);
 
-    void getStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+    void getStoredBoundaryOfAMesh( const std::string &sessionID,
 				      const std::string &modelID,
 				      const int meshID, const std::string &elementType,
 				      const std::string &analysisID, const double stepValue,
 				      std::string *return_binary_mesh, std::string *return_error_str);
-    void deleteStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+    void deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 				      const std::string &modelID,
 				      const int meshID, const std::string &elementType,
 				      const std::string &analysisID, const double stepValue,
 				      std::string *return_error_str);
-    
+
+    // retrieve only the 'Q' column family of the Simulations_VQuery_Results_Data table
+    bool getStoredVQueryExtraData( const std::string &sessionID,
+				   const std::string &modelID,
+				   const std::string &analysisID, const double stepValue,
+				   const std::string &vqueryName, const std::string &vqueryParameters,
+				   // list = 1 entry per partition, may be null only to check if there is data
+				   std::vector< std::string> *lst_vquery_results);
 
   private:
 
@@ -192,6 +199,8 @@ namespace VELaSSCo
       std::string _list_models;
       std::string _metadata;
       std::string _data;
+      std::string _stored_vquery_metadata;
+      std::string _stored_vquery_data;
     } ;
     // returns true if info is found ( i.e. OpenModel was issued)
     bool getTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const;

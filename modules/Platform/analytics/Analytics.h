@@ -34,7 +34,7 @@ public:
 				    const std::string &analysisID, const double stepValue, 
 				    const int32_t meshID);
   
-  void calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+  void calculateBoundaryOfAMesh( const std::string &sessionID,
 				 const std::string &modelID, const std::string &dataTableName,
 				 const int meshID, const std::string &elementType,
 				 const std::string &analysisID, const double stepValue,

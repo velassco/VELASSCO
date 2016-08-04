@@ -273,7 +273,6 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
     try {
       //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
       queryServer->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
-					     dl_sessionID,
 					     modelID,
 					     meshID, elementType,
 					     analysisID, stepValue, 
@@ -366,7 +365,6 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
       //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
       error_str = "";
       queryServer->getStoredBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
-					     dl_sessionID,
 					     modelID,
 					     meshID, elementType,
 					     analysisID, stepValue, 
@@ -378,7 +376,6 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
       }
       if ( storedBoundaryFound) {
 	queryServer->deleteStoredBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
-						  dl_sessionID,
 						  modelID,
 						  meshID, elementType,
 						  analysisID, stepValue, 

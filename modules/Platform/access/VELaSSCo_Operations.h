@@ -132,17 +132,17 @@ public:
   // 						   const std::string &analysisID, const double stepValue, 
   // 						   const int32_t meshID) = 0;
   
-  virtual void calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+  virtual void calculateBoundaryOfAMesh( const std::string &sessionID,
 					 const std::string &modelID,
 					 const int meshID, const std::string &elementType,
 					 const std::string &analysisID, const double stepValue,
 					 std::string *return_binary_mesh, std::string *return_error_str) = 0;
-  virtual void getStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+  virtual void getStoredBoundaryOfAMesh( const std::string &sessionID,
 					 const std::string &modelID,
 					 const int meshID, const std::string &elementType,
 					 const std::string &analysisID, const double stepValue,
 					 std::string *return_binary_mesh, std::string *return_error_str) = 0;
-  virtual void deleteStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+  virtual void deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 					    const std::string &modelID,
 					    const int meshID, const std::string &elementType,
 					    const std::string &analysisID, const double stepValue,

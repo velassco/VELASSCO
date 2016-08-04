@@ -701,7 +701,7 @@ bool getListOfUsedNodeIDs( std::unordered_set< int64_t> &lst_UsedNodeIDs,
   return lst_UsedNodeIDs.size() != 0;
 }
 
-void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
 						const std::string &modelID, const std::string &dataTableName,
 						const int meshID, const std::string &elementType,
 						const std::string &analysisID, const double stepValue,
@@ -829,7 +829,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID, co
 	lstVertexIds.push_back( *itr);
       }
       DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
-								      DataLayer_sessionID,
+								      sessionID,
 								      modelID, analysisID, stepValue,
 								      meshID, lstVertexIds);
     } else {

@@ -368,8 +368,7 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 
 	  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
 	  rvGetListOfMeshes _return_;
-	  queryServer->getListOfMeshes( _return_,
-							dl_sessionID, modelID, analysisID, timeStep);
+	  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, timeStep);
 	  MeshInfo meshInfo;
 	  meshInfo.meshNumber = -1;      //<<< To mark the meshInfo as non-initalized.
 	  std::string elementType = "";

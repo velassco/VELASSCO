@@ -414,15 +414,14 @@ void DataLayerAccess::calculateDiscrete2Continuum(const std::string &sessionID, 
 
 
 
-void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
 						const std::string &modelID,
 						const int meshID, const std::string &elementType,
 						const std::string &analysisID, const double stepValue,
 						std::string *return_binary_mesh, std::string *return_error_str) {
   HBase::TableModelEntry table_name_set;
-  if ( _db->getTableNames(sessionID, modelID, table_name_set)) {
-    AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID, 
-							      DataLayer_sessionID,
+  if ( _db->getTableNames( sessionID, modelID, table_name_set)) {
+    AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID,
 							      modelID,
 							      table_name_set._data,
 							      meshID, elementType,
@@ -431,26 +430,24 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID, co
   }
 }
 
-void DataLayerAccess::getStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+void DataLayerAccess::getStoredBoundaryOfAMesh( const std::string &sessionID,
 						const std::string &modelID,
 						const int meshID, const std::string &elementType,
 						const std::string &analysisID, const double stepValue,
 						std::string *return_binary_mesh, std::string *return_error_str) {
     _db->getStoredBoundaryOfAMesh( sessionID, 
-				   DataLayer_sessionID,
 				   modelID,
 				   meshID, elementType,
 				   analysisID, stepValue, 
 				   return_binary_mesh, return_error_str);
 }
 
-void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID, const std::string &DataLayer_sessionID,
+void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 						   const std::string &modelID,
 						   const int meshID, const std::string &elementType,
 						   const std::string &analysisID, const double stepValue,
 						   std::string *return_error_str) {
-  _db->deleteStoredBoundaryOfAMesh( sessionID, 
-				    DataLayer_sessionID,
+  _db->deleteStoredBoundaryOfAMesh( sessionID,
 				    modelID,
 				    meshID, elementType,
 				    analysisID, stepValue, 
