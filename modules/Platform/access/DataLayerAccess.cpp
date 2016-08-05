@@ -373,13 +373,27 @@ void DataLayerAccess::calculateBoundingBox( const std::string &sessionID, const 
 					    const std::string &analysisID, const int numSteps, const double *lstSteps,
 					    const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 					    double *return_bbox, std::string *return_error_str) {
-  HBase::TableModelEntry table_name_set;
-  if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
-    AnalyticsModule::getInstance()->calculateBoundingBox( sessionID, modelID,
-							  table_name_set._data,
-							  analysisID, numSteps, lstSteps,
-							  numVertexIDs, lstVertexIDs,
-							  return_bbox, return_error_str);
+  if ( return_bbox) {
+    _db->getStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
+			       numVertexIDs, lstVertexIDs,
+			       return_bbox, return_error_str);
+    if ( return_error_str->length() != 0) { // nothing found
+      HBase::TableModelEntry table_name_set;
+      if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
+	return_error_str->clear();
+	AnalyticsModule::getInstance()->calculateBoundingBox( sessionID, modelID,
+							      table_name_set._data,
+							      analysisID, numSteps, lstSteps,
+							      numVertexIDs, lstVertexIDs,
+							      return_bbox, return_error_str);
+      }
+      if ( return_error_str->length() == 0) { // i.e. no error
+	std::string save_err_str;
+	_db->saveBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
+			      numVertexIDs, lstVertexIDs,
+			      return_bbox, &save_err_str);
+      }
+    }
   }
 }
 
@@ -442,28 +456,29 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
   }
 }
 
-void DataLayerAccess::getStoredBoundaryOfAMesh( const std::string &sessionID,
-						const std::string &modelID,
-						const int meshID, const std::string &elementType,
-						const std::string &analysisID, const double stepValue,
-						std::string *return_binary_mesh, std::string *return_error_str) {
-    _db->getStoredBoundaryOfAMesh( sessionID, 
-				   modelID,
-				   meshID, elementType,
-				   analysisID, stepValue, 
-				   return_binary_mesh, return_error_str);
-}
-
-void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
-						   const std::string &modelID,
-						   const int meshID, const std::string &elementType,
-						   const std::string &analysisID, const double stepValue,
-						   std::string *return_error_str) {
-  _db->deleteStoredBoundaryOfAMesh( sessionID,
-				    modelID,
-				    meshID, elementType,
-				    analysisID, stepValue, 
-				    return_error_str);
-}
+// Not needed at this level
+// void DataLayerAccess::getStoredBoundaryOfAMesh( const std::string &sessionID,
+// 						const std::string &modelID,
+// 						const int meshID, const std::string &elementType,
+// 						const std::string &analysisID, const double stepValue,
+// 						std::string *return_binary_mesh, std::string *return_error_str) {
+//     _db->getStoredBoundaryOfAMesh( sessionID, 
+// 				   modelID,
+// 				   meshID, elementType,
+// 				   analysisID, stepValue, 
+// 				   return_binary_mesh, return_error_str);
+// }
+// 
+// void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
+// 						   const std::string &modelID,
+// 						   const int meshID, const std::string &elementType,
+// 						   const std::string &analysisID, const double stepValue,
+// 						   std::string *return_error_str) {
+//   _db->deleteStoredBoundaryOfAMesh( sessionID,
+// 				    modelID,
+// 				    meshID, elementType,
+// 				    analysisID, stepValue, 
+// 				    return_error_str);
+// }
 
 
