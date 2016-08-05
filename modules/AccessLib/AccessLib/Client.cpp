@@ -8,6 +8,7 @@
 // VELaSSCo
 #include "Client.h"
 #include "Helpers.h"
+#include "Extras.h" // strcasestr
 
 using namespace VELaSSCo;
 
