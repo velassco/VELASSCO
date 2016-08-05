@@ -61,25 +61,6 @@ bool HBase::checkIfTableExists( const std::string table_name) {
   return found;
 }
 
-// static bool getExtraDataFromRow( std::vector< std::string> &lst_qr_data, const TRowResult &rowResult) {
-//   int num_data = 0;
-//   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
-// 	it != rowResult.columns.end(); ++it) {
-//     const char *cq_str = it->first.c_str();
-//     const char CF = cq_str[ 0];
-//     // cq_str[ 1] should be ':'
-//     // const char subC = cq_str[ 2];
-//     if ( CF == 'Q') {
-//       if ( strcmp( &cq_str[ 3], "qr")) {
-// 	// lst_qr_data.push_back( base64_decode( std::string( it->second.value.data(), it->second.value.length())));
-// 	lst_qr_data.push_back( std::string( it->second.value.data(), it->second.value.length()));
-// 	num_data++;
-//       }
-//     }
-//   }
-//   return num_data;
-// }
-
 static bool getColumnQualifierStringFromRow( std::string &retValue, const TRowResult &rowResult, 
 					     const char *columnFamily, const char *columnQualifier) {
   int num_data = 0;
@@ -104,12 +85,13 @@ bool HBase::getColumnQualifierStringFromTable( std::string &retValue,
 					       const std::string &startRowKey, const std::string &stopRowKey,
 					       const char *columnFamily, const char *columnQualifier,
 					       const std::string &logMessagePrefix) {
-  bool reset_tables = false; // to debug an so on...
+  static bool reset_tables = false; // to debug an so on...
   if ( reset_tables) {
     if ( checkIfTableExists( tableName)) {
       _hbase_client->disableTable( tableName);
       _hbase_client->deleteTable( tableName);
     }
+    reset_tables = false;
   }
   if ( !checkIfTableExists( tableName)) {
     return false;
@@ -355,6 +337,51 @@ bool HBase::getStoredVQueryExtraData( const std::string &sessionID,
   std::string stopRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, ( int)0x7fffffff);
   std::string prefixRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
 
+  std::string qrValue = "";
+  bool scan_ok = getColumnQualifierStringFromTable( qrValue,
+						    table_set._stored_vquery_data,
+						    startRowKey, stopRowKey,
+						    "Q", "qr", "Getting Q:qr value");
+  if ( !scan_ok || !qrValue.size()) {
+    return false;
+  }
+
+  lst_vquery_results->push_back( qrValue);
+
+  return scan_ok;
+}
+// retrieve only the 'Q' column family of the Simulations_VQuery_Results_Data table
+bool HBase::getStoredVQueryExtraDataSplitted( const std::string &sessionID,
+					      const std::string &modelID,
+					      const std::string &analysisID, const double stepValue,
+					      const std::string &vqueryName, const std::string &vqueryParameters,
+					      std::vector< std::string> *lst_vquery_results) { // list = 1 entry per partition
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return false;
+  }
+
+  bool reset_tables = false;
+  if ( reset_tables) {
+    if ( checkIfTableExists( table_set._stored_vquery_metadata)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_metadata);
+      _hbase_client->deleteTable(  table_set._stored_vquery_metadata);
+    }
+    if ( checkIfTableExists( table_set._stored_vquery_data)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_data);
+      _hbase_client->deleteTable(  table_set._stored_vquery_data);
+    }
+  }
+
+  if ( !checkIfTableExists( table_set._stored_vquery_data)) {
+    return false;
+  }
+
+
+  std::string startRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0);
+  std::string stopRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, ( int)0x7fffffff);
+  std::string prefixRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+
   std::string qrNumStr = "";
   bool scan_ok = getColumnQualifierStringFromTable( qrNumStr,
 						    table_set._stored_vquery_data,
@@ -404,18 +431,20 @@ void HBase::getStoredBoundaryOfAMesh( const std::string &sessionID,
   // get number of pieces, i.e. metadata Q:qrNum
   // ?not needed? eventually retrieve all i can ....
 
-  bool scan_ok = getStoredVQueryExtraData( sessionID, modelID, analysisID, stepValue,
-					 vqueryName, vqueryParametersStream.str(),
-					 &lst_boundaries);
+  bool scan_ok = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
+						   vqueryName, vqueryParametersStream.str(),
+						   &lst_boundaries);
   if ( !scan_ok) {
-    return_error_str = new std::string( "Stored boundary mesh not found.");
+    *return_error_str = std::string( "Stored boundary mesh not found.");
     return;
   }
   if ( scan_ok && ( lst_boundaries.size() > 0)) {
-    *return_binary_mesh = lst_boundaries[ 0];
-    return_error_str = new std::string( "Ok");
+    if ( return_binary_mesh) {
+      *return_binary_mesh = lst_boundaries[ 0];
+    }
+    // *return_error_str = std::string( "Ok");
   } else {
-    return_error_str = new std::string( "Stored boundary mesh not found.");
+    *return_error_str = std::string( "Stored boundary mesh not found.");
   }
 }
 
@@ -427,14 +456,14 @@ void HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
   std::string vqueryName = "GetBoundaryMesh";
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" << analysisID << "\" " << stepValue;
-  bool found = getStoredVQueryExtraData( sessionID, modelID, analysisID, stepValue,
-					 vqueryName, vqueryParametersStream.str(), 
-					 NULL); // we don't want the data just to check if it's there
+  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
+						 vqueryName, vqueryParametersStream.str(), 
+						 NULL); // we don't want the data just to check if it's there
   if ( !found) {
-    return_error_str = new std::string( "Stored boundary mesh not found.");
+    *return_error_str = std::string( "Stored boundary mesh not found.");
     return;
   }
-  return_error_str = new std::string( "Stored boundary mesh not found.");
+  *return_error_str = std::string( "Stored boundary mesh not found.");
 }
 
 bool HBase::createStoredMetadataTable( const std::string &table_name) {
@@ -512,7 +541,7 @@ bool HBase::createStoredDataTable( const std::string &table_name) {
 }
 
 void SplitBinaryMeshInChunks( std::vector< std::string> &lst_chunks_data, const std::string &binary_mesh) {
-  const size_t chunk_size = 5*1024*1024;
+  const size_t chunk_size = 8 * 1024 * 1024;
   size_t start_idx = 0;
   size_t end_idx = binary_mesh.size();
   for ( start_idx = 0; start_idx < end_idx; start_idx += chunk_size) {
@@ -563,7 +592,7 @@ bool HBase::saveBoundaryOfAMesh( const std::string &sessionID,
     if ( !ok) return false;
   }
 
-  // cell can only be 10MB big .... may be
+  // cell can only be 8MB big .... may be ( with 10MB it raises an exception)
   std::vector< std::string> lst_chunks_data;
   SplitBinaryMeshInChunks( lst_chunks_data, binary_mesh);
 
@@ -603,10 +632,6 @@ bool HBase::saveBoundaryOfAMesh( const std::string &sessionID,
   // adding data row:
   std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
   std::vector< Mutation> data_mutations;
-  // std::string enc_mesh = base64_encode( binary_mesh.data(), binary_mesh.size());
-  // data_mutations.push_back( Mutation());
-  // data_mutations.back().column = "Q:qr";
-  // data_mutations.back().value = enc_mesh;
   data_mutations.push_back( Mutation());
   data_mutations.back().column = "Q:qrNum";
   {
@@ -617,7 +642,7 @@ bool HBase::saveBoundaryOfAMesh( const std::string &sessionID,
   char tmp_col[ 100];
   for ( size_t idx = 0; idx < lst_chunks_data.size(); idx++) {
     data_mutations.push_back( Mutation());
-    sprintf( tmp_col, "Q:qr_%d", ( int)idx); // at 10MB each chunk, i hope we'll never have 2*10^9 * 10 MB bytes !!!
+    sprintf( tmp_col, "Q:qr_%d", ( int)idx); // at 8MB each chunk, i hope we'll never have 2*10^9 * 10 MB bytes !!!
     data_mutations.back().column = std::string( tmp_col);
     data_mutations.back().value = lst_chunks_data[ idx];
   }
@@ -642,3 +667,171 @@ bool HBase::saveBoundaryOfAMesh( const std::string &sessionID,
 
   return ok; // guess the rows are ok...  
 }
+
+////////////////////////////////////////////////////////////////////////
+// Save & retrieve BoundingBox
+////////////////////////////////////////////////////////////////////////
+
+static std::string getBBOXParametersString( const std::string &modelID, 
+					    const std::string &analysisID, const int numSteps, const double *lstSteps,
+					    const int64_t numVertexIDs, const int64_t *lstVertexIDs) {
+  std::stringstream vqueryParametersStream;
+  std::string stepsParameter = "N/A";
+  if ( numSteps && lstSteps) {
+    stepsParameter = computeMD5( std::string( ( const char *)lstSteps, sizeof( double) * ( size_t)numSteps));
+  }
+  std::string verticesParameter = "All";
+  if ( numVertexIDs && lstVertexIDs) {
+    verticesParameter = computeMD5( std::string( ( const char *)lstVertexIDs, sizeof( int64_t) * ( size_t)numVertexIDs));
+  }
+  vqueryParametersStream << modelID << " \"" << analysisID << "\" " 
+			 << numSteps << " " << stepsParameter << " " 
+			 << numVertexIDs << verticesParameter;
+  return vqueryParametersStream.str();
+}
+  
+
+void HBase::getStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+				  const std::string &analysisID, const int numSteps, const double *lstSteps,
+				  const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+				  double *return_bbox, std::string *return_error_str) {
+  std::string vqueryName = "GetBoundingBox";
+  std::string vqueryParameters = getBBOXParametersString( modelID, analysisID, numSteps, lstSteps, numVertexIDs, lstVertexIDs);
+  std::vector< std::string> lst_bboxes; // should only be one !!!
+
+  double stepValue = 0.0; // dummy step
+  bool scan_ok = getStoredVQueryExtraData( sessionID, modelID, analysisID, stepValue,
+					   vqueryName, vqueryParameters,
+					   &lst_bboxes);
+  if ( !scan_ok) {
+    *return_error_str = std::string( "Stored bounding box not found.");
+    return;
+  }
+  if ( scan_ok && ( lst_bboxes.size() > 0)) {
+    if ( return_bbox) {
+      memcpy( return_bbox, lst_bboxes[ 0].data(), 6 * sizeof( double));
+    }
+    // *return_error_str = std::string( "Ok");
+  } else {
+    *return_error_str = std::string( "Stored Bounding Box not found.");
+  }
+}
+
+void HBase::deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+				     const std::string &analysisID, const int numSteps, const double *lstSteps,
+				     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+				     std::string *return_error_str) {
+  std::string vqueryName = "GetBoundingBox";
+  std::string vqueryParameters = getBBOXParametersString( modelID, analysisID, numSteps, lstSteps, numVertexIDs, lstVertexIDs);
+  double stepValue = 0.0; // dummy step
+  bool found = getStoredVQueryExtraData( sessionID, modelID, analysisID, stepValue,
+					 vqueryName, vqueryParameters, 
+					 NULL); // we don't want the data just to check if it's there
+  if ( !found) {
+    *return_error_str = std::string( "Stored boundary mesh not found.");
+    return;
+  }
+  *return_error_str = std::string( "Stored boundary mesh not found.");
+}
+
+bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &modelID, 
+			     const std::string &analysisID, const int numSteps, const double *lstSteps,
+			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+			     const double *return_bbox, std::string *return_error_str) {
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return false;
+  }
+  
+  std::string vqueryName = "GetBoundingBox";
+  std::string vqueryParameters = getBBOXParametersString( modelID, analysisID, numSteps, lstSteps, numVertexIDs, lstVertexIDs);
+
+  LOGGER_SM << "Saving bounding box for '" << vqueryParameters << "'" << std::endl;
+  // create tables if needed
+  bool ok = false;
+  // reset tables:
+  bool reset_tables = false;
+  if ( reset_tables) {
+    if ( checkIfTableExists( table_set._stored_vquery_metadata)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_metadata);
+      _hbase_client->deleteTable(  table_set._stored_vquery_metadata);
+    }
+    if ( checkIfTableExists( table_set._stored_vquery_data)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_data);
+      _hbase_client->deleteTable(  table_set._stored_vquery_data);
+    }
+  }
+  if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
+    ok = createStoredMetadataTable( table_set._stored_vquery_metadata);
+    if ( !ok) return false;
+  }
+  if ( !checkIfTableExists( table_set._stored_vquery_data)) {
+    // create data table
+    ok = createStoredMetadataTable( table_set._stored_vquery_data);
+    if ( !ok) return false;
+  }
+
+  // cell can only be 8MB big .... may be
+  std::string tableName = table_set._stored_vquery_metadata;
+
+  StrMap attr;
+  double stepValue = 0.0; // dummy step
+  // adding metadata row:
+  std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  std::vector< Mutation> metadata_mutations;
+  metadata_mutations.push_back( Mutation());
+  metadata_mutations.back().column = "Q:vq";
+  metadata_mutations.back().value = vqueryName;
+  metadata_mutations.push_back( Mutation());
+  metadata_mutations.back().column = "Q:qp";
+  metadata_mutations.back().value = vqueryParameters;
+  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+  LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
+  LOGGER_SM << "   saving metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
+  std::string tmp_report = "   metadata row saved";
+  try {
+    _hbase_client->mutateRow( tableName, metadataRowKey, metadata_mutations, attr);
+  } catch ( const IOError &ioe) {
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    tmp_report = tmp.str();
+    ok = false;
+  } catch ( TException &tx) {
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    tmp_report = tmp.str();
+    ok = false;
+  }
+  LOGGER_SM << "     report = " << tmp_report << std::endl;  
+
+  tableName = table_set._stored_vquery_data;
+
+  // adding data row:
+  std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
+  std::vector< Mutation> data_mutations;
+  data_mutations.push_back( Mutation());
+  data_mutations.back().column = "Q:qr";
+  std::string bbox_str( ( const char *)return_bbox, sizeof( double) * 6);
+  data_mutations.back().value = bbox_str;
+  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+  LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
+  LOGGER_SM << "   saving data cells with " << bbox_str.size() << " bytes" << std::endl;
+  tmp_report = "   data row saved";
+  try {
+    _hbase_client->mutateRow( tableName, dataRowKey, data_mutations, attr);
+  } catch ( const IOError &ioe) {
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    tmp_report = tmp.str();
+    ok = false;
+  } catch ( TException &tx) {
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    tmp_report = tmp.str();
+    ok = false;
+  }
+  LOGGER_SM << "     report = " << tmp_report << std::endl;  
+
+  return ok; // guess the rows are ok...  
+}
+

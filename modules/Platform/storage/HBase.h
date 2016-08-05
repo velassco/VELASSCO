@@ -7,6 +7,15 @@
 
 #include <openssl/md5.h>
 
+inline std::string computeMD5( const std::string &str_in) {
+  MD5_CTX md5ctx;
+  unsigned char digest[ MD5_DIGEST_LENGTH];
+  MD5_Init( &md5ctx);
+  MD5_Update( &md5ctx, str_in.data(), str_in.length());
+  MD5_Final( digest, &md5ctx);
+  return std::string( ( const char *)digest, MD5_DIGEST_LENGTH);
+}
+
 //VELaSSCo
 // no need for AbstractDB.h anymore ...
 // #include "AbstractDB.h"
@@ -175,7 +184,26 @@ namespace VELaSSCo
 			      const std::string &analysisID, const double stepValue,
 			      const std::string &binary_mesh, std::string *return_error_str);
 
+    void getStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+			       const std::string &analysisID, const int numSteps, const double *lstSteps,
+			       const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+			       double *return_bbox, std::string *return_error_str);
+    void deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+				  const std::string &analysisID, const int numSteps, const double *lstSteps,
+				  const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+				  std::string *return_error_str);
+    bool saveBoundingBox( const std::string &sessionID, const std::string &modelID, 
+			  const std::string &analysisID, const int numSteps, const double *lstSteps,
+			  const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+			  const double *return_bbox, std::string *return_error_str);
+
     // retrieve only the 'Q' column family of the Simulations_VQuery_Results_Data table
+    bool getStoredVQueryExtraDataSplitted( const std::string &sessionID,
+					   const std::string &modelID,
+					   const std::string &analysisID, const double stepValue,
+					   const std::string &vqueryName, const std::string &vqueryParameters,
+					   // list = 1 entry per partition, may be null only to check if there is data
+					   std::vector< std::string> *lst_vquery_results);
     bool getStoredVQueryExtraData( const std::string &sessionID,
 				   const std::string &modelID,
 				   const std::string &analysisID, const double stepValue,
