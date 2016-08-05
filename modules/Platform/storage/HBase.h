@@ -237,6 +237,19 @@ namespace VELaSSCo
 					const std::string &vqueryName, const std::string &vqueryParameters, const int partitionID);
     bool createStoredMetadataTable( const std::string &table_name);
     bool createStoredDataTable( const std::string &table_name);
+
+    bool getColumnQualifierStringFromTable( std::string &retValue, 
+					    const std::string &tableName, 
+					    const std::string &startRowKey, const std::string &stopRowKey,
+					    const char *columnFamily, const char *columnQualifier,
+					    const std::string &logMessagePrefix);
+    bool getColumnQualifierStringListFromTable( std::vector< std::string> &retValue, 
+						const std::string &tableName, 
+						const std::string &startRowKey, const std::string &stopRowKey,
+						const char *columnFamily, const char *columnQualifierPrefix,
+						const int numStringsToRetrieve,
+						const std::string &logMessagePrefix);
+
   };
 
   typedef std::vector< std::string> StrVec;
