@@ -105,6 +105,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     /* Result Analysis Queries */
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
+  } else if ( name == "DeleteBoundingBox") {
+    ManageDeleteBoundingBox( _return, sessionID, query);
   } else if ( name == "GetDiscrete2Continuum") {
     ManageGetDiscrete2Continuum(_return, sessionID, query);
   } else if ( name == "GetBoundaryOfAMesh") {

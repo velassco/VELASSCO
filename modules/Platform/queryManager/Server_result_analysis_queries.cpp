@@ -364,23 +364,11 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
     try {
       //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
       error_str = "";
-      queryServer->getStoredBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
-					     modelID,
-					     meshID, elementType,
-					     analysisID, stepValue, 
-					     // &binary_mesh,
-					     NULL, // we don't want the mesh, only check if it's there
-					     &error_str);
-      if ( error_str.length() == 0) {
-	storedBoundaryFound = true;
-      }
-      if ( storedBoundaryFound) {
-	queryServer->deleteStoredBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
-						  modelID,
-						  meshID, elementType,
-						  analysisID, stepValue, 
-						  &error_str);
-      }
+      queryServer->deleteStoredBoundaryOfAMesh( GetQueryManagerSessionID( sessionID), 
+						modelID,
+						meshID, elementType,
+						analysisID, stepValue, 
+						&error_str);
       // GraphicsModule *graphics = GraphicsModule::getInstance();
       // just to link to the GraphicsModule;
     } catch ( TException &e) {
@@ -397,6 +385,76 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
     if ( !storedBoundaryFound) {
       _return.__set_result( (Result::type)VAL_BOUNDARY_MESH_NOT_FOUND);
     }
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  if ( error_str.length() != 0) {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
+}
+
+void QueryManagerServer::ManageDeleteBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
+  // _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+  // _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string modelID            = pt.get<std::string>( "modelID");
+  int64_t numVertexIDs           = pt.get< int64_t>( "numVertexIDs");
+  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+  std::string lstVertexIDs       = as_string< size_t>( pt, "lstVertexIDs");
+  std::string analysisID         = pt.get<std::string>( "analysisID");
+  std::string stepOptions        = pt.get<std::string>( "stepOptions");
+  int numSteps                   = pt.get< int>( "numSteps");
+  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+  std::string strSteps           = as_string< size_t>( pt, "lstSteps");
+  std::vector< double> lstSteps  = as_vector< double>( pt, "lstSteps");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "nV -" << numVertexIDs       << "-" << std::endl;
+  std::cout << "Vs -" << lstVertexIDs       << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "SO -" << stepOptions       << "-" << std::endl;
+  std::cout << "nS -" << numSteps       << "-" << std::endl;
+  std::cout << "Ss -" << strSteps       << "-" << std::endl;
+
+  std::string error_str;
+  _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
+
+  try {
+    //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
+    error_str = "";
+    queryServer->deleteStoredBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+					  // analysisID, numSteps, lstSteps,
+					  "", 0, NULL,
+					  // numVertexIDs, lstVertexIDs,
+					  0, NULL,
+					  &error_str);
+    
+    // GraphicsModule *graphics = GraphicsModule::getInstance();
+    // just to link to the GraphicsModule;
+  } catch ( TException &e) {
+    std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( binary_mesh);
+  } else {
     _return.__set_data( error_str);
   }
 		  

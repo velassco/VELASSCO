@@ -418,6 +418,32 @@ bool HBase::getStoredVQueryExtraDataSplitted( const std::string &sessionID,
   return scan_ok;
 }
 
+bool HBase::deleteStoredRow( const std::string &tableName, const std::string &rowKey,
+			     const std::string &logMessagePrefix) {
+  StrMap attr;
+  std::string tmp_report = "deleted from '" + tableName + "' row with key = " + rowKey;
+  bool scan_ok = true;
+  try {
+    _hbase_client->deleteAllRow( tableName, rowKey, attr);
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    tmp_report = tmp.str();
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    tmp_report = tmp.str();
+  }
+  LOGGER_SM << tmp_report << std::endl;
+  return scan_ok;
+}
+
+////////////////////////////////////////////////////////////////////////
+// Stored BoundaryMesh
+////////////////////////////////////////////////////////////////////////
+
 void HBase::getStoredBoundaryOfAMesh( const std::string &sessionID,
 				      const std::string &modelID,
 				      const int meshID, const std::string &elementType,
@@ -463,7 +489,45 @@ void HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
     *return_error_str = std::string( "Stored boundary mesh not found.");
     return;
   }
-  *return_error_str = std::string( "Stored boundary mesh not found.");
+
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return;
+  }
+
+  const std::string &vqueryParameters = vqueryParametersStream.str();
+
+  LOGGER_SM << "Deleting stored boundary of a mesh for '" << vqueryParameters << "'" << std::endl;
+  bool ok = false;
+  // reset tables:
+  bool reset_tables = false;
+  if ( reset_tables) {
+    if ( checkIfTableExists( table_set._stored_vquery_metadata)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_metadata);
+      _hbase_client->deleteTable(  table_set._stored_vquery_metadata);
+    }
+    if ( checkIfTableExists( table_set._stored_vquery_data)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_data);
+      _hbase_client->deleteTable(  table_set._stored_vquery_data);
+    }
+  }
+
+  // delete the row in the metadata table
+  if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
+    return;
+  }
+
+  std::string tableName = table_set._stored_vquery_metadata;
+  std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  ok = deleteStoredRow( tableName, metadataRowKey, "deleting stored Metadata row");
+
+  // now delete the row in the data table
+  if ( !checkIfTableExists( table_set._stored_vquery_data)) {
+    return;
+  }
+  tableName = table_set._stored_vquery_data;
+  std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
+  ok = deleteStoredRow( tableName, dataRowKey, "deleting stored Data row");
 }
 
 bool HBase::createStoredMetadataTable( const std::string &table_name) {
@@ -731,7 +795,43 @@ void HBase::deleteStoredBoundingBox( const std::string &sessionID, const std::st
     *return_error_str = std::string( "Stored boundary mesh not found.");
     return;
   }
-  *return_error_str = std::string( "Stored boundary mesh not found.");
+
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return;
+  }
+
+  LOGGER_SM << "Deleting stored bounding box for '" << vqueryParameters << "'" << std::endl;
+  bool ok = false;
+  // reset tables:
+  bool reset_tables = false;
+  if ( reset_tables) {
+    if ( checkIfTableExists( table_set._stored_vquery_metadata)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_metadata);
+      _hbase_client->deleteTable(  table_set._stored_vquery_metadata);
+    }
+    if ( checkIfTableExists( table_set._stored_vquery_data)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_data);
+      _hbase_client->deleteTable(  table_set._stored_vquery_data);
+    }
+  }
+
+  // delete the row in the metadata table
+  if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
+    return;
+  }
+
+  std::string tableName = table_set._stored_vquery_metadata;
+  std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  ok = deleteStoredRow( tableName, metadataRowKey, "deleting stored Metadata row");
+
+  // now delete the row in the data table
+  if ( !checkIfTableExists( table_set._stored_vquery_data)) {
+    return;
+  }
+  tableName = table_set._stored_vquery_data;
+  std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
+  ok = deleteStoredRow( tableName, dataRowKey, "deleting stored Data row");
 }
 
 bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &modelID, 

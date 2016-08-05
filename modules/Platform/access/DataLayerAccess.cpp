@@ -456,29 +456,39 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
   }
 }
 
-// Not needed at this level
-// void DataLayerAccess::getStoredBoundaryOfAMesh( const std::string &sessionID,
-// 						const std::string &modelID,
-// 						const int meshID, const std::string &elementType,
-// 						const std::string &analysisID, const double stepValue,
-// 						std::string *return_binary_mesh, std::string *return_error_str) {
-//     _db->getStoredBoundaryOfAMesh( sessionID, 
-// 				   modelID,
-// 				   meshID, elementType,
-// 				   analysisID, stepValue, 
-// 				   return_binary_mesh, return_error_str);
-// }
-// 
-// void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
-// 						   const std::string &modelID,
-// 						   const int meshID, const std::string &elementType,
-// 						   const std::string &analysisID, const double stepValue,
-// 						   std::string *return_error_str) {
-//   _db->deleteStoredBoundaryOfAMesh( sessionID,
-// 				    modelID,
-// 				    meshID, elementType,
-// 				    analysisID, stepValue, 
-// 				    return_error_str);
-// }
+// needed by DeleteBoundaryOfAMesh vquery
+void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
+						   const std::string &modelID,
+						   const int meshID, const std::string &elementType,
+						   const std::string &analysisID, const double stepValue,
+						   std::string *return_error_str) {
+  _db->getStoredBoundaryOfAMesh( sessionID, 
+				 modelID,
+				 meshID, elementType,
+				 analysisID, stepValue, 
+				 NULL, return_error_str);
+  if ( return_error_str->length() == 0) { // i.e. boundary mesh was found
+    _db->deleteStoredBoundaryOfAMesh( sessionID,
+				      modelID,
+				      meshID, elementType,
+				      analysisID, stepValue, 
+				      return_error_str);
+  }
+}
 
 
+
+  // needed by DeleteBoundaryOfAMesh vquery
+void DataLayerAccess::deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+					       const std::string &analysisID, const int numSteps, const double *lstSteps,
+					       const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+					       std::string *return_error_str) {
+  _db->getStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
+			     numVertexIDs, lstVertexIDs,
+			     NULL, return_error_str);
+  if ( return_error_str->length() == 0) { // i.e. bounding box found
+    _db->deleteStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
+				  numVertexIDs, lstVertexIDs,
+				  return_error_str);
+    }
+}

@@ -422,6 +422,86 @@ extern "C" {
     }
   CATCH_ERROR;
   }
+
+  VAL_Result VAL_API valDeleteBoundingBox( /* in */
+					  VAL_SessionID   sessionID,
+					  const char     *modelID,
+					  const int64_t  *lstVertexIDs,
+					  const int64_t   numVertexIDs,
+					  const char     *analysisID,
+					  const char     *stepOptions,
+					  const double   *lstSteps,
+					  const int       numSteps,
+					  /* out */
+					  const char     **resultErrorStr) { // in case of error
+    
+    CHECK_SESSION_ID( sessionID );
+    CHECK_QUERY_POINTER( modelID );
+    if ( numVertexIDs) {
+      CHECK_QUERY_POINTER( lstVertexIDs );
+    }
+    CHECK_QUERY_POINTER( analysisID );
+    CHECK_QUERY_POINTER( stepOptions );
+    if ( !AreEqualNoCase(stepOptions, "all") ) {
+      // if stepOptions != "all" then numSteps should be != 0 and lstSteps should have something
+      CHECK_NON_ZERO_VALUE( numSteps);
+      if ( AreEqualNoCase( stepOptions, "SINGLE")) {
+	CHECK_VALUE( numSteps, 1);
+      } else if ( AreEqualNoCase( stepOptions, "INTERVAL")) {
+	CHECK_VALUE( numSteps, 2);
+      }
+      CHECK_QUERY_POINTER( lstSteps);
+    }
+    CHECK_QUERY_POINTER( resultErrorStr );
+    
+    *resultErrorStr = NULL;
+    
+    API_TRACE;
+    try
+      {
+	std::stringstream  queryCommand;
+	const std::string *queryData = NULL;
+
+	// Build JSON command string
+	queryCommand << "{\n"
+		     << "  \"name\"         : \"" << "DeleteBoundingBox" << "\",\n"
+		     << "  \"modelID\"      : \"" << modelID          << "\",\n"
+		     << "  \"numVertexIDs\" : \"" << numVertexIDs     << "\",\n"
+		     << "  \"lstVertexIDs\" : [";
+	// can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+	for ( int64_t i = 0; i < numVertexIDs; i++) {
+	  if ( i) queryCommand << ",";
+	  queryCommand << lstVertexIDs[ i];
+	}
+	queryCommand << "],\n";
+	queryCommand << "  \"analysisID\" : \"" << analysisID       << "\",\n";
+	queryCommand << "  \"stepOptions\" : \"" << stepOptions     << "\",\n";
+	queryCommand << "  \"numSteps\" : \"" << numSteps     << "\",\n";
+	queryCommand << "  \"lstSteps\" : [";
+	// can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+	if ( !AreEqualNoCase(stepOptions, "all") && numSteps) {
+	  for ( int i = 0; i < numSteps; i++) {
+	    if ( i) queryCommand << ",";
+	    queryCommand << lstSteps[ i];
+	  }
+	}
+	queryCommand << "]\n";
+	queryCommand << "}\n";
+
+	// Send command string and get back result data
+	VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+
+	// Give back pointers to actual binary data
+	if (result == VAL_SUCCESS) {
+	  // *resultBBox = ( const double *)queryData->data();
+	} else {
+	  *resultErrorStr = queryData->c_str();
+	}
+
+	return result;
+      }
+    CATCH_ERROR;
+  }
   
 
 #ifdef __cplusplus

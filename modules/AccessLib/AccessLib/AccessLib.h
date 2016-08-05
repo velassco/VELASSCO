@@ -257,6 +257,17 @@ extern "C" {
 					   const double    stepValue,
 					   /* out */
 					   const char     **resultErrorStr); // in case of error
+  VAL_Result VAL_API valDeleteBoundingBox( /* in */
+					  VAL_SessionID   sessionID,
+					  const char     *modelID,
+					  const int64_t  *lstVertexIDs,
+					  const int64_t   numVertexIDs,
+					  const char     *analysisID,
+					  const char     *stepOptions,
+					  const double   *lstSteps,
+					  const int       numSteps,
+					  /* out */
+					  const char     **resultErrorStr); // in case of error
 
 
   /**

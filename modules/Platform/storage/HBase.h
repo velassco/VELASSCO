@@ -277,7 +277,8 @@ namespace VELaSSCo
 						const char *columnFamily, const char *columnQualifierPrefix,
 						const int numStringsToRetrieve,
 						const std::string &logMessagePrefix);
-
+    bool deleteStoredRow( const std::string &tableName, const std::string &rowKey, const std::string &logMessagePrefix);
+					    
   };
 
   typedef std::vector< std::string> StrVec;
