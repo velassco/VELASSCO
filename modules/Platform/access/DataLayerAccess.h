@@ -153,16 +153,17 @@ public:
 				 const int meshID, const std::string &elementType,
 				 const std::string &analysisID, const double stepValue,
 				 std::string *return_binary_mesh, std::string *return_error_str);
-  void getStoredBoundaryOfAMesh( const std::string &sessionID,
-				 const std::string &modelID,
-				 const int meshID, const std::string &elementType,
-				 const std::string &analysisID, const double stepValue,
-				 std::string *return_binary_mesh, std::string *return_error_str);
-  void deleteStoredBoundaryOfAMesh( const std::string &sessionID,
-				    const std::string &modelID,
-				    const int meshID, const std::string &elementType,
-				    const std::string &analysisID, const double stepValue,
-				    std::string *return_error_str);
+  // Not needed at this level
+  // void getStoredBoundaryOfAMesh( const std::string &sessionID,
+  // 				 const std::string &modelID,
+  // 				 const int meshID, const std::string &elementType,
+  // 				 const std::string &analysisID, const double stepValue,
+  // 				 std::string *return_binary_mesh, std::string *return_error_str);
+  // void deleteStoredBoundaryOfAMesh( const std::string &sessionID,
+  // 				    const std::string &modelID,
+  // 				    const int meshID, const std::string &elementType,
+  // 				    const std::string &analysisID, const double stepValue,
+  // 				    std::string *return_error_str);
     
     
 private:
