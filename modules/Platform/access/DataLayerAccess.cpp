@@ -378,6 +378,7 @@ void DataLayerAccess::calculateBoundingBox( const std::string &sessionID, const 
 			       numVertexIDs, lstVertexIDs,
 			       return_bbox, return_error_str);
     if ( return_error_str->length() != 0) { // nothing found
+      *return_error_str = ""; // reset error string
       HBase::TableModelEntry table_name_set;
       if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
 	return_error_str->clear();
@@ -438,6 +439,7 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
     _db->getStoredBoundaryOfAMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue,
 				   return_binary_mesh, return_error_str);
     if ( return_binary_mesh->length() == 0) { // nothing found
+      *return_error_str = ""; // reset error string
       HBase::TableModelEntry table_name_set;
       if ( _db->getVELaSSCoTableNames( sessionID, modelID, table_name_set)) {
 	AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID,
