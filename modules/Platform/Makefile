@@ -134,7 +134,7 @@ ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_H
 	-I$(ACCESS_DIR) -I$(QMM_DIR) -I$(COMMON_DIR) -I. \
 	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include 
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
-	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl
+	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl -lcrypto
 
 all: $(BIN) $(BIN)/$(EXEC)
 
