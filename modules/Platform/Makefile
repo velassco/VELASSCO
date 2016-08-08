@@ -42,8 +42,13 @@ ifeq ($(HOSTNAME),pez001)
   THRIFT_BASE = $(HOME)
   BOOST_BASE = $(HOME)
 else 
-  THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp
-  BOOST_BASE=/exports/applications/apps/community/VELaSSCo/build/boost
+  ifeq ($(USER),v1mpasen)
+    THRIFT_BASE = $(HOME)
+    BOOST_BASE = $(HOME)
+  else 
+    THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp
+    BOOST_BASE=/exports/applications/apps/community/VELaSSCo/build/boost
+  endif
 endif
 
 
