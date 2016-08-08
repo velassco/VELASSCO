@@ -927,7 +927,9 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
 //#define READ_GROUPED_ROWS
 
 /* GetResultsFromVerticesID */
-static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, const TRowResult &rowResult, const ResultInfo &resultInfo, const std::vector<int64_t>& listOfVerticesID) {
+static bool getResultsFromRow( std::unordered_map< int64_t, std::vector< double > > &resultOnVertexListMap,
+			       // std::vector< ResultOnVertex > &listOfResults, 
+			       const TRowResult &rowResult, const ResultInfo &resultInfo) {
   int num_results = 0;
   for ( CellMap::const_iterator it = rowResult.columns.begin(); 
 	it != rowResult.columns.end(); ++it) {
@@ -954,10 +956,11 @@ static bool getResultsFromRow( std::vector< ResultOnVertex > &listOfResults, con
       	    double *coords = ( double *)it->second.value.data();
             for(int i = 0; i < resultInfo.numberOfComponents; i++)
       	      result_values.push_back( byteSwap< double>( coords[ i ] ) );
-      	    ResultOnVertex result;
-	    result.__set_id( node_id );
-	    result.__set_value( result_values );
-	    listOfResults.push_back( result );
+      	    // ResultOnVertex result;
+	    // result.__set_id( node_id );
+	    // result.__set_value( result_values );
+	    // listOfResults.push_back( result );
+	    resultOnVertexListMap[ node_id] = result_values;
 	    num_results++;
       	  }
       	}
@@ -973,7 +976,10 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
            const ResultInfo &resultInfo,  const std::vector<int64_t> &listOfVerticesID, const char *format ){
   bool scan_ok = true;
   
-  listOfResults.reserve( listOfVerticesID.size() );
+  // listOfResults.reserve( listOfVerticesID.size() );
+
+  std::unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
+
 #ifdef READ_GROUPED_ROWS
   int chunk_size = 4;
   for(int rowIdx = 0; rowIdx <= 1000; rowIdx+=chunk_size){
@@ -988,21 +994,20 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 		{
 		  std::ostringstream oss;
 		  sprintf( buf, "R:r%06dvl_", resultInfo.resultNumber );
-		  //sprintf( buf, "R:r%06d_", resultInfo.resultNumber );
 		  oss << buf;
 		  int64_t vertexID = byteSwap<int64_t>( listOfVerticesID[i] );
 		  oss.write( (char*)&vertexID, sizeof(int64_t));
 		  //LOGGER_SM << "=====================> " << oss.str() << std::endl;
 		  cols.push_back( oss.str() );
 
-		  // to be removed soon
-		  // some data only is r000001_nodeId
-		  std::ostringstream oss2;
-		  sprintf( buf, "R:r%06d_", resultInfo.resultNumber );
-		  oss2 << buf;
-		  oss2.write( (char*)&vertexID, sizeof(int64_t));
-		  //LOGGER_SM << "=====================> " << oss.str() << std::endl;
-		  cols.push_back( oss2.str() );
+		  // // to be removed soon
+		  // // some data only is r000001_nodeId
+		  // std::ostringstream oss2;
+		  // sprintf( buf, "R:r%06d_", resultInfo.resultNumber );
+		  // oss2 << buf;
+		  // oss2.write( (char*)&vertexID, sizeof(int64_t));
+		  // //LOGGER_SM << "=====================> " << oss.str() << std::endl;
+		  // cols.push_back( oss2.str() );
 	    }
 	  }
 	  std::cout << "Making list of vertices column names (Done)...\n";
@@ -1042,7 +1047,7 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
 		// check if the rowkey is our's ... should be ....
 		if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
 		  continue; // break;
-		bool ok = getResultsFromRow( listOfResults, rowsResult[ i ], resultInfo, listOfVerticesID );
+		bool ok = getResultsFromRow( resultOnVertexListMap, /*listOfResults,*/ rowsResult[ i ], resultInfo);
 		if ( ok) {
 			
 			//size_t i = 0;
@@ -1090,15 +1095,8 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
   }
 #endif
 
-  LOGGER_SM << "Processing " << listOfResults.size() << " retrieved results." << std::endl;
-  // remove repeated vertices:
-  size_t orig_num_vertices = listOfResults.size();
-  std::unordered_map< int64_t, std::vector< double > > resultOnVertexListMap;
-  for ( size_t i = 0; i < listOfResults.size(); i++) {
-    const ResultOnVertex &vertexAndResult = listOfResults[ i];
-    int64_t vertexId = vertexAndResult.id;
-    resultOnVertexListMap[ vertexId] = vertexAndResult.value;
-  }
+  LOGGER_SM << "Processing " << resultOnVertexListMap.size() << " retrieved results." << std::endl;
+  size_t orig_num_vertices = resultOnVertexListMap.size();
 
   // get only asked vertices and 
   listOfResults.clear();
