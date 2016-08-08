@@ -46,6 +46,8 @@ VAL_Result Client::UserLogin( /* in */
   if (host == "" || port == 0)
     return VAL_WRONG_URL;
 
+  VAL_Result ret =  VAL_UNKNOWN_ERROR;
+
   try
     {
       m_socket    = boost::shared_ptr<TTransport>(new TSocket(host, port));
@@ -70,10 +72,11 @@ VAL_Result Client::UserLogin( /* in */
       // don't know if server is single or multi-user.
       // in AccessLib.h:   
       // * url may end have this parameter '?multiuser' for a multi-user connection
-      const char *parameters = my_url.Query().c_str();
-      if ( parameters && *parameters) {
+      // This does not work on MS VisualStudio 2012, after this, parameters is "", but my_url.Query().c_str() is "multiuser"
+      // const char *parameters = my_url.Query().c_str();
+      if ( my_url.Query().c_str() && *(my_url.Query().c_str())) {
 	const char *keyword = "multiuser";
-	const char *multiuser_flag = strcasestr( parameters, keyword);
+	const char *multiuser_flag = strcasestr( my_url.Query().c_str(), keyword);
 	if ( multiuser_flag) {
 	  LOGGER << " WARNING: Multiuser support enabled. Under development ... \n" << std::endl;		
 	  multiUserSupport =  true;
@@ -109,17 +112,19 @@ VAL_Result Client::UserLogin( /* in */
 
       sessionID = userLoginResult.sessionID;
 
-      return (VAL_Result)(userLoginResult.result);
+      ret = (VAL_Result)(userLoginResult.result);
     } 
   catch (TException& tx)
     {
       LOGGER << FUNCTION_NAME << " ERROR: " << tx.what() << std::endl;
-      return VAL_SYSTEM_NOT_AVAILABLE;
+      ret = VAL_SYSTEM_NOT_AVAILABLE;
     }
   catch (...)
     {
-      return VAL_UNKNOWN_ERROR;
+      ret = VAL_UNKNOWN_ERROR;
     }
+
+  return ret;
 }
 
 VAL_Result Client::UserLogout( /* in */
