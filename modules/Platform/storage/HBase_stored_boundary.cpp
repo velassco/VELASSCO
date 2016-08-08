@@ -346,7 +346,9 @@ bool HBase::getStoredVQueryExtraData( const std::string &sessionID,
     return false;
   }
 
-  lst_vquery_results->push_back( qrValue);
+  if ( lst_vquery_results) {
+    lst_vquery_results->push_back( qrValue);
+  }
 
   return scan_ok;
 }
@@ -497,7 +499,7 @@ void HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 
   const std::string &vqueryParameters = vqueryParametersStream.str();
 
-  LOGGER_SM << "Deleting stored boundary of a mesh for '" << vqueryParameters << "'" << std::endl;
+  LOGGER_SM << "DELETING stored boundary of a mesh for '" << vqueryParameters << "'" << std::endl;
   bool ok = false;
   // reset tables:
   bool reset_tables = false;
