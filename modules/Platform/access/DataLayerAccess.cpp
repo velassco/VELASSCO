@@ -475,6 +475,8 @@ void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 				      meshID, elementType,
 				      analysisID, stepValue, 
 				      return_error_str);
+  } else {
+    return_error_str->clear(); // not found, // already deleted?
   }
 }
 
@@ -492,5 +494,7 @@ void DataLayerAccess::deleteStoredBoundingBox( const std::string &sessionID, con
     _db->deleteStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
 				  numVertexIDs, lstVertexIDs,
 				  return_error_str);
-    }
+  } else {
+    return_error_str->clear(); // not found, // already deleted?
+  }
 }
