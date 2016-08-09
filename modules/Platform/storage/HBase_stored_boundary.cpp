@@ -410,12 +410,16 @@ bool HBase::getStoredVQueryExtraDataSplitted( const std::string &sessionID,
   }
 
   // join boundary mesh pieces together:
-  std::string bin_mesh;
-  for ( size_t idx = 0; idx < retLstValues.size(); idx++) {
-    bin_mesh += retLstValues[ idx];
+  if ( lst_vquery_results) {
+    std::string bin_mesh;
+    for ( size_t idx = 0; idx < retLstValues.size(); idx++) {
+      bin_mesh += retLstValues[ idx];
+    }
+    retLstValues.clear(); // make room for next push_back
+    lst_vquery_results->push_back( bin_mesh);
+  } else {
+    retLstValues.clear();
   }
-  retLstValues.clear();
-  lst_vquery_results->push_back( bin_mesh);
 
   return scan_ok;
 }
@@ -488,7 +492,9 @@ void HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 						 vqueryName, vqueryParametersStream.str(), 
 						 NULL); // we don't want the data just to check if it's there
   if ( !found) {
-    *return_error_str = std::string( "Stored boundary mesh not found.");
+    // already deleted?
+    // *return_error_str = std::string( "Stored boundary mesh not found.");
+    return_error_str->clear();
     return;
   }
 
@@ -794,7 +800,9 @@ void HBase::deleteStoredBoundingBox( const std::string &sessionID, const std::st
 					 vqueryName, vqueryParameters, 
 					 NULL); // we don't want the data just to check if it's there
   if ( !found) {
-    *return_error_str = std::string( "Stored boundary mesh not found.");
+    // already deleted?
+    // *return_error_str = std::string( "Stored boundary mesh not found.");
+    return_error_str->clear();
     return;
   }
 
