@@ -156,11 +156,16 @@ bool HBase::getColumnQualifierStringFromTable( std::string &retValue,
     }
     if ( tmp_report.length() == 0) {
       std::stringstream tmp;
-      tmp << "got value for " << col_str << " = '" << retValue << "'";
+      size_t num_bytes = retValue.size();
+      size_t dump_bytes = ( num_bytes > 80) ? 80 : num_bytes;
+      tmp << "got value for " << col_str << " = ( " << num_bytes << " bytes): " << std::endl;
+      tmp << Hexdump( retValue, dump_bytes);
       tmp_report = tmp.str();
     }
   } else {
-    LOGGER_SM << logMessagePrefix << " Not found: " << col_str << std::endl;
+      std::stringstream tmp;
+      tmp << " Not found: " << col_str;
+      tmp_report = tmp.str();
   }
   LOGGER_SM << logMessagePrefix << " " << tmp_report << std::endl;
 
@@ -234,7 +239,7 @@ bool HBase::getColumnQualifierStringListFromTable( std::vector< std::string> &re
   std::string col_str;
   {
     std::stringstream tmp;
-    tmp << std::string( columnFamily) << ":" << columnQualifierPrefix << "[0.." << numStringsToRetrieve << "]";
+    tmp << std::string( columnFamily) << ":" << columnQualifierPrefix << "[0.." << ( numStringsToRetrieve - 1) << "]";
     col_str = tmp.str();
   }
   bool scan_ok = true;
@@ -297,7 +302,9 @@ bool HBase::getColumnQualifierStringListFromTable( std::vector< std::string> &re
       tmp_report = tmp.str();
     }
   } else {
-    LOGGER_SM << logMessagePrefix << " Not found: " << col_str << std::endl;
+    std::stringstream tmp;
+    tmp << " Not found: " << col_str;
+    tmp_report = tmp.str();
   }
   LOGGER_SM << logMessagePrefix << " " << tmp_report << std::endl;
   
