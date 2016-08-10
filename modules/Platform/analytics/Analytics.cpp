@@ -254,11 +254,14 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     }
   }
 
+  DEBUG( "Deleting output files ...");
   if ( use_yarn) {
-    std::string cmd_line = HADOOP_HDFS + " dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + output_folder;
+    DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
   }
   // delete local tmp files ...
+  DEBUG( "Deleting local temporary files ...");
   recursive_rmdir( output_folder.c_str());
 }
 
@@ -542,7 +545,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   }
   
   if ( use_yarn) {
-    std::string cmd_line = HADOOP_HDFS + " dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + output_folder;
     ret_cmd = system( cmd_line.c_str());
   }
   
@@ -919,11 +922,14 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
     *return_binary_mesh = boundary_mesh.toString();
   }
 
+  DEBUG( "Deleting output files ...");
   if ( use_yarn) {
-    std::string cmd_line = HADOOP_HDFS + " dfs -rmdir --ignore-fail-on-non-empty " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + output_folder;
+    DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
   }
 
   // delete local tmp files ...
+  DEBUG( "Deleting temporary files ...");
   recursive_rmdir( output_folder.c_str());
 }
