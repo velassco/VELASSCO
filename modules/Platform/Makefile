@@ -136,9 +136,31 @@ ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_H
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
 	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl -lcrypto
 
+JAR_SRC_FOLDER = AnalyticsYarnJobs
+ifeq ($(HOSTNAME),pez001)
+  JAR_SUFFIX = pez001
+  JAR_DST_FOLDER = /tmp/vv
+else ifeq ($(HOSTNAME),acuario)
+  JAR_SUFFIX = pez001
+  JAR_DST_FOLDER = /tmp/vv
+else
+  JAR_SUFFIX = velassco-cluster01.ecdf.ed.ac.uk
+  JAR_DST_FOLDER = /local/VELaSSCo
+endif
+
+JAR_SRC_FILES = $(wildcard $(JAR_SRC_FOLDER)/*$(JAR_SUFFIX)*jar)
+JAR_FILES = ${JAR_SRC_FILES:$(JAR_SRC_FOLDER)/%=%}
+
+# no need to check jar files in acuario/pez001. Only on EDDIE
+ifeq ($(HOSTNAME),pez001)
+  JAR_FILES = 
+else ifeq ($(HOSTNAME),acuario)
+  JAR_FILES = 
+endif
+
 all: $(BIN) $(BIN)/$(EXEC)
 
-$(BIN)/$(EXEC):  $(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) $(GRAPHICS_MODULE_OBJS) $(STORAGE_MODULE_OBJS) $(ANALYTICS_MODULE_OBJS) $(ACCESS_OBJS) $(QMM_OBJS) $(COMMON_OBJS) 
+$(BIN)/$(EXEC):  $(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) $(GRAPHICS_MODULE_OBJS) $(STORAGE_MODULE_OBJS) $(ANALYTICS_MODULE_OBJS) $(ACCESS_OBJS) $(QMM_OBJS) $(COMMON_OBJS) check_jars
 	$(CCPP) $(OPTS) $(CPP_FLAGS) \
 		$(THRIFT_STORAGE_OBJS) $(THRIFT_HBASE_OBJS) $(THRIFT_QUERY_OBJS) $(ENGINE_OBJS) $(GRAPHICS_MODULE_OBJS) $(STORAGE_MODULE_OBJS) $(ANALYTICS_MODULE_OBJS) $(ACCESS_OBJS) $(QMM_OBJS) $(COMMON_OBJS) \
 		$(ENGINE_LIBS) -o $(BIN)/$(EXEC)
@@ -193,6 +215,13 @@ $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.cpp $(COMMON_DEPENDENCIES)
 # common C files (folder ./commonFiles):
 $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.c $(COMMON_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@	
+
+check_jars:
+	@echo "Checcking JAR files ..."
+	@for jj in $(JAR_FILES) ; do \
+	  diff -sq $(JAR_SRC_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj ; \
+	done
+	@echo "... done"
 
 debug:
 	+make "OPTS=-g"
