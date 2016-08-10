@@ -68,6 +68,18 @@ static int recursive_rmdir( const char *path) {
   return nftw( path, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 }
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
+static std::string create_tmpdir() {
+  char *tmp_dir = tempnam( NULL, "VQuery");
+  int ret = mkdir( tmp_dir, 0755);
+  assert( ret == 0); // returns -1 if error
+  std::string ret_str( tmp_dir);
+  free( tmp_dir);
+  return ret_str;
+}
+
 std::string GetFullAnalyticsQualifier( const std::string &jar_name_no_extension) {
 #ifdef USE_HOSTNAME_SUFFIX
   const size_t max_buffer = 10240;
@@ -131,8 +143,11 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // unlink( "bbox_sessionID_modelID/_SUCCESS");
   // rmdir( "bbox_sessionID_modelID");
   // delete local temporary files
-  std::string output_folder = ToLower( "bbox_" + sessionID + "_" + cli_modelID);
-  recursive_rmdir( output_folder.c_str());
+  // yarn_output_folder is relative ...
+  std::string yarn_output_folder = ToLower( "bbox_" + sessionID + "_" + cli_modelID);
+  std::string local_tmp_folder = create_tmpdir();
+  std::string local_output_folder = local_tmp_folder + "/" + yarn_output_folder;
+  recursive_rmdir( yarn_output_folder.c_str());
   std::string analytics_program = GetFullAnalyticsQualifier( "GetBoundingBoxOfAModel");
 
   bool use_yarn = true;;
@@ -143,11 +158,12 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
       sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
+    local_output_folder = yarn_output_folder;
   } else { 
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-  std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
     sessionID + " " + cli_modelID + " " + dataTableName;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
@@ -155,7 +171,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     // error in '../bbox_sessionID_modelID/error.txt'
     // copy it to local:
     // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
-    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + output_folder + " .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + yarn_output_folder + " " + local_tmp_folder;
     ret_cmd = system( cmd_line.c_str());
     if ( ret_cmd == -1) {
       DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
@@ -167,13 +183,13 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   // output in '../bbox_sessionID_modelID/part-r-00000'
   // error in '../bbox_sessionID_modelID/error.txt'
   char filename[ 8192];
-  sprintf( filename, "%s/part-r-00000", output_folder.c_str());
+  sprintf( filename, "%s/part-r-00000", local_output_folder.c_str());
   FILE *fi = fopen( filename, "r");
   
   if (!fi) {
     // try reading error file
     bool errorfile_read = false;
-    sprintf( filename, "%s/error.txt", output_folder.c_str());
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
 /*    fi = fopen( filename, "r");
     if (fi) {
       const size_t size_buffer = 1024 * 1024;
@@ -224,7 +240,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
   if ( num_values != 6) {
     // try reading error file
     bool errorfile_read = false;
-    sprintf( filename, "%s/error.txt", output_folder.c_str());
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
 /*    fi = fopen( filename, "r");
     if ( fi) {
       const size_t size_buffer = 1024 * 1024;
@@ -256,13 +272,14 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
 
   DEBUG( "Deleting output files ...");
   if ( use_yarn) {
-    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + yarn_output_folder;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
+  recursive_rmdir( local_tmp_folder.c_str());
   }
   // delete local tmp files ...
   DEBUG( "Deleting local temporary files ...");
-  recursive_rmdir( output_folder.c_str());
+  recursive_rmdir( yarn_output_folder.c_str());
 }
 
 
@@ -453,8 +470,10 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   // unlink( "list_vertices_sessionID_modelID/_SUCCESS");
   // rmdir( "list_vertices_sessionID_modelID");
   // delete local temporary files
-  std::string output_folder = ToLower( "list_vertices_" + sessionID + "_" + cli_modelID);
-  recursive_rmdir( output_folder.c_str());
+  std::string yarn_output_folder = ToLower( "list_vertices_" + sessionID + "_" + cli_modelID);
+  std::string local_tmp_folder = create_tmpdir();
+  std::string local_output_folder = local_tmp_folder + "/" + yarn_output_folder;
+  recursive_rmdir( yarn_output_folder.c_str());
 
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 static
   std::string analytics_program = GetFullAnalyticsQualifier( "GetListOfVerticesFromMesh");
@@ -469,6 +488,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
+    local_output_folder = yarn_output_folder;
   } else { 
     // Using yarn: execute and copy to localdir the result's files
     std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
@@ -479,7 +499,7 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
     // error in '../list_vertices_sessionID_modelID/error.txt'
     // copy it to local:
     // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
-    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + output_folder + " .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + yarn_output_folder + " " + local_tmp_folder;
     ret_cmd = system( cmd_line.c_str());
     if ( ret_cmd == -1) {
       DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
@@ -491,14 +511,14 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   // output in '../list_vertices_sessionID_modelID/part-r-00000'
   // error in '../list_vertices_sessionID_modelID/error.txt'
   char filename[ 8192];
-  sprintf( filename, "%s/part-r-00000", output_folder.c_str());
+  sprintf( filename, "%s/part-r-00000", local_output_folder.c_str());
   FILE *fi = fopen( filename, "rb");
  
   std::string return_error_str = "";
   if (!fi) {
     // try reading error file
     bool errorfile_read = false;
-    sprintf( filename, "%s/error.txt", output_folder.c_str());
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
 /*    fi = fopen( filename, "r");
       if (fi) {
       const size_t size_buffer = 1024 * 1024;
@@ -545,12 +565,13 @@ std::string AnalyticsModule::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFro
   }
   
   if ( use_yarn) {
-    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + yarn_output_folder;
     ret_cmd = system( cmd_line.c_str());
+    recursive_rmdir( local_tmp_folder.c_str());
   }
   
   // delete local tmp files ...
-  recursive_rmdir( output_folder.c_str());
+  recursive_rmdir( yarn_output_folder.c_str());
 
   return return_error_str;
 }
@@ -729,8 +750,10 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   // unlink( "boundary_mesh_sessionID_modelID/_SUCCESS");
   // rmdir( "boundary_mesh_sessionID_modelID");
   // delete local temporary files
-  std::string output_folder = ToLower( "boundary_mesh_" + sessionID + "_" + cli_modelID);
-  recursive_rmdir( output_folder.c_str());
+  std::string yarn_output_folder = ToLower( "boundary_mesh_" + sessionID + "_" + cli_modelID);
+  std::string local_tmp_folder = create_tmpdir();
+  std::string local_output_folder = local_tmp_folder + "/" + yarn_output_folder;
+  recursive_rmdir( yarn_output_folder.c_str());
 
   //GetBoundaryOfAMesh/dist/GetBoundaryOfAMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
   std::string analytics_program = GetFullAnalyticsQualifier( "GetBoundaryOfAMesh");
@@ -745,6 +768,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
+    local_output_folder = yarn_output_folder;
   } else { 
     // Using yarn:
     // execute and copy to localdir the result's files
@@ -757,7 +781,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
     // error in '../boundary_mesh_sessionID_modelID/error.txt'
     // copy it to local:
     // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal boundary_mesh .";
-    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + output_folder + " .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + yarn_output_folder + " " + local_tmp_folder;
     ret_cmd = system( cmd_line.c_str());
     if ( ret_cmd == -1) {
       DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
@@ -769,13 +793,13 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   // output in '../boundary_mesh_sessionID_modelID/part-r-00000'
   // error in '../boundary_mesh_sessionID_modelID/error.txt'
   char filename[ 8192];
-  sprintf( filename, "%s/part-r-00000", output_folder.c_str());
+  sprintf( filename, "%s/part-r-00000", local_output_folder.c_str());
   FILE *fi = fopen( filename, "rb");
  
   if (!fi) {
     // try reading error file
     bool errorfile_read = false;
-    sprintf( filename, "%s/error.txt", output_folder.c_str());
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
 /*    fi = fopen( filename, "r");
     if (fi) {
       const size_t size_buffer = 1024 * 1024;
@@ -878,7 +902,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   if ( !ok || !boundary_mesh.getNumVertices() || !boundary_mesh.getNumTriangles()) {
     // try reading error file
     bool errorfile_read = false;
-    sprintf( filename, "%s/error.txt", output_folder.c_str());
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
 /*    fi = fopen( filename, "r");
     if ( fi) {
       const size_t size_buffer = 1024 * 1024;
@@ -924,12 +948,13 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
 
   DEBUG( "Deleting output files ...");
   if ( use_yarn) {
-    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + output_folder;
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + yarn_output_folder;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
+    recursive_rmdir( local_tmp_folder.c_str());
   }
 
   // delete local tmp files ...
   DEBUG( "Deleting temporary files ...");
-  recursive_rmdir( output_folder.c_str());
+  recursive_rmdir( yarn_output_folder.c_str());
 }
