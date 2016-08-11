@@ -292,7 +292,7 @@ void DataLayerAccess::getListOfTimeSteps( rvGetListOfTimeSteps &_return,
       }
     }
   } catch ( TException& tx) {
-    cout << "ERROR: " << tx.what() << endl;
+    cout << "EXCEPTION ERROR: " << tx.what() << endl;
   }
 }
 

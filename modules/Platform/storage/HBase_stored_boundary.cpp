@@ -142,11 +142,13 @@ bool HBase::getColumnQualifierStringFromTable( std::string &retValue,
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   // LOGGER_SM << "report = " << tmp_report << std::endl;  
 
@@ -280,11 +282,13 @@ bool HBase::getColumnQualifierStringListFromTable( std::vector< std::string> &re
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   // LOGGER_SM << "report = " << tmp_report << std::endl;  
   
@@ -443,11 +447,13 @@ bool HBase::deleteStoredRow( const std::string &tableName, const std::string &ro
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   LOGGER_SM << tmp_report << std::endl;
   return scan_ok;
@@ -487,7 +493,7 @@ void HBase::getStoredBoundaryOfAMesh( const std::string &sessionID,
   }
 }
 
-void HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
+bool HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 					 const std::string &modelID,
 					 const int meshID, const std::string &elementType,
 					 const std::string &analysisID, const double stepValue,
@@ -502,18 +508,17 @@ void HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
     // already deleted?
     // *return_error_str = std::string( "Stored boundary mesh not found.");
     return_error_str->clear();
-    return;
+    return true; // not/never stored
   }
 
   TableModelEntry table_set;
   if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
-    return;
+    return false; // no information about tables for this user and this session
   }
 
   const std::string &vqueryParameters = vqueryParametersStream.str();
 
   LOGGER_SM << "DELETING stored boundary of a mesh for '" << vqueryParameters << "'" << std::endl;
-  bool ok = false;
   // reset tables:
   bool reset_tables = false;
   if ( reset_tables) {
@@ -529,20 +534,21 @@ void HBase::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 
   // delete the row in the metadata table
   if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
-    return;
+    return true; // not created yet? i.e. already deleted...
   }
 
   std::string tableName = table_set._stored_vquery_metadata;
   std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
-  ok = deleteStoredRow( tableName, metadataRowKey, "deleting stored Metadata row");
+  bool ok = deleteStoredRow( tableName, metadataRowKey, "deleting stored Metadata row");
 
   // now delete the row in the data table
   if ( !checkIfTableExists( table_set._stored_vquery_data)) {
-    return;
+    return true; // not created yet? i.e. already deleted...
   }
   tableName = table_set._stored_vquery_data;
   std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
   ok = deleteStoredRow( tableName, dataRowKey, "deleting stored Data row");
+  return ok;
 }
 
 bool HBase::createStoredMetadataTable( const std::string &table_name) {
@@ -568,16 +574,19 @@ bool HBase::createStoredMetadataTable( const std::string &table_name) {
     tmp << "Warning, already exists = " << ae.message;
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( const IOError &ioe) {
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   LOGGER_SM << "     report = " << tmp_report << std::endl;  
   return ok;
@@ -604,16 +613,19 @@ bool HBase::createStoredDataTable( const std::string &table_name) {
     tmp << "Warning, already exists = " << ae.message;
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( const IOError &ioe) {
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   LOGGER_SM << "     report = " << tmp_report << std::endl;  
   return ok;
@@ -698,11 +710,13 @@ bool HBase::saveBoundaryOfAMesh( const std::string &sessionID,
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   LOGGER_SM << "     report = " << tmp_report << std::endl;  
 
@@ -736,11 +750,13 @@ bool HBase::saveBoundaryOfAMesh( const std::string &sessionID,
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   LOGGER_SM << "     report = " << tmp_report << std::endl;  
 
@@ -796,7 +812,7 @@ void HBase::getStoredBoundingBox( const std::string &sessionID, const std::strin
   }
 }
 
-void HBase::deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+bool HBase::deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
 				     const std::string &analysisID, const int numSteps, const double *lstSteps,
 				     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 				     std::string *return_error_str) {
@@ -810,16 +826,15 @@ void HBase::deleteStoredBoundingBox( const std::string &sessionID, const std::st
     // already deleted?
     // *return_error_str = std::string( "Stored boundary mesh not found.");
     return_error_str->clear();
-    return;
+    return true; // not/never stored
   }
 
   TableModelEntry table_set;
   if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
-    return;
+    return false; // no information about tables for this user and this session
   }
 
   LOGGER_SM << "Deleting stored bounding box for '" << vqueryParameters << "'" << std::endl;
-  bool ok = false;
   // reset tables:
   bool reset_tables = false;
   if ( reset_tables) {
@@ -835,20 +850,21 @@ void HBase::deleteStoredBoundingBox( const std::string &sessionID, const std::st
 
   // delete the row in the metadata table
   if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
-    return;
+    return true; // not created yet? i.e. already deleted...
   }
 
   std::string tableName = table_set._stored_vquery_metadata;
   std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
-  ok = deleteStoredRow( tableName, metadataRowKey, "deleting stored Metadata row");
+  bool ok = deleteStoredRow( tableName, metadataRowKey, "deleting stored Metadata row");
 
   // now delete the row in the data table
   if ( !checkIfTableExists( table_set._stored_vquery_data)) {
-    return;
+    return true; // not created yet? i.e. already deleted...
   }
   tableName = table_set._stored_vquery_data;
   std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
   ok = deleteStoredRow( tableName, dataRowKey, "deleting stored Data row");
+  return ok;
 }
 
 bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &modelID, 
@@ -913,11 +929,13 @@ bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &mo
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   LOGGER_SM << "     report = " << tmp_report << std::endl;  
 
@@ -941,11 +959,13 @@ bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &mo
     tmp << "IOError = " << ioe.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     tmp_report = tmp.str();
     ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
   LOGGER_SM << "     report = " << tmp_report << std::endl;  
 

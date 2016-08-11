@@ -103,6 +103,7 @@ inline bool CurlCommand::Evaluate( std::string &result, const std::string &cmd) 
   } catch (...) {
     curl_ok = false;
     result = "ERROR: Curl error evaluating " + cmd;
+    LOGGER_SM << "EXCEPTION: " << result << std::endl;
   }
   return curl_ok;
 }

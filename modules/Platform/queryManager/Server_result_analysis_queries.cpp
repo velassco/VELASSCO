@@ -109,9 +109,9 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
     // GraphicsModule *graphics = GraphicsModule::getInstance();
     // just to link to the GraphicsModule;
   } catch ( TException &e) {
-    std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
   } catch ( exception &e) {
-    std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
   }
   if ( error_str.length() == 0) {
     _return.__set_result( (Result::type)VAL_SUCCESS );
@@ -191,11 +191,10 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
 								 doTemporalAVG, temporalAVGOptions, deltaT, &query_outcome, &error_str);
 							  
     // GraphicsModule *graphics = GraphicsModule::getInstance();
-  } 
-	catch ( TException &e) {
-    std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( TException &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
   } catch ( exception &e) {
-    std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
   }
   if ( error_str.length() == 0) {
     _return.__set_result( (Result::type)VAL_SUCCESS );
@@ -280,9 +279,9 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
       // GraphicsModule *graphics = GraphicsModule::getInstance();
       // just to link to the GraphicsModule;
     } catch ( TException &e) {
-      std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+      std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
     } catch ( exception &e) {
-      std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+      std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
     }
   }
 
@@ -372,9 +371,9 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
       // GraphicsModule *graphics = GraphicsModule::getInstance();
       // just to link to the GraphicsModule;
     } catch ( TException &e) {
-      std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+      std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
     } catch ( exception &e) {
-      std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+      std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
     }
   }
 
@@ -446,9 +445,9 @@ void QueryManagerServer::ManageDeleteBoundingBox( Query_Result &_return, const S
     // GraphicsModule *graphics = GraphicsModule::getInstance();
     // just to link to the GraphicsModule;
   } catch ( TException &e) {
-    std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
   } catch ( exception &e) {
-    std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
   }
 
   if ( error_str.length() == 0) {

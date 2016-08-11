@@ -37,7 +37,7 @@ bool EdmAccess::startConnection( const char *data_layer_hostname, const int data
 	}
     catch (TException& tx)
     {
-        cout << "ERROR: " << tx.what() << endl;
+        cout << "EXCEPTION ERROR: " << tx.what() << endl;
     }
     
     return true;		
@@ -52,7 +52,7 @@ bool EdmAccess::stopConnection()
         transport->close();
         DEBUG( "Connection to EDM closed");      
     } catch (TException& tx) {
-        cout << "ERROR: " << tx.what() << endl;
+        cout << "EXCEPTION ERROR: " << tx.what() << endl;
     }
     return true;
 }

@@ -214,11 +214,13 @@ bool HBase::getListOfModelInfoFromTables( std::string &report, std::vector< Full
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   _hbase_client->scannerClose( scan_id);
 
@@ -489,11 +491,13 @@ std::string HBase::findModel( std::string &report, std::string &return_modelID,
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   _hbase_client->scannerClose( scan_id);
 

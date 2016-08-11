@@ -420,9 +420,9 @@ void QueryManagerServer::ManageGetMeshDrawData( Query_Result& _return, const Ses
 			  
 			  GraphicsModule::getInstance()->fromatMeshForDrawing( binaryMesh, meshInfo, vertex_list, _return_.element_list, _return_.element_attrib_list, _return_.element_group_info_list );
 			} catch ( TException &e) {
-			  std::cout << "CATCH_ERROR 1: " << e.what() << std::endl;
+			  std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
 			} catch ( exception &e) {
-			  std::cout << "CATCH_ERROR 2: " << e.what() << std::endl;
+			  std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
 			}
 			std::cout << "==========>\n";
 		} else {

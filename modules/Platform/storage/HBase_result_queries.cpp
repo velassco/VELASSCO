@@ -258,11 +258,13 @@ bool HBase::getListOfMeshInfoFromTables( std::string &report, std::vector< MeshI
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   _hbase_client->scannerClose( scan_id);
   
@@ -426,11 +428,13 @@ bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< 
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   _hbase_client->scannerClose( scan_id);
   
@@ -565,11 +569,13 @@ bool HBase::getListOfStepsFromTables( std::string &report, std::vector< double> 
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   _hbase_client->scannerClose( scan_id);
   
@@ -698,7 +704,7 @@ static bool getResultInfoFromRow( std::map< int, ResultInfo> &map_result_info, c
                   }
                 catch( ... )
                   {
-                  LOGGER_SM << "Exception caught! Bad component format. While deserializing " << std::endl;
+                  LOGGER_SM << "EXCEPTION caught! Bad component format. While deserializing " << std::endl;
                   LOGGER_SM << GID::BinarySerializer::BinToHex( it->second.value ) 
                          << std::endl;
                   lst_components.clear( );
@@ -813,11 +819,13 @@ bool HBase::getListOfResultsFromTables( std::string &report, std::vector< Result
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   _hbase_client->scannerClose( scan_id);
   
@@ -996,11 +1004,13 @@ bool HBase::getListOfVerticesFromTables( std::string &report, std::vector< Verte
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   _hbase_client->scannerClose( scan_id);
   

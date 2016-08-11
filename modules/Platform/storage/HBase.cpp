@@ -808,11 +808,13 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   } catch ( TException &tx) {
     scan_ok = false;
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
     report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << report << std::endl;
   }
   
   _hbase_client->scannerClose( scan_id);
@@ -841,12 +843,12 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
     			     const std::string &analysisID, const double       timeStep,  
 				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
 {
-  LOGGER_SM << "getResultOnVertices THRIFT: =====" << std::endl;
+  LOGGER_SM << "getResultOnVertices THRIFT filter: =====" << std::endl;
   LOGGER_SM << "S " << sessionID      << std::endl;
   LOGGER_SM << "M " << modelID        << std::endl;
   LOGGER_SM << "R " << resultID       << std::endl;
   LOGGER_SM << "A " << analysisID     << std::endl;
-  LOGGER_SM << "V " << /*listOfVerticesID*/ "..." << std::endl;
+  LOGGER_SM << "V " << "... ( " << listOfVerticesID.size() << " vertices)" << std::endl;
   LOGGER_SM << "T " << timeStep       << std::endl;
 
   string table_name;
@@ -856,8 +858,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
   TableModelEntry table_set;
   bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
-	
-	std::string report;
+    std::string report;
     std::vector<ResultInfo> listOfResultInfos;
     getListOfResults( report, listOfResultInfos, sessionID, modelID, analysisID, timeStep );
     
@@ -865,14 +866,14 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
     size_t i = 0;
     for(; i < listOfResultInfos.size(); i++)
       if(listOfResultInfos[i].name == resultID){
-		  resultInfo = listOfResultInfos[i];
-		  break;
-	  }
-	if( i == listOfResultInfos.size() ){
-		LOGGER_SM << resultID << " is not found." << std::endl;
-		return "Error";
-	}
-	  
+	resultInfo = listOfResultInfos[i];
+	break;
+      }
+    if( i == listOfResultInfos.size() ){
+      LOGGER_SM << resultID << " is not found." << std::endl;
+      return "Error";
+    }
+    
     // by default hexstrings are lower case but some data has been injected as upper case !!!
     std::vector<int64_t> sorted_listOfVerticesID(listOfVerticesID.begin(), listOfVerticesID.end());
     std::sort(sorted_listOfVerticesID.begin(), sorted_listOfVerticesID.end());
@@ -880,27 +881,36 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
     i = 0;
     int64_t threshold = 1;
     while(i < sorted_listOfVerticesID.size()){
-		// group the successive vertex ids
-		size_t j = i + 1;
-		for(; j < sorted_listOfVerticesID.size(); j++)
-			if(!(
-			  sorted_listOfVerticesID[j] >= (sorted_listOfVerticesID[j-1]-threshold) &&
-			  sorted_listOfVerticesID[j] <= (sorted_listOfVerticesID[j-1]+threshold)
-			)) break;
-		LOGGER_SM << "[" << i << ", " << j << "]\n";
+      // group the successive vertex ids
+      size_t j = i + 1;
+      for(; j < sorted_listOfVerticesID.size(); j++)
+	if(!(
+	     sorted_listOfVerticesID[j] >= (sorted_listOfVerticesID[j-1]-threshold) &&
+	     sorted_listOfVerticesID[j] <= (sorted_listOfVerticesID[j-1]+threshold)
+	     )) break;
+      LOGGER_SM << "[" << i << ", " << j << "]\n";
 		
-		std::vector<int64_t> request_vertex_ids;
-		for(size_t idx = i; idx <= j; idx++) request_vertex_ids.push_back(sorted_listOfVerticesID[idx]);
+      std::vector<int64_t> request_vertex_ids;
+      for(size_t idx = i; idx <= j; idx++) request_vertex_ids.push_back(sorted_listOfVerticesID[idx]);
 		
-		scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, request_vertex_ids, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1]);
-		if ( scan_ok && ( listOfVerticesID.size() == 0)) {
-			// try with uppercase
-			scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, request_vertex_ids, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1], "%02X");
-		}
-		
-		i = j;
+      scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, request_vertex_ids, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1]);
+      if ( !scan_ok) {
+	LOGGER_SM << "Failed scan with lowercase, listOfResults.size() = " << listOfResults.size() << std::endl;
+      }
+      if ( scan_ok && ( listOfResults.size() == 0)) {
+	// try with uppercase
+	scan_ok = getResultFromVerticesIDFromTables_filter( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, request_vertex_ids, sorted_listOfVerticesID[i], sorted_listOfVerticesID[j-1], "%02X");
+	if ( !scan_ok) {
+	  LOGGER_SM << "Failed scan with uppercase, listOfResults.size() = " << listOfResults.size() << std::endl;
 	}
+      }
+		
+      i = j;
+    }
   } else {
+    LOGGER_SM << "Table names not found for this:" << std::endl;
+    LOGGER_SM << "     sessionID = " << sessionID << std::endl;
+    LOGGER_SM << "       modelID = " << modelID << std::endl;
     scan_ok = false;
   }
   string result;
@@ -984,113 +994,116 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
   int chunk_size = 4;
   for(int rowIdx = 0; rowIdx <= 1000; rowIdx+=chunk_size){
 #endif
-	  vector< TRowResult> rowsResult;
-	  std::map<std::string,std::string> m;
+    vector< TRowResult> rowsResult;
+    std::map<std::string,std::string> m;
 
-	  StrVec cols;
-	  char buf[ 100];
-	  std::cout << "Making list of vertices column names...\n";
-	  for(size_t i = 0; i < listOfVerticesID.size(); i++){
-		{
-		  std::ostringstream oss;
-		  sprintf( buf, "R:r%06dvl_", resultInfo.resultNumber );
-		  oss << buf;
-		  int64_t vertexID = byteSwap<int64_t>( listOfVerticesID[i] );
-		  oss.write( (char*)&vertexID, sizeof(int64_t));
-		  //LOGGER_SM << "=====================> " << oss.str() << std::endl;
-		  cols.push_back( oss.str() );
+    StrVec cols;
+    char buf[ 100];
+    std::cout << "Making list of vertices column names...\n";
+    for(size_t i = 0; i < listOfVerticesID.size(); i++){
+      {
+	std::ostringstream oss;
+	sprintf( buf, "R:r%06dvl_", resultInfo.resultNumber );
+	oss << buf;
+	int64_t vertexID = byteSwap<int64_t>( listOfVerticesID[i] );
+	oss.write( (char*)&vertexID, sizeof(int64_t));
+	//LOGGER_SM << "=====================> " << oss.str() << std::endl;
+	cols.push_back( oss.str() );
 
-		  // // to be removed soon
-		  // // some data only is r000001_nodeId
-		  // std::ostringstream oss2;
-		  // sprintf( buf, "R:r%06d_", resultInfo.resultNumber );
-		  // oss2 << buf;
-		  // oss2.write( (char*)&vertexID, sizeof(int64_t));
-		  // //LOGGER_SM << "=====================> " << oss.str() << std::endl;
-		  // cols.push_back( oss2.str() );
-	    }
-	  }
-	  std::cout << "Making list of vertices column names (Done)...\n";
-	  // M:un for units
-	  // M:c* prefix for c123456nm c123456nc for name of coordinates set and number of coordinates = vertices = nodes
-	  // M:m* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
-	  //                 m123456ne (numberOfElements) m123456nn (numNodesPerElem) m123456cl (color)
-	  // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
-	  // has to build the rowkey.... 
-	  // Metadata rowkeys = modelId + AnalysisID + StepNumber
-	  double my_stepValue = ( analysisID == "") ? 0.0 : timeStep; // rowkeys for static meshes have stepValue == 0.0
-	  std::string prefixRowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
+	// // to be removed soon
+	// // some data only is r000001_nodeId
+	// std::ostringstream oss2;
+	// sprintf( buf, "R:r%06d_", resultInfo.resultNumber );
+	// oss2 << buf;
+	// oss2.write( (char*)&vertexID, sizeof(int64_t));
+	// //LOGGER_SM << "=====================> " << oss.str() << std::endl;
+	// cols.push_back( oss2.str() );
+      }
+    }
+    std::cout << "Making list of vertices column names (Done)...\n";
+    // M:un for units
+    // M:c* prefix for c123456nm c123456nc for name of coordinates set and number of coordinates = vertices = nodes
+    // M:m* prefix fir m123456nm (name) m123456cn (coord.set.name) m123456et (elemType)
+    //                 m123456ne (numberOfElements) m123456nn (numNodesPerElem) m123456cl (color)
+    // ScannerID scannerOpen( Test tableName, Test startRow, list< Text> columns, map< Text, Text> attributes)
+    // has to build the rowkey.... 
+    // Metadata rowkeys = modelId + AnalysisID + StepNumber
+    double my_stepValue = ( analysisID == "") ? 0.0 : timeStep; // rowkeys for static meshes have stepValue == 0.0
+    std::string prefixRowKey = createMetaRowKey( modelID, analysisID, my_stepValue, format);
 #ifdef READ_GROUPED_ROWS
-	  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx/*0*/, format); // partitionID = 0
-	  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx+chunk_size/*( int)0x7fffffff*/, format); // partitionID = biggest ever
+    std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx/*0*/, format); // partitionID = 0
+    std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, rowIdx+chunk_size/*( int)0x7fffffff*/, format); // partitionID = biggest ever
 #else
-	  std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, 0, format); // partitionID = 0
-	  std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, ( int)0x7fffffff, format); // partitionID = biggest ever
+    std::string startRowKey = createDataRowKey( modelID, analysisID, my_stepValue, 0, format); // partitionID = 0
+    std::string stopRowKey = createDataRowKey( modelID, analysisID, my_stepValue, ( int)0x7fffffff, format); // partitionID = biggest ever
 #endif
-	  const size_t len_prefix_rowkey = prefixRowKey.length();
-	  ScannerID scan_id = _hbase_client->scannerOpenWithStop( data_table, startRowKey, stopRowKey, cols, m);
-	  // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
+    const size_t len_prefix_rowkey = prefixRowKey.length();
+    ScannerID scan_id = _hbase_client->scannerOpenWithStop( data_table, startRowKey, stopRowKey, cols, m);
+    // ScannerID scan_id = _hbase_client.scannerOpenWithScan( table_name, ts, m);
 
-	  //LOGGER_SM << "\tAccessing table '" << data_table << "' with" << std::endl;
-	  //LOGGER_SM << "\t startRowKey = " << startRowKey << std::endl;
-	  //LOGGER_SM << "\t  stopRowKey = " << stopRowKey << std::endl;
-	  
-	  try {
-		// or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
-		while ( true ) {
-		  _hbase_client->scannerGet( rowsResult, scan_id);
-		  if ( rowsResult.size() == 0)
-		break;
-		  // process rowsResult
-		  for ( size_t i = 0; i < rowsResult.size(); i++) {
-		// convert to return type
-		// check if the rowkey is our's ... should be ....
-		if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
-		  continue; // break;
-		bool ok = getResultsFromRow( resultOnVertexListMap, /*listOfResults,*/ rowsResult[ i ], resultInfo);
-		if ( ok) {
+    //LOGGER_SM << "\tAccessing table '" << data_table << "' with" << std::endl;
+    //LOGGER_SM << "\t startRowKey = " << startRowKey << std::endl;
+    //LOGGER_SM << "\t  stopRowKey = " << stopRowKey << std::endl;
+
+    LOGGER_SM << "Looking for results of " << listOfVerticesID.size() << " vertices" << std::endl; 
+    try {
+      // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+      while ( true ) {
+	_hbase_client->scannerGet( rowsResult, scan_id);
+	if ( rowsResult.size() == 0)
+	  break;
+	// process rowsResult
+	for ( size_t i = 0; i < rowsResult.size(); i++) {
+	  // convert to return type
+	  // check if the rowkey is our's ... should be ....
+	  if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey ) != 0)
+	    continue; // break;
+	  bool ok = getResultsFromRow( resultOnVertexListMap, /*listOfResults,*/ rowsResult[ i ], resultInfo);
+	  if ( ok) {
 			
-			//size_t i = 0;
-			//for(; i < foundFlags.size(); i++)
-			//  if(!foundFlags[i]) break;
-			//if(i == foundFlags.size()) done = true;
+	    //size_t i = 0;
+	    //for(; i < foundFlags.size(); i++)
+	    //  if(!foundFlags[i]) break;
+	    //if(i == foundFlags.size()) done = true;
 
-		  // getMeshInfoFromRow.push_back( model_info);
-		  // getMeshInfoFromRow( tmp_lst_meshes, rowsResult[ i]);
-		} else {
-		  // nothing read? 
-		  // eventually provide an error
-		}
-		// several rows = partitions so don't quit yet,
-		// break;
-		  }
-		} // while ( true)
-
-		if ( listOfResults.size() == 0) {
-		  // nothing found
-		  // scan_ok = false; // scan was ok but nothing found ...
-		  std::stringstream tmp;
-		  if ( analysisID != "") {
-		tmp << "Not found: Result for Dynamic Mesh" 
-			<< " for Analysis = '" << analysisID << "'"
-			<< " and stepValue = " << timeStep;
-		  } else {
-		tmp << "Not found: Results for Static Mesh" ;
-		  }
-		  report = tmp.str();
-		}
-	  } catch ( const IOError &ioe) {
-		scan_ok = false;
-		std::stringstream tmp;
-		tmp << "IOError = " << ioe.what();
-		report = tmp.str();
-	  } catch ( TException &tx) {
-		scan_ok = false;
-		std::stringstream tmp;
-		tmp << "TException = " << tx.what();
-		report = tmp.str();
+	    // getMeshInfoFromRow.push_back( model_info);
+	    // getMeshInfoFromRow( tmp_lst_meshes, rowsResult[ i]);
+	  } else {
+	    // nothing read? 
+	    // eventually provide an error
 	  }
-	  _hbase_client->scannerClose( scan_id);
+	  // several rows = partitions so don't quit yet,
+	  // break;
+	}
+      } // while ( true)
+
+      if ( listOfResults.size() == 0) {
+	// nothing found
+	// scan_ok = false; // scan was ok but nothing found ...
+	std::stringstream tmp;
+	if ( analysisID != "") {
+	  tmp << "Not found: Result for Dynamic Mesh" 
+	      << " for Analysis = '" << analysisID << "'"
+	      << " and stepValue = " << timeStep;
+	} else {
+	  tmp << "Not found: Results for Static Mesh" ;
+	}
+	report = tmp.str();
+      }
+    } catch ( const IOError &ioe) {
+      scan_ok = false;
+      std::stringstream tmp;
+      tmp << "IOError = " << ioe.what();
+      report = tmp.str();
+      LOGGER_SM << "EXCEPTION: " << report << std::endl;
+    } catch ( TException &tx) {
+      scan_ok = false;
+      std::stringstream tmp;
+      tmp << "TException = " << tx.what();
+      report = tmp.str();
+      LOGGER_SM << "EXCEPTION: " << report << std::endl;
+    }
+    _hbase_client->scannerClose( scan_id);
 #ifdef READ_GROUPED_ROWS
   }
 #endif
@@ -1099,12 +1112,14 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
   size_t orig_num_vertices = resultOnVertexListMap.size();
 
   // get only asked vertices and 
+  int64_t numVerticesNotFound = 0;
   listOfResults.clear();
   for ( size_t i = 0; i < listOfVerticesID.size(); i++) {
     int64_t vertexId = listOfVerticesID[ i];
     std::unordered_map< int64_t, std::vector< double > >::const_iterator it_vertexAndResult = resultOnVertexListMap.find( vertexId);
     if ( it_vertexAndResult == resultOnVertexListMap.end()) {
       // LOGGER_SM << "not found";
+      numVerticesNotFound++;
     } else {
       // LOGGER_SM << " found";
       ResultOnVertex result;
@@ -1114,18 +1129,21 @@ bool HBase::getResultFromVerticesIDFromTables( std::string& report, std::vector<
     }
   }
   
-  LOGGER_SM << "Found " << listOfResults.size() << " verticesID from the retrieved " << orig_num_vertices << " ones." << std::endl; 
+  LOGGER_SM << "Used " << listOfResults.size() << " verticesID from the retrieved " << orig_num_vertices << " ones." << std::endl; 
+  if ( numVerticesNotFound) {
+    LOGGER_SM << numVerticesNotFound << " out of " << listOfVerticesID.size() << " vertices NOT FOUND" << std::endl;
+  }
 
- // 	#define DEBUG_RESULTS
-	#ifdef  DEBUG_RESULTS
-	size_t n_debug_results = listOfResults.size() < 10 ? listOfResults.size() : 10;
-			for(size_t i = 0; i < n_debug_results; i++){
-				std::cout << listOfResults[i].id << "\t";
-				for(size_t j = 0; j < listOfResults[i].value.size(); j++)
-				  std::cout << listOfResults[i].value[j] << " ";
-				std::cout << std::endl;
-			}
-	#endif
+  // 	#define DEBUG_RESULTS
+#ifdef  DEBUG_RESULTS
+  size_t n_debug_results = listOfResults.size() < 10 ? listOfResults.size() : 10;
+  for(size_t i = 0; i < n_debug_results; i++){
+    std::cout << listOfResults[i].id << "\t";
+    for(size_t j = 0; j < listOfResults[i].value.size(); j++)
+      std::cout << listOfResults[i].value[j] << " ";
+    std::cout << std::endl;
+  }
+#endif
   
   return scan_ok;
 }
@@ -1140,7 +1158,7 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
   LOGGER_SM << "M " << modelID        << std::endl;
   LOGGER_SM << "R " << resultID       << std::endl;
   LOGGER_SM << "A " << analysisID     << std::endl;
-  LOGGER_SM << "V " << /*listOfVerticesID*/ "..." << std::endl;
+  LOGGER_SM << "V " << "... ( " << listOfVerticesID.size() << " vertices)" << std::endl;
   LOGGER_SM << "T " << timeStep       << std::endl;
 
   string table_name;
@@ -1169,11 +1187,20 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
 	  
     // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getResultFromVerticesIDFromTables( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, listOfVerticesID);
-    if ( scan_ok && ( listOfVerticesID.size() == 0)) {
+    if ( !scan_ok) {
+      LOGGER_SM << "Failed scan with lowercase, listOfResults.size() = " << listOfResults.size() << std::endl;
+    }
+    if ( scan_ok && ( listOfResults.size() == 0)) { // i.e. scan was performed but nothing found
       // try with uppercase
       scan_ok = getResultFromVerticesIDFromTables( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, listOfVerticesID, "%02X");
+      if ( !scan_ok) {
+	LOGGER_SM << "Failed scan with uppercase, listOfResults.size() = " << listOfResults.size() << std::endl;
+      }
     }
   } else {
+    LOGGER_SM << "Table names not found for this:" << std::endl;
+    LOGGER_SM << "     sessionID = " << sessionID << std::endl;
+    LOGGER_SM << "       modelID = " << modelID << std::endl;
     scan_ok = false;
   }
   string result;
@@ -1744,11 +1771,13 @@ bool HBase::getMeshElementsFromTable(std::string& report,
 		std::stringstream tmp;
 		tmp << "IOError = " << ioe.what();
 		report = tmp.str();
+		LOGGER_SM << "EXCEPTION: " << report << std::endl;
 	  } catch ( TException &tx) {
 		scan_ok = false;
 		std::stringstream tmp;
 		tmp << "TException = " << tx.what();
 		report = tmp.str();
+		LOGGER_SM << "EXCEPTION: " << report << std::endl;
 	  }
 	  _hbase_client->scannerClose( scan_id);
 #ifdef READ_MESH_GROUPED_ROWS
