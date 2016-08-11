@@ -973,7 +973,7 @@ bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &mo
   }
 
   // and now adding to the VELaSSCo_Models table as Properties:bb
-  bool doUpdateVELaSSCoModels = false;
+  bool doUpdateVELaSSCoModels = true;
   if ( doUpdateVELaSSCoModels) {
     StrMap attr;
     std::string tableName = table_set._list_models;
@@ -981,7 +981,16 @@ bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &mo
     std::vector< Mutation> model_mutations;
     model_mutations.push_back( Mutation());
     model_mutations.back().column = "Properties:bb";
-    std::string bbox_str( ( const char *)return_bbox, sizeof( double) * 6);
+    // store doubles in big-endian:
+    double big_endian_bbox[ 6];
+    big_endian_bbox[ 0] = byteSwap< double>( return_bbox[ 0]);
+    big_endian_bbox[ 1] = byteSwap< double>( return_bbox[ 1]);
+    big_endian_bbox[ 2] = byteSwap< double>( return_bbox[ 2]);
+    big_endian_bbox[ 3] = byteSwap< double>( return_bbox[ 3]);
+    big_endian_bbox[ 4] = byteSwap< double>( return_bbox[ 4]);
+    big_endian_bbox[ 5] = byteSwap< double>( return_bbox[ 5]);
+    // std::string bbox_str( ( const char *)return_bbox, sizeof( double) * 6);
+    std::string bbox_str( ( const char *)big_endian_bbox, sizeof( double) * 6);
     model_mutations.back().value = bbox_str;
     LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
     LOGGER_SM << "         rowKey = " << modelRowKey << std::endl;
