@@ -68,7 +68,7 @@ extern std::ofstream       g_apiTraceFile;
 #define CATCH_ERROR               \
     catch (...)                   \
 	{                             \
-	        DEBUG( "CATCH_ERROR");	  \
+	        DEBUG( "EXCEPTION CATCH_ERROR");	  \
 		return VAL_UNKNOWN_ERROR; \
 	}                             \
 

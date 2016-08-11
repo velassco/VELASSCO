@@ -116,11 +116,12 @@ VAL_Result Client::UserLogin( /* in */
     } 
   catch (TException& tx)
     {
-      LOGGER << FUNCTION_NAME << " ERROR: " << tx.what() << std::endl;
+      LOGGER << FUNCTION_NAME << "EXCEPTION ERROR: " << tx.what() << std::endl;
       ret = VAL_SYSTEM_NOT_AVAILABLE;
     }
   catch (...)
     {
+      LOGGER << FUNCTION_NAME << "EXCEPTION ERROR: undefined" << std::endl;
       ret = VAL_UNKNOWN_ERROR;
     }
 
@@ -152,6 +153,7 @@ VAL_Result Client::UserLogout( /* in */
     }
   catch (...)
     {
+      LOGGER << FUNCTION_NAME << "EXCEPTION ERROR: undefined" << std::endl;
       return VAL_UNKNOWN_ERROR;
     }
 }
@@ -210,6 +212,7 @@ VAL_Result Client::Query( /* in */
     }
   catch (...)
     {
+      LOGGER << FUNCTION_NAME << "EXCEPTION ERROR: undefined" << std::endl;
       return VAL_UNKNOWN_ERROR;
     }
 }
@@ -247,6 +250,7 @@ VAL_Result Client::GetStatusDB( /* in */
     }
   catch (...)
     {
+      LOGGER << FUNCTION_NAME << "EXCEPTION ERROR: undefined" << std::endl;
       return VAL_UNKNOWN_ERROR;
     }
   
@@ -283,6 +287,7 @@ VAL_Result Client::StopVELaSSCo(  /* in */
     }
   catch (...)
     {
+      LOGGER << FUNCTION_NAME << "EXCEPTION ERROR: undefined" << std::endl;
       return VAL_UNKNOWN_ERROR;
     }
   
