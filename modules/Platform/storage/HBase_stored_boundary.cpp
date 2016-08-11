@@ -45,7 +45,7 @@ using namespace VELaSSCo;
 #include <curl/curl.h>
 #include "cJSON.h"
 
-bool HBase::checkIfTableExists( const std::string table_name) {
+bool HBase::checkIfTableExists( const std::string &table_name) {
   std::vector< Text> lst_tables;
   _hbase_client->getTableNames( lst_tables);
   bool found = false;
