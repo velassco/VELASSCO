@@ -217,11 +217,17 @@ $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.c $(COMMON_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@	
 
 check_jars:
-	@echo "Checcking JAR files ..."
+	@echo "Checking JAR files in $(JAR_DST_FOLDER) --"
 	@for jj in $(JAR_FILES) ; do \
-	  diff -sq $(JAR_SRC_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj ; \
+	  echo "  checking $$jj ..."; \
+	  diff_out=`diff -q $(JAR_SRC_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj` ; \
+	  if [ "$$diff_out" == "" ] ; then \
+	    echo "  ... identical"; \
+	  else  \
+	    echo "  ... DIFFERENT!!!!"; \
+	  fi \
 	done
-	@echo "... done"
+	@echo "--> done"
 
 debug:
 	+make "OPTS=-g"
