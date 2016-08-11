@@ -259,6 +259,7 @@ namespace VELaSSCo
     // to access stored data
     bool checkIfTableExists( const std::string table_name);
     std::string getVQueryID( const std::string &vqueryName, const std::string &vqueryParameters);
+    std::string createModelListRowKey( const std::string modelID);
     std::string createStoredMetadataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue,
 					    const std::string &vqueryName, const std::string &vqueryParameters);
     std::string createStoredDataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue,
@@ -331,6 +332,13 @@ namespace VELaSSCo
     MD5_Update( &md5ctx, vqueryParameters.data(), vqueryParameters.length());
     MD5_Final( digest, &md5ctx);
     return std::string( ( const char *)digest, MD5_DIGEST_LENGTH);
+  }
+
+  inline std::string createModelListRowKey( const std::string modelID) {
+    const size_t tmp_buf_size = 256;
+    char tmp_buf[ tmp_buf_size];
+    std::string modelID_hex( ModelID_DoHexStringConversionIfNecesary( modelID, tmp_buf, tmp_buf_size));
+    return modelID_hex;
   }
 
   inline std::string HBase::createStoredMetadataRowKey( const std::string modelID, const std::string &analysisID, const double stepValue,

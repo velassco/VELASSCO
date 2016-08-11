@@ -904,71 +904,106 @@ bool HBase::saveBoundingBox( const std::string &sessionID, const std::string &mo
     if ( !ok) return false;
   }
 
-  // cell can only be 8MB big .... may be
-  std::string tableName = table_set._stored_vquery_metadata;
-
-  StrMap attr;
   double stepValue = 0.0; // dummy step
   // adding metadata row:
-  std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
-  std::vector< Mutation> metadata_mutations;
-  metadata_mutations.push_back( Mutation());
-  metadata_mutations.back().column = "Q:vq";
-  metadata_mutations.back().value = vqueryName;
-  metadata_mutations.push_back( Mutation());
-  metadata_mutations.back().column = "Q:qp";
-  metadata_mutations.back().value = vqueryParameters;
-  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
-  LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
-  LOGGER_SM << "   saving metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
-  std::string tmp_report = "   metadata row saved";
-  try {
-    _hbase_client->mutateRow( tableName, metadataRowKey, metadata_mutations, attr);
-  } catch ( const IOError &ioe) {
-    std::stringstream tmp;
-    tmp << "IOError = " << ioe.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  } catch ( TException &tx) {
-    std::stringstream tmp;
-    tmp << "TException = " << tx.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  {
+    StrMap attr;
+    std::string tableName = table_set._stored_vquery_metadata;
+    std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+    std::vector< Mutation> metadata_mutations;
+    metadata_mutations.push_back( Mutation());
+    metadata_mutations.back().column = "Q:vq";
+    metadata_mutations.back().value = vqueryName;
+    metadata_mutations.push_back( Mutation());
+    metadata_mutations.back().column = "Q:qp";
+    metadata_mutations.back().value = vqueryParameters;
+    LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+    LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
+    LOGGER_SM << "   saving metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
+    std::string tmp_report = "   metadata row saved";
+    try {
+      _hbase_client->mutateRow( tableName, metadataRowKey, metadata_mutations, attr);
+    } catch ( const IOError &ioe) {
+      std::stringstream tmp;
+      tmp << "IOError = " << ioe.what();
+      tmp_report = tmp.str();
+      ok = false;
+      LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+    } catch ( TException &tx) {
+      std::stringstream tmp;
+      tmp << "TException = " << tx.what();
+      tmp_report = tmp.str();
+      ok = false;
+      LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+    }
+    LOGGER_SM << "     report = " << tmp_report << std::endl;  
   }
-  LOGGER_SM << "     report = " << tmp_report << std::endl;  
 
-  tableName = table_set._stored_vquery_data;
-
+  // cell can only be 8MB big .... may be ( 6 doubles < 8MB)
   // adding data row:
-  std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
-  std::vector< Mutation> data_mutations;
-  data_mutations.push_back( Mutation());
-  data_mutations.back().column = "Q:qr";
-  std::string bbox_str( ( const char *)return_bbox, sizeof( double) * 6);
-  data_mutations.back().value = bbox_str;
-  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
-  LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
-  LOGGER_SM << "   saving data cells with " << bbox_str.size() << " bytes" << std::endl;
-  tmp_report = "   data row saved";
-  try {
-    _hbase_client->mutateRow( tableName, dataRowKey, data_mutations, attr);
-  } catch ( const IOError &ioe) {
-    std::stringstream tmp;
-    tmp << "IOError = " << ioe.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  } catch ( TException &tx) {
-    std::stringstream tmp;
-    tmp << "TException = " << tx.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  {
+    StrMap attr;
+    std::string tableName = table_set._stored_vquery_data;
+    std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one boundary mesh, in partition 0
+    std::vector< Mutation> data_mutations;
+    data_mutations.push_back( Mutation());
+    data_mutations.back().column = "Q:qr";
+    std::string bbox_str( ( const char *)return_bbox, sizeof( double) * 6);
+    data_mutations.back().value = bbox_str;
+    LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+    LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
+    LOGGER_SM << "   saving data cells with " << bbox_str.size() << " bytes" << std::endl;
+    std::string tmp_report = "   data row saved";
+    try {
+      _hbase_client->mutateRow( tableName, dataRowKey, data_mutations, attr);
+    } catch ( const IOError &ioe) {
+      std::stringstream tmp;
+      tmp << "IOError = " << ioe.what();
+      tmp_report = tmp.str();
+      ok = false;
+      LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+    } catch ( TException &tx) {
+      std::stringstream tmp;
+      tmp << "TException = " << tx.what();
+      tmp_report = tmp.str();
+      ok = false;
+      LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+    }
+    LOGGER_SM << "     report = " << tmp_report << std::endl;  
   }
-  LOGGER_SM << "     report = " << tmp_report << std::endl;  
 
+  // and now adding to the VELaSSCo_Models table as Properties:bb
+  bool doUpdateVELaSSCoModels = false;
+  if ( doUpdateVELaSSCoModels) {
+    StrMap attr;
+    std::string tableName = table_set._list_models;
+    std::string modelRowKey = createModelListRowKey( modelID);
+    std::vector< Mutation> model_mutations;
+    model_mutations.push_back( Mutation());
+    model_mutations.back().column = "Properties:bb";
+    std::string bbox_str( ( const char *)return_bbox, sizeof( double) * 6);
+    model_mutations.back().value = bbox_str;
+    LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+    LOGGER_SM << "         rowKey = " << modelRowKey << std::endl;
+    LOGGER_SM << "   saving model cells with " << bbox_str.size() << " bytes" << std::endl;
+    std::string tmp_report = "   model cell row saved";
+    try {
+      _hbase_client->mutateRow( tableName, modelRowKey, model_mutations, attr);
+    } catch ( const IOError &ioe) {
+      std::stringstream tmp;
+      tmp << "IOError = " << ioe.what();
+      tmp_report = tmp.str();
+      ok = false;
+      LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+    } catch ( TException &tx) {
+      std::stringstream tmp;
+      tmp << "TException = " << tx.what();
+      tmp_report = tmp.str();
+      ok = false;
+      LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+    }
+    LOGGER_SM << "     report = " << tmp_report << std::endl;  
+  }
   return ok; // guess the rows are ok...  
 }
 
