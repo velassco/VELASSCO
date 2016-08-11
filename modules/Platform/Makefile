@@ -223,9 +223,9 @@ check_jars:
 	  echo "  checking $$jj ..."; \
 	  diff_out=`diff -q $(JAR_SRC_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj` ; \
 	  if [ "$$diff_out" == "" ] ; then \
-	    echo "  ... identical"; \
+	    echo -e "  ... \033[32;1midentical\033[0m"; \
 	  else  \
-	    echo "  ... DIFFERENT!!!!"; \
+	    echo -e "  ... \033[31;1mDIFFERENT!!!!\033[0m"; \
 	  fi \
 	done
 	@echo "--> done"
