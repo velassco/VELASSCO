@@ -75,11 +75,19 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
       return;
     }
 
+  std::string name       = "";
   // Parse query JSON
-  std::istringstream ss(query);
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_json(ss, pt);
-  std::string name       = pt.get<std::string>("name");
+  try {
+    std::istringstream ss(query);
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss, pt);
+    name       = pt.get<std::string>("name");
+  } catch ( ...) {
+    LOGGER << "EXCEPTION parsing JSON queryData" << std::endl;
+    _return.__set_result( (Result::type)VAL_INVALID_QUERY_PARAMETERS);
+    _return.__set_data( "EXCEPTION parsing JSON queryData");
+    return;
+  }
 
   /* The first query */
   if ( name == "GetResultFromVerticesID") {
