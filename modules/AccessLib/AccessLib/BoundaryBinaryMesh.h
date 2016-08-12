@@ -218,10 +218,6 @@ namespace VELaSSCo {
       }
     }
 
-#ifndef NDEBUG
-    size_t last = mesh_data_pos + numReadVertices * sizeof( MeshPoint) + numReadFaces * sizeof( BoundaryTriangle);
-    assert( last == binaryMeshSize);
-#endif // NDEBUG
     MeshPoint *lst_vertices = ( MeshPoint *)&binaryMeshData[ mesh_data_pos];
 
     // first try as triangles ( they are smaller)
@@ -231,8 +227,16 @@ namespace VELaSSCo {
 
     if ( numReadVertices && numReadFaces) {
       if ( lst_triangles[ 0]._num_nodes == 3) { // they are effectivelly triangles
+#ifndef NDEBUG
+        size_t last = mesh_data_pos + numReadVertices * sizeof( MeshPoint) + numReadFaces * sizeof( BoundaryTriangle);
+        assert( last == binaryMeshSize);
+#endif // NDEBUG
 	this->set( lst_vertices, numReadVertices, lst_triangles, numReadFaces, mem_str);
       } else if ( lst_quadrilaterals[ 0]._num_nodes == 4) { // they are in fact quadrilaterals !!!
+#ifndef NDEBUG
+        size_t last = mesh_data_pos + numReadVertices * sizeof( MeshPoint) + numReadFaces * sizeof( BoundaryQuadrilateral);
+        assert( last == binaryMeshSize);
+#endif // NDEBUG
 	this->set( lst_vertices, numReadVertices, lst_quadrilaterals, numReadFaces, mem_str);
       }
     }
