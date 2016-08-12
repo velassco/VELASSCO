@@ -10,7 +10,9 @@
 #include "VELaSSCoSM.h"
 using namespace VELaSSCoSM;
 
-#include "RealTimeFormat.h"
+// the format is shared between the QueryManager, the AccessLibrary and th visualiztion client
+// so it's located in the AccessLibrary folder
+#include "../../AccessLib/AccessLib/RealTimeFormat.h"
 
 #include "GraphicsElementTypes.h"
 

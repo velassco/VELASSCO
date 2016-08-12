@@ -19,7 +19,8 @@
 #endif
 
 //#include "../../EngineLayer/QueryManager/commonFiles/RealTimeFormat.h"
-#include "../../Platform/commonFiles/RealTimeFormat.h"
+// #include "../../Platform/commonFiles/RealTimeFormat.h"
+#include "RealTimeFormat.h"
 
 /**
  * List of function result codes. Non-zero codes indicate an error.

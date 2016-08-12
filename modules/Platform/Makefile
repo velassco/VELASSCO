@@ -218,17 +218,21 @@ $(OBJS_DIR)/%.o : $(COMMON_DIR)/%.c $(COMMON_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@	
 
 check_jars:
-	@echo "Checking JAR files in $(JAR_DST_FOLDER) --"
-	@for jj in $(JAR_FILES) ; do \
-	  echo "  checking $$jj ..."; \
-	  diff_out=`diff -q $(JAR_SRC_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj` ; \
-	  if [ "$$diff_out" == "" ] ; then \
-	    echo -e "  ... \033[32;1midentical\033[0m"; \
-	  else  \
-	    echo -e "  ... \033[31;1mDIFFERENT!!!!\033[0m"; \
-	  fi \
-	done
-	@echo "--> done"
+	@if [ "$(JAR_FILES)" != "" ] ; then \
+	  echo "Checking JAR files in $(JAR_DST_FOLDER) --" ; \
+	  for jj in $(JAR_FILES) ; do \
+	    echo "  checking $$jj ..."; \
+	    diff_out=`diff -q $(JAR_SRC_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj` ; \
+	    if [ "$$diff_out" == "" ] ; then \
+	      echo -e "  ... \033[32;1midentical\033[0m"; \
+	    else  \
+	      echo -e "  ... \033[31;1mDIFFERENT!!!!\033[0m"; \
+	    fi \
+	  done ; \
+	  echo "--> done" ; \
+	else \
+	  echo "--> No JAR files to check" ; \
+	fi;
 
 debug:
 	+make "OPTS=-g"

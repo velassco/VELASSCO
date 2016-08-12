@@ -28,11 +28,13 @@
 
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
-#include "../../Platform/commonFiles/RealTimeFormat.h"
+
+// #include "../../Platform/commonFiles/RealTimeFormat.h"
 
 // the format is shared between the QueryManager, the AccessLibrary and th visualiztion client
 // so it's located in the AccessLibrary folder
 #include "BoundaryBinaryMesh.h"
+#include "RealTimeFormat.h"
 
 
 
