@@ -128,6 +128,76 @@ void QueryManagerServer::ManageGetBoundingBox( Query_Result &_return, const Sess
   LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
 }
 
+void QueryManagerServer::ManageDeleteBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
+  // _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+  // _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string modelID            = pt.get<std::string>( "modelID");
+  int64_t numVertexIDs           = pt.get< int64_t>( "numVertexIDs");
+  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+  std::string lstVertexIDs       = as_string< size_t>( pt, "lstVertexIDs");
+  std::string analysisID         = pt.get<std::string>( "analysisID");
+  std::string stepOptions        = pt.get<std::string>( "stepOptions");
+  int numSteps                   = pt.get< int>( "numSteps");
+  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
+  std::string strSteps           = as_string< size_t>( pt, "lstSteps");
+  std::vector< double> lstSteps  = as_vector< double>( pt, "lstSteps");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "nV -" << numVertexIDs       << "-" << std::endl;
+  std::cout << "Vs -" << lstVertexIDs       << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "SO -" << stepOptions       << "-" << std::endl;
+  std::cout << "nS -" << numSteps       << "-" << std::endl;
+  std::cout << "Ss -" << strSteps       << "-" << std::endl;
+
+  std::string error_str;
+  _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
+
+  try {
+    //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
+    error_str = "";
+    queryServer->deleteStoredBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+					  // analysisID, numSteps, lstSteps,
+					  "", 0, NULL,
+					  // numVertexIDs, lstVertexIDs,
+					  0, NULL,
+					  &error_str);
+    
+    // GraphicsModule *graphics = GraphicsModule::getInstance();
+    // just to link to the GraphicsModule;
+  } catch ( TException &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( binary_mesh);
+  } else {
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  if ( error_str.length() != 0) {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
+}
+
 
 void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query) {
  
@@ -395,65 +465,185 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
   }
 }
 
-void QueryManagerServer::ManageDeleteBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query) {
-  // double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
-  // _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
-  // _return.__set_result( (Result::type)VAL_SUCCESS );
 
+void QueryManagerServer::ManageGetSimplifiedMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON
   std::istringstream ss(query);
   boost::property_tree::ptree pt;
   boost::property_tree::read_json(ss, pt);
 
   // get parameters:
-  std::string modelID            = pt.get<std::string>( "modelID");
-  int64_t numVertexIDs           = pt.get< int64_t>( "numVertexIDs");
-  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-  std::string lstVertexIDs       = as_string< size_t>( pt, "lstVertexIDs");
-  std::string analysisID         = pt.get<std::string>( "analysisID");
-  std::string stepOptions        = pt.get<std::string>( "stepOptions");
-  int numSteps                   = pt.get< int>( "numSteps");
-  // can be very large, eventually it can be stored in base64-encoding compressed byte-buffer
-  std::string strSteps           = as_string< size_t>( pt, "lstSteps");
-  std::vector< double> lstSteps  = as_vector< double>( pt, "lstSteps");
+  std::string name       = pt.get<std::string>( "name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string meshName     = pt.get<std::string>( "meshID"); // in fact it's the mesh name
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  std::string parameters = pt.get<std::string>( "parameters");
   
   std::string dl_sessionID = GetDataLayerSessionID( sessionID);
 
   std::cout << "S   " << sessionID        << std::endl;
   std::cout << "dlS " << dl_sessionID     << std::endl;
   std::cout << "M  -" << modelID          << "-" << std::endl;
-  std::cout << "nV -" << numVertexIDs       << "-" << std::endl;
-  std::cout << "Vs -" << lstVertexIDs       << "-" << std::endl;
+  std::cout << "Msh-" << meshName           << "-" << std::endl;
   std::cout << "An -" << analysisID       << "-" << std::endl;
-  std::cout << "SO -" << stepOptions       << "-" << std::endl;
-  std::cout << "nS -" << numSteps       << "-" << std::endl;
-  std::cout << "Ss -" << strSteps       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue       << "-" << std::endl;
+  std::cout << "Par-" << parameters       << "-" << std::endl;
+
+  // in theory should check first if it has already been calculated by doing a
+  // queryServer->getBoundingBox( sessionID, query);
+  // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
 
   std::string error_str;
+
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes _return_;
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
+  int meshID = -1;
+  std::string elementType = "";
+  if ( _return_.meshInfos.size() == 0) {
+    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+    error_str = "There is no mesh metadata.";
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	elementType = getStrFromElementType( it->elementType.shape);
+	break;
+      }
+    }
+    if ( meshID == -1) { // not found
+      error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
+    }
+  }
+  
+  std::string binary_mesh = "";
+  if ( error_str.length() == 0) {
+    std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << " and elementType = " << elementType << std::endl;
+    try {
+      //AnalyticsModule::getInstance()->calculateSimplifiedMesh( GetQueryManagerSessionID( sessionID), 
+      queryServer->calculateSimplifiedMesh( GetQueryManagerSessionID( sessionID), 
+					    modelID,
+					    meshID, elementType,
+					    analysisID, stepValue, 
+					    parameters,
+					    &binary_mesh, &error_str);
+      // GraphicsModule *graphics = GraphicsModule::getInstance();
+      // just to link to the GraphicsModule;
+    } catch ( TException &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+    } catch ( exception &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+    }
+  }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( binary_mesh);
+  } else {
+    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  simplified_mesh = ( " << _return.data.length() << " bytes)" << std::endl;
+  if ( error_str.length() == 0) {
+    LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+  } else {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
+}
+
+void QueryManagerServer::ManageDeleteSimplifiedMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string name       = pt.get<std::string>( "name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string meshName     = pt.get<std::string>( "meshID"); // in fact it's the mesh name
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  std::string parameters = pt.get<std::string>( "parameters");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "Msh-" << meshName           << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue       << "-" << std::endl;
+  std::cout << "Par-" << parameters       << "-" << std::endl;
+
+  std::string error_str;
+
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
-  try {
-    //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
-    error_str = "";
-    queryServer->deleteStoredBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
-					  // analysisID, numSteps, lstSteps,
-					  "", 0, NULL,
-					  // numVertexIDs, lstVertexIDs,
-					  0, NULL,
-					  &error_str);
-    
-    // GraphicsModule *graphics = GraphicsModule::getInstance();
-    // just to link to the GraphicsModule;
-  } catch ( TException &e) {
-    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
-  } catch ( exception &e) {
-    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes _return_;
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
+  int meshID = -1;
+  std::string elementType = "";
+  if ( _return_.meshInfos.size() == 0) {
+    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+    error_str = "There is no mesh metadata.";
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	elementType = getStrFromElementType( it->elementType.shape);
+	break;
+      }
+    }
+    if ( meshID == -1) { // not found
+      error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
+    }
+  }
+  
+  bool storedSimplifiedFound = false;
+  if ( error_str.length() == 0) {
+    std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << " and elementType = " << elementType << std::endl;
+    // std::string binary_mesh = "";
+    try {
+      //AnalyticsModule::getInstance()->calculateSimplifiedMesh( GetQueryManagerSessionID( sessionID),
+      error_str = "";
+      queryServer->deleteStoredSimplifiedMesh( GetQueryManagerSessionID( sessionID), 
+					       modelID,
+					       meshID, elementType,
+					       analysisID, stepValue, 
+					       parameters,
+					       &error_str);
+      // GraphicsModule *graphics = GraphicsModule::getInstance();
+      // just to link to the GraphicsModule;
+    } catch ( TException &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+    } catch ( exception &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+    }
   }
 
   if ( error_str.length() == 0) {
     _return.__set_result( (Result::type)VAL_SUCCESS );
     // _return.__set_data( binary_mesh);
   } else {
+    if ( !storedSimplifiedFound) {
+      _return.__set_result( (Result::type)VAL_SIMPLIFIED_MESH_NOT_FOUND);
+    }
     _return.__set_data( error_str);
   }
 		  

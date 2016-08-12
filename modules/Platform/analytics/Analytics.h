@@ -39,6 +39,13 @@ public:
 				 const int meshID, const std::string &elementType,
 				 const std::string &analysisID, const double stepValue,
 				 std::string *return_binary_mesh, std::string *return_error_str);
+  
+  void calculateSimplifiedMesh( const std::string &sessionID,
+				const std::string &modelID, const std::string &dataTableName,
+				const int meshID, const std::string &elementType,
+				const std::string &analysisID, const double stepValue,
+				const std::string &parameters,
+				std::string *return_binary_mesh, std::string *return_error_str);
 
 private:
   AnalyticsModule() {};

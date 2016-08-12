@@ -70,6 +70,8 @@ typedef enum
 	/* GetBoundaryOfAMesh */
 	VAL_MESH_ID_NOT_FOUND               = 0x2001,
 	VAL_BOUNDARY_MESH_NOT_FOUND         = 0x2002,
+	/* GetSimplifiedMesh */
+	VAL_SIMPLIFIED_MESH_NOT_FOUND       = 0x2003,
 
 	/* GetDiscrete2ContinuumOfAModel */
 	// also uses VAL_INVALID_MODEL_ID
@@ -247,7 +249,9 @@ extern "C" {
 					   const char     *analysisID,
 					   const double    stepValue,
 					   /* out */
-					   const char     **resultMesh, // binary data with the mesh vertices and elements
+					   const char     **resultMesh,
+					   // binary data with the mesh vertices and elements
+					   // the resultMesh format is described in BoundaryBinaryMesh.h
 					   size_t         *resultMeshByteSize,
 					   const char     **resultErrorStr); // in case of error
   VAL_Result VAL_API valDeleteBoundaryOfAMesh( /* in */
@@ -270,6 +274,34 @@ extern "C" {
 					  /* out */
 					  const char     **resultErrorStr); // in case of error
 
+  // at the moment it only works with tetrahedral meshes.
+  VAL_Result VAL_API valGetSimplifiedMesh( /* in */
+					   VAL_SessionID   sessionID,
+					   const char     *modelID,
+					   const char     *meshID,
+					   const char     *analysisID,
+					   const double    stepValue,
+					   const char     *parameters, 
+					   // parameters: a list of parameters for the simplified mesh algorith
+					   // one parameter per line, each line with "keyword (space) value(s)\n"
+					   // for instance:
+					   // "GridSize 1024\nMaximumNumberOfElements 10000000\nBoundaryWeight 100.0"
+					   /* out */
+					   const char     **resultMesh,
+					   // binary data with the mesh vertices and elements
+					   // the resultMesh format is described in BoundaryBinaryMesh.h
+					   // we sotre the resulting simplified tetras as Quads in this format
+					   size_t         *resultMeshByteSize,
+					   const char     **resultErrorStr); // in case of error
+  VAL_Result VAL_API valDeleteSimplifiedMesh( /* in */
+					     VAL_SessionID   sessionID,
+					     const char     *modelID,
+					     const char     *meshID,
+					     const char     *analysisID,
+					     const double    stepValue,
+					     const char     *parameters, // as in valGetSimplifiedMesh
+					     /* out */
+					     const char     **resultErrorStr); // in case of error
 
   /**
    * Translate a numerical result code into an error message string.

@@ -132,6 +132,11 @@ public:
 			     const std::string &analysisID, const int numSteps, const double *lstSteps,
 			     const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 			     double *return_bbox, std::string *return_error_str);
+  // needed by DeleteBoundingBox vquery
+  void deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+				const std::string &analysisID, const int numSteps, const double *lstSteps,
+				const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+				std::string *return_error_str);
 
   void calculateDiscrete2Continuum( const std::string &sessionID, const std::string &modelID,
 				    const std::string &analysisName, const std::string &staticMeshID, const std::string &tSOptions, 
@@ -159,12 +164,20 @@ public:
   				    const int meshID, const std::string &elementType,
   				    const std::string &analysisID, const double stepValue,
   				    std::string *return_error_str);
-  // needed by DeleteBoundaryOfAMesh vquery
-  void deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
-				const std::string &analysisID, const int numSteps, const double *lstSteps,
-				const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
-				std::string *return_error_str);
   
+  void calculateSimplifiedMesh( const std::string &sessionID,
+				const std::string &modelID,
+				const int meshID, const std::string &elementType,
+				const std::string &analysisID, const double stepValue,
+				const  std::string &parameters,
+				std::string *return_binary_mesh, std::string *return_error_str);
+  // needed by DeleteSimplifiedMesh vquery
+  void deleteStoredSimplifiedMesh( const std::string &sessionID,
+				   const std::string &modelID,
+				   const int meshID, const std::string &elementType,
+				   const std::string &analysisID, const double stepValue,
+				   const  std::string &parameters,
+				   std::string *return_error_str);
 private:
   // DataLayerAccess(){};
   DataLayerAccess(DataLayerAccess const&){};

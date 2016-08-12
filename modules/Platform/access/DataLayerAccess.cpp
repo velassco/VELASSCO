@@ -398,6 +398,23 @@ void DataLayerAccess::calculateBoundingBox( const std::string &sessionID, const 
   }
 }
 
+// needed by DeleteBoundingBox vquery
+void DataLayerAccess::deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+					       const std::string &analysisID, const int numSteps, const double *lstSteps,
+					       const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+					       std::string *return_error_str) {
+  _db->getStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
+			     numVertexIDs, lstVertexIDs,
+			     NULL, return_error_str);
+  if ( return_error_str->length() == 0) { // i.e. bounding box found
+    _db->deleteStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
+				  numVertexIDs, lstVertexIDs,
+				  return_error_str);
+  } else {
+    return_error_str->clear(); // not found, // already deleted?
+  }
+}
+
 
 
 void DataLayerAccess::calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
@@ -442,11 +459,8 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
       *return_error_str = ""; // reset error string
       HBase::TableModelEntry table_name_set;
       if ( _db->getVELaSSCoTableNames( sessionID, modelID, table_name_set)) {
-	AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID,
-								  modelID,
-								  table_name_set._data,
-								  meshID, elementType,
-								  analysisID, stepValue, 
+	AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( sessionID, modelID, table_name_set._data,
+								  meshID, elementType, analysisID, stepValue, 
 								  return_binary_mesh, return_error_str);
 	if ( return_binary_mesh->length() != 0) {
 	  std::string save_err_str;
@@ -482,18 +496,45 @@ void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 
 
 
-  // needed by DeleteBoundaryOfAMesh vquery
-void DataLayerAccess::deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
-					       const std::string &analysisID, const int numSteps, const double *lstSteps,
-					       const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
-					       std::string *return_error_str) {
-  _db->getStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
-			     numVertexIDs, lstVertexIDs,
-			     NULL, return_error_str);
-  if ( return_error_str->length() == 0) { // i.e. bounding box found
-    _db->deleteStoredBoundingBox( sessionID, modelID, analysisID, numSteps, lstSteps,
-				  numVertexIDs, lstVertexIDs,
-				  return_error_str);
+void DataLayerAccess::calculateSimplifiedMesh( const std::string &sessionID,
+					       const std::string &modelID,
+					       const int meshID, const std::string &elementType,
+					       const std::string &analysisID, const double stepValue,
+					       const std::string &parameters,
+					       std::string *return_binary_mesh, std::string *return_error_str) {
+  if ( return_binary_mesh) {
+    return_binary_mesh->clear();
+    _db->getStoredSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
+				  return_binary_mesh, return_error_str);
+    if ( return_binary_mesh->length() == 0) { // nothing found
+      *return_error_str = ""; // reset error string
+      HBase::TableModelEntry table_name_set;
+      if ( _db->getVELaSSCoTableNames( sessionID, modelID, table_name_set)) {
+	AnalyticsModule::getInstance()->calculateSimplifiedMesh( sessionID, modelID, table_name_set._data, 
+								 meshID, elementType, analysisID, stepValue, parameters,
+								 return_binary_mesh, return_error_str);
+	if ( return_binary_mesh->length() != 0) {
+	  std::string save_err_str;
+	  _db->saveSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
+				   *return_binary_mesh, &save_err_str);
+	}
+      }
+    }
+  }
+}
+
+// needed by DeleteSimplifiedMesh vquery
+void DataLayerAccess::deleteStoredSimplifiedMesh( const std::string &sessionID,
+						  const std::string &modelID,
+						  const int meshID, const std::string &elementType,
+						  const std::string &analysisID, const double stepValue,
+						  const std::string &parameters,
+						  std::string *return_error_str) {
+  _db->getStoredSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
+				NULL, return_error_str);
+  if ( return_error_str->length() == 0) { // i.e. boundary mesh was found
+    _db->deleteStoredSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
+				     return_error_str);
   } else {
     return_error_str->clear(); // not found, // already deleted?
   }

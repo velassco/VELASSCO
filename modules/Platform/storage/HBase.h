@@ -169,10 +169,10 @@ namespace VELaSSCo
                     const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo);
 
     void getStoredBoundaryOfAMesh( const std::string &sessionID,
-				      const std::string &modelID,
-				      const int meshID, const std::string &elementType,
-				      const std::string &analysisID, const double stepValue,
-				      std::string *return_binary_mesh, std::string *return_error_str);
+				   const std::string &modelID,
+				   const int meshID, const std::string &elementType,
+				   const std::string &analysisID, const double stepValue,
+				   std::string *return_binary_mesh, std::string *return_error_str);
     bool deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 				      const std::string &modelID,
 				      const int meshID, const std::string &elementType,
@@ -196,6 +196,25 @@ namespace VELaSSCo
 			  const std::string &analysisID, const int numSteps, const double *lstSteps,
 			  const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
 			  const double *return_bbox, std::string *return_error_str);
+
+    void getStoredSimplifiedMesh( const std::string &sessionID,
+				  const std::string &modelID,
+				  const int meshID, const std::string &elementType,
+				  const std::string &analysisID, const double stepValue,
+				  const  std::string &parameters,
+				  std::string *return_binary_mesh, std::string *return_error_str);
+    bool deleteStoredSimplifiedMesh( const std::string &sessionID,
+				     const std::string &modelID,
+				     const int meshID, const std::string &elementType,
+				     const std::string &analysisID, const double stepValue,
+				     const  std::string &parameters,
+				     std::string *return_error_str);
+    bool saveSimplifiedMesh( const std::string &sessionID,
+			     const std::string &modelID,
+			     const int meshID, const std::string &elementType,
+			     const std::string &analysisID, const double stepValue,
+			     const  std::string &parameters,
+			     const std::string &binary_mesh, std::string *return_error_str);
 
     // retrieve only the 'Q' column family of the Simulations_VQuery_Results_Data table
     bool getStoredVQueryExtraDataSplitted( const std::string &sessionID,

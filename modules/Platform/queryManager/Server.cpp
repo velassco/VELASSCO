@@ -113,6 +113,10 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetBoundaryOfAMesh( _return, sessionID, query);
   } else if ( name == "DeleteBoundaryOfAMesh") {
     ManageDeleteBoundaryOfAMesh( _return, sessionID, query);
+  } else if ( name == "GetSimplifiedMesh") {
+    ManageGetSimplifiedMesh( _return, sessionID, query);
+  } else if ( name == "DeleteSimplifiedMesh") {
+    ManageDeleteSimplifiedMesh( _return, sessionID, query);
   } else if ( name == "GetConfiguration") {
     ManageGetConfiguration( _return, sessionID, query);
   } else if ( name == "SetConfiguration") {
