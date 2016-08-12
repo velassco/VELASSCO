@@ -230,7 +230,7 @@ namespace VELaSSCo {
     BoundaryQuadrilateral *lst_quadrilaterals = ( BoundaryQuadrilateral *)&binaryMeshData[ mesh_data_pos + numReadVertices * sizeof( MeshPoint)];
 
     if ( numReadVertices && numReadFaces) {
-      if ( lst_triangles[ 0]._num_nodes == 4) { // they are effectivelly triangles
+      if ( lst_triangles[ 0]._num_nodes == 3) { // they are effectivelly triangles
 	this->set( lst_vertices, numReadVertices, lst_triangles, numReadFaces, mem_str);
       } else if ( lst_quadrilaterals[ 0]._num_nodes == 4) { // they are in fact quadrilaterals !!!
 	this->set( lst_vertices, numReadVertices, lst_quadrilaterals, numReadFaces, mem_str);

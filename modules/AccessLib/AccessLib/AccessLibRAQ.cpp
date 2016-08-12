@@ -545,8 +545,8 @@ extern "C" {
 		   << "  \"modelID\"    : \"" << modelID                   << "\",\n"
 		   << "  \"meshID\"     : \"" << meshID                   << "\",\n"
 		   << "  \"analysisID\" : \"" << analysisID                << "\",\n"
-		   << "  \"stepValue\"  : \"" << stepValue                  << "\"\n"
-		   << "  \"parameters\" : \"" << parameters                << "\",\n";
+		   << "  \"stepValue\"  : \"" << stepValue                  << "\",\n"
+		   << "  \"parameters\" : \"" << parameters                << "\"\n";
       queryCommand << "}\n";
 
 	// Send command string and get back result data
@@ -561,7 +561,7 @@ extern "C" {
 	  // std::string file_name = std::string( "/tmp/valGetSimplifiedMesh_") + meshID + ".bin";
 	  // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
 	} else {
-	  *resultErrorStr = queryData->c_str();
+	  *resultErrorStr = queryData ? queryData->c_str() : "No returned data: (NULL)";
 	}
 
 	return result;
@@ -603,8 +603,8 @@ extern "C" {
 		   << "  \"modelID\"    : \"" << modelID                   << "\",\n"
 		   << "  \"meshID\"     : \"" << meshID                   << "\",\n"
 		   << "  \"analysisID\" : \"" << analysisID                << "\",\n"
-		   << "  \"stepValue\"  : \"" << stepValue                  << "\"\n"
-		   << "  \"parameters\" : \"" << parameters                << "\",\n";
+		   << "  \"stepValue\"  : \"" << stepValue                  << "\",\n"
+		   << "  \"parameters\" : \"" << parameters                << "\"\n";
       queryCommand << "}\n";
       
       // Send command string and get back result data
