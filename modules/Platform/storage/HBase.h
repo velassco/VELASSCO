@@ -215,6 +215,10 @@ namespace VELaSSCo
 			     const std::string &analysisID, const double stepValue,
 			     const  std::string &parameters,
 			     const std::string &binary_mesh, std::string *return_error_str);
+    bool deleteAllStoredCalculations( const std::string &sessionID,
+				      const std::string &modelID,
+				      std::string *return_error_str);
+
 
     // retrieve only the 'Q' column family of the Simulations_VQuery_Results_Data table
     bool getStoredVQueryExtraDataSplitted( const std::string &sessionID,

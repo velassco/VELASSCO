@@ -162,7 +162,12 @@ public:
 					   const std::string &analysisID, const double stepValue,
 					   const  std::string &parameters,
 					   std::string *return_error_str) = 0;
-  
+
+  // needed by deleteAllCalculationsForThisModel
+  virtual void deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
+							const std::string &modelID,
+							std::string *return_error_str) = 0; 
+ 
 };
 
 #endif

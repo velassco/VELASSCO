@@ -655,3 +655,49 @@ void QueryManagerServer::ManageDeleteSimplifiedMesh( Query_Result &_return, cons
   }
 }
 
+void QueryManagerServer::ManageDeleteAllCalculationsForThisModel( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string name       = pt.get<std::string>( "name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+
+  std::string error_str;
+
+  _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
+
+  try {
+    error_str = "";
+    queryServer->deleteAllStoredCalculationsForThisModel( GetQueryManagerSessionID( sessionID), 
+							  modelID,
+							  &error_str);
+  } catch ( TException &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( binary_mesh);
+  } else {
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  if ( error_str.length() != 0) {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
+}
+

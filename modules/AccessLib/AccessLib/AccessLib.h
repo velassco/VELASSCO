@@ -302,6 +302,11 @@ extern "C" {
 					     const char     *parameters, // as in valGetSimplifiedMesh
 					     /* out */
 					     const char     **resultErrorStr); // in case of error
+  VAL_Result VAL_API valDeleteAllCalculationsForThisModel( /* in */
+							  VAL_SessionID   sessionID,
+							  const char     *modelID,
+							  /* out */
+							  const char     **resultErrorStr); // in case of error
 
   /**
    * Translate a numerical result code into an error message string.

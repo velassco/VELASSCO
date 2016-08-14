@@ -300,27 +300,15 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   // needs to get the vertices from the DataLayer ...
   rvGetListOfVerticesFromMesh return_data;
   if ( ok) {
-    bool use_data_layer = true;
-    if ( use_data_layer) {
-      std::cout << "doing DataLayer::getListOfSelectedVerticesFromMesh" << std::endl;
-      std::vector< int64_t> lstVertexIds;
-      for ( std::unordered_set< int64_t>::const_iterator itr = lst_UsedNodeIDs.begin(); itr != lst_UsedNodeIDs.end(); itr++) {
-	lstVertexIds.push_back( *itr);
-      }
-      DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
-								      sessionID,
-								      modelID, analysisID, stepValue,
-								      meshID, lstVertexIds);
-    } else {
-      // the MapReduce version
-      std::cout << "doing MapReduce::getListOfVerticesFromMesh" << std::endl;
-      std::string error_str = MRgetListOfVerticesFromMesh( return_data,
-							   sessionID, modelID, 
-							   dataTableName,
-							   analysisID, stepValue, 
-							   meshID);
-      ok = ( error_str.length() == 0);
+    std::cout << "doing DataLayer::getListOfSelectedVerticesFromMesh" << std::endl;
+    std::vector< int64_t> lstVertexIds;
+    for ( std::unordered_set< int64_t>::const_iterator itr = lst_UsedNodeIDs.begin(); itr != lst_UsedNodeIDs.end(); itr++) {
+      lstVertexIds.push_back( *itr);
     }
+    DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
+								    sessionID,
+								    modelID, analysisID, stepValue,
+								    meshID, lstVertexIds);
     
     std::cout << "     status: " << return_data.status << std::endl;
     if ( return_data.status == "Error") {

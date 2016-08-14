@@ -178,6 +178,11 @@ public:
 				   const std::string &analysisID, const double stepValue,
 				   const  std::string &parameters,
 				   std::string *return_error_str);
+
+  // needed by deleteAllCalculationsForThisModel
+  void deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
+						const std::string &modelID,
+						std::string *return_error_str);
 private:
   // DataLayerAccess(){};
   DataLayerAccess(DataLayerAccess const&){};

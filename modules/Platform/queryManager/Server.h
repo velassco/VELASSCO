@@ -124,6 +124,8 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageGetSimplifiedMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageDeleteSimplifiedMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
 
+  void ManageDeleteAllCalculationsForThisModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
+
   // to get the string representation of the thrift type ElementShapeType::type
   const char *getStrFromElementType( const ElementShapeType::type &elem);
 public:

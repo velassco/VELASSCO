@@ -624,6 +624,45 @@ extern "C" {
   CATCH_ERROR;
   }
 
+  VAL_Result VAL_API valDeleteAllCalculationsForThisModel( /* in */
+							  VAL_SessionID   sessionID,
+							  const char     *modelID,
+							  /* out */
+							  const char     **resultErrorStr) { // in case of error
+  CHECK_SESSION_ID( sessionID );
+  CHECK_QUERY_POINTER( modelID );
+  CHECK_QUERY_POINTER( resultErrorStr );
+    
+  *resultErrorStr = NULL;
+  
+  API_TRACE;
+  try
+    {
+      std::stringstream  queryCommand;
+      const std::string *queryData = NULL;
+      
+      // Build JSON command string
+      queryCommand << "{\n"
+		   << "  \"name\"       : \"" << "DeleteSimplifiedMesh" << "\",\n"
+		   << "  \"modelID\"    : \"" << modelID                   << "\"\n";
+      queryCommand << "}\n";
+      
+      // Send command string and get back result data
+      VAL_Result result = g_clients[sessionID]->Query( sessionID, queryCommand.str(), queryData);
+      
+      // Give back pointers to actual binary data
+      if (result == VAL_SUCCESS) {
+	// to debug and test:
+	// std::string file_name = std::string( "/tmp/valGetSimplifiedMesh_") + meshID + ".bin";
+	// dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
+      } else {
+	*resultErrorStr = queryData->c_str();
+      }
+      
+      return result;
+    }
+  CATCH_ERROR;
+  }
 
 #ifdef __cplusplus
 }

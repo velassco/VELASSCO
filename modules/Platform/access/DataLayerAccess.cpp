@@ -513,11 +513,13 @@ void DataLayerAccess::calculateSimplifiedMesh( const std::string &sessionID,
 	AnalyticsModule::getInstance()->calculateSimplifiedMesh( sessionID, modelID, table_name_set._data, 
 								 meshID, elementType, analysisID, stepValue, parameters,
 								 return_binary_mesh, return_error_str);
-	if ( return_binary_mesh->length() != 0) {
-	  std::string save_err_str;
-	  _db->saveSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
-				   *return_binary_mesh, &save_err_str);
-	}
+	// Do not store yet the simplified mesh, as it is  not implemented
+	// and to avoid storing garbage
+	// if ( return_binary_mesh->length() != 0) {
+	//   std::string save_err_str;
+	//   _db->saveSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
+	// 			   *return_binary_mesh, &save_err_str);
+	// }
       }
     }
   }
@@ -538,4 +540,12 @@ void DataLayerAccess::deleteStoredSimplifiedMesh( const std::string &sessionID,
   } else {
     return_error_str->clear(); // not found, // already deleted?
   }
+}
+
+// needed by deleteAllCalculationsForThisModel
+void DataLayerAccess::deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
+							       const std::string &modelID,
+							       std::string *return_error_str) {
+  _db->deleteAllStoredCalculations( sessionID, modelID,
+				    return_error_str);
 }
