@@ -285,8 +285,8 @@ namespace VELaSSCo {
     inline std::string Box::toString() const {
       // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
       ostringstream oss;
-      oss << _min.x << "," << _min.y << "," << _min.z << ","
-	  << _max.x << "," << _max.y << "," << _max.z;
+      oss << _min.x << ";" << _min.y << ";" << _min.z << ";"
+	  << _max.x << ";" << _max.y << ";" << _max.z;
       return oss.str();
     }
 
