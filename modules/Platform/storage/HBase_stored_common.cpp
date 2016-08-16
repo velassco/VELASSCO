@@ -561,9 +561,16 @@ bool HBase::createStoredDataTable( const std::string &table_name) {
 
 // End of Common HBase:: functions
 
-bool HBase::deleteAllStoredCalculations( const std::string &sessionID,
-					 const std::string &modelID,
-					 std::string *return_error_str) {
+bool HBase::getStoredMetadataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel) {
+  return false;
+}
+bool HBase::getStoredDataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel) {
+  return false;
+}
+
+bool HBase::deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
+						     const std::string &modelID,
+						     std::string *return_error_str) {
   // need to get all rowkeys and then
   // foreach rk in lst_rowkeys do 
   //   _hbase_client->deleteAllRow( tableName, rowKey, attr);

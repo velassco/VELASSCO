@@ -233,7 +233,9 @@ namespace VELaSSCo
 				   const std::string &vqueryName, const std::string &vqueryParameters,
 				   // list = 1 entry per partition, may be null only to check if there is data
 				   std::vector< std::string> *lst_vquery_results);
-
+    bool deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
+						  const std::string &modelID,
+						  std::string *return_error_str);
   private:
 
     double fRand(double fMin, double fMax);
@@ -302,6 +304,8 @@ namespace VELaSSCo
 						const int numStringsToRetrieve,
 						const std::string &logMessagePrefix);
     bool deleteStoredRow( const std::string &tableName, const std::string &rowKey, const std::string &logMessagePrefix);
+    bool getStoredMetadataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel);
+    bool getStoredDataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel);
 					    
   };
 

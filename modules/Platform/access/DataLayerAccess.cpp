@@ -546,6 +546,6 @@ void DataLayerAccess::deleteStoredSimplifiedMesh( const std::string &sessionID,
 void DataLayerAccess::deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
 							       const std::string &modelID,
 							       std::string *return_error_str) {
-  _db->deleteAllStoredCalculations( sessionID, modelID,
-				    return_error_str);
+  _db->deleteAllStoredCalculationsForThisModel( sessionID, modelID,
+						return_error_str);
 }
