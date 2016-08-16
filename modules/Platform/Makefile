@@ -198,8 +198,8 @@ $(OBJS_DIR)/%.o : $(GRAPHICS_MODULE_DIR)/%.cpp $(GRAPHICS_MODULE_DEPENDENCIES)
 $(OBJS_DIR)/%.o : $(STORAGE_MODULE_DIR)/%.cpp $(STORAGE_MODULE_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@
 
-# analytics module (folder ./analytics):
-$(OBJS_DIR)/%.o : $(ANALYTICS_MODULE_DIR)/%.cpp $(ANALYTICS_MODULE_DEPENDENCIES)
+# analytics module (folder ./analytics): also ACCESS_DEPENDENCIES for the BoundaryBinaryMesh.h and RealTimeFormat.h
+$(OBJS_DIR)/%.o : $(ANALYTICS_MODULE_DIR)/%.cpp $(ANALYTICS_MODULE_DEPENDENCIES) $(ACCESS_DEPENDENCIES)
 	$(CCPP) -c $(CPP_FLAGS) $(OPTS) $(ENGINE_INCS) $(EXTRA_INC_DIRS) $< -o $@
 
 # access module (folder ./access):
