@@ -643,7 +643,7 @@ extern "C" {
       
       // Build JSON command string
       queryCommand << "{\n"
-		   << "  \"name\"       : \"" << "DeleteSimplifiedMesh" << "\",\n"
+		   << "  \"name\"       : \"" << "DeleteAllCalculationsForThisModel" << "\",\n"
 		   << "  \"modelID\"    : \"" << modelID                   << "\"\n";
       queryCommand << "}\n";
       
