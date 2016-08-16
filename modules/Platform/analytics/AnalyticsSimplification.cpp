@@ -1,4 +1,5 @@
 #include <fstream>
+#include <istream>
 #include <sstream>
 #include <vector>
 #include <unordered_set>
@@ -21,6 +22,51 @@
 #pragma message( "WARNING: yarn and hdfs should be in the $PATH and not hard coded in the source.")
 #pragma message( "WARNING: look at GetFullHBaseConfigurationFilename() for a similar approach: PathToYarnAndHDFS()")
 #pragma message( "WARNING: ")
+
+class SimplificationParameters {
+public:
+  SimplificationParameters(): _size( 0), _max_num_elements( 0), _boundary_weight( 1.0) {}
+  bool fromString( const std::string str_parameters);
+  std::string toString() const;
+private:
+  // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
+  int _size, _max_num_elements;
+  double _boundary_weight;
+};
+
+bool SimplificationParameters::fromString( const std::string str_parameters) {
+  std::istringstream is_params( str_parameters);
+  std::string key, value;
+  int scanned = 0;
+  while ( getline( is_params, key, '=') && getline( is_params, value, ';')) {
+    if ( AreEqualNoCase( key, "GridSize")) {
+      std::istringstream is_val( value);
+      is_val >> _size;
+      scanned++;
+    } else if ( AreEqualNoCase( key, "MaximumNumberOfElements")) {
+      std::istringstream is_val( value);
+      is_val >> _max_num_elements;
+      scanned++;
+    } else if ( AreEqualNoCase( key, "BoundaryWeight")) {
+      std::istringstream is_val( value);
+      is_val >> _boundary_weight;
+      scanned++;
+    } else {
+      DEBUG( "SimplificationParameters::fromString unknown parameter: " << key);
+    }
+    // is_params.ignore(); // the new line
+  }
+  return scanned > 0;
+}
+
+std::string SimplificationParameters::toString() const {
+  // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
+  ostringstream oss;
+  oss << "GridSize=" << _size << ";";
+  oss << "MaximumNumberOfElements=" << _max_num_elements << ";";
+  oss << "BoundaryWeight=" << _boundary_weight << ";";
+  return oss.str();
+}
 
 static std::string demo_simplified_mesh() {
   // This is code from the DemoServer :
@@ -97,13 +143,13 @@ static std::string demo_simplified_mesh() {
 }
 
 static bool getBoundaryQuadrilateralsFromJavaOutput( const char *filename, 
-						std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_triangles) {
+						     std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_quadrilaterals) {
  FILE *fi = fopen( filename, "r");
  bool ok = true;
 
  // format of file is:
  // int32 num_nodes, int64 nodes[ num_nodes]\n
- VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral triangle;
+ VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral quadrilateral;
  ssize_t n_read = 0;
  size_t hexa_data_line_size = 64 * 1024;
  char *hexa_data_line = ( char *)malloc( hexa_data_line_size * sizeof( char));
@@ -125,19 +171,20 @@ static bool getBoundaryQuadrilateralsFromJavaOutput( const char *filename,
      break;
    }
 
-   triangle._num_nodes = byteSwap< int>( *( int *)&binary_data[ 0]);
+   quadrilateral._num_nodes = byteSwap< int>( *( int *)&binary_data[ 0]);
    // assert( triangle._num_nodes == 3);
-   if ( triangle._num_nodes != 3) {
+   if ( quadrilateral._num_nodes != 4) {
      // ok = false; //just finished reading to show something ...
-     DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: read num_nodes != 3.");
+     DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: read num_nodes != 4.");
      break;
    }
 
-   triangle._nodes[ 0] = byteSwap< int64_t>( *( int64_t *)&binary_data[  4]); // sizeof( int)
-   triangle._nodes[ 1] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 12]); // sizeof( int) + sizeof( int64_t)
-   triangle._nodes[ 2] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 20]); // sizeof( int) + 2 * sizeof( int64_t)
+   quadrilateral._nodes[ 0] = byteSwap< int64_t>( *( int64_t *)&binary_data[  4]); // sizeof( int)
+   quadrilateral._nodes[ 1] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 12]); // sizeof( int) + sizeof( int64_t)
+   quadrilateral._nodes[ 2] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 20]); // sizeof( int) + 2 * sizeof( int64_t)
+   quadrilateral._nodes[ 3] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 28]); // sizeof( int) + 3 * sizeof( int64_t)
 
-   lst_triangles.push_back( triangle);
+   lst_quadrilaterals.push_back( quadrilateral);
  } // !feof( fi)
 
  fclose( fi);
@@ -167,12 +214,13 @@ static bool getBoundaryVerticesFromDataLayerOutput( const std::vector< Vertex> &
 }
 
 static bool getListOfUsedNodeIDs( std::unordered_set< int64_t> &lst_UsedNodeIDs,
-				  const std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_triangles) {
-  for ( std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral>::const_iterator it = lst_triangles.begin();
-	it != lst_triangles.end(); ++it) {
+				  const std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_quadrilaterals) {
+  for ( std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral>::const_iterator it = lst_quadrilaterals.begin();
+	it != lst_quadrilaterals.end(); ++it) {
     lst_UsedNodeIDs.insert( it->_nodes[ 0]);
     lst_UsedNodeIDs.insert( it->_nodes[ 1]);
     lst_UsedNodeIDs.insert( it->_nodes[ 2]);
+    lst_UsedNodeIDs.insert( it->_nodes[ 3]);
   }
   return lst_UsedNodeIDs.size() != 0;
 }
@@ -181,28 +229,27 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 					       const std::string &modelID, const std::string &dataTableName,
 					       const int meshID, const std::string &elementType,
 					       const std::string &analysisID, const double stepValue,
-					       const std::string &parameters,
+					       const std::string &parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
 					       std::string *return_binary_mesh, std::string *return_error_str) {
+  SimplificationParameters simpParam;
+  simpParam.fromString( parameters);
+  
+  LOGGER << "    parameters read: " << simpParam.toString() << std::endl;
+  
   bool return_demo_mesh = true;
   if ( return_demo_mesh) {
     *return_binary_mesh = demo_simplified_mesh();
     return;
   }
+
   // at the moment only CLI interface:
   // modelID, if it's binary, convert it to 32-digit hexastring:
   char model_ID_hex_string[ 1024];
   std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
 
   // remove local
-  // MR output in '../boundary_mesh_sessionID_modelID/_SUCCESS'
-  // output in '../boundary_mesh_sessionID_modelID/part-r-00000'
-  // error in '../boundary_mesh_sessionID_modelID/error.txt'
-  // unlink( "boundary_mesh_sessionID_modelID/part-r-00000");
-  // unlink( "boundary_mesh_sessionID_modelID/error.txt");
-  // unlink( "boundary_mesh_sessionID_modelID/_SUCCESS");
-  // rmdir( "boundary_mesh_sessionID_modelID");
   // delete local temporary files
-  std::string yarn_output_folder = ToLower( "boundary_mesh_" + sessionID + "_" + cli_modelID);
+  std::string yarn_output_folder = ToLower( "simplified_mesh_" + sessionID + "_" + cli_modelID);
   std::string local_tmp_folder = create_tmpdir();
   std::string local_output_folder = local_tmp_folder + "/" + yarn_output_folder;
   recursive_rmdir( yarn_output_folder.c_str());
@@ -229,10 +276,10 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
-    // output in '../boundary_mesh_sessionID_modelID/part-r-00000' but in hdfs
-    // error in '../boundary_mesh_sessionID_modelID/error.txt'
+    // output in '../simplified_mesh_sessionID_modelID/part-r-00000' but in hdfs
+    // error in '../simplified_mesh_sessionID_modelID/error.txt'
     // copy it to local:
-    // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal boundary_mesh .";
+    // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal simplified_mesh .";
     cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + yarn_output_folder + " " + local_tmp_folder;
     ret_cmd = system( cmd_line.c_str());
     if ( ret_cmd == -1) {
@@ -242,8 +289,8 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 
   // ret_cmd is -1 on error
 
-  // output in '../boundary_mesh_sessionID_modelID/part-r-00000'
-  // error in '../boundary_mesh_sessionID_modelID/error.txt'
+  // output in '../simplified_mesh_sessionID_modelID/part-r-00000'
+  // error in '../simplified_mesh_sessionID_modelID/error.txt'
   char filename[ 8192];
   sprintf( filename, "%s/part-r-00000", local_output_folder.c_str());
   FILE *fi = fopen( filename, "rb");
@@ -285,15 +332,15 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 
   std::string step_error = "";
 
-  std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> lst_triangles;
-  bool ok = getBoundaryQuadrilateralsFromJavaOutput( filename, lst_triangles);
+  std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> lst_quadrilaterals;
+  bool ok = getBoundaryQuadrilateralsFromJavaOutput( filename, lst_quadrilaterals);
   if ( !ok) step_error = "error in getBoundaryQuadrilateralsFromJavaOutput";
 
   // get the unique Node IDs used in the skin mesh
   std::unordered_set< int64_t> lst_UsedNodeIDs;
   if ( ok) {
     // get only the vertices we need
-    ok = getListOfUsedNodeIDs( lst_UsedNodeIDs, lst_triangles);
+    ok = getListOfUsedNodeIDs( lst_UsedNodeIDs, lst_quadrilaterals);
   }
   if ( !ok) step_error = "error in getListOfUsedNodeIDs";
 
@@ -328,18 +375,18 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   if ( !ok) step_error = "error in getListOfVerticesFromMesh";
 
   std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> lst_vertices;
-  VELaSSCo::BoundaryBinaryMesh boundary_mesh;
+  VELaSSCo::BoundaryBinaryMesh simplified_mesh;
   if ( ok) {
     ok = getBoundaryVerticesFromDataLayerOutput( return_data.vertex_list, lst_UsedNodeIDs, lst_vertices);
   }
   if ( !ok) step_error = "error in getBoundaryVerticesFromDataLayerOutput";
   if ( ok) {
-    boundary_mesh.set( lst_vertices.data(), lst_vertices.size(), lst_triangles.data(), lst_triangles.size(), VELaSSCo::BoundaryBinaryMesh::STATIC);
+    simplified_mesh.set( lst_vertices.data(), lst_vertices.size(), lst_quadrilaterals.data(), lst_quadrilaterals.size(), VELaSSCo::BoundaryBinaryMesh::STATIC);
   }
-  if ( !ok) step_error = "error in boundary_mesh.set( ...)";
+  if ( !ok) step_error = "error in simplified_mesh.set( ...)";
 
   // verify output:
-  if ( !ok || !boundary_mesh.getNumVertices() || !boundary_mesh.getNumTriangles()) {
+  if ( !ok || !simplified_mesh.getNumVertices() || !simplified_mesh.getNumQuadrilaterals()) {
     // try reading error file
     bool errorfile_read = false;
     sprintf( filename, "%s/error.txt", local_output_folder.c_str());
@@ -374,16 +421,16 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 	*return_error_str += "\tSTEP " + step_error + "\n";
       }
       char tmp[ 200];
-      sprintf( tmp, "%"PRIi64, boundary_mesh.getNumVertices());
+      sprintf( tmp, "%"PRIi64, simplified_mesh.getNumVertices());
       *return_error_str += std::string( "\tnumber of vertices = ") + std::string( tmp);
-      sprintf( tmp, "%"PRIi64, boundary_mesh.getNumTriangles());
-      *return_error_str += std::string( " number of triangles = ") + std::string( tmp) + "\n";
+      sprintf( tmp, "%"PRIi64, simplified_mesh.getNumQuadrilaterals());
+      *return_error_str += std::string( " number of tetrahedrons = ") + std::string( tmp) + "\n";
     }
   } else {
-    std::cout << "boundary mesh has " 
-	      << boundary_mesh.getNumTriangles() << " triangles and " 
-	      << boundary_mesh.getNumVertices() << " vertices." << std::endl;
-    *return_binary_mesh = boundary_mesh.toString();
+    std::cout << "simplified mesh has " 
+	      << simplified_mesh.getNumQuadrilaterals() << " tetrahedrons and " 
+	      << simplified_mesh.getNumVertices() << " vertices." << std::endl;
+    *return_binary_mesh = simplified_mesh.toString();
   }
 
   DEBUG( "Deleting output files ...");

@@ -513,7 +513,7 @@ extern "C" {
 					   // parameters: a list of parameters for the simplified mesh algorith
 					   // one parameter per line, each line with "keyword (space) value(s)\n"
 					   // for instance:
-					   // "GridSize 1024\nMaximumNumberOfElements 10000000\nBoundaryWeight 100.0"
+					   // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
 					   /* out */
 					   const char     **resultMesh,
 					   // binary data with the mesh vertices and elements
@@ -579,7 +579,7 @@ extern "C" {
 					      // parameters: a list of parameters for the simplified mesh algorith
 					      // one parameter per line, each line with "keyword (space) value(s)\n"
 					      // for instance:
-					      // "GridSize 1024\nMaximumNumberOfElements 10000000\nBoundaryWeight 100.0"
+					      // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
 					      /* out */
 					      const char     **resultErrorStr) { // in case of error
   CHECK_SESSION_ID( sessionID );
