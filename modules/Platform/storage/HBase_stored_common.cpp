@@ -120,14 +120,14 @@ int getColumnQualifierStringListFromRow( std::vector< std::string> &retLstValues
 
 // Common HBase:: functions
 
-bool HBase::checkIfTableExists( const std::string &table_name) {
+bool HBase::checkIfTableExists( const std::string &tableName) {
   std::vector< Text> lst_tables;
   _hbase_client->getTableNames( lst_tables);
   bool found = false;
   for ( std::vector< Text>::const_iterator itbl = lst_tables.begin(); itbl != lst_tables.end(); itbl++) {
-    if ( table_name.compare( *itbl) == 0) {
+    if ( tableName.compare( *itbl) == 0) {
       // check if enabled:
-      if ( _hbase_client->isTableEnabled( table_name)) {
+      if ( _hbase_client->isTableEnabled( tableName)) {
 	found = true;
 	break;
       }
@@ -458,7 +458,7 @@ bool HBase::getStoredVQueryExtraDataSplitted( const std::string &sessionID,
 bool HBase::deleteStoredRow( const std::string &tableName, const std::string &rowKey,
 			     const std::string &logMessagePrefix) {
   StrMap attr;
-  std::string tmp_report = "deleted from '" + tableName + "' row with key = " + rowKey;
+  std::string tmp_report = "deleted from '" + tableName + "'\n        row with key = " + rowKey;
   bool scan_ok = true;
   try {
     _hbase_client->deleteAllRow( tableName, rowKey, attr);
@@ -479,7 +479,7 @@ bool HBase::deleteStoredRow( const std::string &tableName, const std::string &ro
   return scan_ok;
 }
 
-bool HBase::createStoredMetadataTable( const std::string &table_name) {
+bool HBase::createStoredMetadataTable( const std::string &tableName) {
   // create metadata table
   ColVec col_fam;
   col_fam.push_back( ColumnDescriptor());
@@ -490,12 +490,12 @@ bool HBase::createStoredMetadataTable( const std::string &table_name) {
   col_fam.back().name = "R:";
   col_fam.push_back( ColumnDescriptor());
   col_fam.back().name = "Q:";
-  std::string tmp_report = table_name + " created";
+  std::string tmp_report = tableName + " created";
   bool ok = true;
-  LOGGER_SM << "Creating table '" << table_name << "'" << std::endl;
+  LOGGER_SM << "Creating table '" << tableName << "'" << std::endl;
   try {
-    _hbase_client->createTable( table_name, col_fam);
-    // _hbase_client->enableTable( table_name);
+    _hbase_client->createTable( tableName, col_fam);
+    // _hbase_client->enableTable( tableName);
     ok = true;
   } catch ( const AlreadyExists &ae) {
     std::stringstream tmp;
@@ -520,7 +520,7 @@ bool HBase::createStoredMetadataTable( const std::string &table_name) {
   return ok;
 }
 
-bool HBase::createStoredDataTable( const std::string &table_name) {
+bool HBase::createStoredDataTable( const std::string &tableName) {
   // create data table
   ColVec col_fam;
   col_fam.push_back( ColumnDescriptor());
@@ -529,12 +529,12 @@ bool HBase::createStoredDataTable( const std::string &table_name) {
   col_fam.back().name = "R:";
   col_fam.push_back( ColumnDescriptor());
   col_fam.back().name = "Q:";
-  std::string tmp_report = table_name + " created";
+  std::string tmp_report = tableName + " created";
   bool ok = true;
-  LOGGER_SM << "Creating table '" << table_name << "'" << std::endl;
+  LOGGER_SM << "Creating table '" << tableName << "'" << std::endl;
   try {
-    _hbase_client->createTable( table_name, col_fam);
-    // _hbase_client->enableTable( table_name);
+    _hbase_client->createTable( tableName, col_fam);
+    // _hbase_client->enableTable( tableName);
     ok = true;
   } catch ( const AlreadyExists &ae) {
     std::stringstream tmp;
@@ -561,18 +561,144 @@ bool HBase::createStoredDataTable( const std::string &table_name) {
 
 // End of Common HBase:: functions
 
-bool HBase::getStoredMetadataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel) {
-  return false;
+bool HBase::getStoredListRowKeysForThisModel( const std::string &tableName, 
+					      const std::string &startRowKey, const std::string &stopRowKey,
+					      const std::string &logMessagePrefix,						  
+					      std::vector< std::string> &lstRowKeysForThisModel) {
+  if ( !checkIfTableExists( tableName)) {
+    return false;
+  }
+
+  vector< TRowResult> rowsResult;
+  std::map<std::string,std::string> m;
+  StrVec cols;
+  bool scan_ok = true;
+
+  std::string tmp_report = "";
+  LOGGER_SM << logMessagePrefix << " Accessing from table '" << tableName << "' with" << std::endl;
+  LOGGER_SM << "     startRowKey = " << startRowKey << std::endl;
+  LOGGER_SM << "      stopRowKey = " << stopRowKey << std::endl;
+
+  size_t numFoundRowKeys = 0;
+  try {
+    ScannerID scan_id = _hbase_client->scannerOpenWithStop( tableName, 
+							    startRowKey, stopRowKey, cols, m);
+    // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
+    while ( true) {
+      _hbase_client->scannerGet( rowsResult, scan_id);
+      if ( rowsResult.size() == 0)
+  	break;
+      // process rowsResult
+      for ( size_t i = 0; i < rowsResult.size(); i++) {
+	// // check if the rowkey is our's ... should be ....
+	// if ( rowsResult[ i].row.compare( 0, len_prefix_rowkey, prefixRowKey) != 0)
+	//   continue; // break;
+	lstRowKeysForThisModel.push_back( rowsResult[ i].row);
+      }
+    } // while ( true)
+    _hbase_client->scannerClose( scan_id);
+    
+    numFoundRowKeys = lstRowKeysForThisModel.size();
+    {
+      std::stringstream tmp;
+      tmp << "Found " << numFoundRowKeys << " rowkeys";
+      if ( numFoundRowKeys > 0) {
+	for ( size_t i = 0; i < numFoundRowKeys; i++) {
+	  tmp << std::endl << "   " << lstRowKeysForThisModel[ i];
+	}
+      }
+      tmp_report = tmp.str();
+    }
+    scan_ok = true;
+  } catch ( const IOError &ioe) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  } catch ( TException &tx) {
+    scan_ok = false;
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    tmp_report = tmp.str();
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  }
+  // LOGGER_SM << "report = " << tmp_report << std::endl;  
+
+  LOGGER_SM << logMessagePrefix << " " << tmp_report << std::endl;
+
+  return scan_ok;
 }
-bool HBase::getStoredDataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel) {
-  return false;
+
+bool HBase::getStoredMetadataRowKeysForThisModel( const std::string &tableName, const std::string &modelID,			  
+						  std::vector< std::string> &lstRowKeysForThisModel) {
+  if ( !checkIfTableExists( tableName)) {
+    return false;
+  }
+
+  // build start and stop rowkeys:
+  // like this:
+  // modelID                           Analysis StepValue         MD5( VQueryName + VQueryParameters)
+  // 12345678901234567890123456789012  324 123  1234567890123456  12345678901234567890123456789012
+  // 60515e0100000000504f5e0100000000  00000000 0000000000000000  18818eb6d6d757c138604669c00c4c4d  
+  // std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  std::string startRowKey = modelID + std::string( 8, '0') + std::string( 16, '0') + std::string( 32, '0');
+  // stopkey like this:
+  // modelID+1, Analysis = 0, StepValue = 0; MD5 = 0:
+  // 60515e0100000000504f5e0100000001  00000000 0000000000000000  18818eb6d6d757c138604669c00c4c4d
+  std::string nextModelID = GetStopKeyFromModelID( modelID);
+  std::string stopRowKey = nextModelID + std::string( 8, '0') + std::string( 16, '0') + std::string( 32, '0');
+
+  return getStoredListRowKeysForThisModel( tableName, startRowKey, stopRowKey, "Getting stored metadata rowkeys", lstRowKeysForThisModel);
+}
+
+bool HBase::getStoredDataRowKeysForThisModel( const std::string &tableName, const std::string &modelID,			  
+						  std::vector< std::string> &lstRowKeysForThisModel) {
+  if ( !checkIfTableExists( tableName)) {
+    return false;
+  }
+
+  // build start and stop rowkeys:
+  // like this:
+  // modelID                           Analysis StepValue         MD5( VQueryName + VQueryParameters) PartitionID
+  // 12345678901234567890123456789012  324 123  1234567890123456  12345678901234567890123456789012    12345678
+  // 60515e0100000000504f5e0100000000  00000000 0000000000000000  18818eb6d6d757c138604669c00c4c4d    7fffffff
+  // std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  std::string startRowKey = modelID + std::string( 8, '0') + std::string( 16, '0') + std::string( 32, '0') + std::string( 8, '0');
+  // stopkey like this:
+  // modelID+1, Analysis = 0, StepValue = 0; MD5 = 0:
+  // 60515e0100000000504f5e0100000001  00000000 0000000000000000  18818eb6d6d757c138604669c00c4c4d
+  std::string nextModelID = GetStopKeyFromModelID( modelID);
+  std::string stopRowKey = nextModelID + std::string( 8, '0') + std::string( 16, '0') + std::string( 32, '0') + std::string( 8, '0');
+
+  return getStoredListRowKeysForThisModel( tableName, startRowKey, stopRowKey, "Getting stored data rowkeys", lstRowKeysForThisModel);
 }
 
 bool HBase::deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
 						     const std::string &modelID,
 						     std::string *return_error_str) {
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return false; // no information about tables for this user and this session
+  }
+
   // need to get all rowkeys and then
   // foreach rk in lst_rowkeys do 
-  //   _hbase_client->deleteAllRow( tableName, rowKey, attr);
-  return false;
+  //   _hbase_client->deleteAllRow( tableName, rowKey, attr); 
+  bool ok = true;
+  if ( ok) {
+    std::vector< std::string> lstMetadataRowKeys;
+    ok = getStoredMetadataRowKeysForThisModel( table_set._stored_vquery_metadata, modelID, lstMetadataRowKeys);
+    for ( size_t i = 0; i < lstMetadataRowKeys.size(); i++) {
+      deleteStoredRow( table_set._stored_vquery_metadata, lstMetadataRowKeys[ i], "deleteAllStoredCalculationsForThisModel");
+    }
+  }
+  if ( ok) {
+    std::vector< std::string> lstDataRowKeys;
+    ok = getStoredDataRowKeysForThisModel( table_set._stored_vquery_data, modelID, lstDataRowKeys);
+    for ( size_t i = 0; i < lstDataRowKeys.size(); i++) {
+      deleteStoredRow( table_set._stored_vquery_data, lstDataRowKeys[ i], "deleteAllStoredCalculationsForThisModel");
+    }
+  }
+  return ok;
 }

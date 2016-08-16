@@ -344,14 +344,6 @@ static bool getAnalysisNameFromMetadataRowKey( std::set< std::string> &analysisN
   return ok;
 }
 
-std::string GetStopKeyFromModelID( const std::string &modelID) {
-  std::string stop( modelID);
-  size_t idx = stop.size() - 1;
-  char last = stop[ idx] + 1; // it's hex, so it can be always + 1
-  stop.replace( idx, 1, 1, last);
-  return stop;
-}
-
 bool HBase::getListOfAnalysesNamesFromTables( std::string &report, std::vector< std::string> &listOfAnalyses,
 					      const std::string &metadata_table, const std::string &modelID) {
   // do the scan on the metadata table ...

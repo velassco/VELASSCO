@@ -68,7 +68,7 @@ namespace VELaSSCo
 					  const std::string &sessionID, const std::string &model_group_qualifier, 
 					  const std::string &model_name_pattern);
     bool getListOfModelInfoFromTables( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
-				       const std::string &table_name, const std::string &model_name_pattern);
+				       const std::string &tableName, const std::string &model_name_pattern);
     std::string getListOfModelNames_thrift( std::string &report, std::vector< FullyQualifiedModelName> &listOfModelNames, 
 					    const std::string &sessionID, const std::string &model_group_qualifier, 
 					    const std::string &model_name_pattern);
@@ -119,11 +119,11 @@ namespace VELaSSCo
 						   const std::string &analysisID, const double stepValue, 
 						   const int32_t meshID, const std::vector<int64_t> &listOfVerticesID);
 					   
-    bool getResultFromVerticesIDFromTables( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& table_name,
+    bool getResultFromVerticesIDFromTables( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& tableName,
            const std::string &sessionID,  const std::string &modelID,
            const std::string &analysisID, const double       timeStep,  
            const ResultInfo &resultInfo,  const std::vector<int64_t> &listOfVerticesID, const char *format = "%02x" );
-    bool getResultFromVerticesIDFromTables_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& table_name,
+    bool getResultFromVerticesIDFromTables_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& tableName,
            const std::string &sessionID,  const std::string &modelID,
            const std::string &analysisID, const double       timeStep,  
            const ResultInfo &resultInfo, const std::vector<int64_t> &listOfVerticesID, const int64_t &minVertexID, const int64_t &maxVertexID, 
@@ -148,7 +148,7 @@ namespace VELaSSCo
 	bool        getMeshElementsFromTable(std::string& report,
 					std::vector< Element > &listOfElements, std::vector< ElementAttrib > &listOfElementAttribs, 
 					std::vector< ElementGroup > &listOfElementInfoGroups,
-					const std::string& table_name,
+					const std::string& tableName,
 					const std::string &sessionID, const std::string &modelID,
                     const std::string &analysisID,const double timeStep, const MeshInfo& meshInfo, const char *format = "%02x" );
 	std::string getCoordinatesAndElementsFromMesh( std::string& report,
@@ -245,7 +245,7 @@ namespace VELaSSCo
     // returns true if there are models on the table to be parsed
     bool parseListOfModelNames( std::string &report,
 				std::vector< FullyQualifiedModelName> &listOfModelNames,
-				std::string buffer, const std::string &table_name);
+				std::string buffer, const std::string &tableName);
 
   public:
     // to store information on where is the model stored
@@ -274,23 +274,23 @@ namespace VELaSSCo
 
     typedef std::map< std::string, TableModelEntry> DicTableModels; // key is sessionID + modelID
     DicTableModels _table_models;
-    // return true if velassco_model_table_name is known and could be inserted
-    bool storeTableNames( const std::string &sessionID, const std::string &modelID, const std::string &velassco_model_table_name);
+    // return true if velassco_model_tableName is known and could be inserted
+    bool storeTableNames( const std::string &sessionID, const std::string &modelID, const std::string &velassco_model_tableName);
     std::vector< std::string> getModelListTables() const;
 
     std::string createMetaRowKey( const std::string &modelID, const std::string &analysysID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
     std::string createDataRowKey( const std::string &modelID, const std::string &analysysID, const double stepValue, const int partitionID, const char *format="%02x"); // for the stepvalue hex string
     std::string createMetaRowKeyPrefix( const std::string &modelID, const std::string &analysysID);
     // to access stored data
-    bool checkIfTableExists( const std::string &table_name);
+    bool checkIfTableExists( const std::string &tableName);
     std::string getVQueryID( const std::string &vqueryName, const std::string &vqueryParameters);
     std::string createModelListRowKey( const std::string &modelID);
     std::string createStoredMetadataRowKey( const std::string &modelID, const std::string &analysisID, const double stepValue,
 					    const std::string &vqueryName, const std::string &vqueryParameters);
     std::string createStoredDataRowKey( const std::string &modelID, const std::string &analysisID, const double stepValue,
 					const std::string &vqueryName, const std::string &vqueryParameters, const int partitionID);
-    bool createStoredMetadataTable( const std::string &table_name);
-    bool createStoredDataTable( const std::string &table_name);
+    bool createStoredMetadataTable( const std::string &tableName);
+    bool createStoredDataTable( const std::string &tableName);
 
     bool getColumnQualifierStringFromTable( std::string &retValue, 
 					    const std::string &tableName, 
@@ -304,8 +304,14 @@ namespace VELaSSCo
 						const int numStringsToRetrieve,
 						const std::string &logMessagePrefix);
     bool deleteStoredRow( const std::string &tableName, const std::string &rowKey, const std::string &logMessagePrefix);
-    bool getStoredMetadataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel);
-    bool getStoredDataRowKeysForThisModel( const std::string &modelID, std::vector< std::string> &lstRowKeysForThisModel);
+    bool getStoredListRowKeysForThisModel( const std::string &tableName, 
+					   const std::string &startRowKey, const std::string &stopRowKey,
+					   const std::string &logMessagePrefix,						  
+					   std::vector< std::string> &lstRowKeysForThisModel);
+    bool getStoredMetadataRowKeysForThisModel( const std::string &tableName, const std::string &modelID, 
+					       std::vector< std::string> &lstRowKeysForThisModel);
+    bool getStoredDataRowKeysForThisModel( const std::string &tableName, const std::string &modelID, 
+					   std::vector< std::string> &lstRowKeysForThisModel);
 					    
   };
 
@@ -396,6 +402,14 @@ namespace VELaSSCo
     std::string qid_str = toHexString( getVQueryID( vqueryName, vqueryParameters));
     std::string part_hex( toHexStringSwap< int>( partitionID, format));
     return ( analysis_length ? ( modelID_hex + length_hex + analysisID + step_hex + qid_str + part_hex) : ( modelID_hex + length_hex + step_hex + qid_str + part_hex));
+  }
+
+  inline std::string GetStopKeyFromModelID( const std::string &modelID) {
+    std::string stop( modelID);
+    size_t idx = stop.size() - 1;
+    char last = stop[ idx] + 1; // it's hex, so it can be always + 1
+    stop.replace( idx, 1, 1, last);
+    return stop;
   }
 
 
