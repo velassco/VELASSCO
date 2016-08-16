@@ -232,17 +232,17 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   recursive_rmdir( yarn_output_folder.c_str());
 
   //GetSimplifiedMesh/dist/GetSimplifiedMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
-  std::string analytics_program = GetFullAnalyticsQualifier( "GetSimplifiedMesh");
+  std::string analytics_program = GetFullAnalyticsQualifier( "GetSimplifiedMesh_Average_Step1");
 
-  bool use_yarn = true;//false;;//true;
+  bool use_yarn = false;//true;//false;;//true;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
   sprintf( meshIDstr, "%d", meshID);
   if ( !use_yarn) {
-    std::string cmd_line = "java -jar " + analytics_program + " " +
+    std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
-      simpParam.toString() + " " + bcube.toString();
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\"";
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
     local_output_folder = yarn_output_folder;
@@ -250,7 +250,7 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " +
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
       simpParam.toString() + " " + bcube.toString();
     DEBUG( cmd_line);
