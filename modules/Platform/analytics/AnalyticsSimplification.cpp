@@ -17,56 +17,13 @@
 #include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 
 #include "AnalyticsCommon.h"
+#include "Simplification.h"
+using namespace VELaSSCo;
 
 #pragma message( "WARNING: ")
 #pragma message( "WARNING: yarn and hdfs should be in the $PATH and not hard coded in the source.")
 #pragma message( "WARNING: look at GetFullHBaseConfigurationFilename() for a similar approach: PathToYarnAndHDFS()")
 #pragma message( "WARNING: ")
-
-class SimplificationParameters {
-public:
-  SimplificationParameters(): _size( 0), _max_num_elements( 0), _boundary_weight( 1.0) {}
-  bool fromString( const std::string str_parameters);
-  std::string toString() const;
-private:
-  // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
-  int _size, _max_num_elements;
-  double _boundary_weight;
-};
-
-bool SimplificationParameters::fromString( const std::string str_parameters) {
-  std::istringstream is_params( str_parameters);
-  std::string key, value;
-  int scanned = 0;
-  while ( getline( is_params, key, '=') && getline( is_params, value, ';')) {
-    if ( AreEqualNoCase( key, "GridSize")) {
-      std::istringstream is_val( value);
-      is_val >> _size;
-      scanned++;
-    } else if ( AreEqualNoCase( key, "MaximumNumberOfElements")) {
-      std::istringstream is_val( value);
-      is_val >> _max_num_elements;
-      scanned++;
-    } else if ( AreEqualNoCase( key, "BoundaryWeight")) {
-      std::istringstream is_val( value);
-      is_val >> _boundary_weight;
-      scanned++;
-    } else {
-      DEBUG( "SimplificationParameters::fromString unknown parameter: " << key);
-    }
-    // is_params.ignore(); // the new line
-  }
-  return scanned > 0;
-}
-
-std::string SimplificationParameters::toString() const {
-  // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
-  ostringstream oss;
-  oss << "GridSize=" << _size << ";";
-  oss << "MaximumNumberOfElements=" << _max_num_elements << ";";
-  oss << "BoundaryWeight=" << _boundary_weight << ";";
-  return oss.str();
-}
 
 static std::string demo_simplified_mesh() {
   // This is code from the DemoServer :
@@ -231,10 +188,30 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 					       const std::string &analysisID, const double stepValue,
 					       const std::string &parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
 					       std::string *return_binary_mesh, std::string *return_error_str) {
-  SimplificationParameters simpParam;
+  // parsing parameters
+  Simplification::Parameters simpParam;
   simpParam.fromString( parameters);
+  LOGGER << "    simplification parameters read: " << simpParam.toString() << std::endl;
+
+  // getting bbox: // the global one
+  double modelBBox[ 6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::string dl_error_str;
+  DataLayerAccess::Instance()->calculateBoundingBox( sessionID, modelID, "", 0, NULL, 0, NULL, modelBBox, &dl_error_str);
   
-  LOGGER << "    parameters read: " << simpParam.toString() << std::endl;
+  Simplification::Box bbox;
+  bbox.init( modelBBox[ 0], modelBBox[ 1], modelBBox[ 2]);
+  bbox.update( modelBBox[ 3], modelBBox[ 4], modelBBox[ 5]);
+  Simplification::Box bcube = bbox.get_centered_bounding_cube();
+  Simplification::Point diff = bbox.max() - bbox.min();
+  Simplification::Point diff2 = bcube.max() - bcube.min();
+  LOGGER << "    got bounding box:" << std::endl;
+  LOGGER << "     ( " << bbox.min().x << ", " << bbox.min().y << ", " << bbox.min().z
+	 << ") - ( " << bbox.max().x << ", " << bbox.max().y << ", " << bbox.max().z
+	 << ") | ( dx, dy, dz) = ( " << diff.x << ", " << diff.y << ", " << diff.z << ")" << std::endl;
+  LOGGER << "       centered cube:" << std::endl;
+  LOGGER << "     ( " << bcube.min().x << ", " << bcube.min().y << ", " << bcube.min().z
+	 << ") - ( " << bcube.max().x << ", " << bcube.max().y << ", " << bcube.max().z
+	 << ") | ( dx, dy, dz) = ( " << diff2.x << ", " << diff2.y << ", " << diff2.z << ")" << std::endl;
   
   bool return_demo_mesh = true;
   if ( return_demo_mesh) {
@@ -263,8 +240,9 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   char meshIDstr[ 100];
   sprintf( meshIDstr, "%d", meshID);
   if ( !use_yarn) {
-    std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
-      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
+    std::string cmd_line = "java -jar " + analytics_program + " " +
+      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
+      simpParam.toString() + " " + bcube.toString();
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
     local_output_folder = yarn_output_folder;
@@ -272,8 +250,9 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
     // Using yarn:
     // execute and copy to localdir the result's files
     // running Yarn:
-    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
-      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " +
+      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
+      simpParam.toString() + " " + bcube.toString();
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
     // output in '../simplified_mesh_sessionID_modelID/part-r-00000' but in hdfs
