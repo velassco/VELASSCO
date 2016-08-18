@@ -232,7 +232,7 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   recursive_rmdir( yarn_output_folder.c_str());
 
   //GetSimplifiedMesh/dist/GetSimplifiedMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
-  std::string analytics_program = GetFullAnalyticsQualifier( "GetSimplifiedMesh_Average_Step1");
+  std::string analytics_program = GetFullAnalyticsQualifier( "GetSimplifiedMesh_Average");
 
   bool use_yarn = false;//true;//false;;//true;
   // running java:
