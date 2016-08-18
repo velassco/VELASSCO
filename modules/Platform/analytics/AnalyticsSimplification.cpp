@@ -2,7 +2,7 @@
 #include <istream>
 #include <sstream>
 #include <vector>
-#include <unordered_set>
+#include <unordered_map>
 #include <stddef.h>  // defines NULL
 #include <stdlib.h>
 #include <fcntl.h>
@@ -100,18 +100,22 @@ static std::string demo_simplified_mesh() {
 }
 
 static bool getBoundaryQuadrilateralsFromJavaOutput( const char *filename, 
+						     std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> &lst_coordinates,
 						     std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_quadrilaterals) {
  FILE *fi = fopen( filename, "r");
  bool ok = true;
 
- // format of file is:
- // int32 num_nodes, int64 nodes[ num_nodes]\n
  VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral quadrilateral;
  ssize_t n_read = 0;
  size_t hexa_data_line_size = 64 * 1024;
  char *hexa_data_line = ( char *)malloc( hexa_data_line_size * sizeof( char));
  size_t binary_data_size = 32 * 1024;
  char *binary_data = ( char *)malloc( binary_data_size * sizeof( char));
+
+ // renumber vertices too, as it's ID is the clusterID of the simplification grid
+ // and this can be too high
+ std::unordered_map< int64_t, int64_t> oldToNewVertexIDMap;
+ int64_t newVertexID = 1;
  while ( !feof( fi)) {
    n_read = getline( &hexa_data_line, &hexa_data_line_size, fi);
    if ( n_read == -1) {
@@ -122,64 +126,79 @@ static bool getBoundaryQuadrilateralsFromJavaOutput( const char *filename,
      break;
    }
 
-   if ( FromHexString( binary_data, binary_data_size, hexa_data_line, hexa_data_line_size)) {
-     DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: error translating hexadecimal string to binary data.");
+   char *separator = strchr( hexa_data_line, '\t');
+   char *key = hexa_data_line, *value = NULL;
+   size_t key_size = n_read - 1; // the final '\n'
+   size_t value_size = 0;
+   if ( separator) {
+     key_size = separator - hexa_data_line;
+     *separator = '\0';
+     separator++;
+     value = separator;
+     value_size = n_read - key_size - 2; // the '\t' and the '\n';
+   }
+
+   // process key part:
+   if ( !FromHexString( binary_data, binary_data_size, key, key_size)) {
+     DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: error translating hexadecimal key string to binary data.");
      ok = false; 
      break;
    }
 
-   quadrilateral._num_nodes = byteSwap< int>( *( int *)&binary_data[ 0]);
-   // assert( triangle._num_nodes == 3);
-   if ( quadrilateral._num_nodes != 4) {
-     // ok = false; //just finished reading to show something ...
-     DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: read num_nodes != 4.");
-     break;
+   // key is MR_CombinedCellAndElementKeys
+   int keyType = byteSwap< int>( *( int*)&binary_data[ 0]);
+   if ( keyType == 1) { // MR_CELLID
+     // coords information is on 'value' field
+     int64_t vertexID = byteSwap< int64_t>( *( int64_t *)&binary_data[ 4]); // sizeof( int)
+     // the value part
+     if ( !FromHexString( binary_data, binary_data_size, value, value_size)) {
+       DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: error translating hexadecimal value string to binary data.");
+       ok = false; 
+       break;
+     } 
+     double x = byteSwap< double>( *( double*)&binary_data[  0]);
+     double y = byteSwap< double>( *( double*)&binary_data[  8]);
+     double z = byteSwap< double>( *( double*)&binary_data[ 16]);
+     oldToNewVertexIDMap[ vertexID] = newVertexID;
+     VELaSSCo::BoundaryBinaryMesh::MeshPoint newVertex = { newVertexID, { x, y, z}};
+     newVertexID++;
+     lst_coordinates.push_back( newVertex);
+   } else if ( keyType == 2) { // MR_TETRAHEDRON
+     // key is a MR_SimplifiedTetrahedron i.e. MR_Quadrilateral
+     quadrilateral._num_nodes = byteSwap< int>( *( int *)&binary_data[ 4]); // sizeof( int)
+     // assert( triangle._num_nodes == 3);
+     if ( quadrilateral._num_nodes != 4) {
+       // ok = false; //just finished reading to show something ...
+       DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: read num_nodes != 4.");
+       break;
+     }
+     quadrilateral._nodes[ 0] = byteSwap< int64_t>( *( int64_t *)&binary_data[  8]); // 2 * sizeof( int)
+     quadrilateral._nodes[ 1] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 16]); // sizeof( int) + sizeof( int64_t)
+     quadrilateral._nodes[ 2] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 24]); // sizeof( int) + 2 * sizeof( int64_t)
+     quadrilateral._nodes[ 3] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 32]); // sizeof( int) + 3 * sizeof( int64_t)
+     lst_quadrilaterals.push_back( quadrilateral);
+   } else {
+     std::ostringstream oss;
+     oss << keyType ;
+     DEBUG( "getBoundaryQuadrilateralsFromJavaOutput: unknown KeyType " + oss.str());
    }
 
-   quadrilateral._nodes[ 0] = byteSwap< int64_t>( *( int64_t *)&binary_data[  4]); // sizeof( int)
-   quadrilateral._nodes[ 1] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 12]); // sizeof( int) + sizeof( int64_t)
-   quadrilateral._nodes[ 2] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 20]); // sizeof( int) + 2 * sizeof( int64_t)
-   quadrilateral._nodes[ 3] = byteSwap< int64_t>( *( int64_t *)&binary_data[ 28]); // sizeof( int) + 3 * sizeof( int64_t)
-
-   lst_quadrilaterals.push_back( quadrilateral);
  } // !feof( fi)
-
  fclose( fi);
+
+ // now renumber the elements
+ for( std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral>::iterator it = lst_quadrilaterals.begin();
+      it < lst_quadrilaterals.end(); it++) {
+   for ( int i = 0; i < 4; i++) {
+     int64_t vertexId = it->_nodes[ i];
+     std::unordered_map< int64_t, int64_t>::const_iterator it_newVertexID = oldToNewVertexIDMap.find( vertexId);
+     if ( it_newVertexID != oldToNewVertexIDMap.end()) {
+       it->_nodes[ i] = it_newVertexID->second;
+     }
+   }
+ }
+
  return ok;
-}
-
-static bool getBoundaryVerticesFromDataLayerOutput( const std::vector< Vertex> &DL_vertices, 
-						    const std::unordered_set< int64_t> &lst_UsedNodeIDs,
-						    std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> &lst_vertices) {
-
-  LOGGER << "--> before getBoundaryVerticesFromDataLayerOutput" << std::endl;
-
-  for ( std::vector< Vertex>::const_iterator it = DL_vertices.begin(); it != DL_vertices.end(); ++it) {
-    // in theory this is check is not needed as we use getListOfSelectedVerticesFromMesh
-    // but for the other cases, and it seems that it does not add a significant overhead ...
-    if ( lst_UsedNodeIDs.find( it->id) != lst_UsedNodeIDs.end()) {
-      VELaSSCo::BoundaryBinaryMesh::MeshPoint tmp;
-      tmp._id = it->id;
-      tmp._coords[ 0] = it->x;
-      tmp._coords[ 1] = it->y;
-      tmp._coords[ 2] = it->z;
-      lst_vertices.push_back( tmp);
-    }
-  }
-  LOGGER << "--> after getBoundaryVerticesFromDataLayerOutput" << std::endl;
-  return lst_vertices.size() != 0;
-}
-
-static bool getListOfUsedNodeIDs( std::unordered_set< int64_t> &lst_UsedNodeIDs,
-				  const std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_quadrilaterals) {
-  for ( std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral>::const_iterator it = lst_quadrilaterals.begin();
-	it != lst_quadrilaterals.end(); ++it) {
-    lst_UsedNodeIDs.insert( it->_nodes[ 0]);
-    lst_UsedNodeIDs.insert( it->_nodes[ 1]);
-    lst_UsedNodeIDs.insert( it->_nodes[ 2]);
-    lst_UsedNodeIDs.insert( it->_nodes[ 3]);
-  }
-  return lst_UsedNodeIDs.size() != 0;
 }
 
 void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
@@ -188,6 +207,12 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 					       const std::string &analysisID, const double stepValue,
 					       const std::string &parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
 					       std::string *return_binary_mesh, std::string *return_error_str) {
+  bool return_demo_mesh = false;
+  if ( return_demo_mesh) {
+    *return_binary_mesh = demo_simplified_mesh();
+    return;
+  }
+
   // parsing parameters
   Simplification::Parameters simpParam;
   simpParam.fromString( parameters);
@@ -212,12 +237,21 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   LOGGER << "     ( " << bcube.min().x << ", " << bcube.min().y << ", " << bcube.min().z
 	 << ") - ( " << bcube.max().x << ", " << bcube.max().y << ", " << bcube.max().z
 	 << ") | ( dx, dy, dz) = ( " << diff2.x << ", " << diff2.y << ", " << diff2.z << ")" << std::endl;
-  
-  bool return_demo_mesh = true;
-  if ( return_demo_mesh) {
-    *return_binary_mesh = demo_simplified_mesh();
-    return;
-  }
+
+  // std::string return_boundary_mesh;
+  // DataLayerAccess::Instance()->calculateBoundaryOfAMesh( sessionID, modelID, meshID, elementType, "", 0,
+  // 							 &return_boundary_mesh, &dl_error_str);
+  // VELaSSCo::BoundaryBinaryMesh boundaryMesh;
+  // boundaryMesh.fromString( return_boundary_mesh, VELaSSCo::BoundaryBinaryMesh::STATIC);
+  // const VELaSSCo::BoundaryBinaryMesh::MeshPoint *lst_boundary_vertices = boundaryMesh.getLstVertices();
+  // const int64_t nv = boundaryMesh.getNumVertices();
+  // LOGGER << "    got boundary mesh with " << nv << " vertices" << std::endl;
+  // std::vector< int64_t> lstBoundaryNodes;
+  // for ( int64_t iv = 0; iv < nv; iv++) {
+  //   lstBoundaryNodes.push_back( lst_boundary_vertices[ iv]._id);
+  // }
+  // boundaryMesh.reset(); // free memory
+  // return_boundary_mesh.clear();
 
   // at the moment only CLI interface:
   // modelID, if it's binary, convert it to 32-digit hexastring:
@@ -234,7 +268,7 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   //GetSimplifiedMesh/dist/GetSimplifiedMesh.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
   std::string analytics_program = GetFullAnalyticsQualifier( "GetSimplifiedMesh_Average");
 
-  bool use_yarn = false;//true;//false;;//true;
+  bool use_yarn = true;//false;;//true;
   // running java:
   int ret_cmd = 0;
   char meshIDstr[ 100];
@@ -252,7 +286,7 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
     // running Yarn:
     std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
-      simpParam.toString() + " " + bcube.toString();
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\"";
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
     // output in '../simplified_mesh_sessionID_modelID/part-r-00000' but in hdfs
@@ -278,17 +312,6 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
     // try reading error file
     bool errorfile_read = false;
     sprintf( filename, "%s/error.txt", local_output_folder.c_str());
-/*    fi = fopen( filename, "r");
-    if (fi) {
-      const size_t size_buffer = 1024 * 1024;
-      char buffer[ size_buffer + 1];
-      char *ok = fgets( buffer, size_buffer, fi);
-      fclose( fi);
-      if ( ok) {
-	*return_error_str = std::string( buffer);
-	errorfile_read = true;
-      }
-    }*/
     std::ifstream ifs(filename);
     if (ifs.is_open()) {
     	std::stringstream buffer;
@@ -312,53 +335,11 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   std::string step_error = "";
 
   std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> lst_quadrilaterals;
-  bool ok = getBoundaryQuadrilateralsFromJavaOutput( filename, lst_quadrilaterals);
+  std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> lst_vertices;
+  bool ok = getBoundaryQuadrilateralsFromJavaOutput( filename, lst_vertices, lst_quadrilaterals);
   if ( !ok) step_error = "error in getBoundaryQuadrilateralsFromJavaOutput";
 
-  // get the unique Node IDs used in the skin mesh
-  std::unordered_set< int64_t> lst_UsedNodeIDs;
-  if ( ok) {
-    // get only the vertices we need
-    ok = getListOfUsedNodeIDs( lst_UsedNodeIDs, lst_quadrilaterals);
-  }
-  if ( !ok) step_error = "error in getListOfUsedNodeIDs";
-
-  // needs to get the vertices from the DataLayer ...
-  rvGetListOfVerticesFromMesh return_data;
-  if ( ok) {
-    std::cout << "doing DataLayer::getListOfSelectedVerticesFromMesh" << std::endl;
-    std::vector< int64_t> lstVertexIds;
-    for ( std::unordered_set< int64_t>::const_iterator itr = lst_UsedNodeIDs.begin(); itr != lst_UsedNodeIDs.end(); itr++) {
-      lstVertexIds.push_back( *itr);
-    }
-    DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
-								    sessionID,
-								    modelID, analysisID, stepValue,
-								    meshID, lstVertexIds);
-    
-    std::cout << "     status: " << return_data.status << std::endl;
-    if ( return_data.status == "Error") {
-      ok = false;
-      // const std::string not_found( "Not found");
-      // if ( AreEqualNoCaseSubstr( return_data.report, not_found, not_found.size())) {
-      //   _return.__set_result( (Result::type)VAL_NO_RESULT_INFORMATION_FOUND);
-      // } else {
-      //   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
-      // }
-    } else { // status == "Ok"
-      // if ( return_data.vertex_list.size() == 0) {
-      //   _return.__set_result( (Result::type)VAL_NO_MODEL_MATCHES_PATTERN);
-      // }
-    }
-  }
-  if ( !ok) step_error = "error in getListOfVerticesFromMesh";
-
-  std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> lst_vertices;
   VELaSSCo::BoundaryBinaryMesh simplified_mesh;
-  if ( ok) {
-    ok = getBoundaryVerticesFromDataLayerOutput( return_data.vertex_list, lst_UsedNodeIDs, lst_vertices);
-  }
-  if ( !ok) step_error = "error in getBoundaryVerticesFromDataLayerOutput";
   if ( ok) {
     simplified_mesh.set( lst_vertices.data(), lst_vertices.size(), lst_quadrilaterals.data(), lst_quadrilaterals.size(), VELaSSCo::BoundaryBinaryMesh::STATIC);
   }
