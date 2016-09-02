@@ -876,3 +876,43 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   DEBUG( "Deleting temporary files ...");
   recursive_rmdir( yarn_output_folder.c_str());
 }
+
+
+void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+							  const std::string& modelID,
+							  const std::string& resultID,
+							  const double stepValue,
+							  const std::string& analysisID,
+							  const double* bBox, // ix doubles: min(x,y,z)-max(x,y,z)
+							  const double tolerance, // Use ptr to allow NULL?
+							  const int numSteps, // Use ptr to allow NULL?
+							  /* out */
+							  std::string *return_binary_volume_lrspline,
+							  std::string *resultStatistics, // JSON format?
+							  std::string *resultErrorStr) {
+
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": MISSING: Fetch model data (FEM) from HBase!");
+
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": MISSING: Parse data to Spline friendly!");
+
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": MISSING: Perform the actual Volume LRSpline Approximation!");
+
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": MISSING: Convert output data to binary format!");
+
+  return;
+
+  // at the moment only CLI interface:
+  // modelID, if it's binary, convert it to 32-digit hexastring:
+  char model_ID_hex_string[ 1024];
+  std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
+
+  std::string spark_output_folder = ToLower( "volume_lrspline_" + sessionID + "_" + cli_modelID);
+  std::string local_tmp_folder = create_tmpdir();
+  std::string local_output_folder = local_tmp_folder + "/" + spark_output_folder;
+  recursive_rmdir( spark_output_folder.c_str());
+
+}

@@ -183,6 +183,21 @@ public:
   void deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
 						const std::string &modelID,
 						std::string *return_error_str);
+
+  // This function calls to Analytics module.
+  void calculateVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+					      const std::string& modelID,
+					      const std::string& resultID,
+					      const double stepValue,
+					      const std::string& analysisID,
+					      const double* bBox, // ix doubles: min(x,y,z)-max(x,y,z)
+					      const double tolerance, // Use ptr to allow NULL?
+					      const int numSteps, // Use ptr to allow NULL?
+					   /* out */
+					      int64_t& binary_blob_ID,
+					      std::string *resultStatistics, // JSON format?
+					      std::string *resultErrorStr);
+
 private:
   // DataLayerAccess(){};
   DataLayerAccess(DataLayerAccess const&){};

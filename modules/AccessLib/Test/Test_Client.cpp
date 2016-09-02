@@ -736,6 +736,157 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   return EXIT_SUCCESS;
 }
 
+int doTestSINTEF( const VAL_SessionID sessionID) {
+  VAL_Result    result;
+  const char *status = NULL;
+  char hex_string[ 1024];
+
+  std::cout << "=======================>>> SINTEF <<<=====================\n";
+
+  std::cout << "sessionID: " << sessionID << std::endl;
+
+  const char* model_name 		= "fine_mesh";//"fine_mesh-ascii_";
+  // Remember the trailing "/" for the model_fullpath!
+  const char* model_fullpath = "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";
+  const char* model_tablename   = "VELaSSCo_Models";//"VELaSSCo_Models_V4CIMNE";
+  
+  std::string model_unique_name = model_tablename;
+  model_unique_name += ":";
+  model_unique_name += model_fullpath;
+  model_unique_name += ":";
+  model_unique_name += model_name;
+
+  const char *access = "";
+  const char *return_modelID = NULL;
+  std::cout << "doTestSINTEF(): doing OpenModel of " << model_unique_name << std::endl;
+  result = valOpenModel( sessionID, model_unique_name.c_str(), access, &status, &return_modelID);
+  CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
+  std::cout << "OpenModel: " << std::endl;
+  std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
+  if ( return_modelID) {
+    std::cout << "return_modelID: " << return_modelID << std::endl;
+    std::cout << "   model_modelID = " << ModelID_DoHexStringConversionIfNecesary( return_modelID, hex_string, 1024) << std::endl;
+  } else {
+    // logout as it is not valid ...
+    std::cout << "   ERROR model could not be opened, login out ..." << std::endl;
+    return EXIT_SUCCESS;
+  }
+  std::string opened_modelID(return_modelID );
+
+ //
+  // Test GetListOfTimeSteps
+  //
+  bool do_get_list_of_steps = true;
+  double step_value = 0.0;//-1.0;
+  std::string analysisID("FEM"); // For the telescope model we are interested in the FEM data.
+  if ( do_get_list_of_steps) {
+    const double *return_list = NULL;
+    size_t        return_num_steps = 0;
+    const char *return_error_str = NULL;
+    std::cout << "doTestSINTEF(): doing valGetListOfTimeSteps for analysis = '" << analysisID << "'." << std::endl;
+    result = valGetListOfTimeSteps( sessionID, opened_modelID.c_str(),
+  				    analysisID.c_str(), 
+  				    &return_error_str, 
+  				    &return_num_steps, &return_list);
+    std::cout << "doTestSINTEF(): Done with valGetListOfTimeSteps, return_num_steps: " << return_num_steps << "'." << std::endl;
+    bool exit_on_error = false; // We use a dummy value if the list of time steps is not available.
+    CheckVALResult(result, getStringFromCharPointers( "valGetListOfTimeSteps ", return_error_str), exit_on_error);
+    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+    std::cout << "doTestSINTEF(): GetListOfTimeSteps: " << opened_modelID << 
+      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+    if ( return_list) {
+      std::cout << "   List_size = " << return_num_steps << std::endl;
+      std::cout << "   Step_list = " << Hexdump( std::string( ( char *)return_list, return_num_steps)) << std::endl;
+      std::cout << "   # steps   = " << return_num_steps << std::endl;
+      if ( return_num_steps > 0)
+  	std::cout << "      Step 0 = " << return_list[ 0] << std::endl;
+      if ( return_num_steps > 1)
+  	std::cout << "      Step 1 = " << return_list[ 1] << std::endl;
+      if ( return_num_steps > 2)
+  	std::cout << "      Step 2 = " << return_list[ 2] << std::endl;
+      if ( return_num_steps > 3)
+  	std::cout << "      Step 3 = " << return_list[ 3] << std::endl;
+      size_t mid_step = (size_t)(return_num_steps/2);
+      std::cout << "mid_step: " << mid_step << std::endl;
+      step_value = return_list[ mid_step];
+    } else {
+      std::cout << "doTestSINTEF(): Error: " << return_error_str << std::endl;
+    }
+  }
+
+  double bBox[6];
+  bBox[0] = 0.0; // We initialize it with something illegal.
+  bBox[2] = 0.0;
+  bBox[3] = 0.0; 
+  bBox[4] = -2.0;
+  bBox[5] = -2.0;
+  bBox[6] = -2.0; 
+
+  bool do_bbox = true;
+  if ( do_bbox) {
+    const double *return_bbox = NULL;
+    const char *return_error_str = NULL;
+    std::vector<double> steps(1);
+    steps[0] = step_value;
+    result = valGetBoundingBox( sessionID, opened_modelID.c_str(), // the already opened model
+  				NULL, 0, // use all vertices ID
+  				analysisID.c_str(),
+  				"SINGLE",
+				&steps[0], 1,
+  				&return_bbox, &return_error_str);
+    CheckVALResult(result, getStringFromCharPointers( "valGetBoundingBox ", return_error_str));
+    ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+    std::cout << "doTestSINTEF(): GetBoundingBox: " << opened_modelID << 
+      ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+    if ( return_bbox) {
+      std::cout << "         bbox = ( " ;
+      std::cout << return_bbox[ 0] << ", " << return_bbox[ 1] << ", " << return_bbox[ 2] << ") - ("
+  		<< return_bbox[ 3] << ", " << return_bbox[ 4] << ", " << return_bbox[ 5] << ")." << std::endl;
+      bBox[0] = return_bbox[0];
+      bBox[1] = return_bbox[1];
+      bBox[2] = return_bbox[2];
+      bBox[3] = return_bbox[3];
+      bBox[4] = return_bbox[4];
+      bBox[5] = return_bbox[5];
+    } else {
+      std::cout << "Error: " << return_error_str << std::endl;
+      std::cout << "Failed extracting the bbox from the model!" << std::endl;
+    }
+  }
+
+  double tolerance = 0.5;
+  int numSteps = 5; // 8 at most? 8 the default value?
+  // The result arguments.
+  const int64_t  *resultLRSplineID = NULL;
+  const char*    resultStatistics = NULL;
+  const char*    resultErrorStr = NULL;
+  std::cout << "doTestSINTEF(): Calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
+  result = valComputeVolumeLRSplineFromBoundingBox( sessionID,
+						    opened_modelID.c_str(), // the already opened model
+						    "Velocity", // Result ID, not sure if this is what we want. @@SINTEF201608
+						    step_value,
+						    analysisID.c_str(),
+						    bBox,
+						    tolerance,
+						    numSteps,
+						    &resultLRSplineID,
+						    &resultStatistics,
+						    &resultErrorStr);
+  std::cout << "doTestSINTEF(): Done calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
+  std::cout << "doTestSINTEF(): result: " << result << std::endl;
+  CheckVALResult(result, getStringFromCharPointers( "valComputeVolumeLRSplineFromBoundingBox ", resultErrorStr));
+  ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+  std::cout << "doTestSINTEF(): ComputeVolumeLRSplineFromBoundingBox: " << opened_modelID << 
+    ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+  if ( resultLRSplineID) {
+    std::cout << "doTestSINTEF(): Call seems to have done something ..." << std::endl;
+  } else {
+    std::cout << "doTestSINTEF(): Error: " << resultErrorStr << std::endl;
+  }
+
+  return EXIT_SUCCESS;
+}
+
 int main(int argc, char* argv[])
 {
   VAL_Result    result;
@@ -806,7 +957,8 @@ int main(int argc, char* argv[])
   //ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
   //ret= doTestDC (sessionID);
-
+  //ret = doTestSINTEF(sessionID);
+  
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  
 

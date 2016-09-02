@@ -131,6 +131,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetConfiguration( _return, sessionID, query);
   } else if ( name == "SetConfiguration") {
     ManageSetConfiguration( _return, sessionID, query);
+  } else if ( name == "ComputeVolumeLRSplineFromBoundingBox") {
+    ManageGetVolumeLRSplineFromBoundingBox( _return, sessionID, query);
   } else {
     _return.__set_result( (Result::type)VAL_INVALID_QUERY );
     

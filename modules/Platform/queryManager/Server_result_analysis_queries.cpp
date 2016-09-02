@@ -701,3 +701,79 @@ void QueryManagerServer::ManageDeleteAllCalculationsForThisModel( Query_Result &
   }
 }
 
+
+void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_return,
+								 const SessionID sessionID, const std::string& query) {
+
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+	  // 	     << "  \"name\"       : \"" << "ComputeVolumeLRSplineFromBoundingBox" << "\",\n"
+	  // 	     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+	  // 	     << "  \"resultID\"     : \"" << resultID                   << "\",\n"
+	  // 	     << "  \"stepValue\"  : \"" << stepValue                  << "\",\n"
+	  // 	     << "  \"analysisID\" : \"" << analysisID                << "\",\n"
+	  // 	     << "  \"bBox\" : [" << bBox[0] << "," << bBox[1] << "," << bBox[2] <<
+	  // "," << bBox[3] << "," << bBox[4] << "," << bBox[5] << "],\n"
+	  // 	     << "  \"tolerance\" : \"" << tolerance                << "\",\n"
+	  // 	     << "  \"numSteps\" : \"" << numSteps                << "\"\n";
+
+  // get parameters:
+  std::string name         = pt.get<std::string>( "name");
+  std::string modelID      = pt.get<std::string>( "modelID");
+  std::string resultID     = pt.get<std::string>( "resultID");
+  double stepValue         = pt.get< double>( "stepValue");
+  std::string analysisID   = pt.get<std::string>( "analysisID");
+  std::vector<double> bBox = as_vector<double>( pt, "bBox");
+  double tolerance         = pt.get< double>( "tolerance");
+  double numSteps          = pt.get< double>( "numSteps");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "R-" << resultID           << "-" << std::endl;
+  std::cout << "sV -" << stepValue       << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "bB -" << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
+    bBox[3] << " " << bBox[4] << " " << bBox[5] << "-" << std::endl;
+  std::cout << "T -" << tolerance       << "-" << std::endl;
+  std::cout << "nS -" << numSteps       << "-" << std::endl;
+
+  _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
+
+  int64_t  resultLRSplineID = -1;
+  std::string result_statistics;
+  std::string error_str;
+  try {
+
+    queryServer->calculateVolumeLRSplineFromBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+							 resultID, stepValue, analysisID, &bBox[0], tolerance, numSteps,
+							 /* out */
+							 resultLRSplineID,
+							 &result_statistics,
+							 &error_str);
+    // GraphicsModule *graphics = GraphicsModule::getInstance();
+    // just to link to the GraphicsModule;
+  } catch ( TException &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( std::string( ( const char *)&resultLRSplineID, sizeof(int64_t)) + result_statistics );
+  } else {
+    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+}

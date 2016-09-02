@@ -549,3 +549,53 @@ void DataLayerAccess::deleteAllStoredCalculationsForThisModel( const std::string
   _db->deleteAllStoredCalculationsForThisModel( sessionID, modelID,
 						return_error_str);
 }
+
+
+void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+							     const std::string& modelID,
+							     const std::string& resultID,
+							     const double stepValue,
+							     const std::string& analysisID,
+							     const double* bBox, // ix doubles: min(x,y,z)-max(x,y,z)
+							     const double tolerance, // Use ptr to allow NULL?
+							     const int numSteps, // Use ptr to allow NULL?
+							     /* out */
+							     int64_t& binary_blob_ID,
+							     std::string *resultStatistics, // JSON format?
+							     std::string *resultErrorStr)
+{
+
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": MISSING: Check if result already exists in HBase!");
+
+  HBase::TableModelEntry table_name_set;
+  std::string binary_volume_lrspline = "";
+  if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
+    resultErrorStr->clear();
+
+    AnalyticsModule::getInstance()->createVolumeLRSplineFromBoundingBox( sessionID, modelID,
+									 resultID, stepValue,
+									 analysisID, bBox, tolerance,
+									 numSteps,
+									 &binary_volume_lrspline,
+									 resultStatistics,
+									 resultErrorStr);
+  } else {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": Did not enter the Analytics module!");
+  }
+
+  if (binary_volume_lrspline.size() != 0) {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": We appear to have received a non-empty binary blob!");
+  } else {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": The binary blob was not created!");
+  }
+
+  // We store a config file on the xml format (but stored binary?), which includes:
+  // modelID + stepValue + bBox + tolerance + numSteps + resultStatistics.
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": MISSING: Write config file & result binary blob to HBase!");
+
+}

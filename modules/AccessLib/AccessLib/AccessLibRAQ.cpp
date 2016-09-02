@@ -664,6 +664,82 @@ extern "C" {
   CATCH_ERROR;
   }
 
+  VAL_Result VAL_API valComputeVolumeLRSplineFromBoundingBox( /* in */
+					   VAL_SessionID   sessionID,
+					   const char     *modelID,
+					   const char     *resultID,
+					   const double    stepValue,
+					   const char     *analysisID,
+					   const double   *bBox, // 6 doubles: min(x,y,z)-max(x,y,z)
+					   const double   tolerance, // Use ptr to allow NULL?
+					   const int      numSteps, // Use ptr to allow NULL?
+					   /* out */
+					   const int64_t* *resultLRSplineID,
+					   const char*    *resultStatistics,
+					   const char    **resultErrorStr) { // in case of error
+    CHECK_SESSION_ID( sessionID );
+    CHECK_QUERY_POINTER( modelID );
+    CHECK_QUERY_POINTER( resultID );
+    CHECK_QUERY_POINTER( analysisID );
+    CHECK_QUERY_POINTER( bBox );
+    // CHECK_QUERY_POINTER( tolerance );
+    // CHECK_QUERY_POINTER( numSteps );
+    CHECK_QUERY_POINTER( resultLRSplineID );
+    CHECK_QUERY_POINTER( resultStatistics );
+    CHECK_QUERY_POINTER( resultErrorStr );
+    
+    *resultLRSplineID = NULL;
+    *resultStatistics = NULL;
+    *resultErrorStr = NULL;
+
+    API_TRACE;
+    try
+      {
+	std::stringstream  queryCommand;
+	const std::string *queryData = NULL;
+
+	// Build JSON command string
+	queryCommand << "{\n"
+		     << "  \"name\"       : \"" << "ComputeVolumeLRSplineFromBoundingBox" << "\",\n"
+		     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+		     << "  \"resultID\"     : \"" << resultID                   << "\",\n"
+		     << "  \"stepValue\"  : \"" << stepValue                  << "\",\n"
+		     << "  \"analysisID\" : \"" << analysisID                << "\",\n"
+		     << "  \"bBox\" : [" << bBox[0] << "," << bBox[1] << "," << bBox[2] <<
+	  "," << bBox[3] << "," << bBox[4] << "," << bBox[5] << "],\n"
+		     << "  \"tolerance\" : \"" << tolerance                << "\",\n"
+		     << "  \"numSteps\" : \"" << numSteps                << "\"\n";
+	queryCommand << "}\n";
+
+	// g_clients is a map of shared_ptr<VELaSSCo::Client> objects.
+	VAL_Result result = g_clients[sessionID]->Query( sessionID, queryCommand.str(), queryData);
+
+	// Give back pointers to actual binary data
+	if (result == VAL_SUCCESS) {
+	  // *resultMesh = ( const char *)queryData->data();
+	  // *resultMeshByteSize = queryData->length();
+	  *resultLRSplineID = ( const int64_t *) queryData->data();
+	  *resultStatistics = ( const char *) (&(queryData->data()[sizeof(int64_t)]));
+	  //	    *resultBBox = ( const double *)queryData->data();
+
+	  // to debug and test:
+	  // std::string file_name = std::string( "/tmp/valComputeVolumeLRSplineFromBoundingBox_") + resultID + ".bin";
+	  // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
+	} else {
+	  if (queryData != NULL) {
+	    *resultErrorStr = queryData->c_str();
+	  } else {
+	    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+		  ": The queryData was not set!");
+	  }
+	}
+
+	return result;
+      }
+    CATCH_ERROR;
+  }
+
+
 #ifdef __cplusplus
 }
 #endif

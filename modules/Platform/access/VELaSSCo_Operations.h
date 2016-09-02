@@ -167,6 +167,21 @@ public:
   virtual void deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
 							const std::string &modelID,
 							std::string *return_error_str) = 0; 
+
+  // This function calls to Analytics module.
+  virtual void calculateVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+						      const std::string& modelID,
+						      const std::string& resultID,
+						      const double stepValue,
+						      const std::string& analysisID,
+						      const double* bBox,
+						      const double tolerance,
+						      const int numSteps,
+						      /* out */
+						      int64_t& binary_blob_ID,
+						      std::string *resultStatistics,
+						      std::string *resultErrorStr) = 0;
+
  
 };
 

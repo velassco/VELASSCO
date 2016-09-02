@@ -308,6 +308,21 @@ extern "C" {
 							  /* out */
 							  const char     **resultErrorStr); // in case of error
 
+  VAL_Result VAL_API valComputeVolumeLRSplineFromBoundingBox( /* in */
+					   VAL_SessionID   sessionID,
+					   const char     *modelID,
+					   const char     *resultID,
+					   const double    stepValue,
+					   const char     *analysisID,
+					   const double   *bBox, // 6 doubles: min(x,y,z)-max(x,y,z)
+					   const double   tolerance, // Use ptr to allow NULL?
+					   const int      numSteps, // Use ptr to allow NULL?
+					   /* out */
+					    // Not returning the binary stream as the result should be stored in HBase.
+					   const int64_t* *resultLRSplineID,
+					   const char*    *resultStatistics,
+					   const char    **resultErrorStr); // in case of error
+
   /**
    * Translate a numerical result code into an error message string.
    * The memory for the string does not need to be released by the user.

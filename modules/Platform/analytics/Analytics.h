@@ -47,6 +47,20 @@ public:
 				const std::string &parameters,
 				std::string *return_binary_mesh, std::string *return_error_str);
 
+  void createVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+					   const std::string& modelID,
+					   const std::string& resultID,
+					   const double stepValue,
+					   const std::string& analysisID,
+					   const double* bBox,
+					   const double tolerance,
+					   const int numSteps,
+					   std::string *return_binary_volume_lrspline,
+					   std::string *resultStatistics,
+					   std::string *resultErrorStr);
+
+  
+
 private:
   AnalyticsModule() {};
   AnalyticsModule( AnalyticsModule const&) {};
