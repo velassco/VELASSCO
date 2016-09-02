@@ -716,6 +716,8 @@ extern "C" {
 
 	// Give back pointers to actual binary data
 	if (result == VAL_SUCCESS) {
+	  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+		": The query returned with SUCCESS!");
 	  // *resultMesh = ( const char *)queryData->data();
 	  // *resultMeshByteSize = queryData->length();
 	  *resultLRSplineID = ( const int64_t *) queryData->data();
@@ -727,10 +729,12 @@ extern "C" {
 	  // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
 	} else {
 	  if (queryData != NULL) {
+	    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+		  ": The query failed, but queryData contains the error message.");
 	    *resultErrorStr = queryData->c_str();
 	  } else {
 	    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-		  ": The queryData was not set!");
+		  ": The query failed and the error message was not added to queryData!");
 	  }
 	}
 

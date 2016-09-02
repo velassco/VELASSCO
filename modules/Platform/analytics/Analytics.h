@@ -57,7 +57,7 @@ public:
 					   const int numSteps,
 					   std::string *return_binary_volume_lrspline,
 					   std::string *resultStatistics,
-					   std::string *resultErrorStr);
+					   std::string *return_error_str);
 
   
 

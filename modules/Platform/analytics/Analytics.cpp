@@ -889,7 +889,7 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
 							  /* out */
 							  std::string *return_binary_volume_lrspline,
 							  std::string *resultStatistics, // JSON format?
-							  std::string *resultErrorStr) {
+							  std::string *return_error_str) {
 
   DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	": MISSING: Fetch model data (FEM) from HBase!");
@@ -902,6 +902,8 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
 
   DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	": MISSING: Convert output data to binary format!");
+
+  *return_error_str = __FUNCTION__ + std::string(": Missing the binary result.");
 
   return;
 

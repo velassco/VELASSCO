@@ -710,16 +710,6 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
   boost::property_tree::ptree pt;
   boost::property_tree::read_json(ss, pt);
 
-	  // 	     << "  \"name\"       : \"" << "ComputeVolumeLRSplineFromBoundingBox" << "\",\n"
-	  // 	     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
-	  // 	     << "  \"resultID\"     : \"" << resultID                   << "\",\n"
-	  // 	     << "  \"stepValue\"  : \"" << stepValue                  << "\",\n"
-	  // 	     << "  \"analysisID\" : \"" << analysisID                << "\",\n"
-	  // 	     << "  \"bBox\" : [" << bBox[0] << "," << bBox[1] << "," << bBox[2] <<
-	  // "," << bBox[3] << "," << bBox[4] << "," << bBox[5] << "],\n"
-	  // 	     << "  \"tolerance\" : \"" << tolerance                << "\",\n"
-	  // 	     << "  \"numSteps\" : \"" << numSteps                << "\"\n";
-
   // get parameters:
   std::string name         = pt.get<std::string>( "name");
   std::string modelID      = pt.get<std::string>( "modelID");
@@ -764,6 +754,8 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
     std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
   }
   if ( error_str.length() == 0) {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": The error_str was not set, success!");
     _return.__set_result( (Result::type)VAL_SUCCESS );
     _return.__set_data( std::string( ( const char *)&resultLRSplineID, sizeof(int64_t)) + result_statistics );
   } else {
