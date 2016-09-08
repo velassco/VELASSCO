@@ -236,7 +236,49 @@ namespace VELaSSCo
     bool deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
 						  const std::string &modelID,
 						  std::string *return_error_str);
-  private:
+
+    void getStoredVolumeLRSpline( const std::string& sessionID,
+				  const std::string& modelID,
+				  const std::string& resultID,
+				  const double stepValue,
+				  const std::string& analysisID,
+				  const double* bBox,
+				  const double tolerance,
+				  const int numSteps,
+				  std::string &binary_volume_lrspline,
+				  std::string &resultStatistics,
+				  std::string *return_error_str);
+    bool deleteStoredVolumeLRSpline( const std::string& sessionID,
+				     const std::string& modelID,
+				     const std::string& resultID,
+				     const double stepValue,
+				     const std::string& analysisID,
+				     const double* bBox,
+				     const double tolerance,
+				     const int numSteps,
+				     std::string *resultErrorStr);
+    bool saveVolumeLRSpline( const std::string& sessionID,
+			     const std::string& modelID,
+			     const std::string& resultID,
+			     const double stepValue,
+			     const std::string& analysisID,
+			     const double* bBox,
+			     const double tolerance,
+			     const int numSteps,
+			     const std::string &binary_volume_lrspline,
+			     const std::string &resultStatistics,
+			     std::string *resultErrorStr);
+    bool alreadyStoredVolumeLRSpline( const std::string& sessionID,
+				      const std::string& modelID,
+				      const std::string& resultID,
+				      const double stepValue,
+				      const std::string& analysisID,
+				      const double* bBox,
+				      const double tolerance,
+				      const int numSteps,
+				      std::string *return_error_str);
+
+    private:
 
     double fRand(double fMin, double fMax);
     std::string parseStatusDB( std::string b);
