@@ -161,13 +161,12 @@ void FEM_InjectorHandler::InjectResultFile()
    14 3
 ===============================================================================================================================*/
 {
-   char command[256], resultName[256], analysisName[256], resultType[256], Location[256], GP_location[256];
-   EDMULONG dimension, elementID, nodeID;
-   double stepValue;
+   EDMULONG nodeID;
    double nID[11];
    SdaiAggr agrID = m->getObjectSet(fem::et_Analysis);
    Iterator<fem::Analysis*, fem::entityType> anIter(agrID, m);
    Iterator<fem::TimeStep*, fem::entityType> tsIter(agrID, m);
+   EDMLONG64 nodetsId;
 
    readNextLine();
    if (strEQL(line, "GiD Post Results File 1.0\n")) {
@@ -179,6 +178,9 @@ void FEM_InjectorHandler::InjectResultFile()
             if (nColumns == 6 || nColumns == 7) {
                int nResultTypeErrors = 0, nLocationTypeErrors = 0;
                cResultHeader = newObject(fem::ResultHeader); cResultHeader->put_name(col[1]); cResultHeader->put_analysis(col[2]);
+               if (newResultName(col[1])) {
+                  resultNames->add(model_ma.allocString(col[1]));
+               }
                
                //typedef enum {ValueType_SCALAR, ValueType_VECTOR, ValueType_MATRIX, ValueType_PLAINDEFORMATIONMATRIX, ValueType_MAINMATRIX, ValueType_LOCALAXES, ValueType_COMPLEXSCALAR, ValueType_COMPLEXVECTOR} ValueType;
                if (strEQL(col[4], "Scalar")) {
@@ -215,7 +217,7 @@ void FEM_InjectorHandler::InjectResultFile()
                   }
                }
                if (cTimeStep == NULL) {
-                  cTimeStep = newObject(fem::TimeStep); cTimeStep->put_time_value(thisTimeStep);
+                  cTimeStep = newObject(fem::TimeStep); cTimeStep->put_time_value(thisTimeStep); cTimeStep->put_id(++cTimestepId);
                   if (cMesh) cTimeStep->put_mesh(cMesh);
                   if (cAnalysis) cTimeStep->put_analysis(cAnalysis);
                }
@@ -248,10 +250,54 @@ void FEM_InjectorHandler::InjectResultFile()
                   r->put_result_header(cResultHeader);
                   fem::Node *n = nodes[nodeID];
                   if (n) {
+                     nodetsId = n->get_id();
+                     nodetsId << 32;
+                     nodetsId += cTimestepId;
+                     r->put_NodeTimestepId(nodetsId);
                      r->put_result_for(n);
                   } else {
                      printError("Unknown node id in result line.");
                   }
+                  readNextLine();
+               }
+            } else {
+               printError("Illegal number of colums in result FEM file.");
+            }
+         }
+      }
+   } else {
+      printError("FEM result file does not start with \"GiD Post Results File 1.0\"");
+   }
+}
+
+/*=============================================================================================================================*/
+void FEM_InjectorHandler::AnalyzeResultFile()
+/*
+===============================================================================================================================*/
+{
+   readNextLine();
+   if (strEQL(line, "GiD Post Results File 1.0\n")) {
+      while (readNextLine() > 0) {
+         if (line[0] == '#' || line[0] == '\n') {
+         } else if (strnEQL(line, "Result", 6)) {
+            //int nColumns = sscanf(line, "%s %s %s %lf %s %s %s", command, resultName, analysisName, &stepValue, resultType, Location, GP_location);
+            int nColumns = scanInputLine();
+            if (nColumns == 6 || nColumns == 7) {
+               int nResultTypeErrors = 0, nLocationTypeErrors = 0;
+               if (newResultName(col[1])) {
+                  resultNames->add(plugin_ma->allocString(col[1]));
+               }
+               double thisTimeStep = toDouble(col[3]);
+               if (newTimestep(thisTimeStep)) {
+                  temesteps->add(thisTimeStep);
+                  ++cTimestepId;
+               }
+               readNextLine();
+               if (strNEQ(line, "Values\n")) {
+                  readNextLine();
+               }
+               if (strEQL(line, "Values\n")) readNextLine();
+               while (bytesRead && strNEQ(line, "End values\n")) {
                   readNextLine();
                }
             } else {
@@ -348,6 +394,60 @@ void FEM_InjectorHandler::InjectMeshFile()
       }
    }
 }
+
+
+
+
+/*=============================================================================================================================*/
+void FEM_InjectorHandler::AnalyzeMeshFile()
+/*
+===============================================================================================================================*/
+{
+   //char command[256], meshName[256], dim[256], et[256], elemType[256], nn[256];
+   EDMULONG nID[11], dimension, elementID, nodeID;
+   double x, y, z;
+   
+
+   while (readNextLine() > 0) {
+      if (line[0] == '#' || line[0] == '\n') {
+      } else if (strnEQL(line, "MESH", 4)) {
+         int nColumns = scanInputLine();
+         if (nColumns == 8) {
+            nNodes = toEDMULONG(col[7]); dimension = toEDMULONG(col[3]);
+            readNextLine();
+            if (line[0] == '#') readNextLine();
+            if (strEQL(line, "Coordinates\n")) {
+               readNextLine();
+               while (bytesRead && strNEQ(line, "end coordinates\n")) {
+                  nColumns = sscanf(line, "%llu %lf %lf %lf", &nodeID, &x, &y, &z);
+                  if (nodeID > maxNodeId) {
+                     maxNodeId = nodeID;
+                  }
+                  readNextLine();
+               }
+            }
+         } else {
+            printError("Illegal number of colums in file.");
+         }
+      } else if (strEQL(line, "Elements\n")) {
+         readNextLine();
+         if (line[0] == '#') readNextLine();
+         while (bytesRead && strNEQ(line, "end elements\n")) {
+            int nColumns = sscanf(line, "%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu ",
+               &elementID, &nID[0], &nID[1], &nID[2], &nID[3], &nID[4], &nID[5], &nID[6], &nID[7], &nID[8], &nID[9], &nID[10]);
+            if (nColumns > nNodes) {
+               if (elementID > maxElementId) {
+                  maxElementId = elementID;
+               }
+            } else {
+               printError("Illegal number of nodes in element.");
+            }
+            readNextLine();
+         }
+      }
+   }
+}
+
 //# encoding utf - 8
 //MESH "Part" dimension 3 ElemType Tetrahedra Nnode 4
 //# Color 0.600000 0.600000 0.600000
@@ -389,6 +489,28 @@ int FEM_InjectorHandler::scanInputLine()
       if (*bp == stopChar) *bp++ = 0;
    }
    return i;
+}
+
+void FEM_InjectorHandler::initAnalyze(CMemoryAllocator *ma)
+{
+   plugin_ma = ma;
+   temesteps = new(&model_ma)Container<double>(ma);
+}
+
+bool FEM_InjectorHandler::newResultName(char *rn)
+{
+   for (char *crn = resultNames->first(); crn; crn = resultNames->next()) {
+      if (strEQL(crn, rn)) return false;
+   }
+   return true;
+}
+
+bool FEM_InjectorHandler::newTimestep(double ts)
+{
+   for (double cts = temesteps->first(); temesteps->moreElements(); cts = temesteps->next()) {
+      if (cts == ts) return false;
+   }
+   return true;
 }
 
 /*===============================================================================================*/

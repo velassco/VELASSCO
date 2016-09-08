@@ -225,6 +225,10 @@ public:
    void                                 put_belongs_to(ClusterRepository* v);
    void                                 unset_belongs_to() { unsetAttribute(1); }
    bool                                 exists_belongs_to() { return isAttrSet(1); }
+   int                                  get_nAppservers();
+   void                                 put_nAppservers(int v);
+   void                                 unset_nAppservers() { unsetAttribute(2); }
+   bool                                 exists_nAppservers() { return isAttrSet(2); }
    Set<EDMmodel*>*                      get_consists_of();
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    ClusterModel(Model *m, entityType et=et_ClusterModel) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }

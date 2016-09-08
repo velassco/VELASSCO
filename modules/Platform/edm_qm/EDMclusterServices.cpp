@@ -1,7 +1,7 @@
 
 #include "stdafx.h"
 
-
+#include <omp.h>
 
 
 /*==============================================================================================================================*/
@@ -84,7 +84,7 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
 /*==============================================================================================================================*/
 {
    FILE *serverListFile;
-   char buf[2048], command[512], param1[512], param2[512], param3[512], param4[512], param5[512];
+   char buf[2048], command[512], param1[512], param2[512], param3[512], param4[512], param5[512], param6[512];
    ecl::ClusterModel *cClusterModel = NULL;
    ecl::ClusterRepository *cClusterRepository = NULL;
    ecl::EDMrepository *cEDMrepository = NULL;
@@ -100,23 +100,15 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
          clusterModel->open("EDMcluster", sdaiRW);
          printf("EDMclusterServices::initClusterModel - 1\n");
          CHECK(edmiDeleteModelContents(clusterModel->modelId));
-         printf("EDMclusterServices::initClusterModel - 2\n");
          CMemoryAllocator *ma = clusterModel->ma;
-         printf("EDMclusterServices::initClusterModel - 3\n");
          while (fgets(buf, sizeof(buf), serverListFile)){
             printf("init_file_line=%s\n", buf);
-            int nCoulmn = sscanf(buf, "%s %s %s %s %s %s", command, param1, param2, param3, param4, param5);
+            int nCoulmn = sscanf(buf, "%s %s %s %s %s %s %s", command, param1, param2, param3, param4, param5, param6);
             if (strEQL(command, "EDMcluster")) {
-         printf("EDMclusterServices::initClusterModel - 4\n");
                if (ourCluster == NULL) {
-         printf("EDMclusterServices::initClusterModel - 5\n");
                   ourCluster = newObject(ecl::EDMcluster);
-         printf("EDMclusterServices::initClusterModel - 6\n");
-         printf("param1=%s\n", param1);
                   char *thisName = ma->allocString(param1);
-         printf("EDMclusterServices::initClusterModel - 6B\n");
                   ourCluster->put_name(thisName);
-         printf("EDMclusterServices::initClusterModel - 7\n");
                }
             } else if (strEQL(command, "ClusterRepository")) {
                cClusterRepository = newObject(ecl::ClusterRepository); cClusterRepository->put_name(ma->allocString(param1));
@@ -150,13 +142,19 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
                cEDMdatabase->put_password(ma->allocString(param3));
                ecl::EDMServer *srv = newObject(ecl::EDMServer);
                srv->put_Host(ma->allocString(param4)); srv->put_Port(ma->allocString(param5));
+               srv->put_nAppservers(atol(ma->allocString(param6)));
                cEDMdatabase->put_server(srv);
                if (ourCluster) {
                   ourCluster->put_databases_element(cEDMdatabase); ourCluster->put_servers_element(srv);
                }
             }
          }
+         Iterator<ecl::ClusterModel*, ecl::entityType> clusterModelIter(clusterModel->getObjectSet(ecl::et_ClusterModel), clusterModel);
+         for (ClusterModel *cm = clusterModelIter.first(); cm; cm = clusterModelIter.next()) {
+            countNofAppsrvsOfModel(cm);
+         }
          clusterModel->close();
+
          fclose(serverListFile);
       } else {
          perror("error: ");
@@ -281,6 +279,43 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
    return OpenClusterModelAndPrepareExecution(EDM_ATOI64(modelID.data()), NULL, 0, 0);
 }
 /*==============================================================================================================================*/
+void EDMclusterServices::countNofAppsrvsOfModel(ClusterModel *cm)
+/*==============================================================================================================================*/
+{   
+   EDMLONG srvIds[1024], nsrv = 0, i;
+
+   if (cm) {
+      int nAppservers = 0;
+      Iterator<EDMmodel*, ecl::entityType> modelIter(cm->get_consists_of());
+      for (EDMmodel*m = modelIter.first(); m; m = modelIter.next()) {
+         EDMrepository *rep = m->get_repository();
+         if (rep) {
+            EDMdatabase *db = rep->get_belongs_to();
+            if (db) {
+               EDMServer *srv = db->get_server();
+               if (srv) {
+                  EDMLONG srvId = srv->getInstanceId();
+                  for (i=0; i < nsrv && srvId != srvIds[i]; i++) ;
+                  if (i == nsrv) {
+                     srvIds[nsrv++] = srvId;
+                     if (srv->exists_nAppservers())
+                        nAppservers += srv->get_nAppservers();
+                  }
+               }
+            }
+         }
+      }
+      cm->put_nAppservers(nAppservers);
+   }
+}
+/*==============================================================================================================================*/
+void EDMclusterExecution::setOptimalNumberOfThreads()
+/*==============================================================================================================================*/
+{
+   if (nAppservers > 0) 
+      omp_set_num_threads(nAppservers);
+}
+/*==============================================================================================================================*/
 bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo)
 /*
    modelID is object id of the ClusterModel object retrn by the open model method.
@@ -293,9 +328,12 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
    cm.setInstanceId(modelID);
    if (cm.getEntityType() == ecl::et_ClusterModel) {
       Set<EDMmodel*> *theEDMmodels = cm.get_consists_of();
+      nAppservers = cm.exists_nAppservers() ? cm.get_nAppservers() : 0;
       if (theEDMmodels) {
          EDMLONG nOfEDMmodels = theEDMmodels->size();
          if (nOfEDMmodels > 0) {
+            if (nAppservers > nOfEDMmodels)
+               nAppservers = nOfEDMmodels;
             Iterator<EDMmodel*, ecl::entityType> modelIter(theEDMmodels);
             EDMmodel*m = modelIter.first();
             subQueries = new(&ma)Container<EDMexecution>(&ma, nOfEDMmodels);
@@ -327,6 +365,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                   m = modelIter.next();
                }
             }
+            setOptimalNumberOfThreads();
             return true;
          }
       }

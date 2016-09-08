@@ -13,7 +13,8 @@ public:
    void                 ValidateModels();
    void                 getBoundingBox();
    void                 GetListOfResults(char *modelId, char *analysisID, double timeStep);
-   void                 GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::string& analysisID);
+   Container<double>    *GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::string& analysisID);
+   void                 setResults(rvGetListOfTimeSteps& rv, Container<double> *allTimeSteps);
    void                 GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv, const std::string& analysisID, const double stepValue, const int32_t meshID);
    void                 GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults& rv, const std::string& analysisID, const double stepValue);
    void                 GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& rv, const std::string& analysisID, const double stepValue);
@@ -21,8 +22,9 @@ public:
    void                 GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const std::string& analysisID, const double stepValue, const std::string& meshID);
    void                 GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& analysisID, const double stepValue);
    void                 InjectFileSequence(Container<char*> *FileNameFormats, int FirstModelNo, int LastModelNo, char *EDMmodelNameFormat, Container<char*> *msgs);
+   void                 CreateCubeFromFileSequence(Container<char*> *FileNameFormats, int FirstModelNo, int LastModelNo, char *EDMmodelNameFormat, Container<char*> *msgs);
    void                 calculateBoundaryOfLocalMesh(const int meshID, const std::string &elementType, const std::string &analysisID, const double stepValue, std::string *return_binary_mesh, std::string *return_error_str);
-   void                 calculateBoundingBox(const std::string &dataTableName, const std::string &analysisID, const int numSteps, const double *lstSteps,
+   void                 calculateBoundingBox(const std::string &analysisID, const int numSteps, const double *lstSteps,
                            const int64_t numVertexIDs, const int64_t *lstVertexIDs,
                            double *return_bbox, std::string *return_error_str);
 };

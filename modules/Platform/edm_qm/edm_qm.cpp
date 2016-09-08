@@ -168,7 +168,7 @@ void CalculateBoundingBox(VELaSSCoHandler *server, string sessionID, char *model
 
    listOfVertices[0]= 2814146;
    steps[0] = 21.0; steps[1] = 41.0; steps[2] = 61.0;
-   server->calculateBoundingBox(sessionID, modelID, dataTableName, "Kratos", 3, steps, 0, listOfVertices, return_bbox, &return_error_str);
+   server->calculateBoundingBox(sessionID, modelID, "Kratos", 3, steps, 0, listOfVertices, return_bbox, &return_error_str);
    for (int i=0; i < 6; i++) {
       printf("%12Lf\n", return_bbox[i]);
    }
@@ -272,34 +272,41 @@ int main(int argc, char* argv[])
       CLoggWriter    ourLogger(logFile, false, false);
       ourVELaSSCoHandler->defineLogger(&ourLogger);
 
+      if (argc >= 7) {
+         // Temporarly solution for server file injection
+         ourVELaSSCoHandler->InjectData(argv[nextCommandPos]);
+         printf("\n\nEnter a character to stop the program.\n");
+         getchar();
 
-      string sessionID;
-      string modelID;
-      rvOpenModel rvOM;
-      char *modelName = "telescope";
+      } else {
 
-      printf("\n--->UserLogin\n");
-      ourVELaSSCoHandler->userLogin(sessionID, "olav", "myRole", "myPassword");
-      //printf("User logged on with session ID: %s\n", sessionID.data());
+         string sessionID;
+         string modelID;
+         rvOpenModel rvOM;
+         char *modelName = "telescope";
 
-      //printf("\n--->OpenModel - \"telescope\"\n");
-      ourVELaSSCoHandler->openModel(rvOM, sessionID, modelName, "read");
-      //printf("Returned modelID: %s\n", rvOM.modelID.data());
-      //printf("Comments: %s\n", rvOM.report.data());
-      modelID = rvOM.modelID;
+         printf("\n--->UserLogin\n");
+         ourVELaSSCoHandler->userLogin(sessionID, "olav", "myRole", "myPassword");
+         //printf("User logged on with session ID: %s\n", sessionID.data());
 
-      GetBoundaryOfLocalMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
+         //printf("\n--->OpenModel - \"telescope\"\n");
+         ourVELaSSCoHandler->openModel(rvOM, sessionID, modelName, "read");
+         //printf("Returned modelID: %s\n", rvOM.modelID.data());
+         //printf("Comments: %s\n", rvOM.report.data());
+         modelID = rvOM.modelID;
 
-      CalculateBoundingBox(ourVELaSSCoHandler, sessionID, modelName, modelID);
+         GetBoundaryOfLocalMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
+
+         CalculateBoundingBox(ourVELaSSCoHandler, sessionID, modelName, modelID);
       
-      GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
+         GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
-      GetListOfMeshes(ourVELaSSCoHandler, sessionID, modelName, modelID);
+         GetListOfMeshes(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
-      GetResultFromVerticesID(ourVELaSSCoHandler, sessionID, modelName, modelID);
+         GetResultFromVerticesID(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
-      UseCase_FEM_M1_02(ourVELaSSCoHandler, sessionID);
-
+         UseCase_FEM_M1_02(ourVELaSSCoHandler, sessionID);
+      }
 
    } catch (CedmError *e) {
       rstat = e->rstat;

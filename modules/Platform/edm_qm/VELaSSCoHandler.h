@@ -12,6 +12,7 @@ class VELaSSCoHandler : public VELaSSCo_Operations, public EDM_interface
    char                                         *getResultFileName(char *fileName, const char *modelId);
 
    SdaiInstance                                 getClusterModelID(const char *repName, const char *modelName, EDMLONG *rstatp, SdaiInteger *nOfNameMatches);
+   FILE                                         *getStoredQueryResult(const char *p1, const char *p2, const char *p3);
 public:
    Repository                                   *cFEMrep;
    Repository                                   *cDEMrep;
@@ -145,10 +146,11 @@ public:
    */
    void getListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID);
 
-   void calculateBoundingBox(const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
+   void calculateBoundingBox(const std::string &sessionID, const std::string &modelID, //const std::string &dataTableName,
       const std::string &analysisID, const int numSteps, const double *lstSteps,
       const int64_t numVertexIDs, const int64_t *lstVertexIDs,
       double *return_bbox, std::string *return_error_str) ;
+
    /**
    * Retrieves the list of time steps for a given model and analysis.
    *
@@ -257,10 +259,23 @@ public:
    //    const std::string &analysisID, const double stepValue,
    //    const int32_t meshID)  { return ""; }
 
-   void calculateBoundaryOfAMesh(const std::string &sessionID, const std::string &DataLayer_sessionID,
-      const std::string &modelID, const std::string &dataTableName,
+   void calculateBoundaryOfAMesh(const std::string &sessionID, //const std::string &DataLayer_sessionID,
+      const std::string &modelID, //const std::string &dataTableName,
       const int meshID, const std::string &elementType,
       const std::string &analysisID, const double stepValue,
       std::string *return_binary_mesh, std::string *return_error_str)  {}
    
+  void deleteStoredBoundaryOfAMesh( const std::string &sessionID,
+  	    const std::string &modelID,
+  	    const int meshID, const std::string &elementType,
+  	    const std::string &analysisID, const double stepValue,
+       std::string *return_error_str) {}
+
+  // needed by DeleteBoundaryOfAMesh vquery
+   void deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
+		const std::string &analysisID, const int numSteps, const double *lstSteps,
+		const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+      std::string *return_error_str) {}
+  
+
 };

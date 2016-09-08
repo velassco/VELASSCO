@@ -98,6 +98,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_EDMI;WIN32;_DEBUG;_WINDOWS;_USRDLL;EDM_PLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\boost\boost_1_58_0;O:\edm\v6.0.xxx\edmsys\sdai\include;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,12 +148,17 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\edm_qm\CLogger.h" />
     <ClInclude Include="EDM_plugin_1.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="VELaSSCoEDMplugin.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\edm_qm\CLogger.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="dem_schema_velassco.cpp" />
     <ClCompile Include="EDM_Injector.cpp" />
     <ClCompile Include="EDM_plugin_1.cpp" />

@@ -398,13 +398,9 @@ EDMLONG VELaSSCoEDMplugin::GetListOfAnalyses(Model *theModel, ModelType mt, node
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-#ifdef PRINT_EXECTIMES
-   int startTime = GetTickCount();
-#endif
+
 
    try {
-      char* np;
-
       Container<char*> *nameList = new(dllMa)Container<char*>(dllMa);
       if (mt == mtDEM) {
          Iterator<dem::Simulation*, dem::entityType> simIter(theModel->getObjectSet(dem::et_Simulation), theModel);
@@ -433,10 +429,6 @@ EDMLONG VELaSSCoEDMplugin::GetListOfAnalyses(Model *theModel, ModelType mt, node
       retVal->status->putString("OK");
       retVal->report->type = rptINTEGER;
    }
-#ifdef PRINT_EXECTIMES
-   int endTime = GetTickCount();
-   printf("VELaSSCoEDMplugin::GetListOfAnalyses - exec time=%d\n", endTime - startTime);
-#endif
    return rstat;
 }
 
@@ -447,9 +439,6 @@ EDMLONG VELaSSCoEDMplugin::GetListOfTimeSteps(Model *theModel, ModelType mt, nod
    EdmiError rstat = OK;
    char *emsg = NULL;
    char fnb[64];
-#ifdef PRINT_EXECTIMES
-   int startTime = GetTickCount();
-#endif
 
    try {
       char *anid = inParam->analysisID->value.stringVal;
@@ -493,10 +482,6 @@ EDMLONG VELaSSCoEDMplugin::GetListOfTimeSteps(Model *theModel, ModelType mt, nod
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
-#ifdef PRINT_EXECTIMES
-   int endTime = GetTickCount();
-   printf("VELaSSCoEDMplugin::GetListOfTimeSteps - exec time=%d\n", endTime - startTime);
-#endif
    return rstat;
 }
 
@@ -576,9 +561,6 @@ EDMLONG VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis(Model *theMod
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-#ifdef PRINT_EXECTIMES
-   int startTime = GetTickCount();
-#endif
 
    try {
 
@@ -644,10 +626,6 @@ EDMLONG VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis(Model *theMod
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
-#ifdef PRINT_EXECTIMES
-   int endTime = GetTickCount();
-   printf("VELaSSCoEDMplugin::GetListOfResultsFromTimeStepAndAnalysis - exec time=%d\n", endTime - startTime);
-#endif
    return rstat;
 }
 
@@ -880,9 +858,7 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-#ifdef PRINT_EXECTIMES
-   int startTime = GetTickCount();
-#endif
+   int startTime;
 
    try {
       bool timeStepFound = false, resultIdFound = false;
@@ -1000,10 +976,6 @@ EDMLONG VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh(Model *theModel, Mo
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
-#ifdef PRINT_EXECTIMES
-   int endTime = GetTickCount();
-   printf("VELaSSCoEDMplugin::GetCoordinatesAndElementsFromMesh - exec time=%d\n", endTime - startTime);
-#endif
    return rstat;
 }
 
@@ -1194,9 +1166,7 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-#ifdef PRINT_EXECTIMES
    int startTime = GetTickCount();
-#endif
 
    try {
       bool timeStepFound = false, resultIdFound = false;
@@ -1315,16 +1285,18 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
-#ifdef PRINT_EXECTIMES
-   int endTime = GetTickCount();
-   printf("VELaSSCoEDMplugin::GetBoundaryOfLocalMesh - exec time=%d\n", endTime - startTime);
-#endif
    return rstat;
 }
-void VELaSSCoEDMplugin::addMeshInfo(Container<EDMVD::MeshInfo> *meshContainer, fem::Mesh *mesh)
+
+
+
+
+
+
+void VELaSSCoEDMplugin::addMeshInfo(Container<EDMVD::MeshInfoEDM> *meshContainer, fem::Mesh *mesh)
 {
    if (mesh) {
-      EDMVD::MeshInfo *mi = meshContainer->createNext();
+      EDMVD::MeshInfoEDM *mi = meshContainer->createNext();
       mi->name = resultInfoMemory->allocString(mesh->exists_name() ? mesh->get_name() : (char*)"");
       // mi->elementType.shape = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
       List<fem::Element*>* elems = mesh->get_elements();
@@ -1347,9 +1319,6 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
 {
    EdmiError rstat = OK;
    char *emsg = NULL;
-#ifdef PRINT_EXECTIMES
-   int startTime = GetTickCount();
-#endif
 
    try {
       bool timeStepFound = false, resultIdFound = false;
@@ -1365,7 +1334,7 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
          emsg = "Analysis with specified name not found.";
          resultInfoMemory->freeAllMemory();
          relocateMeshInfo *relocateInfo = (relocateMeshInfo *)resultInfoMemory->createRelocateInfo(sizeof(relocateMeshInfo));
-         Container<EDMVD::MeshInfo> *meshContainer = new(resultInfoMemory)Container<EDMVD::MeshInfo>(resultInfoMemory, 16);
+         Container<EDMVD::MeshInfoEDM> *meshContainer = new(resultInfoMemory)Container<EDMVD::MeshInfoEDM>(resultInfoMemory, 16);
          relocateInfo->meshes = meshContainer;
 
          if (analysisID == NULL || *analysisID == 0) {
@@ -1411,10 +1380,6 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
       retVal->status->putString("OK");
       retVal->report->putString("");
    }
-#ifdef PRINT_EXECTIMES
-   int endTime = GetTickCount();
-   printf("VELaSSCoEDMplugin::GetListOfMeshes - exec time=%d\n", endTime - startTime);
-#endif
    return rstat;
 }
 
@@ -1476,8 +1441,8 @@ EDMLONG VELaSSCoEDMplugin::CalculateBoundingBox(Model *theModel, ModelType mt,
 
       bool timeStepFound = false, resultIdFound = false;
       char *analysisID = inParam->analysisID->value.stringVal;
-      int nOfTimeSteps = inParam->timeSteps->getAggrSize();
-      int nOfVertices = inParam->vertexIDs->getAggrSize();
+      EDMLONG nOfTimeSteps = inParam->timeSteps->getAggrSize();
+      EDMLONG nOfVertices = inParam->vertexIDs->getAggrSize();
       double *timeSteps = inParam->timeSteps->value.realAggrVal;
       EDMLONG *vertices = inParam->vertexIDs->value.intAggrVal;
 
@@ -1594,6 +1559,9 @@ EDMLONG VELaSSCoEDMplugin::InjectFiles(Model *theModel, ModelType mt, nodeInInje
    return rstat;
 }
 
+
+static CLoggWriter    *ourLogger = NULL;
+
 void logError(char *repositoryName, char *modelName, char *methodName, char *msg, int lineNo)
 {
    char msgBuf[10000];
@@ -1601,9 +1569,10 @@ void logError(char *repositoryName, char *modelName, char *methodName, char *msg
 
    sprintf(msgBuf, "\n\n%s\nError in EDMserver_dll detected, repositoryName=%s, modelName=%s, methodName=%s\nError=%s, at line %d\n",
       asctime(localtime(&t)), repositoryName, modelName, methodName, msg, lineNo);
-   FILE *logfp = fopen("VELaSSCO_EDMserver_dll_error.log", "a");
-   if (logfp) {
-      fprintf(logfp, msgBuf); fclose(logfp);
+   if (ourLogger) {
+      ourLogger->logg(0, msgBuf);
+   } else {
+      printf(msgBuf);
    }
    printf(msgBuf);
 }
@@ -1619,7 +1588,6 @@ void setWrongNumberErrorMsg(cppRemoteParameter *status, cppRemoteParameter *repo
    report->putString("Wrong number of input parameters or result values.");
    if (returValue) returValue->type = rptUndefined;
 }
-
 extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, char *methodName,
    EDMLONG nOfParameters, cppRemoteParameter *parameters, EDMLONG nOfReturnValues, cppRemoteParameter *returnValues, void **threadObject)
 {
@@ -1633,8 +1601,21 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
       int startTime, endTime;
       startTime = GetTickCount();
 
+      if (ourLogger == NULL) {
+         char fn[2048], hn[512];
+         char *lff = getenv("LOG_FILE_FOLDER");
+
+         if (gethostname(hn, sizeof(hn)) || lff == NULL) {
+            sprintf(fn, "plugin_1_%d_%d.log", rand(), getpid());
+         } else {
+            sprintf(fn, "%s/plugin_1_%s_%d.log", lff, hn, getpid());
+         }
+         FILE *fp = fopen(fn , "w");
+         ourLogger = new CLoggWriter(fp, false, true);
+      }
+
+
       if (QUERY_RESULT_FOLDER == NULL) {
-         char buf[4096];
          char *env = getenv("QUERY_RESULT_FOLDER");
          if (env) {
             QUERY_RESULT_FOLDER = (char*)malloc(strlen(env) + 2); strcpy(QUERY_RESULT_FOLDER, env);
@@ -1655,23 +1636,26 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
       Database VELaSSCo_db("", "", ""); tr;
       Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName); tr;
       
-      if (strEQL(methodName, "InjectFEMfiles") || strEQL(methodName, "InjectDEMfiles")) {
+      if (strEQL(methodName, "InjectFEMfiles") || strEQL(methodName, "InjectDEMfiles") || strEQL(methodName, "AnalyzeFEMfiles")) {
          tr;
-         SdaiRepository  repositoryId;
-         bool FEM = strEQL(methodName, "InjectFEMfiles");
+         bool FEM = strEQL(methodName, "InjectFEMfiles") || strEQL(methodName, "AnalyzeFEMfiles");
+         bool analyze = strEQL(methodName, "AnalyzeFEMfiles");
          const char *schemaName = FEM ? "fem_schema_velassco" : "dem_schema_velassco";
          
          nodeRvInjectFiles *results = new(theMA)nodeRvInjectFiles(NULL, returnValues);
          nodeInInjectFiles *inParams = new(theMA)nodeInInjectFiles(NULL, parameters);
          
          FEM_InjectorHandler femInjector(&fem_schema_velassco_SchemaObject);
-         VELaSSCo_Repository.open(sdaiRW);
-         femInjector.setCurrentRepository(&VELaSSCo_Repository);
-         femInjector.setCurrentSchemaName(schemaName);
-         femInjector.setDatabase(&VELaSSCo_db);
-         femInjector.setCurrentModel(modelName);
-         femInjector.DeleteCurrentModelContent();
-
+         if (analyze) {
+            femInjector.initAnalyze(theMA);
+         } else {
+            VELaSSCo_Repository.open(sdaiRW);
+            femInjector.setCurrentRepository(&VELaSSCo_Repository);
+            femInjector.setCurrentSchemaName(schemaName);
+            femInjector.setDatabase(&VELaSSCo_db);
+            femInjector.setCurrentModel(modelName);
+            femInjector.DeleteCurrentModelContent();
+         }
          for (int i = 0; i < MAX_INJECT_FILES; i++) {
             if (inParams->attrPointerArr[i]->type == rptSTRING) {
                char *file_name = inParams->attrPointerArr[i]->value.stringVal;
@@ -1680,9 +1664,17 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
                if (femInjector.fp) {
                   int extPos = strlen(file_name) - 9;
                   if (extPos > 0 && strnEQL(file_name + extPos, ".post.msh", 9)) {
-                     femInjector.InjectMeshFile();
+                     if (analyze) {
+                        femInjector.AnalyzeMeshFile();
+                     } else {
+                        femInjector.InjectMeshFile();
+                     }
                   } else if (extPos > 0 && strnEQL(file_name + extPos, ".post.res", 9)) {
-                     femInjector.InjectResultFile();
+                     if (analyze) {
+                        femInjector.AnalyzeResultFile();
+                     } else {
+                        femInjector.InjectResultFile();
+                     }
                   }
                   fclose(femInjector.fp);
                } else {
@@ -1690,12 +1682,24 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
                }
             }
          }
-         CHECK(edmiCommitTransaction());
          endTime = GetTickCount();
          char msg[2048];
-         sprintf(msg, "Injection to %s.%s finished. Time used=%d milliseconds.", repositoryName, modelName, endTime - startTime);
-         results->status->putString("OK");
-         results->report->putString(msg);
+         if (analyze) {
+            results->status->putString("OK");
+            results->maxNodeId->putInteger(femInjector.maxNodeId);
+            results->maxElementId->putInteger(femInjector.maxElementId);
+            results->resultNames->putStringContainer(femInjector.resultNames);
+            results->timesteps->putContainer(femInjector.temesteps);
+            for (double *dp = femInjector.temesteps->firstp(); dp;  dp = femInjector.temesteps->nextp()) {
+               dp = 0;
+            }
+         } else {
+            CHECK(edmiCommitTransaction());
+            sprintf(msg, "Injection to %s.%s finished. Time used=%d milliseconds.", repositoryName, modelName, endTime - startTime);
+            results->status->putString("OK");
+            results->report->putString(msg);
+           // results->
+         }
       } else {
          Model VELaSSCo_model(&VELaSSCo_Repository, theMA, NULL); tr;
          VELaSSCo_model.open(modelName, sdaiRO); tr;
@@ -1775,8 +1779,19 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
             } else {
                rstat = plugin->CalculateBoundingBox(&VELaSSCo_model, vmt, inParams, results); tr;
             }
+         } else if (strEQL(methodName, "GetBoundaryOfSubMesh")) {
+            nodeRvGetBoundaryOfLocalMesh *results = new(theMA)nodeRvGetBoundaryOfLocalMesh(NULL, returnValues);
+            nodeInGetBoundaryOfLocalMesh *inParams = new(theMA)nodeInGetBoundaryOfLocalMesh(NULL, parameters);
+            if (nOfParameters != 3 || nOfReturnValues != 5) {
+               setWrongNumberErrorMsg(results->status, results->report, results->triangle_array);
+            } else {
+               rstat = plugin->GetBoundaryOfSubMesh(&VELaSSCo_model, vmt, inParams, results); tr;
+            }
          }
       }
+      endTime = GetTickCount();
+      ourLogger->logg(4, "Query %s on %s.%s finished.\nExection time: %d millisec.\n\n", methodName, repositoryName, modelName,  endTime - startTime);
+
    } catch (CedmError *e) {
       edmiAbortTransaction();
       rstat = e->rstat; delete e;
@@ -1820,4 +1835,85 @@ VELaSSCoEDMplugin::~VELaSSCoEDMplugin()
    //if (nodeIdRegion) {
    //   delete nodeIdRegion;
    //}
+}
+
+
+CMemoryAllocator ma(0x100000);
+
+/*================================================================================================*/
+void* ourMemoryAllocator(SdaiVoid _ma, EDMLONG size)
+/*================================================================================================*/
+{
+   CMemoryAllocator* ma = (CMemoryAllocator*)_ma;
+   return ma->alloc(size);
+}
+/*===================================================================================================================*/
+EDMLONG VELaSSCoEDMplugin::GetBoundaryOfSubMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam,
+   nodeRvGetBoundaryOfLocalMesh *retVal)
+/*===================================================================================================================*/
+{
+   EdmiError rstat = OK;
+   char *emsg = NULL;
+#define nOfParameters 4
+
+   try {
+      SdaiServerContext          serverContextId;
+      cppRemoteParameter         stringPar, intPar, realPar, intArrayPar;
+      cppRemoteParameter         *parameters[nOfParameters];
+      cppRemoteParameter         retInt, retIntArr, retLongIntArr, retIntContainer;
+      cppRemoteParameter         *retVals[4];
+      EDMLONG                    intArr[100];
+
+      EdmiError rstat = edmiDefineServerContext("sc", "superuser", "", "v", "TCP", "9090", "localhost", NULL, NULL, NULL, NULL, NULL, &serverContextId);
+
+      for (int i = 0; i < 100; i++) intArr[i] = i + 1000;
+      stringPar.type = rptSTRING; stringPar.value.stringVal = "Ja vi elsker dette landet";
+      //intPar.type = rptINTEGER; intPar.value.intVal = 10660000;
+      intPar.type = rptINTEGER; intPar.value.intVal = 1066;
+      realPar.type = rptREAL; realPar.value.realVal = 3.14;
+      intArrayPar.type = rptAggrINTEGER; intArrayPar.value.intAggrVal = intArr; intArrayPar.bufferSize = 100 * sizeof(EDMLONG);
+
+      parameters[0] = &stringPar;  parameters[1] = &intPar; parameters[2] = &realPar; parameters[3] = &intArrayPar;
+      retVals[0] = &retInt; retVals[1] = &retIntArr; retVals[2] = &retLongIntArr; retVals[3] = &retIntContainer;
+      rstat = edmiRemoteExecuteCppMethod(serverContextId, "FEM_models", "VELaSSCo_HbaseBasicTest_part_1", "cpp_plugins", "VELaSSCo", "TestInputParameters", 0,
+         nOfParameters, (RemoteParameter*)parameters, NULL, 4, (RemoteParameter*)retVals, &ourMemoryAllocator, &ma, NULL);
+
+      if (rstat) {
+         printf("Error encounterd, rstat = %llu - %s\n", rstat, edmiGetErrorText(rstat));
+      } else {
+         EDMLONG nElem = retIntArr.bufferSize / sizeof(EDMLONG);
+         for (int i = 0; i < nElem; i++) {
+            if (retIntArr.value.intAggrVal[i] != i * i) {
+               printf("error in returned array\n"); break;
+            }
+         }
+         if (retInt.value.intVal != intPar.value.intVal) {
+            printf("error in returned int\n");
+         }
+         nElem = retLongIntArr.bufferSize / sizeof(EDMLONG);
+         for (int i = 0; i < nElem; i++) {
+            if (retLongIntArr.value.intAggrVal[i] != i * 123) {
+               printf("error in returned long array\n"); break;
+            }
+         }
+         Container<EDMVD::Vertex> *vertexes = new(&ma)Container<EDMVD::Vertex>(&ma, &retIntContainer);
+         EDMLONG i = 0;
+         double x = 1.0;
+         for (EDMVD::Vertex *v = vertexes->firstp(); v; v = vertexes->nextp()) {
+            if (v->id != i || v->x != x || v->y != (x + 1.0) || v->z != (x + 2.0)) {
+               printf("Error in returned Container\n"); break;
+            }
+            x += 1.5; i++;
+         }
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+   }
+   if (emsg) {
+      retVal->status->putString("Error"); retVal->report->putString(emsg);
+   } else {
+      retVal->status->putString("OK");
+      retVal->report->putString("");
+   }
+   return rstat;
 }

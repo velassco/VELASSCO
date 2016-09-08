@@ -29,6 +29,7 @@ extern "C" {
 
 #include "CppParameterClass.h"
 #include "Matrix.h"
+#include "../edm_qm/CLogger.h"
 
 using namespace dem;
 using namespace fem;

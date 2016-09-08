@@ -73,10 +73,11 @@ tEdmiAttribute ClusterRepository_Attributes[] = {
    {NULL, 0, 0},
 };
 EDMLONG ClusterRepository_Subtypes[] = {0};
-EDMLONG ClusterModel_AttributeLayout[] = {4, 8, 9, 0};
+EDMLONG ClusterModel_AttributeLayout[] = {4, 8, 0, 9, 0};
 tEdmiAttribute ClusterModel_Attributes[] = {
    {"name", 4, 0},
    {"belongs_to", 8, 0},
+   {"nAppservers", 0, 0},
    {"consists_of", 9, 0},
    {NULL, 0, 0},
 };
@@ -88,13 +89,13 @@ tEdmiEntityData EDMcluster_Entities[] = {
 {"indeterminate"},
 {"EDMuser", 0, 647, 0, 0, 8, et_EDMuser, EDMuser_AttributeLayout, EDMuser_Subtypes, NULL, EDMuser_Attributes},
 {"ClusterUser", 0, 645, 0, 0, 7, et_ClusterUser, ClusterUser_AttributeLayout, ClusterUser_Subtypes, NULL, ClusterUser_Attributes},
-{"EDMmodel", 3, 633, 8, 40, 1, et_EDMmodel, EDMmodel_AttributeLayout, EDMmodel_Subtypes, NULL, EDMmodel_Attributes},
-{"EDMrepository", 4, 635, 8, 48, 2, et_EDMrepository, EDMrepository_AttributeLayout, EDMrepository_Subtypes, NULL, EDMrepository_Attributes},
-{"EDMdatabase", 6, 637, 8, 64, 3, et_EDMdatabase, EDMdatabase_AttributeLayout, EDMdatabase_Subtypes, NULL, EDMdatabase_Attributes},
-{"EDMServer", 7, 639, 8, 72, 4, et_EDMServer, EDMServer_AttributeLayout, EDMServer_Subtypes, NULL, EDMServer_Attributes},
-{"EDMcluster", 5, 641, 8, 56, 5, et_EDMcluster, EDMcluster_AttributeLayout, EDMcluster_Subtypes, NULL, EDMcluster_Attributes},
-{"ClusterRepository", 4, 643, 8, 48, 6, et_ClusterRepository, ClusterRepository_AttributeLayout, ClusterRepository_Subtypes, NULL, ClusterRepository_Attributes},
-{"ClusterModel", 3, 631, 8, 40, 0, et_ClusterModel, ClusterModel_AttributeLayout, ClusterModel_Subtypes, NULL, ClusterModel_Attributes},
+{"EDMmodel", 3, 643, 8, 40, 6, et_EDMmodel, EDMmodel_AttributeLayout, EDMmodel_Subtypes, NULL, EDMmodel_Attributes},
+{"EDMrepository", 4, 641, 8, 48, 5, et_EDMrepository, EDMrepository_AttributeLayout, EDMrepository_Subtypes, NULL, EDMrepository_Attributes},
+{"EDMdatabase", 6, 639, 8, 64, 4, et_EDMdatabase, EDMdatabase_AttributeLayout, EDMdatabase_Subtypes, NULL, EDMdatabase_Attributes},
+{"EDMServer", 7, 637, 8, 72, 3, et_EDMServer, EDMServer_AttributeLayout, EDMServer_Subtypes, NULL, EDMServer_Attributes},
+{"EDMcluster", 5, 635, 8, 56, 2, et_EDMcluster, EDMcluster_AttributeLayout, EDMcluster_Subtypes, NULL, EDMcluster_Attributes},
+{"ClusterRepository", 4, 633, 8, 48, 1, et_ClusterRepository, ClusterRepository_AttributeLayout, ClusterRepository_Subtypes, NULL, ClusterRepository_Attributes},
+{"ClusterModel", 4, 631, 8, 48, 0, et_ClusterModel, ClusterModel_AttributeLayout, ClusterModel_Subtypes, NULL, ClusterModel_Attributes},
 {NULL},
 };
 
@@ -160,7 +161,7 @@ char * EDMcluster::get_description() { return getATTRIBUTE(8, char *, 1); }
 void EDMcluster::put_description(char * v) { putATTRIBUTE(8, char *, v, description, 1, 4); }
 Set<EDMServer*>* EDMcluster::get_servers() { return getAGGREGATE(16, Set<EDMServer*>*, 2); }
 void EDMcluster::put_servers(Set<EDMServer*>* v) { putAGGREGATE(16, Set<EDMServer*>*, v, servers, 2, 9); }
-SdaiAggr  EDMcluster::get_servers_aggrId() { return (SdaiAggr)getAGGRID(2); }
+SdaiAggr  EDMcluster::get_servers_aggrId() { return getAGGRID(2); }
 void EDMcluster::put_servers_element(EDMServer* element) {
    SdaiAggr agId = get_servers_aggrId();
    Set<EDMServer*> aggregate(m, agId);
@@ -197,7 +198,9 @@ char * ClusterModel::get_name() { return getATTRIBUTE(0, char *, 0); }
 void ClusterModel::put_name(char * v) { putATTRIBUTE(0, char *, v, name, 0, 4); }
 ClusterRepository* ClusterModel::get_belongs_to() { return getInstance(8, ClusterRepository*, 1); }
 void ClusterModel::put_belongs_to(ClusterRepository* v) { putInstance(8, ClusterRepository*, v, belongs_to, 1, 8); v->addToUsedIn(c); }
-Set<EDMmodel*>* ClusterModel::get_consists_of() { return getAGGREGATE(16, Set<EDMmodel*>*, 2); }
+int ClusterModel::get_nAppservers() { return getATTRIBUTE(16, int, 2); }
+void ClusterModel::put_nAppservers(int v) { putATTRIBUTE(16, int, v, nAppservers, 2, 0); }
+Set<EDMmodel*>* ClusterModel::get_consists_of() { return getAGGREGATE(24, Set<EDMmodel*>*, 3); }
 
 void* ecl_Schema::generateObject(tEdmiInstData *instData, int *entityTypep, Model *ma)
 {

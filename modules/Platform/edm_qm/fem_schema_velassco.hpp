@@ -55,6 +55,10 @@ public:
    void                                 put_name(char * v);
    void                                 unset_name() { unsetAttribute(4); }
    bool                                 exists_name() { return isAttrSet(4); }
+   int                                  get_id();
+   void                                 put_id(int v);
+   void                                 unset_id() { unsetAttribute(5); }
+   bool                                 exists_id() { return isAttrSet(5); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    TimeStep(Model *m, entityType et=et_TimeStep) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    TimeStep(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -167,6 +171,10 @@ public:
    void                                 put_result_header(ResultHeader* v);
    void                                 unset_result_header() { unsetAttribute(1); }
    bool                                 exists_result_header() { return isAttrSet(1); }
+   int                                  get_NodeTimestepId();
+   void                                 put_NodeTimestepId(int v);
+   void                                 unset_NodeTimestepId() { unsetAttribute(2); }
+   bool                                 exists_NodeTimestepId() { return isAttrSet(2); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    Result(Model *m, entityType et=et_Result) : dbInstance(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    Result(Model *_m, tEdmiInstData *instData) :  dbInstance(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -295,8 +303,8 @@ public:
    static const entityType type = et_ScalarResult;
    double                               get_val();
    void                                 put_val(double v);
-   void                                 unset_val() { unsetAttribute(2); }
-   bool                                 exists_val() { return isAttrSet(2); }
+   void                                 unset_val() { unsetAttribute(3); }
+   bool                                 exists_val() { return isAttrSet(3); }
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
    ScalarResult(Model *m, entityType et=et_ScalarResult) : Result(m, et) { if (! c) dbInstance::init(m, et); c->cppObject = (void*)this; }
    ScalarResult(Model *_m, tEdmiInstData *instData) : Result(_m, instData) { c = instData; m = _m; c->cppObject = (void*)this; }
@@ -311,8 +319,8 @@ public:
    static const entityType type = et_VectorResult;
    List<REAL>*                          get_values();
    void                                 put_values(List<REAL>* v);
-   void                                 unset_values() { unsetAttribute(2); }
-   bool                                 exists_values() { return isAttrSet(2); }
+   void                                 unset_values() { unsetAttribute(3); }
+   bool                                 exists_values() { return isAttrSet(3); }
    SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
@@ -329,8 +337,8 @@ public:
    static const entityType type = et_Matrix_2D;
    Array<REAL>*                         get_values();
    void                                 put_values(Array<REAL>* v);
-   void                                 unset_values() { unsetAttribute(2); }
-   bool                                 exists_values() { return isAttrSet(2); }
+   void                                 unset_values() { unsetAttribute(3); }
+   bool                                 exists_values() { return isAttrSet(3); }
    SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
@@ -347,8 +355,8 @@ public:
    static const entityType type = et_Matrix_3D;
    Array<REAL>*                         get_values();
    void                                 put_values(Array<REAL>* v);
-   void                                 unset_values() { unsetAttribute(2); }
-   bool                                 exists_values() { return isAttrSet(2); }
+   void                                 unset_values() { unsetAttribute(3); }
+   bool                                 exists_values() { return isAttrSet(3); }
    SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }
@@ -365,8 +373,8 @@ public:
    static const entityType type = et_Matrix_Deformated;
    Array<REAL>*                         get_values();
    void                                 put_values(Array<REAL>* v);
-   void                                 unset_values() { unsetAttribute(2); }
-   bool                                 exists_values() { return isAttrSet(2); }
+   void                                 unset_values() { unsetAttribute(3); }
+   bool                                 exists_values() { return isAttrSet(3); }
    SdaiAggr                             get_values_aggrId();
    void                                 put_values_element(int index, REAL);
    void* operator new(size_t sz, Model *m) { return m->allocZeroFilled(sz); }

@@ -25,6 +25,8 @@ class EDMclusterServices
    Container<EDMserverContext>                        *serverContexts;
    EDMserverContext                                   *lastServerContext;
    CMemoryAllocator                                   clusterMa;
+
+   void                                               countNofAppsrvsOfModel(ClusterModel *cm);
 public:
    Iterator<ecl::EDMdatabase*, ecl::entityType>       databaseIter;
    Model                                              *clusterModel;
@@ -84,6 +86,7 @@ protected:
    CMemoryAllocator                 ma;
    EDMclusterServices               *theServer;
    EDMULONG                         nParameters;
+   EDMULONG                         nAppservers;
    tRemoteParameter                 params[MAX_PAR];
    tRemoteParameter                 *paramAddresses[MAX_PAR];
    tRemoteParameter                 returnValue;
@@ -92,8 +95,9 @@ protected:
    virtual char                     *getPluginName() { return ""; }
    void                             init()
    {
-      nParameters = 0;
+      nParameters = 0; nAppservers = 0;
    }
+   void                             setOptimalNumberOfThreads();
 public:
    /*!
    Execution on a ClusterModel

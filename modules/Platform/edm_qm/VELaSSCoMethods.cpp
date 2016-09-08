@@ -9,7 +9,7 @@
 
 
 //#define PRAGMA_OMP_PARALLEL_FOR #pragma omp parallel for
-#define PARALLEL
+#define PARALLEL 1
 //#define #pragma omp parallel for
 
 
@@ -74,12 +74,21 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
    int endTime = GetTickCount();
 }
 
+void VELaSSCoMethods::setResults(rvGetListOfTimeSteps& rv, Container<double> *allTimeSteps)
+{
+   vector<double>  time_steps;
+   for (double *ts = allTimeSteps->firstp(); allTimeSteps->moreElements(); ts = allTimeSteps->nextp()) {
+      time_steps.push_back(*ts);
+   }
+   rv.__set_time_steps(time_steps);
+}
 
 /*=============================================================================================================================*/
-void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::string& analysisID)
+Container<double> *VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::string& analysisID)
 /*=============================================================================================================================*/
 {
    int startTime = GetTickCount();
+   Container<double> *allTimeSteps = NULL;
    if (subQueries) {
       EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetListOfTimeSteps *inParams = new(&ma)nodeInGetListOfTimeSteps(&ma, NULL);
@@ -97,10 +106,11 @@ void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::st
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg);
          rv.__set_status("Error"); rv.__set_report(errorMsg);
-         return;
+         return NULL;
       }
       nodeRvGetListOfTimeSteps *retValueWithError = NULL;
-      vector<double>  time_steps;
+      
+      allTimeSteps = new(&ma)Container<double>(&ma, 20);
 
       for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
@@ -110,9 +120,13 @@ void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::st
          }
          Container<double> timeStepList(&ma, retVal->ListOfTimeSteps);
          for (double *ts = timeStepList.firstp(); timeStepList.moreElements(); ts = timeStepList.nextp()) {
-            if (std::find(time_steps.begin(), time_steps.end(), *ts) == time_steps.end()) {
-               time_steps.push_back(*ts);
+            bool found = false;
+            for (double *ats = allTimeSteps->firstp(); allTimeSteps->moreElements(); ats = allTimeSteps->nextp()) {
+               if (ats == ts ) {
+                  found = true; break;
+               }
             }
+            if (! found) allTimeSteps->add(*ts);
          }
       }
       if (retValueWithError) {
@@ -123,10 +137,11 @@ void VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv, const std::st
          printExecutionReport(report);
          rv.__set_report(report);
          rv.__set_status("OK");
-         rv.__set_time_steps(time_steps);
+         setResults(rv, allTimeSteps);
       }
    }
    int endTime = GetTickCount();
+   return allTimeSteps;
 }
 
 
@@ -392,11 +407,11 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
    }
 }
 /*=============================================================================================================================*/
-void VELaSSCoMethods::calculateBoundingBox(const std::string &dataTableName, const std::string &analysisID, const int numSteps,
+void VELaSSCoMethods::calculateBoundingBox(const std::string &analysisID, const int numSteps,
    const double *lstSteps, const int64_t numVertexIDs, const int64_t *lstVertexIDs, double *return_bbox, std::string *return_error_str)
 /*=============================================================================================================================*/
 {
-   int startTime, startTime2, endTime, timeSubQueryExecytion, timeCollectingReturnValues, t2, t3, t4, t5, t6;
+   int startTime, endTime, timeSubQueryExecytion, t2, t3;
    if (subQueries) {
       EDMULONG nOfSubdomains = subQueries->size();
       nodeInCalculateBoundingBox *inParams = new(&ma)nodeInCalculateBoundingBox(&ma, NULL);
@@ -652,8 +667,7 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
       nodeRvGetBoundaryOfLocalMesh *retValueWithError = NULL;
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
-      int tot_n_triangles = 0;
-      char tfilena[1024];
+      EDMULONG tot_n_triangles = 0;
       for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
@@ -764,7 +778,7 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetBoundaryOfLocalMesh *retVal = new(e->ema)nodeRvGetBoundaryOfLocalMesh(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetBoundaryOfLocalMesh", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetBoundaryOfSubMesh", inParams, &errorFound);
       }
       if (errorFound) {
          string errorMsg;
@@ -775,8 +789,8 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
       nodeRvGetBoundaryOfLocalMesh *retValueWithError = NULL;
 
       EDMULONG maxID = 0, minID = 0xfffffffffffffff;
-      int tot_n_triangles = 0;
-      char tfilena[1024];
+      EDMULONG tot_n_triangles = 0;
+
       for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElementp(i);
          nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
@@ -828,9 +842,9 @@ void VELaSSCoMethods::GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const
                nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
                Container<EDMVD::Triangle> *triangleContainer = new(&ma)Container<EDMVD::Triangle>(&ma, retVal->triangle_array);
                mj->addContainer(triangleContainer);
-               #ifdef _DEBUG
-               writeTrianglesToFile(tfilena, triangleContainer);
-               #endif
+               //#ifdef _DEBUG
+               //writeTrianglesToFile(tfilena, triangleContainer);
+               //#endif
             }
          }
 
@@ -926,7 +940,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          rv.__set_report(retValueWithError->report->value.stringVal);
       } else {
          vector<VELaSSCoSM::MeshInfo> meshInfos;
-         Container<EDMVD::MeshInfo> *aggregated_mesh_info = new(&ma)Container<EDMVD::MeshInfo>(&ma);
+         Container<EDMVD::MeshInfoEDM> *aggregated_mesh_info = new(&ma)Container<EDMVD::MeshInfoEDM>(&ma);
 
          for (int i = 0; i < nOfSubdomains; i++) {
             int meshNumber = 1;
@@ -936,12 +950,12 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
 
             relocateMeshInfo *mesh_info_relocator = (relocateMeshInfo *)resMa.getRelocateInfo();
             resMa.prepareForRelocationAfterTransfer();
-            Container<EDMVD::MeshInfo> *mesh_info_container = (Container<EDMVD::MeshInfo>*)mesh_info_relocator->bufferInfo->relocatePointer((char*)mesh_info_relocator->meshes);
+            Container<EDMVD::MeshInfoEDM> *mesh_info_container = (Container<EDMVD::MeshInfoEDM>*)mesh_info_relocator->bufferInfo->relocatePointer((char*)mesh_info_relocator->meshes);
             mesh_info_container->relocateStructContainer(mesh_info_relocator->bufferInfo);
 
-            for (EDMVD::MeshInfo *mi = mesh_info_container->firstp(); mi; mi = mesh_info_container->nextp()) {
+            for (EDMVD::MeshInfoEDM *mi = mesh_info_container->firstp(); mi; mi = mesh_info_container->nextp()) {
                mi->relocateThis(mesh_info_relocator->bufferInfo);
-               EDMVD::MeshInfo *aggrmi;
+               EDMVD::MeshInfoEDM *aggrmi;
                for (aggrmi = aggregated_mesh_info->firstp(); aggrmi; aggrmi = aggregated_mesh_info->nextp()) {
                   if (strEQL(mi->name, aggrmi->name))
                      break;
@@ -958,7 +972,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
             }
          }
          int meshNumber = 1;
-         for (EDMVD::MeshInfo *mi = aggregated_mesh_info->firstp(); mi; mi = aggregated_mesh_info->nextp()) {
+         for (EDMVD::MeshInfoEDM *mi = aggregated_mesh_info->firstp(); mi; mi = aggregated_mesh_info->nextp()) {
             VELaSSCoSM::MeshInfo meshInfo;
             meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
             VELaSSCoSM::ElementType elementType;
@@ -997,18 +1011,19 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
          nodeRvInjectFiles *retVal = new(e->ema)nodeRvInjectFiles(e->ema, NULL);
          e->returnValues = retVal; e->inParams = inParams;
       }
-      EDMexecution *e;
 
       startTime = GetTickCount();
-#ifdef PARALLEL
-#pragma omp parallel for private (e)
-#endif
+//#ifdef PARALLEL
+//#pragma omp parallel for private (e)
+//#endif
+#pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
-         e = subQueries->getElementp(i);
+         int nt = omp_get_num_threads();
+         EDMexecution *e = subQueries->getElementp(i);
          ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
-#ifdef PARALLEL
+//#ifdef PARALLEL
 #pragma omp critical
-#endif
+//#endif
          if (! errorFound) {
             msgs->add(ma.allocString(((nodeRvInjectFiles *)e->returnValues)->report->value.stringVal));
          }

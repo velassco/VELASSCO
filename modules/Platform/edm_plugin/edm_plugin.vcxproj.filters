@@ -30,6 +30,12 @@
     <ClInclude Include="VELaSSCoEDMplugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\edm_qm\CLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EDM_Injector.cpp">
@@ -48,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fem_schema_velassco.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\edm_qm\CLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

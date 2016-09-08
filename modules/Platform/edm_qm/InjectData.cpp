@@ -2,6 +2,7 @@
 #include "stdafx.h"
 
 #include "VELaSSCoMethods.h"
+#include "../edm_plugin/EDM_plugin_1.h"
 #include "EDM_interface.h"
 #include "CLogger.h"
 #include "VELaSSCo_Operations.h"
@@ -61,6 +62,14 @@ void VELaSSCoHandler::InjectData(char *commandFileName)
                         thelog->logg(1, "    %s\n", msg);
                      }
                   }
+               } else if (strEQL(Command, "CreateCubeFromFileSequence")) {
+                  if (theQuery.OpenClusterModelAndPrepareExecution(modelID, EDMmodelNameFormat, FirstModelNo, LastModelNo)) {
+                     theQuery.CreateCubeFromFileSequence(&FileNameFormats, FirstModelNo, LastModelNo, EDMmodelNameFormat, &messages);
+                     thelog->logg(0, "    Create Cube from File Sequence finished.\n");
+                     for (char *msg = messages.first(); msg; msg = messages.next()) {
+                        thelog->logg(1, "    %s\n", msg);
+                     }
+                  }
                } else {
                   thelog->logg(1, "    Illegal command in file %s\n\n", commandFileName);
                }
@@ -78,6 +87,89 @@ void VELaSSCoHandler::InjectData(char *commandFileName)
       string errMsg;
       handleError(errMsg, e);
       thelog->logg(1, "   Error detected, message=%s\n\n", errMsg.data());
+   }
+}
+
+/*=============================================================================================================================*/
+void VELaSSCoMethods::CreateCubeFromFileSequence(Container<char*> *FileNameFormats, int FirstModelNo, int LastModelNo,
+   char *EDMmodelNameFormat, Container<char*> *msgs)
+/*=============================================================================================================================*/
+{
+   int startTime, endTime;
+   if (subQueries) {
+      EDMULONG nOfSubdomains = subQueries->size();
+      bool errorFound = false;
+      for (EDMexecution *e = subQueries->firstp(); e; e = subQueries->nextp()) {
+         nodeInInjectFiles *inParams = new(&ma)nodeInInjectFiles(&ma, NULL);
+         int i = 0, cModelno = FirstModelNo;
+         for (char *fnf = FileNameFormats->first(); fnf && i < MAX_INJECT_FILES && cModelno <= LastModelNo; fnf = FileNameFormats->next()) {
+            char fnbuf[2048];
+            sprintf(fnbuf, fnf, e->modelNumber);
+            inParams->attrPointerArr[i++]->putString(ma.allocString(fnbuf));
+         }
+         nodeRvInjectFiles *retVal = new(e->ema)nodeRvInjectFiles(e->ema, NULL);
+         e->returnValues = retVal; e->inParams = inParams;
+      }
+      EDMexecution *e;
+
+      startTime = GetTickCount();
+#pragma omp parallel for
+      for (int i = 0; i < nOfSubdomains; i++) {
+         e = subQueries->getElementp(i);
+         ExecuteRemoteCppMethod(e, "AnalyzeFEMfiles", e->inParams, &errorFound);
+      }
+
+      nodeRvInjectFiles *retValueWithError = NULL;
+      EDMLONG maxNodeId = 0, maxElementId = 0;
+      for (int i = 0; i < nOfSubdomains; i++) {
+         EDMexecution *e = subQueries->getElementp(i);
+         nodeRvInjectFiles *retVal = (nodeRvInjectFiles *)e->returnValues;
+         if(strNEQ(retVal->status->value.stringVal, "OK")) {
+            retValueWithError = retVal; break;
+         }
+         if (retVal->maxNodeId->value.intVal > maxNodeId) maxNodeId = retVal->maxNodeId->value.intVal;
+         if (retVal->maxElementId->value.intVal < maxElementId) maxElementId = retVal->maxElementId->value.intVal;
+      }
+      char t[1024];
+      if (retValueWithError) {
+         msgs->add("Error - ");
+         msgs->add(retValueWithError->report->value.stringVal);
+      } else {
+         sprintf(t, "   Max node id = %llu, max element id = %llu\n", maxNodeId, maxElementId);
+         Container<char*> *resultNames = new(&ma)Container<char*>(&ma);
+         Container<double> *timesteps = new(&ma)Container<double>(&ma);
+         msgs->add(ma.allocString(t));
+         for (int i = 0; i < nOfSubdomains; i++) {
+            EDMexecution *e = subQueries->getElementp(i);
+            nodeRvInjectFiles *retVal = (nodeRvInjectFiles *)e->returnValues;
+            Container<char*> *resultNamesFromOneFile = new(&ma)Container<char*>(&ma, retVal->resultNames);
+            char *thisResult, *rn;
+            for (thisResult = resultNamesFromOneFile->first(); thisResult; thisResult = resultNamesFromOneFile->next()) {
+               for (rn = resultNames->first(); rn; rn = resultNames->next()) {
+                  if (strEQL(rn, thisResult)) break;
+               }
+               if (rn == NULL) {
+                  resultNames->add(thisResult);
+               }
+            }
+
+            Container<double> *timestepsFromOneFile = new(&ma)Container<double>(&ma, retVal->timesteps);
+            double *thisTimestep, *cts;
+            for (thisTimestep = timestepsFromOneFile->firstp(); thisTimestep; thisTimestep = timestepsFromOneFile->nextp()) {
+               for (cts = timesteps->firstp(); cts; cts = timesteps->nextp()) {
+                  if (*cts == *thisTimestep) break;
+               }
+               if (cts == NULL) {
+                  timesteps->add(*thisTimestep);
+               }
+            }
+            /* Then we know how many timesteps and result types are the input asci files. Then we can start creating "cube file".*/
+
+         }
+      }
+      endTime = GetTickCount();
+      sprintf(t, "   Time used %d millisec", endTime - startTime);
+      msgs->add(ma.allocString(t));
    }
 }
 

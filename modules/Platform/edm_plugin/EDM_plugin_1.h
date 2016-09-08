@@ -71,7 +71,7 @@ namespace EDMVD {
    } ElementType;
 
 
-   typedef struct MeshInfo {
+   typedef struct MeshInfoEDM {
       char                                *name;        // will return mesh info about the mesh with the specified name - error message if specified mesh does not exist.
       ElementType                         elementType;  // used to calculate number of nodes to be returned for each element
       EDMULONG                            nVertices;    // used to calculate buffer sizes
@@ -87,7 +87,7 @@ namespace EDMVD {
          meshColor = mai->relocatePointer(meshColor);
          coordsName = mai->relocatePointer(coordsName);
       }
-   } MeshInfo;
+   } MeshInfoEDM;
 
 
    //typedef struct Element {
@@ -496,15 +496,23 @@ struct nodeInGetListOfMeshes : public CppParameterClass
 /*===================================================================================================================*/
 struct nodeRvInjectFiles : public CppParameterClass
 {
-   cppRemoteParameter                    *attrPointerArr[2];
+   cppRemoteParameter                    *attrPointerArr[6];
    cppRemoteParameter                    *status;
    cppRemoteParameter                    *report;
+   cppRemoteParameter                    *maxNodeId;
+   cppRemoteParameter                    *maxElementId;
+   cppRemoteParameter                    *timesteps;
+   cppRemoteParameter                    *resultNames;
 
    void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
    nodeRvInjectFiles(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
       : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
       addAddribute(&status, rptSTRING);
       addAddribute(&report, rptSTRING);
+      addAddribute(&maxNodeId, rptINTEGER);
+      addAddribute(&maxElementId, rptINTEGER);
+      addAddribute(&timesteps, rptContainer);
+      addAddribute(&resultNames, rptStringContainer);
    }
 };
 #define MAX_INJECT_FILES 6
@@ -581,7 +589,7 @@ struct relocateResultInfo : public RelocateInfo
 
 struct relocateMeshInfo : public RelocateInfo
 {
-   Container<EDMVD::MeshInfo> *meshes;
+   Container<EDMVD::MeshInfoEDM> *meshes;
 };
 
 

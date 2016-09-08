@@ -425,7 +425,7 @@ void VELaSSCoHandler::getListOfAnalyses(rvGetListOfAnalyses& _return, const std:
 * @param timeStepOption
 * @param timeSteps
 */
-void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
+void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const std::string &modelID, //const std::string &dataTableName,
    const std::string &analysisID, const int numSteps, const double *lstSteps,
    const int64_t numVertexIDs, const int64_t *lstVertexIDs,
    double *return_bbox, std::string *return_error_str)
@@ -448,7 +448,7 @@ void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const s
             }
          }
          if (! dataOnFile) {
-            theQuery.calculateBoundingBox(dataTableName, analysisID, numSteps, lstSteps, numVertexIDs, lstVertexIDs, return_bbox, return_error_str);
+            theQuery.calculateBoundingBox(analysisID, numSteps, lstSteps, numVertexIDs, lstVertexIDs, return_bbox, return_error_str);
             if (numVertexIDs == 0 ) {
                bbFileName = getResultFileName("bounding_box_", modelID.data());
                FILE *bbfp = fopen(bbFileName, "wb");
@@ -472,6 +472,12 @@ void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const s
 }
 
 
+FILE *VELaSSCoHandler::getStoredQueryResult(const char *p1, const char *p2, const char *p3)
+{
+   return NULL;
+}
+
+
 /**
 * Retrieves the list of time steps for a given model and analysis.
 *
@@ -485,6 +491,7 @@ void VELaSSCoHandler::getListOfTimeSteps(rvGetListOfTimeSteps& _return, const st
    try {
       thelog->logg(2, "-->GetListOfAnalyses\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
+      FILE *storedQueryResult = getStoredQueryResult("getListOfTimeSteps", analysisID.data(), NULL);
       if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
          theQuery.GetListOfTimeSteps(_return, analysisID);
       } else {

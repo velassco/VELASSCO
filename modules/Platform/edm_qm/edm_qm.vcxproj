@@ -98,6 +98,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WINDOWS;EDM;USE_EDMI;%(PreprocessorDefinitions);WIN32;_DEBUG;;WIN32;_CONSOLE;_LIB</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../analytics;../access;../commonFiles;O:\edm\v6.0.xxx\edmsys\sdai\include;;O:\edm\v6.0.xxx\cpp_edmi\cpp10;O:\edm\v6.0.xxx\cpp_edmi\web.services;C:\boost\boost_1_58_0;O:\projects\VELaSSCo\thrift\thrift-0.9.0\lib\cpp\src;../../thrift/Storage/gen-cpp</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,10 +147,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\access\EdmAccess.h" />
-    <ClInclude Include="..\access\VELaSSCo_VQueries.h" />
+    <ClInclude Include="..\access\VELaSSCo_Operations.h" />
     <ClInclude Include="CLogger.h" />
+    <ClInclude Include="EDMcluster.hpp" />
     <ClInclude Include="EDMmodelCache.h" />
     <ClInclude Include="EDM_interface.h" />
+    <ClInclude Include="Cube.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VELaSSCoHandler.h" />
@@ -167,6 +170,7 @@
     <ClCompile Include="CLogger.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="EDMcluster.cpp" />
     <ClCompile Include="EDMclusterServices.cpp" />
     <ClCompile Include="edm_qm.cpp" />
