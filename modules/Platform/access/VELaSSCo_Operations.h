@@ -178,10 +178,18 @@ public:
 						      const double tolerance,
 						      const int numSteps,
 						      /* out */
-						      int64_t& binary_blob_ID,
-						      std::string *resultStatistics,
-						      std::string *resultErrorStr) = 0;
-
+						      std::string *return_volume_lrspline,
+						      std::string *result_statistics,
+						      std::string *return_error_str) = 0;
+  virtual void deleteVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+						   const std::string& modelID,
+						   const std::string& resultID,
+						   const double stepValue,
+						   const std::string& analysisID,
+						   const double* bBox,
+						   const double tolerance,
+						   const int numSteps,
+						   std::string *return_error_str) = 0;
  
 };
 

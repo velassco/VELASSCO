@@ -245,8 +245,8 @@ namespace VELaSSCo
 				  const double* bBox,
 				  const double tolerance,
 				  const int numSteps,
-				  std::string &binary_volume_lrspline,
-				  std::string &resultStatistics,
+				  std::string *binary_volume_lrspline,
+				  std::string *result_statistics,
 				  std::string *return_error_str);
     bool deleteStoredVolumeLRSpline( const std::string& sessionID,
 				     const std::string& modelID,
@@ -256,7 +256,7 @@ namespace VELaSSCo
 				     const double* bBox,
 				     const double tolerance,
 				     const int numSteps,
-				     std::string *resultErrorStr);
+				     std::string *return_error_str);
     bool saveVolumeLRSpline( const std::string& sessionID,
 			     const std::string& modelID,
 			     const std::string& resultID,
@@ -266,8 +266,8 @@ namespace VELaSSCo
 			     const double tolerance,
 			     const int numSteps,
 			     const std::string &binary_volume_lrspline,
-			     const std::string &resultStatistics,
-			     std::string *resultErrorStr);
+			     const std::string &result_statistics,
+			     std::string *return_error_str);
     bool alreadyStoredVolumeLRSpline( const std::string& sessionID,
 				      const std::string& modelID,
 				      const std::string& resultID,

@@ -56,19 +56,20 @@ void HBase::getStoredVolumeLRSpline( const std::string& sessionID,
 				     const double* bBox,
 				     const double tolerance,
 				     const int numSteps,
-				     std::string &binary_volume_lrspline,
-				     std::string &resultStatistics,
+				     std::string *binary_volume_lrspline,
+				     std::string *result_statistics,
 				     std::string *return_error_str) {
 
   std::string vqueryName = "GetVolumeLRSpline";
   std::stringstream vqueryParametersStream;
-  vqueryParametersStream << modelID << " " << meshID << " " << resultID << " " << stepValue <<
+  vqueryParametersStream << modelID << " " << resultID << " " << stepValue <<
     " \"" << analysisID << "\" " << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
-    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance " " << numSteps;
+    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance << " " << numSteps;
   const std::string &vqueryParameters = vqueryParametersStream.str();
   std::vector< std::string> lst_lrsplines; // should only be one !!!
 
-  double stepValue = 0.0; // Not used, different steps is encapsulated in the vqueryParameters.
+  //  double stepValue = 0.0; // Not used, different steps is encapsulated in the vqueryParameters.
+  // @@sbr201609 Why not use getStoredVQueryExtraDataSplitted()? Use stepValue == 0.0?
   bool scan_ok = getStoredVQueryExtraData( sessionID, modelID, analysisID, stepValue,
 					   vqueryName, vqueryParameters,
 					   &lst_lrsplines);
@@ -78,13 +79,13 @@ void HBase::getStoredVolumeLRSpline( const std::string& sessionID,
   }
   if ( scan_ok && ( lst_lrsplines.size() > 0)) {
     if ( binary_volume_lrspline) {
-      *binary_volume_lrspline = lrs_lrsplines[0];
+      *binary_volume_lrspline = lst_lrsplines[0];
+      // @@sbr201609 Not setting the statistics! Not included yet.
     }
     // *return_error_str = std::string( "Ok");
   } else {
     *return_error_str = std::string( "Stored Volume LRSpline not found.");
   }
-}
 
  return;
 }
@@ -100,15 +101,13 @@ bool HBase::deleteStoredVolumeLRSpline( const std::string& sessionID,
 					const int numSteps,
 					std::string *return_error_str) {
 
-  bool deleted = false;
-  
-  DEBUG("SINTEF: " + __FILE__ + __FUNCTION__ + ": Under construction!");
+  //  DEBUG("SINTEF: " << __FILE__ << __FUNCTION__ << ": Under construction!");
 
   std::string vqueryName = "GetVolumeLRSpline";
   std::stringstream vqueryParametersStream;
-  vqueryParametersStream << modelID << " " << meshID << " " << resultID << " " << stepValue <<
+  vqueryParametersStream << modelID << " " << resultID << " " << stepValue <<
     " \"" << analysisID << "\" " << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
-    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance " " << numSteps;
+    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance << " " << numSteps;
   const std::string &vqueryParameters = vqueryParametersStream.str();
   bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
 						 vqueryName, vqueryParameters, 
@@ -169,7 +168,7 @@ bool HBase::saveVolumeLRSpline( const std::string& sessionID,
 				const double tolerance,
 				const int numSteps,
 				const std::string &binary_volume_lrspline,
-				const std::string &resultStatistics,
+				const std::string &result_statistics,
 				std::string *return_error_str) {
 
   TableModelEntry table_set;
@@ -185,9 +184,9 @@ bool HBase::saveVolumeLRSpline( const std::string& sessionID,
   // @2sbr201609 Should we use another syntax for the bBox array?
   std::string vqueryName = "GetVolumeLRSpline";
   std::stringstream vqueryParametersStream;
-  vqueryParametersStream << modelID << " " << meshID << " " << resultID << " " << stepValue <<
+  vqueryParametersStream << modelID << " " << resultID << " " << stepValue <<
     " \"" << analysisID << "\" " << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
-    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance " " << numSteps;
+    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance << " " << numSteps;
   const std::string &vqueryParameters = vqueryParametersStream.str();
 
   LOGGER_SM << "Saving volume lrspline for '" << vqueryParameters << "'" << std::endl;
@@ -220,7 +219,7 @@ bool HBase::saveVolumeLRSpline( const std::string& sessionID,
   // The splitting of the binary mesh shuld work well with any binary data.
   SplitBinaryMeshInChunks( lst_chunks_data, binary_volume_lrspline);
 
-  DEBUG("SINTEF: " + __FILE__ + __FUNCTION__ + ": Number of binary chunks: " + lst_chunks_data.size());
+  DEBUG("SINTEF: " << __FILE__ << __FUNCTION__ << ": Number of binary chunks: " << lst_chunks_data.size());
 
   std::string tableName = table_set._stored_vquery_metadata;
 
@@ -278,7 +277,8 @@ bool HBase::saveVolumeLRSpline( const std::string& sessionID,
   }
   LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
   LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
-  LOGGER_SM << "   saving data cells with " << binary_mesh.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
+  LOGGER_SM << "   saving data cells with " << binary_volume_lrspline.size() << " bytes in " <<
+    lst_chunks_data.size() << " separated qualifiers" << std::endl;
   tmp_report = "   data row saved";
   try {
     _hbase_client->mutateRow( tableName, dataRowKey, data_mutations, attr);
@@ -312,13 +312,12 @@ bool HBase::alreadyStoredVolumeLRSpline( const std::string& sessionID,
 					const int numSteps,
 					std::string *return_error_str) {
 
-  bool deleted = false;
   
   std::string vqueryName = "GetVolumeLRSpline";
   std::stringstream vqueryParametersStream;
-  vqueryParametersStream << modelID << " " << meshID << " " << resultID << " " << stepValue <<
+  vqueryParametersStream << modelID << " " << resultID << " " << stepValue <<
     " \"" << analysisID << "\" " << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
-    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance " " << numSteps;
+    bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance << " " << numSteps;
   bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
 						 vqueryName, vqueryParametersStream.str(), 
 						 NULL); // we don't want the data just to check if it's there

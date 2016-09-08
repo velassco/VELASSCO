@@ -735,7 +735,7 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
 
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
-  int64_t  resultLRSplineID = -1;
+  std::string binary_volume_lrspline = "";
   std::string result_statistics;
   std::string error_str;
   try {
@@ -743,7 +743,7 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
     queryServer->calculateVolumeLRSplineFromBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
 							 resultID, stepValue, analysisID, &bBox[0], tolerance, numSteps,
 							 /* out */
-							 resultLRSplineID,
+							 &binary_volume_lrspline,
 							 &result_statistics,
 							 &error_str);
     // GraphicsModule *graphics = GraphicsModule::getInstance();
@@ -757,7 +757,8 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	  ": The error_str was not set, success!");
     _return.__set_result( (Result::type)VAL_SUCCESS );
-    _return.__set_data( std::string( ( const char *)&resultLRSplineID, sizeof(int64_t)) + result_statistics );
+    _return.__set_data( binary_volume_lrspline );//result_statistics );
+    // @@sbr201609 Skipping the statistics for now.
   } else {
     _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
     _return.__set_data( error_str);
@@ -768,4 +769,74 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
   LOGGER << "  result : "   << _return.result        << std::endl;
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+}
+
+
+void QueryManagerServer::ManageDeleteVolumeLRSplineFromBoundingBox( Query_Result &_return,
+								    const SessionID sessionID, const std::string& query) {
+
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string name         = pt.get<std::string>( "name");
+  std::string modelID      = pt.get<std::string>( "modelID");
+  std::string resultID     = pt.get<std::string>( "resultID");
+  double stepValue         = pt.get< double>( "stepValue");
+  std::string analysisID   = pt.get<std::string>( "analysisID");
+  std::vector<double> bBox = as_vector<double>( pt, "bBox");
+  double tolerance         = pt.get< double>( "tolerance");
+  double numSteps          = pt.get< double>( "numSteps");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "R-" << resultID           << "-" << std::endl;
+  std::cout << "sV -" << stepValue       << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "bB -" << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
+    bBox[3] << " " << bBox[4] << " " << bBox[5] << "-" << std::endl;
+  std::cout << "T -" << tolerance       << "-" << std::endl;
+  std::cout << "nS -" << numSteps       << "-" << std::endl;
+
+  _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
+
+  std::string error_str;
+
+  bool storedVolumeLRSplineFound = false; // @@sbr201609 This value is never changed ...
+  try {
+    //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
+    error_str = "";
+    queryServer->deleteVolumeLRSplineFromBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+						      resultID, stepValue, analysisID, &bBox[0], tolerance, numSteps,
+						      &error_str);
+    // GraphicsModule *graphics = GraphicsModule::getInstance();
+    // just to link to the GraphicsModule;
+  } catch ( TException &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    // _return.__set_data( binary_mesh);
+  } else {
+    if ( !storedVolumeLRSplineFound) {
+      _return.__set_result( (Result::type)VAL_VOLUME_LRSPLINE_NOT_FOUND);
+    }
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  if ( error_str.length() != 0) {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
+
 }

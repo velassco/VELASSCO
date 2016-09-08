@@ -560,9 +560,9 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 							     const double tolerance, // Use ptr to allow NULL?
 							     const int numSteps, // Use ptr to allow NULL?
 							     /* out */
-							     int64_t& binary_blob_ID,
-							     std::string *resultStatistics, // JSON format?
-							     std::string *resultErrorStr)
+							     std::string *return_volume_lr,
+							     std::string *result_statistics, // JSON format?
+							     std::string *return_error_str)
 {
 
   DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
@@ -571,15 +571,15 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
   HBase::TableModelEntry table_name_set;
   std::string binary_volume_lrspline = "";
   if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
-    resultErrorStr->clear();
+    return_error_str->clear();
 
     AnalyticsModule::getInstance()->createVolumeLRSplineFromBoundingBox( sessionID, modelID,
 									 resultID, stepValue,
 									 analysisID, bBox, tolerance,
 									 numSteps,
 									 &binary_volume_lrspline,
-									 resultStatistics,
-									 resultErrorStr);
+									 result_statistics,
+									 return_error_str);
   } else {
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	  ": Did not enter the Analytics module!");
@@ -598,4 +598,32 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
   DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	": MISSING: Write config file & result binary blob to HBase!");
 
+}
+
+
+void DataLayerAccess::deleteVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+							     const std::string& modelID,
+							     const std::string& resultID,
+							     const double stepValue,
+							     const std::string& analysisID,
+							     const double* bBox, // ix doubles: min(x,y,z)-max(x,y,z)
+							     const double tolerance, // Use ptr to allow NULL?
+							     const int numSteps, // Use ptr to allow NULL?
+							     std::string *return_error_str) {
+  _db->getStoredVolumeLRSpline( sessionID, 
+				modelID,
+				resultID,
+				stepValue,
+				analysisID,
+				bBox, tolerance, numSteps,
+				NULL, NULL, return_error_str);
+  if ( return_error_str->length() == 0) { // i.e. boundary mesh was found
+    _db->deleteStoredVolumeLRSpline( sessionID, 
+				     modelID,
+				     resultID, stepValue,
+				     analysisID, bBox, tolerance, numSteps,
+				     return_error_str);
+  } else {
+    return_error_str->clear(); // not found, // already deleted?
+  }
 }

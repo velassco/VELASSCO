@@ -75,7 +75,10 @@ typedef enum
 
 	/* GetDiscrete2ContinuumOfAModel */
 	// also uses VAL_INVALID_MODEL_ID
-	
+
+	/* GetVolumeLRSplineFromBoundingBox */
+	VAL_VOLUME_LRSPLINE_NOT_FOUND       = 0x2004,
+
 } VAL_Result;
 
 typedef int64_t VAL_SessionID;
@@ -322,6 +325,17 @@ extern "C" {
 					   const int64_t* *resultLRSplineID,
 					   const char*    *resultStatistics,
 					   const char    **resultErrorStr); // in case of error
+  VAL_Result VAL_API valDeleteVolumeLRSplineFromBoundingBox( /* in */
+							    VAL_SessionID   sessionID,
+							    const char     *modelID,
+							    const char     *resultID,
+							    const double    stepValue,
+							    const char     *analysisID,
+							    const double   *bBox, // 6 doubles: min(x,y,z)-max(x,y,z)
+							    const double   tolerance, // Use ptr to allow NULL?
+							    const int      numSteps, // Use ptr to allow NULL?
+							    /* out */
+							    const char    **resultErrorStr); // in case of error
 
   /**
    * Translate a numerical result code into an error message string.

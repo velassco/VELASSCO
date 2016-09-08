@@ -85,7 +85,8 @@ STORAGE_MODULE_DIR=./storage
 STORAGE_MODULE_FILES = BinarySerialization.cpp  GidTypes.cpp  HBase.cpp \
 	HBase_model_operations.cpp  HBase_result_queries.cpp  HBase_status.cpp \
 	HBase_getListOfSelectedVerticesFromMesh.cpp \
-	HBase_stored_boundary.cpp HBase_stored_simplified.cpp HBase_stored_common.cpp 
+	HBase_stored_boundary.cpp HBase_stored_simplified.cpp HBase_stored_common.cpp \
+	HBase_stored_volume_lrspline.cpp
 STORAGE_MODULE_OBJS_TMP = ${STORAGE_MODULE_FILES:.cpp=.o}
 STORAGE_MODULE_OBJS = ${STORAGE_MODULE_OBJS_TMP:%=$(OBJS_DIR)/%}
 STORAGE_MODULE_DEPENDENCIES = $(wildcard $(STORAGE_MODULE_DIR)/*.h)

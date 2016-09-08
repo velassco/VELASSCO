@@ -194,10 +194,18 @@ public:
 					      const double tolerance, // Use ptr to allow NULL?
 					      const int numSteps, // Use ptr to allow NULL?
 					   /* out */
-					      int64_t& binary_blob_ID,
-					      std::string *resultStatistics, // JSON format?
-					      std::string *resultErrorStr);
-
+					      std::string *return_volume_lrspline,
+					      std::string *result_statistics, // JSON format?
+					      std::string *return_error_str);
+  void deleteVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+					   const std::string& modelID,
+					   const std::string& resultID,
+					   const double stepValue,
+					   const std::string& analysisID,
+					   const double* bBox,
+					   const double tolerance,
+					   const int numSteps,
+					   std::string *return_error_str);
 private:
   // DataLayerAccess(){};
   DataLayerAccess(DataLayerAccess const&){};
