@@ -3,32 +3,26 @@ SCHEMA EDMCLUSTER;
   ENTITY ClusterModel;
       name        : STRING;
       belongs_to  : ClusterRepository;
+      nAppservers : INTEGER;
     INVERSE
       consists_of : SET [1:?] OF EDMmodel FOR clusterModel;
   END_ENTITY;
 
-  ENTITY EDMmodel;
-      repository   : EDMrepository;
-      name         : STRING;
-      clusterModel : ClusterModel;
+  ENTITY ClusterRepository;
+      name        : STRING;
+      platform    : EDMcluster;
+    INVERSE
+      models      : SET [1:?] OF ClusterModel FOR belongs_to;
+      consists_of : EDMrepository FOR clusterRepository;
   END_ENTITY;
 
-  ENTITY EDMrepository;
-      belongs_to        : EDMdatabase;
-      name              : STRING;
-      clusterRepository : ClusterRepository;
-    INVERSE
-      models            : SET [1:?] OF EDMmodel FOR repository;
-  END_ENTITY;
-
-  ENTITY EDMdatabase;
-      path         : STRING;
+  ENTITY EDMcluster;
       name         : STRING;
-      password     : STRING;
-      server       : EDMServer;
+      description  : OPTIONAL STRING;
+      servers      : SET [1:?] OF EDMServer;
+      databases    : SET [1:?] OF EDMdatabase;
     INVERSE
-      belongs_to   : EDMcluster FOR databases;
-      repositories : SET [1:?] OF EDMrepository FOR belongs_to;
+      repositories : SET [1:?] OF ClusterRepository FOR platform;
   END_ENTITY;
 
   ENTITY EDMServer;
@@ -42,21 +36,28 @@ SCHEMA EDMCLUSTER;
       runs        : EDMdatabase FOR server;
   END_ENTITY;
 
-  ENTITY EDMcluster;
+  ENTITY EDMdatabase;
+      path         : STRING;
       name         : STRING;
-      description  : OPTIONAL STRING;
-      servers      : SET [1:?] OF EDMServer;
-      databases    : SET [1:?] OF EDMdatabase;
+      password     : STRING;
+      server       : EDMServer;
     INVERSE
-      repositories : SET [1:?] OF ClusterRepository FOR platform;
+      belongs_to   : EDMcluster FOR databases;
+      repositories : SET [1:?] OF EDMrepository FOR belongs_to;
   END_ENTITY;
 
-  ENTITY ClusterRepository;
-      name        : STRING;
-      platform    : EDMcluster;
+  ENTITY EDMrepository;
+      belongs_to        : EDMdatabase;
+      name              : STRING;
+      clusterRepository : ClusterRepository;
     INVERSE
-      models      : SET [1:?] OF ClusterModel FOR belongs_to;
-      consists_of : EDMrepository FOR clusterRepository;
+      models            : SET [1:?] OF EDMmodel FOR repository;
+  END_ENTITY;
+
+  ENTITY EDMmodel;
+      repository   : EDMrepository;
+      name         : STRING;
+      clusterModel : ClusterModel;
   END_ENTITY;
 
   ENTITY ClusterUser;

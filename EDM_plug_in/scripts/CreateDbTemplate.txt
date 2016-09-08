@@ -38,6 +38,8 @@
         Expiry date:                    1 Jan 2016
         Operating system:               WINDOWS
         License options:                
+Schemata>AttributeHashTable>DefineAttributeHashTable(fem_schema_velassco, element, id, $, $, UNIQUE_ATTRIBUTE_VALUES)
+Schemata>AttributeHashTable>DefineAttributeHashTable(fem_schema_velassco, node, id, $, $, UNIQUE_ATTRIBUTE_VALUES)
 
 **************************************************************************/
 
@@ -49,11 +51,11 @@ Database>Create(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\db_template, VELaSSCo, 
 Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\dem_schema_velassco.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,EXPRESS_EDITION_2,TC2,EDM_EXPRESS_EXTENSION")
 Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\fem_schema_velassco.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,EXPRESS_EDITION_2,TC2,EDM_EXPRESS_EXTENSION")
 Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\EDMcluster.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,EXPRESS_EDITION_2,TC2,EDM_EXPRESS_EXTENSION")
+Schemata>DefineSchema(O:\projects\VELaSSCo\SVN_src\EDM_plug_in\schemata\VELaSSCoModel.exp, $, $, "STORING_SOURCE,DELETING_EXISTING_SCHEMAS,EXPRESS_EDITION_2,TC2,EDM_EXPRESS_EXTENSION")
 Schemata>GenerateInterface>Cpp2010(dem_schema_velassco, O:\projects\VELaSSCo\SVN_src\EDM_Interface, dem, $, $, GENERATE_USE_EDMI)
 Schemata>GenerateInterface>Cpp2010(fem_schema_velassco, O:\projects\VELaSSCo\SVN_src\EDM_Interface, fem, $, $, GENERATE_USE_EDMI)
 Schemata>GenerateInterface>Cpp2010(EDMcluster, O:\projects\VELaSSCo\SVN_src\EDM_Interface, ecl, $, $, GENERATE_USE_EDMI)
-Schemata>AttributeHashTable>DefineAttributeHashTable(fem_schema_velassco, element, id, $, $, UNIQUE_ATTRIBUTE_VALUES)
-Schemata>AttributeHashTable>DefineAttributeHashTable(fem_schema_velassco, node, id, $, $, UNIQUE_ATTRIBUTE_VALUES)
+Schemata>GenerateInterface>Cpp2010(VELaSSCoModel, O:\projects\VELaSSCo\SVN_src\EDM_Interface, ecl, $, $, GENERATE_USE_EDMI)
 Data>Create>Repository(DEM_models, OPEN_REPOSITORY)
 Data>Create>Repository(FEM_models, OPEN_REPOSITORY)
 Data>Create>Repository(EDMcluster, OPEN_REPOSITORY)

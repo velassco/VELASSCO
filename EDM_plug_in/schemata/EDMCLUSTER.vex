@@ -4,14 +4,14 @@ HEADER;
 /******************************************************************************************
 * STEP Physical File produced by: The EXPRESS Data Manager Version 5.02.0110.06 : 6 Oct 2015
 * Module:                         EDMstepFileFactory/EDMstandAlone
-* Creation date:                  Thu Jan 14 15:49:26 2016
+* Creation date:                  Mon Sep 05 10:43:10 2016
 * Host:                           EPMT-OLAV-DELL
 * Database:                       O:\projects\IDEaliSM\converters\vexDB\d
 * Database version:               5207
 * Database creation date:         Tue Oct 06 16:14:55 2015
 * Schema:                         EXPRESS_G
-* Model:                          EDMvisualExpress.EDMCLUSTER
-* Model creation date:            Thu Jan 14 15:48:58 2016
+* Model:                          EDMvisualExpress.TEMP_MODEL_1
+* Model creation date:            Mon Sep 05 10:43:10 2016
 * Header model:                   
 * EDMuser:                        sdai-user
 * EDMgroup:                       sdai-group
@@ -21,10 +21,10 @@ HEADER;
 
 FILE_DESCRIPTION((''),'2;1');
 FILE_NAME(
-'O:\\projects\\IDEaliSM\\converters\\vexDB\\d.EDMvisualExpress.EDMCLUSTER'
+'O:\\projects\\IDEaliSM\\converters\\vexDB\\d.EDMvisualExpress.TEMP_MODEL_1'
 
 ,
-          '2016-01-14T15:49:26',
+          '2016-09-05T10:43:10',
           ('ANONYMOUS USER'),
           ('ANONYMOUS ORGANISATION'),
           'The EXPRESS Data Manager Version 5.02.0110.06 : 6 Oct 2015',
@@ -35,8 +35,8 @@ ENDSEC;
 
 DATA;
 #1= SCHEMATA(0,'EDMCLUSTER',$,78,$,$,0,#2,0.375,60.586667,-66.,(#320,
-#714,#652,#559,#572,#588,#604,#456,#469,#485,#501,#517,#533,#400,#413,
-#429,#360,#373,#665,#727,#333,#803,#813),$,$,$,2,(),$,2,
+#333,#360,#373,#400,#413,#429,#456,#469,#485,#501,#517,#533,#559,#572,
+#588,#604,#652,#665,#714,#727,#819,#829,#806),$,$,$,2,(),$,2,
 '{ iso standard 10303 part (11) version (4) }','');
 #2= SETTINGS(0,16577284,16577280,#3,$,#5,#15,#24,#34,#44,#54,#64,#74,#84
 ,#93,#102,#111,#120,#129,#138,#140,10.,10.,#153,#154,#6,#317,#143);
@@ -360,7 +360,8 @@ DATA;
 #315= IMAGE_MAP_HTML('$DEFINITION',245,0,323,23);
 #316= IMAGE_MAP_HTML('$REFERENCES',324,0,420,23);
 #317= EXPRESS_SET(260);
-#320= ENTITIES(1,37,$,$,#322,(),(),(#328,#344,#743),$,$,0,#801,$,#321);
+#320= ENTITIES(1,37,$,$,#322,(),(),(#328,#344,#801,#743),$,$,0,#817,$,
+#321);
 #321= INTERFACE_TO($,$);
 #322= TEXT(22,5,$,$,'ClusterModel','ClusterModel',#323);
 #323= TEXT_LAYOUT(125.,50.,218.,46.,#324);
@@ -774,22 +775,36 @@ $,$,0,#780,$,#457);
 #797= TEXT_PLACEMENT(1,1);
 #798= WORLD_PLINE(#799,1,$,(-196.98333,0.700003,-196.98333),-1.,0.);
 #799= WORLD_POINT(287.73333,1220.6667);
-#801= TYPE_LAYOUT(#802);
-#802= RECTANGLE(160.06666,1220.6667,250.,100.);
-#803= ENTITIES(1,165,$,$,#805,(),(),(),$,$,0,#811,$,#804);
-#804= INTERFACE_TO($,$);
-#805= TEXT(22,5,$,$,'ClusterUser','ClusterUser',#806);
-#806= TEXT_LAYOUT(125.,55.333333,190.,46.,#807);
-#807= TEXT_TYPE(1,6);
-#811= TYPE_LAYOUT(#812);
-#812= RECTANGLE(180.73333,1492.0333,250.,110.66667);
-#813= ENTITIES(1,165,$,$,#815,(),(),(),$,$,0,#821,$,#814);
-#814= INTERFACE_TO($,$);
-#815= TEXT(22,5,$,$,'EDMuser','EDMuser',#816);
-#816= TEXT_LAYOUT(125.,55.333334,155.,46.,#817);
-#817= TEXT_TYPE(1,6);
-#821= TYPE_LAYOUT(#822);
-#822= RECTANGLE(892.7,1481.3333,250.,110.66667);
+#801= ATTRIBUTE_DEF(12,5,$,$,#802,$,$,0,$,(),$,#806,#812,$,$,$);
+#802= TEXT(22,5,$,$,'nAppservers','nAppservers ',#803);
+#803= TEXT_LAYOUT(0.,0.,175.,35.,#804);
+#804= TEXT_TYPE(1,66);
+#806= PRIMITIVE_TYPE(2,197,$,$,#807,0,#810,0);
+#807= TEXT(22,5,$,$,'INTEGER','INTEGER',#808);
+#808= TEXT_LAYOUT(74.,27.,128.,34.,#809);
+#809= TEXT_TYPE(1,6);
+#810= TYPE_LAYOUT(#811);
+#811= RECTANGLE(570.,1404.0667,168.,54.);
+#812= OBJECT_LINE_LAYOUT(#813,#814);
+#813= TEXT_PLACEMENT(1,1);
+#814= WORLD_PLINE(#815,1,$,(110.4,317.83222),-1.,0.);
+#815= WORLD_POINT(252.16778,1320.6667);
+#817= TYPE_LAYOUT(#818);
+#818= RECTANGLE(160.06666,1220.6667,250.,100.);
+#819= ENTITIES(1,165,$,$,#821,(),(),(),$,$,0,#827,$,#820);
+#820= INTERFACE_TO($,$);
+#821= TEXT(22,5,$,$,'ClusterUser','ClusterUser',#822);
+#822= TEXT_LAYOUT(125.,55.333333,190.,46.,#823);
+#823= TEXT_TYPE(1,6);
+#827= TYPE_LAYOUT(#828);
+#828= RECTANGLE(180.73333,1492.0333,250.,110.66667);
+#829= ENTITIES(1,165,$,$,#831,(),(),(),$,$,0,#837,$,#830);
+#830= INTERFACE_TO($,$);
+#831= TEXT(22,5,$,$,'EDMuser','EDMuser',#832);
+#832= TEXT_LAYOUT(125.,55.333334,155.,46.,#833);
+#833= TEXT_TYPE(1,6);
+#837= TYPE_LAYOUT(#838);
+#838= RECTANGLE(892.7,1481.3333,250.,110.66667);
 ENDSEC;
 
 END-ISO-10303-21;

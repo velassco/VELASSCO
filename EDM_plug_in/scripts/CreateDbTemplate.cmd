@@ -1,2 +1,2 @@
-%EDM_HOME%bin\edms.exe CreateDbTemplate.txt
+%EDM_HOME_VELaSSCo%\bin\edms.exe CreateDbTemplate.txt
 
