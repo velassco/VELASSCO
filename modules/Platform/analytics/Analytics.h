@@ -56,7 +56,7 @@ public:
 					   const double tolerance,
 					   const int numSteps,
 					   std::string *return_binary_volume_lrspline,
-					   std::string *resultStatistics,
+					   std::string *result_statistics,
 					   std::string *return_error_str);
 
   

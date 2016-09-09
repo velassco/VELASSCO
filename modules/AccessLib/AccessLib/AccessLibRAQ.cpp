@@ -674,8 +674,10 @@ extern "C" {
 							     const double   tolerance, // Use ptr to allow NULL?
 							     const int      numSteps, // Use ptr to allow NULL?
 							     /* out */
-							     const int64_t* *resultLRSplineID,
+							     const char*    *resultBinaryLRSpline,
+							     size_t         *resultBinaryLRSplineSize,
 							     const char*    *resultStatistics,
+							     size_t         *resultStatisticsSize,
 							     const char    **resultErrorStr) { // in case of error
     CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
@@ -684,11 +686,11 @@ extern "C" {
     CHECK_QUERY_POINTER( bBox );
     // CHECK_QUERY_POINTER( tolerance );
     // CHECK_QUERY_POINTER( numSteps );
-    CHECK_QUERY_POINTER( resultLRSplineID );
+    CHECK_QUERY_POINTER( resultBinaryLRSpline );
     CHECK_QUERY_POINTER( resultStatistics );
     CHECK_QUERY_POINTER( resultErrorStr );
     
-    *resultLRSplineID = NULL;
+    *resultBinaryLRSpline = NULL;
     *resultStatistics = NULL;
     *resultErrorStr = NULL;
 
@@ -720,8 +722,18 @@ extern "C" {
 		": The query returned with SUCCESS!");
 	  // *resultMesh = ( const char *)queryData->data();
 	  // *resultMeshByteSize = queryData->length();
-	  *resultLRSplineID = ( const int64_t *) queryData->data();
-	  *resultStatistics = ( const char *) (&(queryData->data()[sizeof(int64_t)]));
+	  *resultBinaryLRSpline = ( const char *) queryData->data();
+	  *resultBinaryLRSplineSize = queryData->length();
+	  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+		": # bytes in the binary blob: ");
+	  bool fetch_statistics = false;
+	  if (fetch_statistics) {
+	    *resultStatistics = ( const char *) (&(queryData->data()[sizeof(int64_t)]));
+	  } else {
+	    *resultStatisticsSize = 0;
+	    // DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    // 	  ": Not fetching statistics!");
+	  }
 	  //	    *resultBBox = ( const double *)queryData->data();
 
 	  // to debug and test:

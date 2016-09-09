@@ -7,6 +7,9 @@
 // STL
 #include <iostream>
 #include <string>
+#include <fstream>
+
+//#include <boost/filesystem.hpp>
 
 // VELaSSCo
 #include "AccessLib.h"
@@ -857,20 +860,24 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   double tolerance = 0.5;
   int numSteps = 5; // 8 at most? 8 the default value?
   // The result arguments.
-  const int64_t  *resultLRSplineID = NULL;
+  const char*    resultBinaryLRSpline = NULL;
+  size_t resultBinaryLRSplineSize;
   const char*    resultStatistics = NULL;
+  size_t resultStatisticsSize;
   const char*    resultErrorStr = NULL;
   std::cout << "doTestSINTEF(): Calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
   result = valComputeVolumeLRSplineFromBoundingBox( sessionID,
 						    opened_modelID.c_str(), // the already opened model
-						    "Velocity", // Result ID, not sure if this is what we want. @@SINTEF201608
+						    "Speed", // Result ID, not sure if this is what we want. @@SINTEF201608
 						    step_value,
 						    analysisID.c_str(),
 						    bBox,
 						    tolerance,
 						    numSteps,
-						    &resultLRSplineID,
+						    &resultBinaryLRSpline,
+						    &resultBinaryLRSplineSize,
 						    &resultStatistics,
+						    &resultStatisticsSize,
 						    &resultErrorStr);
   std::cout << "doTestSINTEF(): Done calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
   std::cout << "doTestSINTEF(): result: " << result << std::endl;
@@ -878,10 +885,31 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
   std::cout << "doTestSINTEF(): ComputeVolumeLRSplineFromBoundingBox: " << opened_modelID << 
     ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
-  if ( resultLRSplineID) {
-    std::cout << "doTestSINTEF(): Call seems to have done something ..." << std::endl;
+  if ( resultBinaryLRSpline) {
+    std::cout << "doTestSINTEF(): Result binary volume lrspline # bytes: " << resultBinaryLRSplineSize << std::endl;
+    // We write to a tmp directory.
+    // We first make sure that the tmp directory exists.
+    // std::string dir_path("tmp");
+    // boost::filesystem::path dir(dir_path.c_str());
+    // boost::filesystem::create_directory(dir);
+#ifndef _WIN32
+    system("mkdir -p \"tmp\"");
+#endif // _WIN32
+    std::ofstream binary_blob("tmp/result_binary_lrspline.bin",
+			      std::ofstream::binary);
+    binary_blob.write(resultBinaryLRSpline, resultBinaryLRSplineSize);
+    // std::stringstream buffer;
+    // buffer << filename_binary_blob.rdbuf();
+    // *return_binary_volume_lrspline = buffer.str();
+
   } else {
     std::cout << "doTestSINTEF(): Error: " << resultErrorStr << std::endl;
+  }
+
+  bool delete_volume_lrspline = false;
+  if (delete_volume_lrspline) {
+    std::cout << "doTestSINTEF(): Deleting the volume lrspline from storage!" << std::endl;
+
   }
 
   return EXIT_SUCCESS;

@@ -560,44 +560,59 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 							     const double tolerance, // Use ptr to allow NULL?
 							     const int numSteps, // Use ptr to allow NULL?
 							     /* out */
-							     std::string *return_volume_lr,
+							     std::string *return_binary_volume_lrspline,
 							     std::string *result_statistics, // JSON format?
 							     std::string *return_error_str)
 {
 
-  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	": MISSING: Check if result already exists in HBase!");
+  _db->getStoredVolumeLRSpline( sessionID, modelID, resultID, stepValue,
+				analysisID, bBox, tolerance, numSteps,
+				return_binary_volume_lrspline,
+				result_statistics,
+				return_error_str);
 
-  HBase::TableModelEntry table_name_set;
-  std::string binary_volume_lrspline = "";
-  if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
-    return_error_str->clear();
-
-    AnalyticsModule::getInstance()->createVolumeLRSplineFromBoundingBox( sessionID, modelID,
-									 resultID, stepValue,
-									 analysisID, bBox, tolerance,
-									 numSteps,
-									 &binary_volume_lrspline,
-									 result_statistics,
-									 return_error_str);
-  } else {
+  if (return_error_str->length() != 0) {
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": Did not enter the Analytics module!");
+	  ": Failed to get stored volume lr spline: " << return_error_str);
   }
 
-  if (binary_volume_lrspline.size() != 0) {
-    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": We appear to have received a non-empty binary blob!");
-  } else {
-    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": The binary blob was not created!");
+  if ( return_binary_volume_lrspline->length() == 0) { // nothing found
+    *return_error_str = ""; // reset error string
+
+    HBase::TableModelEntry table_name_set;
+    //    std::string binary_volumelr = "";
+    if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
+      return_error_str->clear();
+
+      AnalyticsModule::getInstance()->createVolumeLRSplineFromBoundingBox( sessionID, modelID,
+									   resultID, stepValue,
+									   analysisID, bBox, tolerance,
+									   numSteps,
+									   return_binary_volume_lrspline,
+									   result_statistics,
+									   return_error_str);
+    } else {
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": Did not enter the Analytics module!");
+    }
+
+    bool store_in_hbase = false;
+    if (store_in_hbase && (return_binary_volume_lrspline->length() != 0)) {
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": We appear to have received a non-empty binary blob! Success for this function call at least!");
+      // We store a config file on the xml format (but stored binary?), which includes:
+      // modelID + stepValue + bBox + tolerance + numSteps + resultStatistics.
+      std::string save_err_str;
+      _db->saveVolumeLRSpline( sessionID, modelID, resultID, stepValue,
+			       analysisID, bBox, tolerance, numSteps,
+			       *return_binary_volume_lrspline,
+			       *result_statistics,
+			       &save_err_str);
+    } else {
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": The binary blob was not created!");
+    }
   }
-
-  // We store a config file on the xml format (but stored binary?), which includes:
-  // modelID + stepValue + bBox + tolerance + numSteps + resultStatistics.
-  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	": MISSING: Write config file & result binary blob to HBase!");
-
 }
 
 

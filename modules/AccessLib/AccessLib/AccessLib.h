@@ -322,8 +322,10 @@ extern "C" {
 					   const int      numSteps, // Use ptr to allow NULL?
 					   /* out */
 					    // Not returning the binary stream as the result should be stored in HBase.
-					   const int64_t* *resultLRSplineID,
+					   const char*    *resultBinaryLRSpline,
+					   size_t         *resultBinaryLRSplineSize,
 					   const char*    *resultStatistics,
+					   size_t         *resultStatisticsSize,
 					   const char    **resultErrorStr); // in case of error
   VAL_Result VAL_API valDeleteVolumeLRSplineFromBoundingBox( /* in */
 							    VAL_SessionID   sessionID,
