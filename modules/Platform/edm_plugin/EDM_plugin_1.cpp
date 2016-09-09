@@ -1611,10 +1611,10 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
             sprintf(fn, "%s/plugin_1_%s_%d.log", lff, hn, getpid());
          }
          FILE *fp = fopen(fn , "w");
-         ourLogger = new CLoggWriter(fp, false, true);
+         ourLogger = new CLoggWriter(fp, true, true);
       }
 
-
+printf("plugin - 1\n");
       if (QUERY_RESULT_FOLDER == NULL) {
          char *env = getenv("QUERY_RESULT_FOLDER");
          if (env) {
@@ -1629,6 +1629,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
             QUERY_RESULT_FOLDER = "";
          }
       }
+printf("plugin - 2\n");
       VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin(QUERY_RESULT_FOLDER, repositoryName, modelName); tr;
       CMemoryAllocator *theMA = plugin->getMemoryAllocator(); tr;
       *threadObject = (void*)plugin;
@@ -1636,6 +1637,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
       Database VELaSSCo_db("", "", ""); tr;
       Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName); tr;
       
+printf("plugin - 3\n");
       if (strEQL(methodName, "InjectFEMfiles") || strEQL(methodName, "InjectDEMfiles") || strEQL(methodName, "AnalyzeFEMfiles")) {
          tr;
          bool FEM = strEQL(methodName, "InjectFEMfiles") || strEQL(methodName, "AnalyzeFEMfiles");
@@ -1646,6 +1648,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
          nodeInInjectFiles *inParams = new(theMA)nodeInInjectFiles(NULL, parameters);
          
          FEM_InjectorHandler femInjector(&fem_schema_velassco_SchemaObject);
+printf("plugin - 4\n");
          if (analyze) {
             femInjector.initAnalyze(theMA);
          } else {
@@ -1656,6 +1659,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
             femInjector.setCurrentModel(modelName);
             femInjector.DeleteCurrentModelContent();
          }
+printf("plugin - 5\n");
          for (int i = 0; i < MAX_INJECT_FILES; i++) {
             if (inParams->attrPointerArr[i]->type == rptSTRING) {
                char *file_name = inParams->attrPointerArr[i]->value.stringVal;
@@ -1682,6 +1686,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
                }
             }
          }
+printf("plugin - 6\n");
          endTime = GetTickCount();
          char msg[2048];
          if (analyze) {
@@ -1700,6 +1705,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
             results->report->putString(msg);
            // results->
          }
+printf("plugin - 7\n");
       } else {
          Model VELaSSCo_model(&VELaSSCo_Repository, theMA, NULL); tr;
          VELaSSCo_model.open(modelName, sdaiRO); tr;
@@ -1789,14 +1795,17 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
             }
          }
       }
+printf("plugin - 10\n");
       endTime = GetTickCount();
       ourLogger->logg(4, "Query %s on %s.%s finished.\nExection time: %d millisec.\n\n", methodName, repositoryName, modelName,  endTime - startTime);
 
    } catch (CedmError *e) {
+printf("plugin - 11\n");
       edmiAbortTransaction();
       rstat = e->rstat; delete e;
       logError(repositoryName, modelName, methodName, rstat, lineNo);
    } catch (...) {
+printf("plugin - 12\n");
       edmiAbortTransaction();
       logError(repositoryName, modelName, methodName, "GPF exception", lineNo);
       rstat = sdaiESYSTEM;
