@@ -33,13 +33,19 @@ EDM_INC_DIRS = -I$(EDM_BASE)/edmsys/sdai/include -I$(EDM_BASE)/cpp_edmi/web.serv
 INCLS = $(EDM_INC_DIRS) -I$(THRIFT_BASE)/include -I$(BOOST_BASE)/include -I$(PLUGIN_DIR)
 EDM_LIB_DIRS = -L$(EDM_BASE)/output/sunosx/release
 CPP10_OBJ_DIR = $(EDM_LIB_DIRS)/libcpp10_edmi_files
+CPP10_SRC_DIR = $(EDM_BASE)/cpp_edmi/cpp10
 
 LIBS = $(EDM_BIN)/libedmappserver.so
 CPPPLUGIN_1 = $(PLUGIN_BIN)/libedm_plugin_1.so
-OBJS_1 = $(PLUGIN_OBJ_DIR)/dem_schema_velassco.o $(PLUGIN_OBJ_DIR)/EDM_plugin_1.o $(PLUGIN_OBJ_DIR)/FEM_InjectorHandler.o $(PLUGIN_OBJ_DIR)/fem_schema_velassco.o $(PLUGIN_OBJ_DIR)/WindowsFunctionsForLinux.o
-CPP10_OBJS = $(CPP10_OBJ_DIR)/dbInterface.o $(CPP10_OBJ_DIR)/memoryAllocator.o
+OBJS_1 = $(PLUGIN_OBJ_DIR)/dem_schema_velassco.o $(PLUGIN_OBJ_DIR)/EDM_plugin_1.o $(PLUGIN_OBJ_DIR)/FEM_InjectorHandler.o $(PLUGIN_OBJ_DIR)/fem_schema_velassco.o $(PLUGIN_OBJ_DIR)/WindowsFunctionsForLinux.o $(PLUGIN_OBJ_DIR)/dbInterface.o $(PLUGIN_OBJ_DIR)/memoryAllocator.o
 
 all: $(CPPPLUGIN_1)
+
+$(PLUGIN_OBJ_DIR)/dbInterface.o: $(CPP10_SRC_DIR)/dbInterface.cpp
+	$(CCPP) -c $(EDM_FLAGS) $(EXTRA_FLAGS) $(OPTS) $(INCLS) -o $(PLUGIN_OBJ_DIR)/dbInterface.o $(CPP10_SRC_DIR)/dbInterface.cpp
+
+$(PLUGIN_OBJ_DIR)/memoryAllocator.o: $(CPP10_SRC_DIR)/memoryAllocator.cpp
+	$(CCPP) -c $(EDM_FLAGS) $(EXTRA_FLAGS) $(OPTS) $(INCLS) -o $(PLUGIN_OBJ_DIR)/memoryAllocator.o $(CPP10_SRC_DIR)/memoryAllocator.cpp
 
 $(PLUGIN_OBJ_DIR)/dem_schema_velassco.o: $(PLUGIN_DIR)/dem_schema_velassco.cpp
 	$(CCPP) -c $(EDM_FLAGS) $(EXTRA_FLAGS) $(OPTS) $(INCLS) -o $(PLUGIN_OBJ_DIR)/dem_schema_velassco.o $(PLUGIN_DIR)/dem_schema_velassco.cpp
@@ -56,8 +62,8 @@ $(PLUGIN_OBJ_DIR)/fem_schema_velassco.o: $(PLUGIN_DIR)/fem_schema_velassco.cpp
 $(PLUGIN_OBJ_DIR)/WindowsFunctionsForLinux.o: $(QM_DIR)/WindowsFunctionsForLinux.cpp
 	$(CCPP) -c $(EDM_FLAGS) $(EXTRA_FLAGS) $(OPTS) $(INCLS) -o $(PLUGIN_OBJ_DIR)/WindowsFunctionsForLinux.o $(QM_DIR)/WindowsFunctionsForLinux.cpp
 
-$(CPPPLUGIN_1): $(OBJS_1)  $(LIBS)
-	$(CCPP) -shared -o $(CPPPLUGIN_1) $(OBJS_1) $(CPP10_OBJS) $(LIBS) 
+$(CPPPLUGIN_1): $(OBJS_1)  $(LIBS) 
+	$(CCPP) -shared -o $(CPPPLUGIN_1) $(OBJS_1) $(LIBS) 
 
 clean:
 	rm -f $(OBJS_1) $(CPPPLUGIN_1)
