@@ -352,11 +352,14 @@ int main(int argc, char **argv)
 
           cout << endl;
           string cmd = "";
-          do
-          {
+          do {
              printListOfCmd();
              cin >> cmd;
-             parse(cmd);
+             if (cmd.find("stop") == 0) {
+                ourCluster.stopAllEDMservers();
+             } else if (cmd.find("list") == 0) {
+                ourCluster.listAllEDMservers();
+             }
           } while (cmd.find("exit") != 0 && cmd.find("quit") != 0);
 
        } else if (EDM_inject_file && *EDM_inject_file) {

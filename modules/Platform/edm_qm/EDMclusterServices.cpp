@@ -426,29 +426,67 @@ void EDMclusterExecution::printExecutionReport(string &msg)
 EDMserverContext *EDMclusterServices::getServerContext(char *user, char *group, char *password, EDMmodel *m)
 /*==============================================================================================================================*/
 {
+   EDMrepository                       * r = m->get_repository();
+   EDMdatabase                         *db = r ? r->get_belongs_to() : NULL;
+   EDMServer                           *srv = db ? db->get_server() : NULL;
+
+   return getServerContext(user, group, password, srv);
+}
+/*==============================================================================================================================*/
+EDMserverContext *EDMclusterServices::getServerContext(char *user, char *group, char *password, EDMServer *srv)
+/*==============================================================================================================================*/
+{
    char                                serverContextName[2048];
    SdaiServerContext                   srvctxt = 0;
-   EDMserverContext                    *startServerContext = lastServerContext, *cServerContext;
+   EDMserverContext                    *startServerContext = lastServerContext, *cSrvCtxt;
 
-   do {
-      cServerContext = serverContexts->nextp();
-      if (!cServerContext)
-         cServerContext = serverContexts->firstp();
-      if (cServerContext == startServerContext) {
-         getUniqueServerContextID(serverContextName);
-         EDMrepository* r = m->get_repository();
-         EDMdatabase *db = r ? r->get_belongs_to() : NULL;
-         EDMServer *srv = db ? db->get_server() : NULL;
-         if (srv) {
+   if (srv) {
+      char *host = srv->get_Host();
+      char *port = srv->get_Port();
+      do {
+         cSrvCtxt = serverContexts->nextp();
+         if (!cSrvCtxt)
+            cSrvCtxt = serverContexts->firstp();
+         if (cSrvCtxt == startServerContext) {
+            getUniqueServerContextID(serverContextName);
             lastServerContext = serverContexts->createNext();
             lastServerContext->inUse = true;
-            CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", srv->get_Port(), srv->get_Host(), NULL, NULL, NULL, NULL, NULL, &lastServerContext->srvCtxt));
-            cServerContext = serverContexts->nextp();
+            lastServerContext->port = clusterMa.allocString(port);
+            lastServerContext->host = clusterMa.allocString(host);
+            CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &lastServerContext->srvCtxt));
+            cSrvCtxt = serverContexts->nextp();
             return lastServerContext;
+         } else if (!cSrvCtxt->inUse && strEQL(cSrvCtxt->port, port) && strEQL(cSrvCtxt->host, host)) {
+            lastServerContext = cSrvCtxt; cSrvCtxt->inUse = true; return cSrvCtxt;
          }
-      } else if (!cServerContext->inUse) {
-         lastServerContext = cServerContext; cServerContext->inUse = true; return cServerContext;
-      }
-   } while (true);
+      } while (true);
+   }
    return NULL;
+}
+/*==============================================================================================================================*/
+void EDMclusterServices::listAllEDMservers()
+/*==============================================================================================================================*/
+{
+}
+/*==============================================================================================================================*/
+void EDMclusterServices::stopAllEDMservers()
+/*==============================================================================================================================*/
+{
+   tEdmiInstData cmd;
+   EDMserverContext *srvCtxts[1000];
+   int nServers = 0;
+
+   clusterModel->reset();
+   Iterator<ecl::EDMServer*, ecl::entityType> serverIter(clusterModel->getObjectSet(ecl::et_EDMServer), clusterModel);
+   for (ecl::EDMServer *srv = serverIter.first(); srv && nServers < 1000; srv = serverIter.next()) {
+      srvCtxts[nServers++] = getServerContext("superuser", "", "v", srv);
+   }
+#pragma omp parallel for
+   for (int i = 0; i < nServers; i++) {
+      EdmiError rstat = edmiRemoteStopServer(srvCtxts[i]->srvCtxt, "v", NULL, FORCE_TO_TERMINATE | ALL_SERVERS, NULL);
+      if (rstat) {
+#pragma omp critical
+         printf("error=%llu\n", rstat);
+      }
+   }
 }

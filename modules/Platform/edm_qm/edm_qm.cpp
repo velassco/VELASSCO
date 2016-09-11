@@ -305,6 +305,8 @@ int main(int argc, char* argv[])
 
          GetResultFromVerticesID(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
+         ourCluster.stopAllEDMservers();
+
          UseCase_FEM_M1_02(ourVELaSSCoHandler, sessionID);
       }
 

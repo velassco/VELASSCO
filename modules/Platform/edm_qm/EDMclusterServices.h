@@ -45,7 +45,9 @@ public:
    ecl::ClusterModel          *getClusterModel(const char *name, const char *repositoryName);
    ecl::ClusterRepository     *getClusterRepository(const char *name);
    EDMserverContext           *getServerContext(char *user, char *group, char *password, EDMmodel *m);
-
+   EDMserverContext           *getServerContext(char *user, char *group, char *password, EDMServer *srv);
+   void                       listAllEDMservers();
+   void                       stopAllEDMservers();
 };
 
 
@@ -73,6 +75,8 @@ struct EDMserverContext
 {
    bool                             inUse;
    SdaiServerContext                srvCtxt;
+   char                             *port;
+   char                             *host;
 };
 
 /*================================================================================================*/
