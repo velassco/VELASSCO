@@ -819,11 +819,11 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
 
   double bBox[6];
   bBox[0] = 0.0; // We initialize it with something illegal.
-  bBox[2] = 0.0;
-  bBox[3] = 0.0; 
+  bBox[1] = 0.0;
+  bBox[2] = 0.0; 
+  bBox[3] = -2.0;
   bBox[4] = -2.0;
-  bBox[5] = -2.0;
-  bBox[6] = -2.0; 
+  bBox[5] = -2.0; 
 
   bool do_bbox = true;
   if ( do_bbox) {
