@@ -293,7 +293,7 @@ extern "C" {
 					   const char     **resultMesh,
 					   // binary data with the mesh vertices and elements
 					   // the resultMesh format is described in BoundaryBinaryMesh.h
-					   // we sotre the resulting simplified tetras as Quads in this format
+					   // we store the resulting simplified tetras as Quads in this format
 					   size_t         *resultMeshByteSize,
 					   const char     **resultErrorStr); // in case of error
   VAL_Result VAL_API valDeleteSimplifiedMesh( /* in */
@@ -305,6 +305,31 @@ extern "C" {
 					     const char     *parameters, // as in valGetSimplifiedMesh
 					     /* out */
 					     const char     **resultErrorStr); // in case of error
+
+  // at the moment it only works with tetrahedral meshes.
+  VAL_Result VAL_API valGetSimplifiedMeshWithResult( /* in */
+						    VAL_SessionID   sessionID,
+						    const char     *modelID,
+						    const char     *meshID,
+						    const char     *analysisID,
+						    const double    stepValue,
+						    const char     *parameters,  // as in valGetSimplifiedMesh
+						    const char     *resultId,
+						    /* out */
+						    const char     **resultMesh,  // as in valGetSimplifiedMesh
+						    size_t         *resultMeshByteSize,
+						    const double   **resultValues, // result values interpolated/averaged for the simplified mesh
+						    const char     **resultErrorStr); // in case of error
+  VAL_Result VAL_API valDeleteSimplifiedMeshWithResult( /* in */
+						       VAL_SessionID   sessionID,
+						       const char     *modelID,
+						       const char     *meshID,
+						       const char     *analysisID,
+						       const double    stepValue,
+						       const char     *parameters, // as in valGetSimplifiedMesh
+						       const char     *resultId,
+						       /* out */
+						       const char     **resultErrorStr); // in case of error
   VAL_Result VAL_API valDeleteAllCalculationsForThisModel( /* in */
 							  VAL_SessionID   sessionID,
 							  const char     *modelID,
