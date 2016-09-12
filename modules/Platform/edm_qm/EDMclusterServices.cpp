@@ -76,7 +76,7 @@ void EDMclusterServices::startServices()
    //clusterModel->readAllObjectsToMemory();
    Iterator<ecl::EDMcluster*, ecl::entityType> clIter(clusterModel->getObjectSet(ecl::et_EDMcluster), clusterModel);
    ourCluster = clIter.first();
-   if (!ourCluster) THROW("EDMclusterServices::startServices() - No EDMcluser object defined.");
+   if (!ourCluster) THROW("EDMclusterServices::startServices() - No EDMcluster object defined.");
    databaseIter.init(clusterModel->getObjectSet(ecl::et_EDMdatabase), 0, clusterModel);
 }
 /*==============================================================================================================================*/
