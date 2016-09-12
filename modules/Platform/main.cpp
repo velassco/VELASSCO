@@ -47,7 +47,7 @@ using namespace std;
 int QMiD = 0;
 VELaSSCoSMClient *clp = NULL;
 
-int G_multiUser = 0; // used in queryManager/Server.cpp to start Simple or MultiUser server
+int G_multiUser = 1; // used in queryManager/Server.cpp to start Simple or MultiUser server
 int getMultiUserSetting() { return G_multiUser;}
 // to get the proper location of the Analytics jar's
 char *G_VELaSSCo_base_dir = NULL;
