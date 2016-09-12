@@ -153,15 +153,33 @@ public:
 					const std::string &modelID,
 					const int meshID, const std::string &elementType,
 					const std::string &analysisID, const double stepValue,
-					const  std::string &parameters,
+					const std::string &parameters,
 					std::string *return_binary_mesh, std::string *return_error_str) = 0;
   // needed by DeleteSimplifiedMesh vquery
   virtual void deleteStoredSimplifiedMesh( const std::string &sessionID,
 					   const std::string &modelID,
 					   const int meshID, const std::string &elementType,
 					   const std::string &analysisID, const double stepValue,
-					   const  std::string &parameters,
+					   const std::string &parameters,
 					   std::string *return_error_str) = 0;
+
+  virtual void calculateSimplifiedMeshWithResult( const std::string &sessionID,
+						  const std::string &modelID,
+						  const int meshID, const std::string &elementType,
+						  const std::string &analysisID, const double stepValue,
+						  const std::string &parameters,
+						  const std::string &resultID,
+						  std::string *return_binary_mesh, 
+						  std::string *return_binary_results,
+						  std::string *return_error_str) = 0;
+  // needed by DeleteSimplifiedMeshWithResult vquery
+  virtual void deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
+						     const std::string &modelID,
+						     const int meshID, const std::string &elementType,
+						     const std::string &analysisID, const double stepValue,
+						     const  std::string &parameters,
+						     const std::string &resultID,
+						     std::string *return_error_str) = 0;
 
   // needed by deleteAllCalculationsForThisModel
   virtual void deleteAllStoredCalculationsForThisModel( const std::string &sessionID,

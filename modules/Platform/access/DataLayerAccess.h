@@ -179,6 +179,24 @@ public:
 				   const  std::string &parameters,
 				   std::string *return_error_str);
 
+  void calculateSimplifiedMeshWithResult( const std::string &sessionID,
+					  const std::string &modelID,
+					  const int meshID, const std::string &elementType,
+					  const std::string &analysisID, const double stepValue,
+					  const std::string &parameters,
+					  const std::string &resultID,
+					  std::string *return_binary_mesh, 
+					  std::string *return_binary_results,
+					  std::string *return_error_str);
+  // needed by DeleteSimplifiedMeshWithResult vquery
+  void deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
+					     const std::string &modelID,
+					     const int meshID, const std::string &elementType,
+					     const std::string &analysisID, const double stepValue,
+					     const  std::string &parameters,
+					     const std::string &resultID,
+					     std::string *return_error_str);
+
   // needed by deleteAllCalculationsForThisModel
   void deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
 						const std::string &modelID,
