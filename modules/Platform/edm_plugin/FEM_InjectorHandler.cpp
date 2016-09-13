@@ -169,7 +169,7 @@ void FEM_InjectorHandler::InjectResultFile()
    EDMLONG64 nodetsId;
 
    readNextLine();
-   if (strEQL(line, "GiD Post Results File 1.0\n")) {
+   if (strEQL(line, "GiD Post Results File 1.0\n") || strEQL(line, "GiD Post Results File 1.1\n")) {
       while (readNextLine() > 0) {
          if (line[0] == '#' || line[0] == '\n') {
          } else if (strnEQL(line, "Result", 6)) {
