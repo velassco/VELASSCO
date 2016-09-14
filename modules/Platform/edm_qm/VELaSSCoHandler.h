@@ -312,4 +312,26 @@ public:
 				      std::string *resultStatistics,
 				      std::string *resultErrorStr) {}
 
+ // This function calls to Analytics module.
+  void calculateVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+						      const std::string& modelID,
+						      const std::string& resultID,
+						      const double stepValue,
+						      const std::string& analysisID,
+						      const double* bBox,
+						      const double tolerance,
+						      const int numSteps,
+						      /* out */
+						      std::string *return_volume_lrspline,
+						      std::string *result_statistics,
+						      std::string *return_error_str) {};
+  void deleteVolumeLRSplineFromBoundingBox(const std::string& sessionID,
+						   const std::string& modelID,
+						   const std::string& resultID,
+						   const double stepValue,
+						   const std::string& analysisID,
+						   const double* bBox,
+						   const double tolerance,
+						   const int numSteps,
+						   std::string *return_error_str) {};
 };
