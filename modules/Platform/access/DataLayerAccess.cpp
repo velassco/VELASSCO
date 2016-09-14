@@ -550,28 +550,28 @@ void DataLayerAccess::calculateSimplifiedMeshWithResult( const std::string &sess
 							 std::string *return_binary_mesh, 
 							 std::string *return_binary_results,
 							 std::string *return_error_str) {
-  // if ( return_binary_mesh) {
-  //   return_binary_mesh->clear();
-  //   return_binary_results->clear();
-  //   _db->getStoredSimplifiedMeshWithResults( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
-  // 					     return_binary_mesh, return_binary_results, return_error_str);
-  //   if ( return_binary_mesh->length() == 0) { // nothing found
-  //     *return_error_str = ""; // reset error string
-  //     HBase::TableModelEntry table_name_set;
-  //     if ( _db->getVELaSSCoTableNames( sessionID, modelID, table_name_set)) {
-  // 	AnalyticsModule::getInstance()->calculateSimplifiedMeshWithResult( sessionID, modelID, table_name_set._data, 
-  // 									   meshID, elementType, analysisID, stepValue, parameters, resultID,
-  // 									   return_binary_mesh, return_binary_results, return_error_str);
-  // 	// Do not store yet the simplified mesh, as it is  not implemented
-  // 	// and to avoid storing garbage
-  // 	// if ( return_binary_mesh->length() != 0) {
-  // 	//   std::string save_err_str;
-  // 	//   _db->saveSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
-  // 	// 			   *return_binary_mesh, &save_err_str);
-  // 	// }
-  //     }
-  //   }
-  // }
+  if ( return_binary_mesh) {
+    return_binary_mesh->clear();
+    return_binary_results->clear();
+    // _db->getStoredSimplifiedMeshWithResults( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
+    // 					     return_binary_mesh, return_binary_results, return_error_str);
+    if ( return_binary_mesh->length() == 0) { // nothing found
+      *return_error_str = ""; // reset error string
+      HBase::TableModelEntry table_name_set;
+      if ( _db->getVELaSSCoTableNames( sessionID, modelID, table_name_set)) {
+  	AnalyticsModule::getInstance()->calculateSimplifiedMeshWithResult( sessionID, modelID, table_name_set._data, 
+  									   meshID, elementType, analysisID, stepValue, parameters, resultID,
+  									   return_binary_mesh, return_binary_results, return_error_str);
+  	// Do not store yet the simplified mesh, as it is  not implemented
+  	// and to avoid storing garbage
+  	// if ( return_binary_mesh->length() != 0) {
+  	//   std::string save_err_str;
+  	//   _db->saveSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
+  	// 			   *return_binary_mesh, &save_err_str);
+  	// }
+      }
+    }
+  }
 }
 
 // needed by DeleteSimplifiedMeshWithResult vquery

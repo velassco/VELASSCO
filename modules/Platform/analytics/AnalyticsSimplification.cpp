@@ -99,9 +99,10 @@ static std::string demo_simplified_mesh() {
   return demo_mesh.toString();
 }
 
-static bool getBoundaryQuadrilateralsFromJavaOutput( const char *filename, 
-						     std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> &lst_coordinates,
-						     std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_quadrilaterals) {
+static bool getBoundaryQuadrilateralsAndResultsFromJavaOutput( const char *filename, 
+							       std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> &lst_coordinates,
+							       std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> &lst_quadrilaterals,
+							       std::vector< double> &lst_results) {
  FILE *fi = fopen( filename, "r");
  bool ok = true;
 
@@ -336,7 +337,218 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 
   std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> lst_quadrilaterals;
   std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> lst_vertices;
-  bool ok = getBoundaryQuadrilateralsFromJavaOutput( filename, lst_vertices, lst_quadrilaterals);
+  std::vector< double> lst_results;
+  bool ok = getBoundaryQuadrilateralsAndResultsFromJavaOutput( filename, lst_vertices, lst_quadrilaterals, lst_results);
+  // lst_results will be empty !!! as we're not interpolating any results ...
+  if ( !ok) step_error = "error in getBoundaryQuadrilateralsFromJavaOutput";
+
+  VELaSSCo::BoundaryBinaryMesh simplified_mesh;
+  if ( ok) {
+    simplified_mesh.set( lst_vertices.data(), lst_vertices.size(), lst_quadrilaterals.data(), lst_quadrilaterals.size(), VELaSSCo::BoundaryBinaryMesh::STATIC);
+  }
+  if ( !ok) step_error = "error in simplified_mesh.set( ...)";
+
+  // verify output:
+  if ( !ok || !simplified_mesh.getNumVertices() || !simplified_mesh.getNumQuadrilaterals()) {
+    // try reading error file
+    bool errorfile_read = false;
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
+/*    fi = fopen( filename, "r");
+    if ( fi) {
+      const size_t size_buffer = 1024 * 1024;
+      char buffer[ size_buffer + 1];
+      char *ok = fgets( buffer, size_buffer, fi);
+      fclose( fi);
+      if ( ok) {
+	*return_error_str = std::string( buffer);
+	errorfile_read = true;
+      }
+    }*/
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
+    }
+	ifs.close();
+		
+    if ( !errorfile_read) {
+      *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + 
+	( use_yarn ? " Yarn" : " Java") + std::string( " results:\n");
+      if ( use_yarn) {
+	*return_error_str += std::string( "Is 'yarn' and 'hdfs' in the path?\n");
+      }
+      if ( !ok) {
+	*return_error_str += "\treading analytics output file\n";
+	*return_error_str += "\tSTEP " + step_error + "\n";
+      }
+      char tmp[ 200];
+      sprintf( tmp, "%"PRIi64, simplified_mesh.getNumVertices());
+      *return_error_str += std::string( "\tnumber of vertices = ") + std::string( tmp);
+      sprintf( tmp, "%"PRIi64, simplified_mesh.getNumQuadrilaterals());
+      *return_error_str += std::string( " number of tetrahedrons = ") + std::string( tmp) + "\n";
+    }
+  } else {
+    std::cout << "simplified mesh has " 
+	      << simplified_mesh.getNumQuadrilaterals() << " tetrahedrons and " 
+	      << simplified_mesh.getNumVertices() << " vertices." << std::endl;
+    *return_binary_mesh = simplified_mesh.toString();
+  }
+
+  DEBUG( "Deleting output files ...");
+  if ( use_yarn) {
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + yarn_output_folder;
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    recursive_rmdir( local_tmp_folder.c_str());
+  }
+
+  // delete local tmp files ...
+  DEBUG( "Deleting temporary files ...");
+  recursive_rmdir( yarn_output_folder.c_str());
+}
+
+
+void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sessionID,
+							 const std::string &modelID, const std::string &dataTableName,
+							 const int meshID, const std::string &elementType,
+							 const std::string &analysisID, const double stepValue,
+							 const std::string &parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
+							 const std::string &resultName,
+							 std::string *return_binary_mesh, std::string *return_result_values,
+							 std::string *return_error_str) {
+  // bool return_demo_mesh = false;
+  // if ( return_demo_mesh) {
+  //   *return_binary_mesh = demo_simplified_mesh();
+  //   return;
+  // }
+
+  // parsing parameters
+  Simplification::Parameters simpParam;
+  simpParam.fromString( parameters);
+  LOGGER << "    simplification parameters read: " << simpParam.toString() << std::endl;
+
+  // getting bbox: // the global one
+  double modelBBox[ 6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::string dl_error_str;
+  DataLayerAccess::Instance()->calculateBoundingBox( sessionID, modelID, "", 0, NULL, 0, NULL, modelBBox, &dl_error_str);
+  
+  Simplification::Box bbox;
+  bbox.init( modelBBox[ 0], modelBBox[ 1], modelBBox[ 2]);
+  bbox.update( modelBBox[ 3], modelBBox[ 4], modelBBox[ 5]);
+  Simplification::Box bcube = bbox.get_centered_bounding_cube();
+  Simplification::Point diff = bbox.max() - bbox.min();
+  Simplification::Point diff2 = bcube.max() - bcube.min();
+  LOGGER << "    got bounding box:" << std::endl;
+  LOGGER << "     ( " << bbox.min().x << ", " << bbox.min().y << ", " << bbox.min().z
+	 << ") - ( " << bbox.max().x << ", " << bbox.max().y << ", " << bbox.max().z
+	 << ") | ( dx, dy, dz) = ( " << diff.x << ", " << diff.y << ", " << diff.z << ")" << std::endl;
+  LOGGER << "       centered cube:" << std::endl;
+  LOGGER << "     ( " << bcube.min().x << ", " << bcube.min().y << ", " << bcube.min().z
+	 << ") - ( " << bcube.max().x << ", " << bcube.max().y << ", " << bcube.max().z
+	 << ") | ( dx, dy, dz) = ( " << diff2.x << ", " << diff2.y << ", " << diff2.z << ")" << std::endl;
+
+  // std::string return_boundary_mesh;
+  // DataLayerAccess::Instance()->calculateBoundaryOfAMesh( sessionID, modelID, meshID, elementType, "", 0,
+  // 							 &return_boundary_mesh, &dl_error_str);
+  // VELaSSCo::BoundaryBinaryMesh boundaryMesh;
+  // boundaryMesh.fromString( return_boundary_mesh, VELaSSCo::BoundaryBinaryMesh::STATIC);
+  // const VELaSSCo::BoundaryBinaryMesh::MeshPoint *lst_boundary_vertices = boundaryMesh.getLstVertices();
+  // const int64_t nv = boundaryMesh.getNumVertices();
+  // LOGGER << "    got boundary mesh with " << nv << " vertices" << std::endl;
+  // std::vector< int64_t> lstBoundaryNodes;
+  // for ( int64_t iv = 0; iv < nv; iv++) {
+  //   lstBoundaryNodes.push_back( lst_boundary_vertices[ iv]._id);
+  // }
+  // boundaryMesh.reset(); // free memory
+  // return_boundary_mesh.clear();
+
+  // at the moment only CLI interface:
+  // modelID, if it's binary, convert it to 32-digit hexastring:
+  char model_ID_hex_string[ 1024];
+  std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
+
+  // remove local
+  // delete local temporary files
+  std::string yarn_output_folder = ToLower( "simplified_mesh_with_result_" + sessionID + "_" + cli_modelID);
+  std::string local_tmp_folder = create_tmpdir();
+  std::string local_output_folder = local_tmp_folder + "/" + yarn_output_folder;
+  recursive_rmdir( yarn_output_folder.c_str());
+
+  //GetSimplifiedMeshWithResult/dist/GetSimplifiedMeshWithResult.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
+  std::string analytics_program = GetFullAnalyticsQualifier( "GetSimplifiedMeshWithResult_Average");
+
+  bool use_yarn = true;//false;;//true;
+  // running java:
+  int ret_cmd = 0;
+  char meshIDstr[ 100];
+  sprintf( meshIDstr, "%d", meshID);
+  if ( !use_yarn) {
+    std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
+      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\"";
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    local_output_folder = yarn_output_folder;
+  } else { 
+    // Using yarn:
+    // execute and copy to localdir the result's files
+    // running Yarn:
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
+      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\"";
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    // output in '../simplified_mesh_with_result_sessionID_modelID/part-r-00000' but in hdfs
+    // error in '../simplified_mesh_with_result_sessionID_modelID/error.txt'
+    // copy it to local:
+    // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal simplified_mesh_with_result .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + yarn_output_folder + " " + local_tmp_folder;
+    ret_cmd = system( cmd_line.c_str());
+    if ( ret_cmd == -1) {
+      DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
+    }
+  }
+
+  // ret_cmd is -1 on error
+
+  // output in '../simplified_mesh_with_result_sessionID_modelID/part-r-00000'
+  // error in '../simplified_mesh_with_result_sessionID_modelID/error.txt'
+  char filename[ 8192];
+  sprintf( filename, "%s/part-r-00000", local_output_folder.c_str());
+  FILE *fi = fopen( filename, "rb");
+ 
+  if (!fi) {
+    // try reading error file
+    bool errorfile_read = false;
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
+    }
+	ifs.close();
+    
+    if ( !errorfile_read) {
+      *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
+	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+      if ( use_yarn) {
+	*return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
+    }
+    return;
+  }
+  fclose( fi);
+
+  std::string step_error = "";
+
+  std::vector< VELaSSCo::BoundaryBinaryMesh::BoundaryQuadrilateral> lst_quadrilaterals;
+  std::vector< VELaSSCo::BoundaryBinaryMesh::MeshPoint> lst_vertices;
+  std::vector< double> lst_results;
+  bool ok = getBoundaryQuadrilateralsAndResultsFromJavaOutput( filename, lst_vertices, lst_quadrilaterals, lst_results);
   if ( !ok) step_error = "error in getBoundaryQuadrilateralsFromJavaOutput";
 
   VELaSSCo::BoundaryBinaryMesh simplified_mesh;
