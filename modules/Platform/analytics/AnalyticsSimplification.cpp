@@ -202,6 +202,29 @@ static bool getBoundaryQuadrilateralsAndResultsFromJavaOutput( const char *filen
  return ok;
 }
 
+static void getModelBoundingCube( const std::string &sessionID, const std::string &modelID,
+				  Simplification::Box &bcube_out) {
+  // getting bbox: // the global one
+  double modelBBox[ 6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::string dl_error_str;
+  DataLayerAccess::Instance()->calculateBoundingBox( sessionID, modelID, "", 0, NULL, 0, NULL, modelBBox, &dl_error_str);
+  
+  Simplification::Box bbox;
+  bbox.init( modelBBox[ 0], modelBBox[ 1], modelBBox[ 2]);
+  bbox.update( modelBBox[ 3], modelBBox[ 4], modelBBox[ 5]);
+  bcube_out = bbox.get_centered_bounding_cube();
+  Simplification::Point diff = bbox.max() - bbox.min();
+  Simplification::Point diff2 = bcube_out.max() - bcube_out.min();
+  LOGGER << "    got bounding box:" << std::endl;
+  LOGGER << "     ( " << bbox.min().x << ", " << bbox.min().y << ", " << bbox.min().z
+	 << ") - ( " << bbox.max().x << ", " << bbox.max().y << ", " << bbox.max().z
+	 << ") | ( dx, dy, dz) = ( " << diff.x << ", " << diff.y << ", " << diff.z << ")" << std::endl;
+  LOGGER << "       centered cube:" << std::endl;
+  LOGGER << "     ( " << bcube_out.min().x << ", " << bcube_out.min().y << ", " << bcube_out.min().z
+	 << ") - ( " << bcube_out.max().x << ", " << bcube_out.max().y << ", " << bcube_out.max().z
+	 << ") | ( dx, dy, dz) = ( " << diff2.x << ", " << diff2.y << ", " << diff2.z << ")" << std::endl;
+}
+
 void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
 					       const std::string &modelID, const std::string &dataTableName,
 					       const int meshID, const std::string &elementType,
@@ -219,25 +242,8 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
   simpParam.fromString( parameters);
   LOGGER << "    simplification parameters read: " << simpParam.toString() << std::endl;
 
-  // getting bbox: // the global one
-  double modelBBox[ 6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  std::string dl_error_str;
-  DataLayerAccess::Instance()->calculateBoundingBox( sessionID, modelID, "", 0, NULL, 0, NULL, modelBBox, &dl_error_str);
-  
-  Simplification::Box bbox;
-  bbox.init( modelBBox[ 0], modelBBox[ 1], modelBBox[ 2]);
-  bbox.update( modelBBox[ 3], modelBBox[ 4], modelBBox[ 5]);
-  Simplification::Box bcube = bbox.get_centered_bounding_cube();
-  Simplification::Point diff = bbox.max() - bbox.min();
-  Simplification::Point diff2 = bcube.max() - bcube.min();
-  LOGGER << "    got bounding box:" << std::endl;
-  LOGGER << "     ( " << bbox.min().x << ", " << bbox.min().y << ", " << bbox.min().z
-	 << ") - ( " << bbox.max().x << ", " << bbox.max().y << ", " << bbox.max().z
-	 << ") | ( dx, dy, dz) = ( " << diff.x << ", " << diff.y << ", " << diff.z << ")" << std::endl;
-  LOGGER << "       centered cube:" << std::endl;
-  LOGGER << "     ( " << bcube.min().x << ", " << bcube.min().y << ", " << bcube.min().z
-	 << ") - ( " << bcube.max().x << ", " << bcube.max().y << ", " << bcube.max().z
-	 << ") | ( dx, dy, dz) = ( " << diff2.x << ", " << diff2.y << ", " << diff2.z << ")" << std::endl;
+  Simplification::Box bcube;
+  getModelBoundingCube( sessionID, modelID, bcube);
 
   // std::string return_boundary_mesh;
   // DataLayerAccess::Instance()->calculateBoundaryOfAMesh( sessionID, modelID, meshID, elementType, "", 0,
@@ -429,40 +435,19 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
   simpParam.fromString( parameters);
   LOGGER << "    simplification parameters read: " << simpParam.toString() << std::endl;
 
-  // getting bbox: // the global one
-  double modelBBox[ 6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  std::string dl_error_str;
-  DataLayerAccess::Instance()->calculateBoundingBox( sessionID, modelID, "", 0, NULL, 0, NULL, modelBBox, &dl_error_str);
-  
-  Simplification::Box bbox;
-  bbox.init( modelBBox[ 0], modelBBox[ 1], modelBBox[ 2]);
-  bbox.update( modelBBox[ 3], modelBBox[ 4], modelBBox[ 5]);
-  Simplification::Box bcube = bbox.get_centered_bounding_cube();
-  Simplification::Point diff = bbox.max() - bbox.min();
-  Simplification::Point diff2 = bcube.max() - bcube.min();
-  LOGGER << "    got bounding box:" << std::endl;
-  LOGGER << "     ( " << bbox.min().x << ", " << bbox.min().y << ", " << bbox.min().z
-	 << ") - ( " << bbox.max().x << ", " << bbox.max().y << ", " << bbox.max().z
-	 << ") | ( dx, dy, dz) = ( " << diff.x << ", " << diff.y << ", " << diff.z << ")" << std::endl;
-  LOGGER << "       centered cube:" << std::endl;
-  LOGGER << "     ( " << bcube.min().x << ", " << bcube.min().y << ", " << bcube.min().z
-	 << ") - ( " << bcube.max().x << ", " << bcube.max().y << ", " << bcube.max().z
-	 << ") | ( dx, dy, dz) = ( " << diff2.x << ", " << diff2.y << ", " << diff2.z << ")" << std::endl;
+  Simplification::Box bcube;
+  getModelBoundingCube( sessionID, modelID, bcube);
 
-  // std::string return_boundary_mesh;
-  // DataLayerAccess::Instance()->calculateBoundaryOfAMesh( sessionID, modelID, meshID, elementType, "", 0,
-  // 							 &return_boundary_mesh, &dl_error_str);
-  // VELaSSCo::BoundaryBinaryMesh boundaryMesh;
-  // boundaryMesh.fromString( return_boundary_mesh, VELaSSCo::BoundaryBinaryMesh::STATIC);
-  // const VELaSSCo::BoundaryBinaryMesh::MeshPoint *lst_boundary_vertices = boundaryMesh.getLstVertices();
-  // const int64_t nv = boundaryMesh.getNumVertices();
-  // LOGGER << "    got boundary mesh with " << nv << " vertices" << std::endl;
-  // std::vector< int64_t> lstBoundaryNodes;
-  // for ( int64_t iv = 0; iv < nv; iv++) {
-  //   lstBoundaryNodes.push_back( lst_boundary_vertices[ iv]._id);
-  // }
-  // boundaryMesh.reset(); // free memory
-  // return_boundary_mesh.clear();
+  ResultInfo resultInfo;
+  bool found = DataLayerAccess::Instance()->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, resultInfo);
+  if ( !found ) {
+    std::stringstream buffer;
+    buffer << " result " << resultName << " information not found";
+    LOGGER << buffer << std::endl;
+    *return_error_str = buffer.str();
+    return;
+  }
+  // get result number from name in resultInfo.resultNumber;
 
   // at the moment only CLI interface:
   // modelID, if it's binary, convert it to 32-digit hexastring:
