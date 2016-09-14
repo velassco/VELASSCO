@@ -631,7 +631,7 @@ extern "C" {
 						    const char     *analysisID,
 						    const double    stepValue,
 						    const char     *parameters,   // as in valGetSimplifiedMesh
-						    const char     *resultId,
+						    const char     *resultID,
 						    /* out */
 						    const char     **resultMesh,  // as in valGetSimplifiedMesh
 						    size_t         *resultMeshByteSize,
@@ -675,7 +675,7 @@ extern "C" {
 	if (result == VAL_SUCCESS) {
 	  *resultMesh = ( const char *)queryData->data();
 	  *resultMeshByteSize = queryData->length();
-	  *resultValues = (const double*) (&((*queryData)[resultMeshByteSize]));
+	  *resultValues = (const double*) &( ( ( const char *)queryData->data())[*resultMeshByteSize]);
 	  // to debug and test:
 	  // std::string file_name = std::string( "/tmp/valGetSimplifiedMesh_") + meshID + ".bin";
 	  // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
