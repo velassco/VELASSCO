@@ -263,7 +263,7 @@ public:
       const std::string &modelID, //const std::string &dataTableName,
       const int meshID, const std::string &elementType,
       const std::string &analysisID, const double stepValue,
-      std::string *return_binary_mesh, std::string *return_error_str)  {}
+      std::string *return_binary_mesh, std::string *return_error_str);
    
   // needed by DeleteBoundaryOfAMesh vquery
    void deleteStoredBoundingBox( const std::string &sessionID, const std::string &modelID, 
@@ -334,4 +334,23 @@ public:
 						   const double tolerance,
 						   const int numSteps,
 						   std::string *return_error_str) {};
+   void calculateSimplifiedMeshWithResult( const std::string &sessionID,
+						  const std::string &modelID,
+						  const int meshID, const std::string &elementType,
+						  const std::string &analysisID, const double stepValue,
+						  const std::string &parameters,
+						  const std::string &resultID,
+						  std::string *return_binary_mesh, 
+						  std::string *return_binary_results,
+                    std::string *return_error_str) {}
+  // needed by DeleteSimplifiedMeshWithResult vquery
+  void deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
+						     const std::string &modelID,
+						     const int meshID, const std::string &elementType,
+						     const std::string &analysisID, const double stepValue,
+						     const  std::string &parameters,
+						     const std::string &resultID,
+                       std::string *return_error_str) {}
+
+
 };

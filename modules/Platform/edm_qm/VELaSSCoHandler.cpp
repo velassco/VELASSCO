@@ -182,6 +182,20 @@ char *VELaSSCoHandler::getErrorMsg(int rstat)
    ReportError(errmsg);
    return errmsg;
 }
+
+/*=============================================================================================================================*/
+void VELaSSCoHandler::calculateBoundaryOfAMesh(const std::string &sessionID, //const std::string &DataLayer_sessionID,
+      const std::string &modelID, //const std::string &dataTableName,
+      const int meshID, const std::string &elementType,
+      const std::string &analysisID, const double stepValue,
+      std::string *return_binary_mesh, std::string *return_error_str)
+/*=============================================================================================================================*/
+{
+   VELaSSCoMethods theQuery(theCluster);
+   printf("sessionID = %s\nmodelID =  = %s\nmeshID%d\nelementType = %s\nanalysisID = %s\nstepValue = %f\n = %s\n",
+      sessionID.data(), modelID.data(), meshID, elementType.data(), analysisID.data(), stepValue);
+   *return_binary_mesh = "calculateBoundaryOfAMesh is not implemented";
+}
 /*=============================================================================================================================*/
 void VELaSSCoHandler::getBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const std::string& sessionID,
    const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
