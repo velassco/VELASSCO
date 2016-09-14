@@ -695,7 +695,7 @@ extern "C" {
 						       const char     *analysisID,
 						       const double    stepValue,
 						       const char     *parameters,    // as in valGetSimplifiedMesh
-						       const char     *resultId,
+						       const char     *resultID,
 						       /* out */
 						       const char     **resultErrorStr) { // in case of error
   CHECK_SESSION_ID( sessionID );
