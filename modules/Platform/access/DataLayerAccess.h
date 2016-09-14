@@ -110,6 +110,11 @@ public:
 						const std::string &modelID,
 						const std::string &analysisID,
 						const double stepValue);
+
+  bool getResultInfoFromResultName( const std::string &sessionID, const std::string &modelID, 
+				    const std::string &analysisID, const double stepValue, 
+				    const std::string &resultName, ResultInfo &outResultInfo);
+
   /* as of OP-22.116 */
   void getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
 				  const std::string &sessionID, const std::string &modelID, 

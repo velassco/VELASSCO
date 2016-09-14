@@ -315,6 +315,13 @@ void DataLayerAccess::getListOfResultsFromTimeStepAndAnalysis( rvGetListOfResult
   _return.__set_result_list( listOfResults);
 }
 
+bool DataLayerAccess::getResultInfoFromResultName( const std::string &sessionID, const std::string &modelID, 
+						   const std::string &analysisID, const double stepValue, 
+						   const std::string &resultName, ResultInfo &outResultInfo) {
+  return _db->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, 
+					   outResultInfo);
+}
+
 /* as of OP-22.116 */
 void DataLayerAccess::getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
 						 const std::string &sessionID, const std::string &modelID, 
