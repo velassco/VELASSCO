@@ -118,7 +118,11 @@ namespace VELaSSCo
 						   const std::string &sessionID, const std::string &modelID, 
 						   const std::string &analysisID, const double stepValue, 
 						   const int32_t meshID, const std::vector<int64_t> &listOfVerticesID);
-					   
+
+    bool getResultInfoFromResultName( const std::string &sessionID, const std::string &modelID, 
+				      const std::string &analysisID, const double stepValue, 
+				      const std::string &resultName, ResultInfo &outResultInfo);
+
     bool getResultFromVerticesIDFromTables( std::string& report, std::vector<ResultOnVertex> &listOfResults, const std::string& tableName,
            const std::string &sessionID,  const std::string &modelID,
            const std::string &analysisID, const double       timeStep,  

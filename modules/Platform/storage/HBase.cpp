@@ -838,6 +838,34 @@ bool HBase::getResultFromVerticesIDFromTables_filter( std::string& report, std::
   return scan_ok;
 }
 
+bool HBase::getResultInfoFromResultName( const std::string &sessionID, const std::string &modelID, 
+					 const std::string &analysisID, const double stepValue, 
+					 const std::string &resultName, ResultInfo &outResultInfo) {
+  // look into the modelInfo table to get the correct table name
+  TableModelEntry table_set;
+  bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
+  if ( found) {
+    found = false;
+    std::string report;
+    std::vector<ResultInfo> listOfResultInfos;
+    getListOfResults( report, listOfResultInfos, sessionID, modelID, analysisID, stepValue );
+    size_t i = 0;
+    for( i = 0; i < listOfResultInfos.size(); i++) {
+      if(listOfResultInfos[i].name == resultName){
+	outResultInfo = listOfResultInfos[i];
+	found = true;
+	break;
+      }
+    }
+    if( i == listOfResultInfos.size() ){
+      // LOGGER_SM << resultName << " is not found." << std::endl;
+      // return "Error";
+      found = false;
+    }
+  }
+  return found;
+}
+
 std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, std::vector<ResultOnVertex> &listOfResults,
 					 const std::string &sessionID, const std::string &modelID,
     			     const std::string &analysisID, const double       timeStep,  
@@ -858,18 +886,9 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
   TableModelEntry table_set;
   bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
-    std::string report;
-    std::vector<ResultInfo> listOfResultInfos;
-    getListOfResults( report, listOfResultInfos, sessionID, modelID, analysisID, timeStep );
-    
-    ResultInfo& resultInfo = listOfResultInfos[0];
-    size_t i = 0;
-    for(; i < listOfResultInfos.size(); i++)
-      if(listOfResultInfos[i].name == resultID){
-	resultInfo = listOfResultInfos[i];
-	break;
-      }
-    if( i == listOfResultInfos.size() ){
+    ResultInfo resultInfo;
+    found = getResultInfoFromResultName( sessionID, modelID, analysisID, timeStep, resultID, resultInfo);
+    if ( !found ){
       LOGGER_SM << resultID << " is not found." << std::endl;
       return "Error";
     }
@@ -878,7 +897,7 @@ std::string HBase::getResultFromVerticesID_thrift_filter( std::string& report, s
     std::vector<int64_t> sorted_listOfVerticesID(listOfVerticesID.begin(), listOfVerticesID.end());
     std::sort(sorted_listOfVerticesID.begin(), sorted_listOfVerticesID.end());
     
-    i = 0;
+    size_t i = 0;
     int64_t threshold = 1;
     while(i < sorted_listOfVerticesID.size()){
       // group the successive vertex ids
@@ -1168,22 +1187,12 @@ std::string HBase::getResultFromVerticesID_thrift( std::string& report, std::vec
   TableModelEntry table_set;
   bool found = getVELaSSCoTableNames( sessionID, modelID, table_set);
   if ( found) {
-	
-	std::string report;
-    std::vector<ResultInfo> listOfResultInfos;
-    getListOfResults( report, listOfResultInfos, sessionID, modelID, analysisID, timeStep );
-    
-    ResultInfo& resultInfo = listOfResultInfos[0];
-    size_t i = 0;
-    for(; i < listOfResultInfos.size(); i++)
-      if(listOfResultInfos[i].name == resultID){
-		  resultInfo = listOfResultInfos[i];
-		  break;
-	  }
-	if( i == listOfResultInfos.size() ){
-		LOGGER_SM << resultID << " is not found." << std::endl;
-		return "Error";
-	}
+    ResultInfo resultInfo;
+    found = getResultInfoFromResultName( sessionID, modelID, analysisID, timeStep, resultID, resultInfo);
+    if ( !found ){
+      LOGGER_SM << resultID << " is not found." << std::endl;
+      return "Error";
+    }
 	  
     // by default hexstrings are lower case but some data has been injected as upper case !!!
     scan_ok = getResultFromVerticesIDFromTables( report, listOfResults, table_set._data, sessionID, modelID, analysisID, timeStep, resultInfo, listOfVerticesID);
