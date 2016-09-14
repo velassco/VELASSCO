@@ -490,3 +490,53 @@ void EDMclusterServices::stopAllEDMservers()
       }
    }
 }
+
+/*==============================================================================================================================*/
+void EDMclusterServices::listActualExistingModels(std::vector<std::string>  *infoList)
+/*==============================================================================================================================*/
+{
+   tEdmiInstData    cmd;
+   EDMserverContext *srvCtxts[1000];
+   int              len,nServers = 0;
+   SdaiString       *modelNames;
+   //std::vector<std::string>  infoList;
+
+
+   clusterModel->reset();
+   Iterator<ecl::EDMServer*, ecl::entityType> serverIter(clusterModel->getObjectSet(ecl::et_EDMServer), clusterModel);
+   for (ecl::EDMServer *srv = serverIter.first(); srv && nServers < 1000; srv = serverIter.next()) {
+      srvCtxts[nServers++] = getServerContext("superuser", "", "v", srv);
+   }
+#pragma omp parallel for
+   for (int i = 0; i < nServers; i++) {
+      EdmiError rstat = edmiRemoteListModels(srvCtxts[i]->srvCtxt,
+                                      NULL,        /* rep    name filter, NULL/"" for all */
+                                      NULL,        /* model  name filter, NULL/"" for all */
+                                      NULL,        /* owner  name filter, NULL/"" for all */
+                                      NULL,        /* group  name filter, NULL/"" for all */
+                                      NULL,        /* schema name filter, NULL/"" for all */
+                                      0,           /* options                            */
+                                      &modelNames,
+                                      NULL);
+      if (rstat) {
+         printf("listActualExistingModels : error=%llu\n", rstat);
+      }
+         char **name = modelNames;
+         int j = 0;
+         if(name != NULL)
+         {
+            while(*name != NULL)
+            {
+               //printf("\n  %s",*name);
+               infoList->push_back(srvCtxts[i]->host);
+               infoList->at(j) += ":";
+               infoList->at(j) += srvCtxts[i]->port;
+               infoList->at(j) += " ";
+               infoList->at(j) += *name;
+               //printf("\n  %s",infoList->at(j).c_str());
+               ++j;
+               ++name;
+            }
+         }
+   }
+}

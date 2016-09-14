@@ -39,7 +39,7 @@ public:
 */
    void                       startServices();
    void                       initClusterModel(char *serverListFileName);
-   ecl::EDMcluster            *getTheEDMcluster() { return ourCluster; }
+   ecl::EDMcluster            *getTheEDMcluster() { return ourCluster;}
    void                       getUniqueServerContextID(char *idBuf);
    SdaiModel                  getClusterModelID();
    ecl::ClusterModel          *getClusterModel(const char *name, const char *repositoryName);
@@ -48,8 +48,8 @@ public:
    EDMserverContext           *getServerContext(char *user, char *group, char *password, EDMServer *srv);
    void                       listAllEDMservers();
    void                       stopAllEDMservers();
+   void                       listActualExistingModels(std::vector<std::string>  *infoList);
 };
-
 
 /*================================================================================================*/
 /*!
