@@ -469,10 +469,12 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
   int ret_cmd = 0;
   char meshIDstr[ 100];
   sprintf( meshIDstr, "%d", meshID);
+  char resultNumberstr[ 100];
+  sprintf( resultNumberstr, "%d", resultInfo.resultNumber);
   if ( !use_yarn) {
     std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
-      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\"";
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\" " + resultNumberstr;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
     local_output_folder = yarn_output_folder;
@@ -482,7 +484,7 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
     // running Yarn:
     std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
-      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\"";
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\" " + resultNumberstr;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
     // output in '../simplified_mesh_with_result_sessionID_modelID/part-r-00000' but in hdfs
