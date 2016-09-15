@@ -492,22 +492,35 @@ void EDMclusterServices::stopAllEDMservers()
 }
 
 /*==============================================================================================================================*/
-void EDMclusterServices::listActualExistingModels(std::vector<std::string>  *infoList)
+void EDMclusterServices::getListOfModelInfoForActualExistingModels(char *outFileName)
 /*==============================================================================================================================*/
 {
-   tEdmiInstData    cmd;
-   EDMserverContext *srvCtxts[1000];
-   int              len,nServers = 0;
-   SdaiString       *modelNames;
-   //std::vector<std::string>  infoList;
+   tEdmiInstData     cmd;
+   EDMserverContext  *srvCtxts[1000];
+   int               nServers = 0;
+   SdaiModel         modelId;
+   SdaiInteger       myint;
+   SdaiString        *modelNames;
+   char              *cp;
+   EdmiDate          date;
+   EdmiStringDate    cstringDate;  /* dd.mm.yyyy hh:mm:ss */
+   EdmiStringDate    lustringDate;
+   FILE              *myfile;
+   char              repositoryName[100];
+   char              modelName[100];
+   char              noiStr[50];
+   char              sizeStr[50];
+   char              luStr[50];
 
+   myfile = fopen(outFileName,"w");
+   fprintf(myfile,"SERVER\tPORT\tMODEL NAME\tINSTANCES\tSIZE\tCREATED\tLAST_TIME_UPDATED\n");
 
    clusterModel->reset();
    Iterator<ecl::EDMServer*, ecl::entityType> serverIter(clusterModel->getObjectSet(ecl::et_EDMServer), clusterModel);
    for (ecl::EDMServer *srv = serverIter.first(); srv && nServers < 1000; srv = serverIter.next()) {
       srvCtxts[nServers++] = getServerContext("superuser", "", "v", srv);
    }
-#pragma omp parallel for
+//#pragma omp parallel for
    for (int i = 0; i < nServers; i++) {
       EdmiError rstat = edmiRemoteListModels(srvCtxts[i]->srvCtxt,
                                       NULL,        /* rep    name filter, NULL/"" for all */
@@ -519,24 +532,199 @@ void EDMclusterServices::listActualExistingModels(std::vector<std::string>  *inf
                                       &modelNames,
                                       NULL);
       if (rstat) {
-         printf("listActualExistingModels : error=%llu\n", rstat);
+         throw new CedmError(rstat);
       }
-         char **name = modelNames;
-         int j = 0;
-         if(name != NULL)
+
+      char **name = modelNames;
+      if(name != NULL)
+      {
+         while(*name != NULL)
          {
-            while(*name != NULL)
-            {
-               //printf("\n  %s",*name);
-               infoList->push_back(srvCtxts[i]->host);
-               infoList->at(j) += ":";
-               infoList->at(j) += srvCtxts[i]->port;
-               infoList->at(j) += " ";
-               infoList->at(j) += *name;
-               //printf("\n  %s",infoList->at(j).c_str());
-               ++j;
-               ++name;
+            strcpy(repositoryName,*name);
+            cp = strchr(repositoryName,'.');
+            *cp = '\0';
+            ++cp;
+            strcpy(modelName,cp);
+
+            rstat = edmiRemoteGetModelBN(srvCtxts[i]->srvCtxt,repositoryName,modelName,&modelId,NULL);
+            if (rstat) {
+               throw new CedmError(rstat);
             }
-         }
+
+            rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"EDM_MODEL",sdaiINSTANCE,&modelId);
+            if (rstat) {
+               if(rstat == sdaiEVALUEUNSET){
+                  ++name;
+                  continue;
+               } else {
+                 throw new CedmError(rstat);
+               }
+             }
+
+             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"INSTANCES",sdaiINTEGER,&myint);
+             if (rstat) {
+               if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
+                 throw new CedmError(rstat);
+               } else {
+                 myint = 0;
+               }
+             }
+             sprintf(noiStr,"%lu%",myint);
+
+             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"DATA_SIZE",sdaiINTEGER,&myint);
+             if (rstat) {
+               if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
+                 throw new CedmError(rstat);
+               } else {
+                 myint = 0;
+               }
+             }
+             sprintf(sizeStr,"%lu%",myint);
+
+             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"CREATED",edmTIME_STAMP,&myint);
+             if (rstat) {
+               throw new CedmError(rstat);
+             }
+             rstat = edmiUnpackDate(myint,&date,&cstringDate,0);
+
+             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"LAST_TIME_UPDATED",edmTIME_STAMP,&myint);
+             if (rstat) {
+               if(rstat != sdaiEVALUEUNSET){
+                  strcpy(lustringDate,cstringDate);
+               } else {
+                 rstat = edmiUnpackDate(myint,&date,&lustringDate,0);
+               }
+             }
+
+             fprintf(myfile,"%s\t%s\t%s\t%s\t%s\t%s\t%s\n",srvCtxts[i]->host,srvCtxts[i]->port,*name,noiStr,sizeStr,cstringDate,lustringDate);
+             ++name;
+          }
+       }
+   }
+   if(myfile){
+     fclose(myfile);
+   }
+}
+
+/*==============================================================================================================================*/
+void EDMclusterServices::getListOfModelInfoForActualExistingModels(std::vector<std::string>  *infoList)
+/*==============================================================================================================================*/
+{
+   tEdmiInstData     cmd;
+   EDMserverContext  *srvCtxts[1000];
+   int               nServers = 0;
+   SdaiModel         modelId;
+   SdaiInteger       myint;
+   SdaiString        *modelNames;
+   char              *cp;
+   EdmiDate          date;
+   EdmiStringDate    cstringDate;  /* dd.mm.yyyy hh:mm:ss */
+   EdmiStringDate    lustringDate;
+
+   char              repositoryName[100];
+   char              modelName[100];
+   char              noiStr[50];
+   char              sizeStr[50];
+   char              luStr[50];
+
+   clusterModel->reset();
+   Iterator<ecl::EDMServer*, ecl::entityType> serverIter(clusterModel->getObjectSet(ecl::et_EDMServer), clusterModel);
+   for (ecl::EDMServer *srv = serverIter.first(); srv && nServers < 1000; srv = serverIter.next()) {
+      srvCtxts[nServers++] = getServerContext("superuser", "", "v", srv);
+   }
+//#pragma omp parallel for
+   for (int i = 0; i < nServers; i++) {
+      EdmiError rstat = edmiRemoteListModels(srvCtxts[i]->srvCtxt,
+                                      NULL,        /* rep    name filter, NULL/"" for all */
+                                      NULL,        /* model  name filter, NULL/"" for all */
+                                      NULL,        /* owner  name filter, NULL/"" for all */
+                                      NULL,        /* group  name filter, NULL/"" for all */
+                                      NULL,        /* schema name filter, NULL/"" for all */
+                                      0,           /* options                            */
+                                      &modelNames,
+                                      NULL);
+      if (rstat) {
+         throw new CedmError(rstat);
+      }
+
+      char **name = modelNames;
+      int j = 0;
+      if(name != NULL)
+      {
+         while(*name != NULL)
+         {
+            strcpy(repositoryName,*name);
+            cp = strchr(repositoryName,'.');
+            *cp = '\0';
+            ++cp;
+            strcpy(modelName,cp);
+
+            rstat = edmiRemoteGetModelBN(srvCtxts[i]->srvCtxt,repositoryName,modelName,&modelId,NULL);
+            if (rstat) {
+               throw new CedmError(rstat);
+            }
+
+            rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"EDM_MODEL",sdaiINSTANCE,&modelId);
+            if (rstat) {
+               if(rstat == sdaiEVALUEUNSET){
+                  ++name;
+                  continue;
+               } else {
+                 throw new CedmError(rstat);
+               }
+             }
+
+            rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"INSTANCES",sdaiINTEGER,&myint);
+            if (rstat) {
+              if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
+                 throw new CedmError(rstat);
+              } else {
+                 myint = 0;
+                 }
+             }
+             sprintf(noiStr,"%lu%",myint);
+
+             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"DATA_SIZE",sdaiINTEGER,&myint);
+             if (rstat) {
+               if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
+                 throw new CedmError(rstat);
+               } else {
+                 myint = 0;
+               }
+             }
+             sprintf(sizeStr,"%lu%",myint);
+
+             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"CREATED",edmTIME_STAMP,&myint);
+             if (rstat) {
+               throw new CedmError(rstat);
+             }
+             rstat = edmiUnpackDate(myint,&date,&cstringDate,0);
+
+             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"LAST_TIME_UPDATED",edmTIME_STAMP,&myint);
+             if (rstat) {
+               if(rstat != sdaiEVALUEUNSET){
+                  strcpy(lustringDate,cstringDate);
+               } else {
+                 rstat = edmiUnpackDate(myint,&date,&lustringDate,0);
+               }
+             }
+
+             infoList->push_back(srvCtxts[i]->host);
+             infoList->at(j) += ":";
+             infoList->at(j) += srvCtxts[i]->port;
+             infoList->at(j) += " ";
+             infoList->at(j) += *name;
+             infoList->at(j) += " Instances: ";
+             infoList->at(j) += noiStr;
+             infoList->at(j) += " Size: ";
+             infoList->at(j) += sizeStr;
+             infoList->at(j) += " Created: ";
+             infoList->at(j) += cstringDate;
+             infoList->at(j) += " Last updated: ";
+             infoList->at(j) += lustringDate;
+             ++j;
+             ++name;
+          }
+       }
    }
 }
