@@ -243,19 +243,23 @@ int main(int argc, char **argv)
     int listen_port = 26267; // standard thrift port : 9090
     const char *hbase_hostname = "localhost"; // or "pez001";
     int         hbase_port     = 9090; // hbase thrift server
+#ifdef EDM
     char *EDM_qm_database_folder = "";
     char *EDM_qm_init_file = "";
     char *EDM_inject_file = "";
     bool EDM_execute = false;
     bool EDM_inject = false;
+#endif // EDM
     int         connect_EDM	    = 0;
     if ( thereIsHelpSwitch( argc, argv)) {
       printf( "Usage: %s [ options] \n", argv[ 0]);
       printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
       printf( "  -hbase_host hostname         host name of the HBase Thrift Server (default %s)\n", hbase_hostname);
       printf( "  -hbase_port port_number      port of the HBase Thrift Server (default %d)\n", hbase_port);
+#ifdef EDM
       printf( "  -dl_EDM                   EDM_qm_database_folder EDM_qm_init_file  \n");
       printf( "  -dl_EDM_inject            EDM_qm_database_folder EDM_inject_file  \n");
+#endif // EDM
       printf( "  -multiuser 0              if 0, uses SimpleServer, if 1, uses MultiUser (default %d)\n", G_multiUser);
       return EXIT_FAILURE;
     }
@@ -286,6 +290,7 @@ int main(int argc, char **argv)
 		     hbase_port = new_port;
 		     processed_args += 2;
 		   }
+#ifdef EDM
       } else if ( !strcasecmp( argv[ ia], "-dl_EDM")) {
 		   EDM_qm_database_folder = argv[ ++ia];
 		   EDM_qm_init_file = argv[ ++ia];
@@ -295,6 +300,7 @@ int main(int argc, char **argv)
 		   EDM_qm_init_file = argv[ ++ia];
 		   EDM_inject_file = argv[ ++ia];
 		   processed_args += 4; EDM_inject = true;
+#endif // EDM
       } else if ( !strcasecmp( argv[ ia], "-multiuser")) {
 		ia++;
 		int is_multi = G_multiUser;
