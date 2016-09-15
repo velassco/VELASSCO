@@ -469,8 +469,8 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
   int ret_cmd = 0;
   char meshIDstr[ 100];
   sprintf( meshIDstr, "%d", meshID);
-  char resultInfoStr[ 100];
-  sprintf( resultInfoStr, "%d %d", resultInfo.resultNumber, resultInfo.numberOfComponents);
+  char resultInfoStr[ 1000];
+  sprintf( resultInfoStr, "%d %s %d", resultInfo.resultNumber, resultInfo.type.c_str(), resultInfo.numberOfComponents);
   if ( !use_yarn) {
     std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
