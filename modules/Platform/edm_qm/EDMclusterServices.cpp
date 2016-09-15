@@ -532,7 +532,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(char *outFile
                                       &modelNames,
                                       NULL);
       if (rstat) {
-         throw new CedmError(rstat);
+         throw new CedmError(rstat,NULL,0);
       }
 
       char **name = modelNames;
@@ -548,7 +548,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(char *outFile
 
             rstat = edmiRemoteGetModelBN(srvCtxts[i]->srvCtxt,repositoryName,modelName,&modelId,NULL);
             if (rstat) {
-               throw new CedmError(rstat);
+               throw new CedmError(rstat,NULL,0);
             }
 
             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"EDM_MODEL",sdaiINSTANCE,&modelId);
@@ -557,14 +557,14 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(char *outFile
                   ++name;
                   continue;
                } else {
-                 throw new CedmError(rstat);
+                 throw new CedmError(rstat,NULL,0);
                }
              }
 
              rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"INSTANCES",sdaiINTEGER,&myint);
              if (rstat) {
                if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
-                 throw new CedmError(rstat);
+                 throw new CedmError(rstat,NULL,0);
                } else {
                  myint = 0;
                }
@@ -574,7 +574,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(char *outFile
              rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"DATA_SIZE",sdaiINTEGER,&myint);
              if (rstat) {
                if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
-                 throw new CedmError(rstat);
+                 throw new CedmError(rstat,NULL,0);
                } else {
                  myint = 0;
                }
@@ -583,7 +583,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(char *outFile
 
              rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"CREATED",edmTIME_STAMP,&myint);
              if (rstat) {
-               throw new CedmError(rstat);
+                throw new CedmError(rstat,NULL,0);
              }
              rstat = edmiUnpackDate(myint,&date,&cstringDate,0);
 
@@ -644,7 +644,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(std::vector<s
                                       &modelNames,
                                       NULL);
       if (rstat) {
-         throw new CedmError(rstat);
+         throw new CedmError(rstat,NULL,0);
       }
 
       char **name = modelNames;
@@ -661,23 +661,24 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(std::vector<s
 
             rstat = edmiRemoteGetModelBN(srvCtxts[i]->srvCtxt,repositoryName,modelName,&modelId,NULL);
             if (rstat) {
-               throw new CedmError(rstat);
+                throw new CedmError(rstat,NULL,0);
             }
 
             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"EDM_MODEL",sdaiINSTANCE,&modelId);
             if (rstat) {
+         throw new CedmError(rstat,NULL,0);
                if(rstat == sdaiEVALUEUNSET){
                   ++name;
                   continue;
                } else {
-                 throw new CedmError(rstat);
+                throw new CedmError(rstat,NULL,0);
                }
              }
 
             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"INSTANCES",sdaiINTEGER,&myint);
             if (rstat) {
               if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
-                 throw new CedmError(rstat);
+                throw new CedmError(rstat,NULL,0);
               } else {
                  myint = 0;
                  }
@@ -687,7 +688,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(std::vector<s
              rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"DATA_SIZE",sdaiINTEGER,&myint);
              if (rstat) {
                if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
-                 throw new CedmError(rstat);
+                 throw new CedmError(rstat,NULL,0);
                } else {
                  myint = 0;
                }
@@ -696,7 +697,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(std::vector<s
 
              rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"CREATED",edmTIME_STAMP,&myint);
              if (rstat) {
-               throw new CedmError(rstat);
+               throw new CedmError(rstat,NULL,0);
              }
              rstat = edmiUnpackDate(myint,&date,&cstringDate,0);
 
