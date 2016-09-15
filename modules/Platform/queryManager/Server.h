@@ -143,6 +143,15 @@ public:
       delete m_threadedServer;
     m_threadedServer = threadedServer;
   }
+  static void StopServer() {
+    if ( m_simpleServer) {
+      m_simpleServer->stop();
+    }
+    if ( m_threadedServer) {
+      m_threadedServer->stop();
+    }
+  }
+  
   void SetDefaultCompression() {
     m_compression.setCompressionType( VL_Compression::CompressionType::Zlib);
     m_compression.setCompressionLevel( 1);

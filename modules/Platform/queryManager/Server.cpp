@@ -221,8 +221,9 @@ int StartServer( const int server_port) {
 		  handler->SetDefaultCompression();
 		  DEBUG( "  Launching TThreadedServer, before serving ...");
 		  server->serve();
-		  DEBUG( "  after serving ...");	
-	
+		  DEBUG( "  after serving ...");
+		  DEBUG( "  deleting server ...");
+                  handler->SetThreadedServer( NULL); // delete server
 	}
 	else
 	{
@@ -242,10 +243,12 @@ int StartServer( const int server_port) {
 		  DEBUG( "  before serving (Simple server) ...");
 		  server->serve();
 		  DEBUG( "  after serving ...");
+		  DEBUG( "  deleting server ...");
+                  handler->SetSimpleServer( NULL); // delete server
 	}
 	// END: AUTHOR: iCores. This code allows multi-user and single-user behaviour.
   
-  
-  exit( 0);
-  return 0;
+  DEBUG( "DONE");
+  exit( 0); // need this to exit QueryManager daemon
+  return 0; // return only, will close connections but still remain asking for commands interactively ...
 }

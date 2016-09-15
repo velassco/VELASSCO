@@ -116,8 +116,7 @@ void QueryManagerServer::StopVELaSSCo(StopVELaSSCo_Result& _return, const Sessio
   LOGGER << "Output:"                             << std::endl;
   LOGGER << "  result    : " << _return.result    << std::endl;
   LOGGER << "  status    : " << _return.status << std::endl;
-  this->m_simpleServer->stop();
-  this->SetSimpleServer( NULL);
+  this->StopServer();
 }
 
 void QueryManagerServer::ManageGetConfiguration( Query_Result &_return, const SessionID sessionID, const std::string& query) {
