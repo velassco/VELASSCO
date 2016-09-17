@@ -45,7 +45,7 @@ ifeq ($(HOSTNAME),pez001)
   THRIFT_BASE = $(HOME)
   BOOST_BASE = $(HOME)
 else 
-  THRIFT_BASE = /home/VELaSSCo/lib/thrift-0.9.3/lib/cpp
+  THRIFT_BASE = /home/velassco/cpp
   BOOST_BASE=/usr/lib/x86_64-linux-gnu
 endif
 
@@ -58,9 +58,9 @@ EDM_BASE=/home/edm/v6.0.xxx
 
 
 
-EXTRA_INC_DIRS = -I$(THRIFT_BASE)/include -I$(BOOST_BASE)/include
+EXTRA_INC_DIRS = -I$(THRIFT_BASE)/src -I$(BOOST_BASE)/include
 EDM_INC_DIRS = -I$(EDM_BASE)/edmsys/sdai/include -I$(EDM_BASE)/cpp_edmi/web.services -I$(EDM_BASE)/cpp_edmi/cpp10
-EXTRA_LIB_DIRS = -L$(THRIFT_BASE)/lib -L$(BOOST_BASE)/lib
+EXTRA_LIB_DIRS = -L$(THRIFT_BASE)/libs -L$(BOOST_BASE)/lib
 EDM_LIB_DIRS = -L$(EDM_BASE)/output/sunosx/release
 #EXTRA_LIB_DIRS = -L/exports/applications/apps/community/VELaSSCo/build/lib
 EDM_OBJS = $(EDM_BASE)/output/sunosx/release/libcpp10_edmi_files/dbInterface.o $(EDM_BASE)/output/sunosx/release/libcpp10_edmi_files/memoryAllocator.o 

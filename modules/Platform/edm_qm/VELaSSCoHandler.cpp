@@ -44,8 +44,22 @@ rvGetBoundaryOfLocalMesh GetBoundaryOfLocalMesh(
 * VELaSSCoHandler constructor
 *
 */
-VELaSSCoHandler::VELaSSCoHandler() : VELaSSCo_Operations() {
+VELaSSCoHandler::VELaSSCoHandler() : VELaSSCo_Operations()
+{
+   int rstat;
    thelog = NULL;
+
+   char *env = getenv("QUERY_RESULT_FOLDER");
+   if (env) {
+      QUERY_RESULT_FOLDER = (char*)malloc(strlen(env) + 2); strcpy(QUERY_RESULT_FOLDER, env);
+      char *ec = QUERY_RESULT_FOLDER + strlen(env) - 1;
+      if (*ec == '\\') {
+         *ec = '/';
+      } else if (*ec != '/') {
+         strcat(QUERY_RESULT_FOLDER, "/");
+      }
+      rstat = _mkdir(QUERY_RESULT_FOLDER);
+   }
 }
 
 
@@ -626,10 +640,11 @@ void VELaSSCoHandler::ReportError(char *f)
 
 /*=============================================================================================================================*/
 char *VELaSSCoHandler::getResultFileName(char *fileName, const char *modelId)
-/*=============================================================================================================================*/
+/*
+   QUERY_RESULT_FOLDER must end with '/' 
+===============================================================================================================================*/
 {
-   QUERY_RESULT_FOLDER = getenv("QUERY_RESULT_FOLDER");
-   if ((QUERY_RESULT_FOLDER && *QUERY_RESULT_FOLDER == 0) || (_mkdir(QUERY_RESULT_FOLDER) == 0 || errno == EEXIST)) {
+   if (QUERY_RESULT_FOLDER && *QUERY_RESULT_FOLDER) {
       sprintf(resultFolderBuffer, "%s%s_%s.dat", QUERY_RESULT_FOLDER, modelId, fileName);
       return resultFolderBuffer;
    }

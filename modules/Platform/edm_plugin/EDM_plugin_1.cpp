@@ -72,8 +72,6 @@ void VELaSSCoEDMplugin::initNodeIdMapping(char *fileName)
 char *VELaSSCoEDMplugin::getResultFileName(char *fileName, SdaiModel modelId)
 /*=============================================================================================================================*/
 {
-   //QUERY_RESULT_FOLDER = "E:/VELaSSCo/installation/database/results/";
-   QUERY_RESULT_FOLDER = getenv("QUERY_RESULT_FOLDER");
    if ((QUERY_RESULT_FOLDER && *QUERY_RESULT_FOLDER == 0) || (_mkdir(QUERY_RESULT_FOLDER) == 0 || errno == EEXIST)) {
       sprintf(resultFolderBuffer, "%s%s", QUERY_RESULT_FOLDER, repositoryName);
       if (_mkdir(resultFolderBuffer) == 0 || errno == EEXIST) {
@@ -1850,6 +1848,7 @@ VELaSSCoEDMplugin::~VELaSSCoEDMplugin()
    delete dllMa;
    if (resultInfoMemory) {
       delete resultInfoMemory;
+
    }
    //if (nodeIdRegion) {
    //   delete nodeIdRegion;
