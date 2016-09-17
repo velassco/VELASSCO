@@ -34,6 +34,181 @@ AnalyticsModule *AnalyticsModule::getInstance() {
 #pragma message( "WARNING: look at GetFullHBaseConfigurationFilename() for a similar approach: PathToYarnAndHDFS()")
 #pragma message( "WARNING: ")
 
+
+void AnalyticsModule::getResultFromVerticesID( const std::string &sessionID, const std::string &modelID, 
+					    const std::string &dataTableName,
+					    const std::string &analysisID, const int numSteps, const double *lstSteps,
+					    const int64_t numVertexIDs, const int64_t *lstVertexIDs, 
+					    double *return_bbox, std::string *return_error_str) {
+    // return_bbox[ 0] = -0.7;
+  // return_bbox[ 1] = -0.7;
+  // return_bbox[ 2] = -0.7;
+  // return_bbox[ 3] =  0.7;
+  // return_bbox[ 4] =  0.7;
+  // return_bbox[ 5] =  0.7;
+  // *return_error_str = "Ok";
+
+  // at the moment only CLI interface:
+  // modelID, if it's binary, convert it to 32-digit hexastring:
+  char model_ID_hex_string[ 1024];
+  std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
+
+  // remove local
+  // MR output in '../bbox_sessionID_modelID/_SUCCESS'
+  // output in '../bbox_sessionID_modelID/part-r-00000'
+  // error in '../bbox_sessionID_modelID/error.txt'
+  // unlink( "bbox_sessionID_modelID/part-r-00000");
+  // unlink( "bbox_sessionID_modelID/error.txt");
+  // unlink( "bbox_sessionID_modelID/_SUCCESS");
+  // rmdir( "bbox_sessionID_modelID");
+  // delete local temporary files
+  // yarn_output_folder is relative ...
+  std::string yarn_output_folder = ToLower( "bbox_" + sessionID + "_" + cli_modelID);
+  std::string local_tmp_folder = create_tmpdir();
+  std::string local_output_folder = local_tmp_folder + "/" + yarn_output_folder;
+  recursive_rmdir( yarn_output_folder.c_str());
+  std::string analytics_program = GetFullAnalyticsQualifier( "test" );
+
+  bool use_yarn = true;;
+  // running java:
+  int ret_cmd = 0;
+  if ( !use_yarn) {
+  std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
+      sessionID + " " + cli_modelID + " " + dataTableName;
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    local_output_folder = yarn_output_folder;
+  } else { 
+    // Using yarn:
+    // execute and copy to localdir the result's files
+    // running Yarn:
+    
+    
+    std::cout << "Full HBase Configuration: "         << GetFullHBaseConfigurationFilename() << std::endl;
+    std::cout << "Session ID:      " << sessionID     << std::endl;
+    std::cout << "Model ID:        " << cli_modelID   << std::endl;
+    std::cout << "Data Table Name: " << dataTableName << std::endl;
+    
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
+    sessionID + " " + cli_modelID + " " + dataTableName;
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    // output in '../bbox_sessionID_modelID/part-r-00000' but in hdfs
+    // error in '../bbox_sessionID_modelID/error.txt'
+    // copy it to local:
+    // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal bbox .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + yarn_output_folder + " " + local_tmp_folder;
+    ret_cmd = system( cmd_line.c_str());
+    if ( ret_cmd == -1) {
+      DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
+    }
+  }
+
+  // ret_cmd is -1 on error
+
+  // output in '../bbox_sessionID_modelID/part-r-00000'
+  // error in '../bbox_sessionID_modelID/error.txt'
+  char filename[ 8192];
+  sprintf( filename, "%s/part-r-00000", local_output_folder.c_str());
+  FILE *fi = fopen( filename, "r");
+  
+  if (!fi) {
+    // try reading error file
+    bool errorfile_read = false;
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
+/*    fi = fopen( filename, "r");
+    if (fi) {
+      const size_t size_buffer = 1024 * 1024;
+      char buffer[ size_buffer + 1];
+      char *ok = fgets( buffer, size_buffer, fi);
+      fclose( fi);
+      if ( ok) {
+	*return_error_str = std::string( buffer);
+	errorfile_read = true;
+      }
+    }    */
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
+    }
+	ifs.close();
+	
+    if ( !errorfile_read) {
+      *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
+	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+      if ( use_yarn) {
+	*return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
+    }
+    return;
+  }
+  
+  // read output
+  char keyword[ 1024];
+  double value = 0.0;
+  int num_values = 0;
+  for ( int i = 0; i < 6; i++) {
+    int n = fscanf( fi, "", keyword, &value);
+    if ( n == 2) {
+      if (      !strcasecmp( keyword, "min_x")) { return_bbox[ 0] = value; num_values++; }
+      else if ( !strcasecmp( keyword, "min_y")) { return_bbox[ 1] = value; num_values++; }
+      else if ( !strcasecmp( keyword, "min_z")) { return_bbox[ 2] = value; num_values++; }
+      else if ( !strcasecmp( keyword, "max_x")) { return_bbox[ 3] = value; num_values++; }
+      else if ( !strcasecmp( keyword, "max_y")) { return_bbox[ 4] = value; num_values++; }
+      else if ( !strcasecmp( keyword, "max_z")) { return_bbox[ 5] = value; num_values++; }
+    }
+  }
+  fclose( fi);
+  // verify output:
+  if ( num_values != 6) {
+    // try reading error file
+    bool errorfile_read = false;
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
+/*    fi = fopen( filename, "r");
+    if ( fi) {
+      const size_t size_buffer = 1024 * 1024;
+      char buffer[ size_buffer + 1];
+      char *ok = fgets( buffer, size_buffer, fi);
+      fclose( fi);
+      if ( ok) {
+	*return_error_str = std::string( buffer);
+	errorfile_read = true;
+      }
+    }*/
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
+    }
+    ifs.close();
+    
+    if ( !errorfile_read) {
+      *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + 
+	( use_yarn ? " Yarn" : " Java") + std::string( " results.");
+      if ( use_yarn) {
+	*return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
+    }
+  }
+
+  DEBUG( "Deleting output files ...");
+  if ( use_yarn) {
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + yarn_output_folder;
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+  recursive_rmdir( local_tmp_folder.c_str());
+  }
+  // delete local tmp files ...
+  DEBUG( "Deleting local temporary files ...");
+  recursive_rmdir( yarn_output_folder.c_str());
+}
+
+
 void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const std::string &modelID, 
 					    const std::string &dataTableName,
 					    const std::string &analysisID, const int numSteps, const double *lstSteps,
@@ -690,7 +865,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   } else { 
     // Using yarn:
     // execute and copy to localdir the result's files
-    // running Yarn:
+    // running Yarn:    
     std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" ;
     DEBUG( cmd_line);
