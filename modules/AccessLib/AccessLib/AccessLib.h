@@ -277,6 +277,24 @@ extern "C" {
 					  /* out */
 					  const char     **resultErrorStr); // in case of error
 
+  VAL_Result VAL_API valDoStreamlinesWithResults( /* in */
+            VAL_SessionID  sessionID,
+            const char*    modelID,
+            const char*    analysisID,
+            const double   stepValue,
+            const char*    resultID,
+            const int64_t  numSeedingPoints,
+            const double*  seedingPoints,
+            const char*    integrationMethod,    // "EULER", "RUNGE-KUTTA4", or "CASH-KARP"
+            const double   maxStreamLineLength,
+            const char*    tracingDirection,     // "FORWARD", "BACKWARD", or "FORWARD-BACKWARD"
+            const char*    adaptiveStepping,     // "ON" or "OFF"
+
+            /* out */
+            const char                      **result_status,
+            const VELaSSCo::RTFormat::File  **result_streamlines_data
+    );
+
   // at the moment it only works with tetrahedral meshes.
   VAL_Result VAL_API valGetSimplifiedMesh( /* in */
 					   VAL_SessionID   sessionID,

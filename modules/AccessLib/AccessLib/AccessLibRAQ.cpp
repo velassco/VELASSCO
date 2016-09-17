@@ -502,6 +502,79 @@ extern "C" {
       }
     CATCH_ERROR;
   }
+
+  VAL_Result VAL_API valDoStreamlinesWithResults( /* in */
+            VAL_SessionID  sessionID,
+            const char*    modelID,
+            const char*    analysisID,
+            const double   stepValue,
+            const char*    resultID,
+            const int64_t  numSeedingPoints,
+            const double*  seedingPoints,
+            const char*    integrationMethod,    // "EULER", "RUNGE-KUTTA4", or "CASH-KARP"
+            const double   maxStreamLineLength,
+            const char*    tracingDirection,     // "FORWARD", "BACKWARD", or "FORWARD-BACKWARD"
+            const char*    adaptiveStepping,     // "ON" or "OFF"
+
+            /* out */
+            const char                      **result_status,
+            const VELaSSCo::RTFormat::File    **result_streamlines_data
+  ) {
+
+    CHECK_SESSION_ID(sessionID);
+    CHECK_QUERY_POINTER(modelID);
+    CHECK_QUERY_POINTER(analysisID);
+    CHECK_QUERY_POINTER(resultID);
+    CHECK_QUERY_POINTER(seedingPoints);
+    CHECK_QUERY_POINTER(result_status);
+    CHECK_QUERY_POINTER(result_streamlines_data);
+
+    result_status           = NULL;
+    result_streamlines_data = NULL;
+
+    API_TRACE;
+    try
+    {
+      std::stringstream  queryCommand;
+      const std::string *queryData = NULL;
+
+      // Build JSON command string
+      queryCommand << "{\n"
+        << "  \"name\"                : \"" << "DoStreamlinesWithResults"                                                       << "\",\n"
+        << "  \"modelID\"             : \"" << modelID                                                                          << "\",\n"
+        << "  \"analysisID\"          : \"" << analysisID                                                                       << "\",\n"
+        << "  \"stepValue\"           : \"" << stepValue                                                                        << "\",\n"
+        << "  \"resultID\"            : \"" << resultID                                                                         << "\",\n"
+        << "  \"numSeedingPoints\"    : \"" << numSeedingPoints                                                                 << "\"\n"
+        << "  \"seedingPoints\"       : \"" << base64_encode((const char*)seedingPoints, 3 * numSeedingPoints * sizeof(double)) << "\"\n"
+        << "  \"integrationMethod\"   : \"" << integrationMethod                                                                << "\"\n"
+        << "  \"maxStreamLineLength\" : \"" << maxStreamLineLength                                                              << "\"\n"
+        << "  \"tracingDirection\"    : \"" << tracingDirection                                                                 << "\"\n"
+        << "  \"adaptiveStepping\"    : \"" << adaptiveStepping                                                                 << "\"\n";
+      queryCommand << "}\n";
+
+      // Send command string and get back result data
+      VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+
+      // Give back pointers to actual binary data
+      if (result == VAL_SUCCESS) {
+        *result_status = (const char *)queryData->data();
+
+        // to debug and test:
+        // std::string file_name = std::string( "/tmp/valGetSimplifiedMesh_") + meshID + ".bin";
+        // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
+      }
+      else {
+        *result_status = queryData ? queryData->c_str() : "No returned data: (NULL)";
+      }
+
+      return result;
+    }
+    CATCH_ERROR;
+
+
+  }
+
   
   VAL_Result VAL_API valGetSimplifiedMesh( /* in */
 					   VAL_SessionID   sessionID,
