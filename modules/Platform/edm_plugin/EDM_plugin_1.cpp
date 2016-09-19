@@ -1621,7 +1621,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
          ourLogger = new CLoggWriter(logFilep, true, true);
       }
 
-START_TRACE (fp, "plugin - 1\n"); END_TRACE
+START_TRACE (fp, "plugin - 1, %s.%s - %s\n", repositoryName, modelName, methodName); END_TRACE
       if (QUERY_RESULT_FOLDER == NULL) {
          char *env = getenv("QUERY_RESULT_FOLDER");
          if (env) {
@@ -1644,52 +1644,52 @@ START_TRACE(fp, "plugin - 2\n");END_TRACE
       Database VELaSSCo_db("", "", ""); tr;
       Repository VELaSSCo_Repository(&VELaSSCo_db, repositoryName); tr;
       
-START_TRACE(fp, "plugin - 3\n");END_TRACE
       if (strEQL(methodName, "InjectFEMfiles") || strEQL(methodName, "InjectDEMfiles") || strEQL(methodName, "AnalyzeFEMfiles")) {
          tr;
          bool FEM = strEQL(methodName, "InjectFEMfiles") || strEQL(methodName, "AnalyzeFEMfiles");
          bool analyze = strEQL(methodName, "AnalyzeFEMfiles");
-         const char *schemaName = FEM ? "fem_schema_velassco" : "dem_schema_velassco";
+         const char *schemaName = FEM ? "fem_schema_velassco" : "dem_schema_velassco";tr;
          
-         nodeRvInjectFiles *results = new(theMA)nodeRvInjectFiles(NULL, returnValues);
-         nodeInInjectFiles *inParams = new(theMA)nodeInInjectFiles(NULL, parameters);
+         nodeRvInjectFiles *results = new(theMA)nodeRvInjectFiles(NULL, returnValues);tr;
+         nodeInInjectFiles *inParams = new(theMA)nodeInInjectFiles(NULL, parameters);tr;
          
-         FEM_InjectorHandler femInjector(&fem_schema_velassco_SchemaObject);
-START_TRACE(fp, "plugin - 4\n");END_TRACE
+         FEM_InjectorHandler femInjector(&fem_schema_velassco_SchemaObject);tr;
          if (analyze) {
-            femInjector.initAnalyze(theMA);
+            femInjector.initAnalyze(theMA);tr;
          } else {
-            VELaSSCo_Repository.open(sdaiRW);
-            femInjector.setCurrentRepository(&VELaSSCo_Repository);
-            femInjector.setCurrentSchemaName(schemaName);
-            femInjector.setDatabase(&VELaSSCo_db);
-            femInjector.setCurrentModel(modelName);
-            femInjector.DeleteCurrentModelContent();
+            VELaSSCo_Repository.open(sdaiRW);tr;
+            femInjector.setCurrentRepository(&VELaSSCo_Repository);tr;
+            femInjector.setCurrentSchemaName(schemaName);tr;
+            femInjector.setDatabase(&VELaSSCo_db);tr;
+            femInjector.setCurrentModel(modelName);tr;
+            femInjector.DeleteCurrentModelContent();tr;
          }
 START_TRACE(fp, "plugin - 5\n");END_TRACE
          for (int i = 0; i < MAX_INJECT_FILES; i++) {
             if (inParams->attrPointerArr[i]->type == rptSTRING) {
-               char *file_name = inParams->attrPointerArr[i]->value.stringVal;
-               femInjector.injectorFileName = file_name;
-               femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;
+               char *file_name = inParams->attrPointerArr[i]->value.stringVal;tr;
+               femInjector.injectorFileName = file_name;tr;
+               femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;tr;
+START_TRACE(fp, "plugin - inject file %s\n", file_name);END_TRACE
                if (femInjector.fp) {
                   int extPos = strlen(file_name) - 9;
                   if (extPos > 0 && strnEQL(file_name + extPos, ".post.msh", 9)) {
                      if (analyze) {
-                        femInjector.AnalyzeMeshFile();
+                        femInjector.AnalyzeMeshFile();tr;
                      } else {
-                        femInjector.InjectMeshFile();
+                        femInjector.InjectMeshFile();tr;
                      }
                   } else if (extPos > 0 && strnEQL(file_name + extPos, ".post.res", 9)) {
                      if (analyze) {
-                        femInjector.AnalyzeResultFile();
+                        femInjector.AnalyzeResultFile();tr;
                      } else {
-                        femInjector.InjectResultFile();
+                        femInjector.InjectResultFile();tr;
                      }
                   }
-                  fclose(femInjector.fp);
+                  fclose(femInjector.fp);tr;
                } else {
-                  femInjector.printError("Illegal FEM file name");
+START_TRACE(fp, "plugin - Illegal FEM file name %s\n", file_name);END_TRACE
+                   femInjector.printError("Illegal FEM file name");tr;
                }
             }
          }
@@ -1697,21 +1697,21 @@ START_TRACE(fp, "plugin - 6\n");END_TRACE
          endTime = GetTickCount();
          char msg[2048];
          if (analyze) {
-            results->status->putString("OK");
-            results->maxNodeId->putInteger(femInjector.maxNodeId);
-            results->maxElementId->putInteger(femInjector.maxElementId);
-            results->resultNames->putStringContainer(femInjector.resultNames);
-            results->timesteps->putContainer(femInjector.temesteps);
+            results->status->putString("OK");tr;
+            results->maxNodeId->putInteger(femInjector.maxNodeId);tr;
+            results->maxElementId->putInteger(femInjector.maxElementId);tr;
+            results->resultNames->putStringContainer(femInjector.resultNames);tr;
+            results->timesteps->putContainer(femInjector.temesteps);tr;
             for (double *dp = femInjector.temesteps->firstp(); dp;  dp = femInjector.temesteps->nextp()) {
                dp = 0;
             }
          } else {
-            CHECK(edmiCommitTransaction());
-            femInjector.flushObjectsAndClose();
+            CHECK(edmiCommitTransaction());tr;
+            femInjector.flushObjectsAndClose();tr;
             sprintf(msg, "Injection to %s.%s finished. Time used=%d milliseconds.", repositoryName, modelName, endTime - startTime);
             START_TRACE(fp, "%s\n", msg);END_TRACE
-            results->status->putString("OK");
-            results->report->putString(msg);
+            results->status->putString("OK");tr;
+            results->report->putString(msg);tr;
          }
 START_TRACE(fp, "plugin - 7\n");END_TRACE
       } else {
@@ -1808,9 +1808,9 @@ START_TRACE(fp, "plugin - 10\n");END_TRACE
       //ourLogger->logg(4, "Query %s on %s.%s finished.\nExection time: %d millisec.\n\n", methodName, repositoryName, modelName,  endTime - startTime);
 
    } catch (CedmError *e) {
+      rstat = e->rstat; delete e;
 START_TRACE(fp, "plugin - 11  %s  %s  %s  %d  %d\n", repositoryName, modelName, methodName, rstat, lineNo);END_TRACE
 //      edmiAbortTransaction();
-      rstat = e->rstat; delete e;
       //logError(repositoryName, modelName, methodName, rstat, lineNo);
    } catch (...) {
 START_TRACE(fp, "plugin - 12\n");END_TRACE
