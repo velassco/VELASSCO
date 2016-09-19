@@ -151,7 +151,7 @@ void AnalyticsModule::getResultFromVerticesID( const std::string &sessionID, con
   double value = 0.0;
   int num_values = 0;
   for ( int i = 0; i < 6; i++) {
-    int n = fscanf( fi, "", keyword, &value);
+    int n = fscanf( fi, "%s %lf", keyword, &value);
     if ( n == 2) {
       if (      !strcasecmp( keyword, "min_x")) { return_bbox[ 0] = value; num_values++; }
       else if ( !strcasecmp( keyword, "min_y")) { return_bbox[ 1] = value; num_values++; }
