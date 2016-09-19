@@ -666,7 +666,6 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(std::vector<s
 
             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"EDM_MODEL",sdaiINSTANCE,&modelId);
             if (rstat) {
-         throw new CedmError(rstat,NULL,0);
                if(rstat == sdaiEVALUEUNSET){
                   ++name;
                   continue;
