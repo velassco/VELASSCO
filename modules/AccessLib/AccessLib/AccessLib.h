@@ -357,22 +357,21 @@ extern "C" {
 							  /* out */
 							  const char     **resultErrorStr); // in case of error
 
-  VAL_Result VAL_API valComputeVolumeLRSplineFromBoundingBox( /* in */
-					   VAL_SessionID   sessionID,
-					   const char     *modelID,
-					   const char     *resultID,
-					   const double    stepValue,
-					   const char     *analysisID,
-					   const double   *bBox, // 6 doubles: min(x,y,z)-max(x,y,z)
-					   const double   tolerance, // Use ptr to allow NULL?
-					   const int      numSteps, // Use ptr to allow NULL?
-					   /* out */
-					    // Not returning the binary stream as the result should be stored in HBase.
-					   const char*    *resultBinaryLRSpline,
-					   size_t         *resultBinaryLRSplineSize,
-					   const char*    *resultStatistics,
-					   size_t         *resultStatisticsSize,
-					   const char    **resultErrorStr); // in case of error
+  VAL_Result VAL_API valGetVolumeLRSplineFromBoundingBox( /* in */
+							 VAL_SessionID   sessionID,
+							 const char     *modelID,
+							 const char     *resultID,
+							 const double    stepValue,
+							 const char     *analysisID,
+							 const double   *bBox, // 6 doubles: min(x,y,z)-max(x,y,z)
+							 const double   tolerance, // Use ptr to allow NULL?
+							 const int      numSteps, // Use ptr to allow NULL?
+							 /* out */
+							 const char*    *resultBinaryLRSpline,
+							 size_t         *resultBinaryLRSplineSize,
+							 const char*    *resultStatistics,
+							 size_t         *resultStatisticsSize,
+							 const char    **resultErrorStr); // in case of error
   VAL_Result VAL_API valDeleteVolumeLRSplineFromBoundingBox( /* in */
 							    VAL_SessionID   sessionID,
 							    const char     *modelID,

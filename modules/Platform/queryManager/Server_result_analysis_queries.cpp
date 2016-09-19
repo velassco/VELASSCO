@@ -914,7 +914,7 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
   std::string analysisID   = pt.get<std::string>( "analysisID");
   std::vector<double> bBox = as_vector<double>( pt, "bBox");
   double tolerance         = pt.get< double>( "tolerance");
-  double numSteps          = pt.get< double>( "numSteps");
+  int numSteps          = pt.get< int>( "numSteps");
   
   std::string dl_sessionID = GetDataLayerSessionID( sessionID);
 

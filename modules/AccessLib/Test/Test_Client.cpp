@@ -947,19 +947,19 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   size_t resultStatisticsSize;
   const char*    resultErrorStr = NULL;
   std::cout << "doTestSINTEF(): Calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
-  result = valComputeVolumeLRSplineFromBoundingBox( sessionID,
-						    opened_modelID.c_str(), // the already opened model
-						    "Speed", // Result ID, not sure if this is what we want. @@SINTEF201608
-						    step_value,
-						    analysisID.c_str(),
-						    bBox,
-						    tolerance,
-						    numSteps,
-						    &resultBinaryLRSpline,
-						    &resultBinaryLRSplineSize,
-						    &resultStatistics,
-						    &resultStatisticsSize,
-						    &resultErrorStr);
+  result = valGetVolumeLRSplineFromBoundingBox( sessionID,
+						opened_modelID.c_str(), // the already opened model
+						"Speed", // Result ID, not sure if this is what we want. @@SINTEF201608
+						step_value,
+						analysisID.c_str(),
+						bBox,
+						tolerance,
+						numSteps,
+						&resultBinaryLRSpline,
+						&resultBinaryLRSplineSize,
+						&resultStatistics,
+						&resultStatisticsSize,
+						&resultErrorStr);
   std::cout << "doTestSINTEF(): Done calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
   std::cout << "doTestSINTEF(): result: " << result << std::endl;
   CheckVALResult(result, getStringFromCharPointers( "valComputeVolumeLRSplineFromBoundingBox ", resultErrorStr));

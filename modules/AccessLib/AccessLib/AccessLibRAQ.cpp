@@ -905,21 +905,21 @@ extern "C" {
   CATCH_ERROR;
   }
 
-  VAL_Result VAL_API valComputeVolumeLRSplineFromBoundingBox( /* in */
-							     VAL_SessionID   sessionID,
-							     const char     *modelID,
-							     const char     *resultID,
-							     const double    stepValue,
-							     const char     *analysisID,
-							     const double   *bBox, // 6 doubles: min(x,y,z)-max(x,y,z)
-							     const double   tolerance, // Use ptr to allow NULL?
-							     const int      numSteps, // Use ptr to allow NULL?
-							     /* out */
-							     const char*    *resultBinaryLRSpline,
-							     size_t         *resultBinaryLRSplineSize,
-							     const char*    *resultStatistics,
-							     size_t         *resultStatisticsSize,
-							     const char    **resultErrorStr) { // in case of error
+  VAL_Result VAL_API valGetVolumeLRSplineFromBoundingBox( /* in */
+							 VAL_SessionID   sessionID,
+							 const char     *modelID,
+							 const char     *resultID,
+							 const double    stepValue,
+							 const char     *analysisID,
+							 const double   *bBox, // 6 doubles: min(x,y,z)-max(x,y,z)
+							 const double   tolerance, // Use ptr to allow NULL?
+							 const int      numSteps, // Use ptr to allow NULL?
+							 /* out */
+							 const char*    *resultBinaryLRSpline,
+							 size_t         *resultBinaryLRSplineSize,
+							 const char*    *resultStatistics,
+							 size_t         *resultStatisticsSize,
+							 const char    **resultErrorStr) { // in case of error
     CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
     CHECK_QUERY_POINTER( resultID );

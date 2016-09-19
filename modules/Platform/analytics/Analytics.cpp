@@ -1092,7 +1092,7 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
     bool acuario = is_acuario.good();
     if (eddie && acuario) {
       DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	    ": Unable to decide if the platform is Acuario or Eddie!");
+	    ": Unable to decide if the platform is Acuario or Eddie, on both it seems ... Picking Eddie.");
     }
     if (eddie) {
       std::ifstream filename_binary_blob(precomputed_result_eddie,
