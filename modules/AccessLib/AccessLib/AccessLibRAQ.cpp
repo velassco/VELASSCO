@@ -517,8 +517,11 @@ extern "C" {
             const char*    adaptiveStepping,     // "ON" or "OFF"
 
             /* out */
-            const char                      **result_status,
-            const VELaSSCo::RTFormat::File    **result_streamlines_data
+            const char                        **result_status,
+            size_t*                           num_streamlines,
+            const size_t**                    lengths,
+            const double**                    vertices,
+            const double**                    results
   ) {
 
     CHECK_SESSION_ID(sessionID);
@@ -527,10 +530,15 @@ extern "C" {
     CHECK_QUERY_POINTER(resultID);
     CHECK_QUERY_POINTER(seedingPoints);
     CHECK_QUERY_POINTER(result_status);
-    CHECK_QUERY_POINTER(result_streamlines_data);
+    CHECK_QUERY_POINTER(num_streamlines);
+    CHECK_QUERY_POINTER(lengths);
+    CHECK_QUERY_POINTER(vertices);
+    CHECK_QUERY_POINTER(results);
 
-    result_status           = NULL;
-    result_streamlines_data = NULL;
+    *result_status           = NULL;
+    *lengths                 = NULL;
+    *vertices                = NULL;
+    *results                 = NULL;
 
     API_TRACE;
     try
@@ -545,11 +553,11 @@ extern "C" {
         << "  \"analysisID\"          : \"" << analysisID                                                                       << "\",\n"
         << "  \"stepValue\"           : \"" << stepValue                                                                        << "\",\n"
         << "  \"resultID\"            : \"" << resultID                                                                         << "\",\n"
-        << "  \"numSeedingPoints\"    : \"" << numSeedingPoints                                                                 << "\"\n"
-        << "  \"seedingPoints\"       : \"" << base64_encode((const char*)seedingPoints, 3 * numSeedingPoints * sizeof(double)) << "\"\n"
-        << "  \"integrationMethod\"   : \"" << integrationMethod                                                                << "\"\n"
-        << "  \"maxStreamLineLength\" : \"" << maxStreamLineLength                                                              << "\"\n"
-        << "  \"tracingDirection\"    : \"" << tracingDirection                                                                 << "\"\n"
+        << "  \"numSeedingPoints\"    : \"" << numSeedingPoints                                                                 << "\",\n"
+        << "  \"seedingPoints\"       : \"" << base64_encode((const char*)seedingPoints, 3 * numSeedingPoints * sizeof(double)) << "\",\n"
+        << "  \"integrationMethod\"   : \"" << integrationMethod                                                                << "\",\n"
+        << "  \"maxStreamLineLength\" : \"" << maxStreamLineLength                                                              << "\",\n"
+        << "  \"tracingDirection\"    : \"" << tracingDirection                                                                 << "\",\n"
         << "  \"adaptiveStepping\"    : \"" << adaptiveStepping                                                                 << "\"\n";
       queryCommand << "}\n";
 
@@ -559,6 +567,48 @@ extern "C" {
       // Give back pointers to actual binary data
       if (result == VAL_SUCCESS) {
         *result_status = (const char *)queryData->data();
+
+	    // to debug and test:
+	    // std::string file_name = std::string( "/tmp/valGetResultFromVerticesID_") + resultID + ".bin";
+	    // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
+	    
+	    std::istringstream in(*queryData);
+
+	    // this is a worng corrections:
+	    in.read((char*)num_streamlines, sizeof(size_t));
+	    //in >> numVertices >> numElements >> std::ws;
+      //in >> *num_streamlines;
+	    
+      std::cout << *num_streamlines << std::endl;
+      
+	    if(*num_streamlines > 0){
+	      const size_t offsetLengths = (size_t)in.tellg();
+                        
+        *lengths   = reinterpret_cast<const size_t*>(&((*queryData)[offsetLengths]));
+        size_t numVertices = 0;
+        for(size_t i = 0; i < *num_streamlines; i++){
+          std::cout << (*lengths)[i];
+          numVertices += (*lengths)[i];
+        }
+        
+        std::cout << "Num Vertices = " << numVertices << std::endl;
+        
+        const size_t offsetVertexIDs = offsetLengths   + *num_streamlines*sizeof(size_t);
+	      const size_t offsetValues    = offsetVertexIDs + 3*numVertices*sizeof(double);
+	      
+	      *vertices   = (const double*)(&((*queryData)[offsetVertexIDs]));
+	      *results    = (const double*) (&((*queryData)[offsetValues]));
+        
+	    } else {
+	      *lengths   = NULL;//nullptr;
+	      *vertices      = NULL;//nullptr;
+        *results   = NULL;//nullptr
+	      *num_streamlines = 0;
+	    }
+
+      *result_status = "Ok";
+
+        
 
         // to debug and test:
         // std::string file_name = std::string( "/tmp/valGetSimplifiedMesh_") + meshID + ".bin";

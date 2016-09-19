@@ -291,8 +291,11 @@ extern "C" {
             const char*    adaptiveStepping,     // "ON" or "OFF"
 
             /* out */
-            const char                      **result_status,
-            const VELaSSCo::RTFormat::File  **result_streamlines_data
+            const char                        **result_status,
+            size_t*                           num_streamlines,
+            const size_t**                    lengths,
+            const double**                    vertices,
+            const double**                    results
     );
 
   // at the moment it only works with tetrahedral meshes.

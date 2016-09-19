@@ -246,6 +246,26 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   
   std::cout << "=======================>>> Morteza <<<=====================\n";
   
+	if(true){
+	  //
+	  // Test GetListOfModels()
+	  //
+	  const char *return_list = NULL;
+	  const char *group_qualifier = ""; // loop over all available 4 tables
+	  const char *name_pattern = "*";
+	  result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
+	  CheckVALResult(result, getStringFromCharPointers( "valGetListOfModels ", status));
+	  std::cout << "in VELaSSCo_models:" << std::endl;
+	  std::cout << "   status = " << status << std::endl;
+	  std::cout << "   model_list = " << return_list << std::endl;
+	  // group_qualifier = "Test_VELaSSCo_Models";
+	  result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
+	  CheckVALResult(result);
+	  // std::cout << "in VELaSSCo_Models_V4CIMNE:" << std::endl;
+	  std::cout << "   status = " << status << std::endl;
+	  std::cout << "   model_list = " << return_list << std::endl;
+	}
+
   // Name: FluidizedBed_small
   // FullPath: /localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/
   // ModelID: d0279880beacc38c32c5ae849074c01e
@@ -256,18 +276,19 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   //
   
   //Name: FluidizedBed_large
+
   //FullPath: /localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/
   //ModelID: 35c14b308febbaedd343e077d5e2c3ae
   //Location: Hbase:Test_VELaSSCo_Models
   
-  const char* model_name 		= "FluidizedBed_large";//"FluidizedBed_small";//"FluidizedBed_large";
+ /* const char* model_name 		= "FluidizedBed_large";//"FluidizedBed_small";//"FluidizedBed_large";
   const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";// "/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Small/";//"/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/";
   const char* model_tablename   = "VELaSSCo_Models";//"VELaSSCo_Models";//"Test_VELaSSCo_Models";
-  
-  //const char* fem_name 			=	"fine_mesh-ascii_";
-  //const char* fem_fullpath    	=	"/home/jsperez/Sources/CIMNE/VELASSCO-Data/Telescope_128subdomains_ascii";
-  //const char* fem_tablename  	= 	"VELaSSCo_Models_V4CIMNE";
-  
+  */
+  const char* model_name 	= "fine_mesh";
+  const char* model_fullpath 	= "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";
+  const char* model_tablename   = "VELaSSCo_Models";
+
   std::string model_unique_name = model_tablename;
   model_unique_name += ":";
   model_unique_name += model_fullpath;
@@ -289,9 +310,69 @@ int doTestMorteza( const VAL_SessionID sessionID) {
     std::cout << "   ERROR FEM model could not be opened, login out ..." << std::endl;
     return EXIT_SUCCESS;
   }
+
+  std::string       modelID                     (return_modelID);
+  const char*       analysisID    		= "Kratos";
+  double            timeStep      		= 61.0;
+  const char*       resultID      		= "Velocity";
+  size_t            nResults      		= -1;
+  const int64_t*    listOfIDs             	= 0;
+  const double*     listOfResults 	        = 0;
+  int               nComponentsPerResult        = 1;
   
-  const char* listOfMeshes = 0;
-  std::string modelID( return_modelID );
+  
+  /*std::vector<int64_t> verticesID;
+  verticesID.push_back( 145231 );
+  verticesID.push_back( 145233 );
+  verticesID.push_back( 145234 );
+  verticesID.push_back( 145237 );
+  verticesID.push_back( 145239 );
+  verticesID.push_back( 0 );
+  
+  result = valGetResultFromVerticesID( sessionID, modelID.c_str(), resultID, analysisID, verticesID.data(), timeStep, &status, &listOfIDs, &listOfResults, &nResults );
+  std::cout  << "GetResultFromVerticesID: "    << std::endl
+             << "   status = "                 << status << std::endl;
+  if(listOfResults){
+	  std::cout << "List Of Results = \n" << std::endl;
+	  for(size_t i = 0; i < nResults; i++){
+		  for(int j = 0; j < 3; j++)
+        std::cout << listOfResults[nComponentsPerResult * i + j] << " " ;
+		    std::cout << std::endl;
+    }
+  }*/
+  
+  size_t                            num_streamlines = 0;
+  const size_t*                    lengths         = NULL;
+  const double*                    vertices        = NULL;
+  const double*                    results         = NULL;
+  
+  std::vector<double> seedingPoints;
+  seedingPoints.push_back(1.0);
+  seedingPoints.push_back(2.0);
+  seedingPoints.push_back(3.0);
+  
+  seedingPoints.push_back(3.0);
+  seedingPoints.push_back(4.0);
+  seedingPoints.push_back(1.0);
+  
+  valDoStreamlinesWithResults(
+    sessionID, modelID.c_str(), analysisID, timeStep, resultID, 
+    static_cast<int64_t>(seedingPoints.size() / 3), seedingPoints.data(),
+    "EULER", 5.0, "FORWARD", "ON", &status, &num_streamlines, &lengths, &vertices, &results);
+
+  std::cout << "Number of streamlines = " << num_streamlines << std::endl;
+  
+  for(size_t i = 0; i < num_streamlines; i++){
+    std::cout << (lengths)[i] << std::endl;
+    for(size_t j = 0; j < (lengths)[i]; j++){
+      std::cout << " Vertex " << (vertices)[3*j+0] << " " << (vertices[3*j+1]) << " " << (vertices[3*j+2]) << std::endl;
+      std::cout << " Result " << (results)[3*j+0] << " " << (results[3*j+1]) << " " << (results[3*j+2]) << std::endl;
+    }
+  }
+
+  //}
+
+  /*const char* listOfMeshes = 0;
   
   const char* analysisID = "DEM";
   double      timeStep = 2939000.0;
@@ -323,7 +404,7 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   for(size_t i = 0; i < resultNumVertices; i++){
 	std::cout << resultVertexIDs[i] << "\t" << resultValues[3*i+0] << " " << resultValues[3*i+1] << " " << resultValues[3*i+2] << std::endl;
   }
-  
+  */
   std::cout << "=======================>>> Morteza <<<=====================\n";
   
   return EXIT_SUCCESS;
@@ -981,8 +1062,8 @@ int main(int argc, char* argv[])
   std::cout << "SetConfiguration: " << std::endl;
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;  
 
-  ret = doTestiCores(sessionID);
-  //ret = doTestMorteza( sessionID);
+  //ret = doTestiCores(sessionID);
+  ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
   //ret= doTestDC (sessionID);
   //ret = doTestSINTEF(sessionID);
