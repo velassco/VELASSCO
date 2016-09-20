@@ -1021,7 +1021,7 @@ int main(int argc, char* argv[])
   } else if ( argc == 4) {
     sprintf( hostname_port, "%s:%s?%s", argv[ 1], argv[ 2], argv[ 3]);
   } else {
-    strcpy( hostname_port, "localhost:9990");
+    strcpy( hostname_port, "localhost:9990?multiuser");
   }
 
   printf( "Connecting to '%s' ...\n", hostname_port);
