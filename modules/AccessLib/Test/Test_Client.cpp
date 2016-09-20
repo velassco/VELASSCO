@@ -1011,7 +1011,7 @@ int main(int argc, char* argv[])
   int velassco_default_port  = 26268;
   if ( argc == 2) {
     if ( askForHelp( argv[ 1])) {
-      printf( "Usage: %s [ hostname [ port (default %d, VELaSSCo EngineLayer/QueryManager default port = %d) [ url_parameters]]]\n", 
+      printf( "Usage: %s [ hostname [ port (default %d, VELaSSCo EngineLayer/QueryManager default port = %d) [ url_parameters(multiuser)]]]\n", 
 	      argv[ 0], remote_port, velassco_default_port);
       return EXIT_FAILURE;
     }
