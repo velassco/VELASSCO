@@ -368,7 +368,7 @@ void AnalyticsModule::calculateBoundingBox( const std::string &sessionID, const 
     std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + yarn_output_folder;
     DEBUG( cmd_line);
     ret_cmd = system( cmd_line.c_str());
-  recursive_rmdir( local_tmp_folder.c_str());
+    recursive_rmdir( local_tmp_folder.c_str());
   }
   // delete local tmp files ...
   DEBUG( "Deleting local temporary files ...");
@@ -941,8 +941,8 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   // needs to get the vertices from the DataLayer ...
   rvGetListOfVerticesFromMesh return_data;
   if ( ok) {
-    bool use_data_layer = true;
-    if ( use_data_layer) {
+    // bool use_data_layer = true;
+    // if ( use_data_layer) {
       std::cout << "doing DataLayer::getListOfSelectedVerticesFromMesh" << std::endl;
       std::vector< int64_t> lstVertexIds;
       for ( std::unordered_set< int64_t>::const_iterator itr = lst_UsedNodeIDs.begin(); itr != lst_UsedNodeIDs.end(); itr++) {
@@ -952,7 +952,9 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
 								      sessionID,
 								      modelID, analysisID, stepValue,
 								      meshID, lstVertexIds);
-    } else {
+    // } else {
+    if ( return_data.status == "Error") {
+	std::cout << "ERROR using DataLayer getListOfSelectedVerticesFromMesh, using the MapReduce version !!!" << std::endl;
       // the MapReduce version
       std::cout << "doing MapReduce::getListOfVerticesFromMesh" << std::endl;
       std::string error_str = MRgetListOfVerticesFromMesh( return_data,
