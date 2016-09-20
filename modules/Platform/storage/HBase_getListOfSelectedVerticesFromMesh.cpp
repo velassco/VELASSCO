@@ -134,12 +134,14 @@ bool HBase::getListOfSelectedVerticesFromTables( std::string &report, std::vecto
   LOGGER_SM << "\t  stopRowKey = " << stopRowKey << std::endl;
 
   bool scan_ok = true;
+  int numRows = 0;
   try {
     // or _hbase_client.scannerGetList( rowsResult, scan_id, 10);
     while ( true) {
       _hbase_client->scannerGet( rowsResult, scan_id);
       if ( rowsResult.size() == 0)
   	break;
+      numRows++;
       // process rowsResult
       for ( size_t i = 0; i < rowsResult.size(); i++) {
   	// convert to return type
