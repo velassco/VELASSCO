@@ -5,6 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <unordered_map>
 
 #include <stddef.h>  // defines NULL
 #include <stdio.h>
@@ -63,11 +64,13 @@ namespace VELaSSCo {
     int64_t getNumVertices() const { return _num_vertices;}
     int64_t getNumTriangles() const { return _num_triangles;}
     int64_t getNumQuadrilaterals() const { return _num_quadrilaterals;}
+
+    bool renumberVertices( int64_t startingID = 1); // eventually on mem == STATIC we can't touch the memory !!!
     
   private:
-    const MeshPoint *_lst_vertices;
-    const BoundaryTriangle *_lst_triangles;
-    const BoundaryQuadrilateral *_lst_quadrilaterals;
+    /* const */ MeshPoint *_lst_vertices;
+    /* const */ BoundaryTriangle *_lst_triangles;
+    /* const */ BoundaryQuadrilateral *_lst_quadrilaterals;
     int64_t _num_vertices, _num_triangles, _num_quadrilaterals;
     t_memory_management _allocation_strategy;
   };
@@ -90,8 +93,8 @@ namespace VELaSSCo {
       _num_triangles = n_t;
       _allocation_strategy = BoundaryBinaryMesh::DELEGATE_NEW;
     } else {
-      _lst_vertices = l_v;
-      _lst_triangles = l_t;
+      _lst_vertices = ( MeshPoint *)l_v;
+      _lst_triangles = ( BoundaryTriangle *)l_t;
       _num_vertices = n_v;
       _num_triangles = n_t;
       _allocation_strategy = mem_str;
@@ -116,8 +119,8 @@ namespace VELaSSCo {
       _num_quadrilaterals = n_t;
       _allocation_strategy = BoundaryBinaryMesh::DELEGATE_NEW;
     } else {
-      _lst_vertices = l_v;
-      _lst_quadrilaterals = l_t;
+      _lst_vertices = ( MeshPoint *)l_v;
+      _lst_quadrilaterals = ( BoundaryQuadrilateral *)l_t;
       _num_vertices = n_v;
       _num_quadrilaterals = n_t;
       _allocation_strategy = mem_str;
@@ -280,6 +283,35 @@ namespace VELaSSCo {
       delete[] fileContents;
     }
     return ok;
+  }
+
+  inline bool BoundaryBinaryMesh::renumberVertices( int64_t startingID /* = 1*/) {
+    if ( _allocation_strategy == BoundaryBinaryMesh::STATIC)
+      return false; // we can't touch the memory
+    std::unordered_map< int64_t, int64_t> old2newVerticesID;
+    int64_t newVertexID = startingID;
+    for ( int64_t idx = 0; idx < _num_vertices; idx++) {
+      int64_t oldVertexID = _lst_vertices[ idx]._id;
+      _lst_vertices[ idx]._id = newVertexID;
+      old2newVerticesID[ oldVertexID] = newVertexID;
+      newVertexID++;
+    }
+    if ( _num_triangles > 0) {
+      for ( int64_t idx = 0; idx < _num_triangles; idx++) {
+	for ( int iv = 0; iv < 3; iv++) {
+	  int64_t oldVertexID = _lst_triangles[ idx]._nodes[ iv];
+	  _lst_triangles[ idx]._nodes[ iv] = old2newVerticesID[ oldVertexID];
+	}
+      }
+    } else if ( _num_quadrilaterals > 0) {
+      for ( int64_t idx = 0; idx < _num_quadrilaterals; idx++) {
+	for ( int iv = 0; iv < 4; iv++) {
+	  int64_t oldVertexID = _lst_quadrilaterals[ idx]._nodes[ iv];
+	  _lst_quadrilaterals[ idx]._nodes[ iv] = old2newVerticesID[ oldVertexID];
+	}
+      }
+    }
+    return true;
   }
   
 } // namespace VELaSSCo
