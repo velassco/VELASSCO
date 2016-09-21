@@ -452,7 +452,7 @@ void DataLayerAccess::calculateDiscrete2Continuum(const std::string &sessionID, 
 // }
 
 
-
+#include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
 						const std::string &modelID,
 						const int meshID, const std::string &elementType,
@@ -476,6 +476,26 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
 	}
       }
     }
+    // testing and getting the telescope skin meshin Boundary Binary Mesh Format
+    // if ( return_binary_mesh->length() != 0) {
+    //   BoundaryBinaryMesh *bbm = new BoundaryBinaryMesh;
+    //   // bool ok = bbm->fromString( return_binary_mesh->data(), return_binary_mesh->size(), VELaSSCo::BoundaryBinaryMesh::STATIC);
+    //   // ok = bbm->toFile( "/tmp/telescope.bbm");
+    //   // if ( !ok) {
+    //   // 	printf( "Error\n");
+    //   // } else {
+    //   // 	printf( "Test OK\n");
+    //   // }
+    //   // bbm->reset();
+    //   bool ok = bbm->fromFile( "/tmp/telescope.bbm");
+    //   if ( !ok) {
+    // 	printf( "Error\n");
+    //   } else {
+    // 	printf( "Test OK\n");
+    //   }
+    //   *return_binary_mesh = bbm->toString();
+    //   delete bbm;
+    // }
   }
 }
 
