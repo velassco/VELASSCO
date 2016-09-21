@@ -443,7 +443,7 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
   if ( !found ) {
     std::stringstream buffer;
     buffer << " result " << resultName << " information not found";
-    LOGGER << buffer << std::endl;
+    LOGGER << buffer.str() << std::endl;
     *return_error_str = buffer.str();
     return;
   }
