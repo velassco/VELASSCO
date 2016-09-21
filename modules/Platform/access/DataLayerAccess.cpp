@@ -492,7 +492,7 @@ void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
     //   } else {
     // 	printf( "Test OK\n");
     //   }
-    //   bbm->renumberVertices( 1);
+    //   bbm->renumberVerticesIDs( 1);
     //   *return_binary_mesh = bbm->toString();
     //   delete bbm;
     // }

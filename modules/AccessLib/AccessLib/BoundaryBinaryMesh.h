@@ -65,7 +65,7 @@ namespace VELaSSCo {
     int64_t getNumTriangles() const { return _num_triangles;}
     int64_t getNumQuadrilaterals() const { return _num_quadrilaterals;}
 
-    bool renumberVertices( int64_t startingID = 1); // eventually on mem == STATIC we can't touch the memory !!!
+    bool renumberVerticesIDs( int64_t startingID = 1); // eventually on mem == STATIC we can't touch the memory !!!
     
   private:
     /* const */ MeshPoint *_lst_vertices;
@@ -285,7 +285,7 @@ namespace VELaSSCo {
     return ok;
   }
 
-  inline bool BoundaryBinaryMesh::renumberVertices( int64_t startingID /* = 1*/) {
+  inline bool BoundaryBinaryMesh::renumberVerticesIDs( int64_t startingID /* = 1*/) {
     if ( _allocation_strategy == BoundaryBinaryMesh::STATIC)
       return false; // we can't touch the memory
     std::unordered_map< int64_t, int64_t> old2newVerticesID;
