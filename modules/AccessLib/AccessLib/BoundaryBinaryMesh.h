@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 
 #include <stddef.h>  // defines NULL
@@ -53,6 +54,8 @@ namespace VELaSSCo {
     bool fromString( const std::string str, const t_memory_management mem_str) {
       return fromString( str.data(), str.length(), mem_str);
     }
+    bool toFile( const std::string &filename);
+    bool fromFile( const std::string &filename);
 
     const MeshPoint *getLstVertices() const { return _lst_vertices;}
     const BoundaryTriangle *getLstTriangles() const { return _lst_triangles;}
@@ -77,7 +80,7 @@ namespace VELaSSCo {
       for ( int64_t i = 0; i < n_v; i++) {
 	lst_vert[ i] = l_v[ i];
       }
-      BoundaryTriangle *lst_tri = new BoundaryTriangle[ n_v];
+      BoundaryTriangle *lst_tri = new BoundaryTriangle[ n_t];
       for ( int64_t i = 0; i < n_t; i++) {
 	lst_tri[ i] = l_t[ i];
       }
@@ -241,6 +244,42 @@ namespace VELaSSCo {
       }
     }
     return ( numReadVertices && numReadFaces);
+  }
+
+  inline bool BoundaryBinaryMesh::toFile( const std::string &filename) {
+    ofstream fileOut;
+    fileOut.open( filename, ios::binary | ios::out);
+    bool ok = fileOut.good();
+    if ( ok) {
+      int magicNumber = 0xb0b1f11e; // BOundary BInary FILE, also to detect Big/Little endianess
+      fileOut.write( ( char *)&magicNumber, sizeof( int));
+      const std::string &str = this->toString();
+      size_t str_len = str.size();
+      fileOut.write( ( char *)&str_len, sizeof( size_t));
+      fileOut.write( str.data(), str.size());
+      ok = fileOut.good();
+      fileOut.close();
+    }
+    return ok;
+  }
+
+  inline bool BoundaryBinaryMesh::fromFile( const std::string &filename) {
+    ifstream fileIn;
+    fileIn.open( filename, ios::binary | ios::in);
+    bool ok = fileIn.good();
+    if ( ok) {
+      int magicNumber = 0;
+      fileIn.read( ( char *)&magicNumber, sizeof( int));
+      // check if it's == 0xb0b1f11e; // BOundary BInary FILE
+      size_t str_len = 0;
+      fileIn.read( ( char *)&str_len, sizeof( size_t));
+      char *fileContents = new char[ str_len];
+      fileIn.read( fileContents, str_len);;
+      fileIn.close();
+      ok = this->fromString( fileContents, str_len, COPY);
+      delete[] fileContents;
+    }
+    return ok;
   }
   
 } // namespace VELaSSCo
