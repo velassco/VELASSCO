@@ -238,7 +238,7 @@ public:
    bool stopConnection() { return true;  }
    void getStatusDB(std::string &s)
    {
-      s = "OK";
+      s = "VELaSSCo QM + EDM version\nOK";
    }
 
    void calculateDiscrete2Continuum(const std::string &sessionID, const std::string &modelID,
