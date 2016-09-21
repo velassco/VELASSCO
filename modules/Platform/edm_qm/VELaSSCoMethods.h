@@ -19,11 +19,11 @@ public:
    void                 GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults& rv, const std::string& analysisID, const double stepValue);
    void                 GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndElementsFromMesh& rv, const std::string& analysisID, const double stepValue);
    void                 GetResultFromVerticesID(rvGetResultFromVerticesID& rv, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices);
-   void                 GetBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const std::string& analysisID, const double stepValue, const std::string& meshID);
+//   bool                 GetBoundaryOfLocalMesh(const std::string& analysisID, const double stepValue, const int meshID, MergeJob **lastMergep, std::string *return_error_str);
    void                 GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& analysisID, const double stepValue);
    void                 InjectFileSequence(Container<char*> *FileNameFormats, int FirstModelNo, int LastModelNo, char *EDMmodelNameFormat, Container<char*> *msgs);
    void                 CreateCubeFromFileSequence(Container<char*> *FileNameFormats, int FirstModelNo, int LastModelNo, char *EDMmodelNameFormat, Container<char*> *msgs);
-   void                 calculateBoundaryOfLocalMesh(const int meshID, const std::string &elementType, const std::string &analysisID, const double stepValue, std::string *return_binary_mesh, std::string *return_error_str);
+   void                 calculateBoundaryOfLocalMesh(const int meshID, const std::string &elementType, const std::string &analysisID, const double stepValue, char *tempFileForNodeIds, std::string *return_binary_mesh, std::string *return_error_str);
    void                 calculateBoundingBox(const std::string &analysisID, const int numSteps, const double *lstSteps,
                            const int64_t numVertexIDs, const int64_t *lstVertexIDs,
                            double *return_bbox, std::string *return_error_str);

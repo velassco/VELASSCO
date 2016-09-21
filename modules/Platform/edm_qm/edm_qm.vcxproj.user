@@ -6,6 +6,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>O:\edm\v6.0.xxx\output\x64\Debug</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>9000 E:\VELaSSCo\installation\database\EDMcluster VELaSSCo v "E:\VELaSSCo\installation\scripts\VELaSSCo_cluster_barcelona_1.txt" "E:\VELaSSCo\installation\scripts\Inject_barcelona_0_0.txt"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>9000 E:\VELaSSCo\installation\database\EDMcluster VELaSSCo v "E:\VELaSSCo\installation\scripts\VELaSSCo_cluster_1_9.txt"</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

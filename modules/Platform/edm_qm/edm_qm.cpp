@@ -11,31 +11,34 @@
 #include "VELaSSCo_Operations.h"
 #include "VELaSSCoHandler.h"
 #include "VELaSSCoMethods.h"
+#include <omp.h>
 
 
 void GetBoundaryOfLocalMesh(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
 {
    int endTime, startTime;
+   std::string result, errMsg;
 
-   rvGetBoundaryOfLocalMesh boundaryRV;
    printf("\n--->GetBoundaryOfLocalMesh - \"%s\"\n", modelName);
    startTime = GetTickCount();
-   server->getBoundaryOfLocalMesh(boundaryRV, sessionID, modelID, "meshID", "Kratos", 21);
+   server->calculateBoundaryOfAMesh(sessionID, modelID, 0, "Tetrahedra", "Kratos", 21, &result, &errMsg);
    endTime = GetTickCount();
    printf("Elapsed time for GetBoundaryOfLocalMesh is %d milliseconds\n", endTime - startTime);
-   if (strncmp(boundaryRV.status.data(), "Error", 5) == 0) {
-      printf("Error message: \"%s\"\n", boundaryRV.report.data());
-   } else {
-      printf("Query report:\n%s\n\n\n", boundaryRV.report.data());
-      printf("Mesh boundary of %s has %d triangles.\n", modelName, boundaryRV.elements.size());
-      int nn = 0;
-      for (vector<VELaSSCoSM::Triangle>::iterator bufferIter = boundaryRV.elements.begin(); bufferIter != boundaryRV.elements.end() && nn++ < 20; bufferIter++) {
-         for (vector<VELaSSCoSM::NodeID>::iterator nodeIter = bufferIter->nodes.begin(); nodeIter != bufferIter->nodes.end(); nodeIter++) {
-            printf("%10llu", *nodeIter);
-         }
-         printf("\n");
-      }
-   }
+
+
+   //if (strncmp(boundaryRV.status.data(), "Error", 5) == 0) {
+   //   printf("Error message: \"%s\"\n", boundaryRV.report.data());
+   //} else {
+   //   printf("Query report:\n%s\n\n\n", boundaryRV.report.data());
+   //   printf("Mesh boundary of %s has %d triangles.\n", modelName, boundaryRV.elements.size());
+   //   int nn = 0;
+   //   for (vector<VELaSSCoSM::Triangle>::iterator bufferIter = boundaryRV.elements.begin(); bufferIter != boundaryRV.elements.end() && nn++ < 20; bufferIter++) {
+   //      for (vector<VELaSSCoSM::NodeID>::iterator nodeIter = bufferIter->nodes.begin(); nodeIter != bufferIter->nodes.end(); nodeIter++) {
+   //         printf("%10llu", *nodeIter);
+   //      }
+   //      printf("\n");
+   //   }
+   //}
 }
 
 void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
@@ -215,6 +218,15 @@ void GetListOfAnalyses(VELaSSCoHandler *server, string sessionID, char *modelNam
 }
 
 
+void GetCoordinatesAndElementsFromMesh(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
+{
+   rvGetCoordinatesAndElementsFromMesh rv;
+   MeshInfo meshInfo;
+
+   server->getCoordinatesAndElementsFromMesh(rv, sessionID, modelID, "Kratos", 21, meshInfo);
+
+}
+
 /*=================================================================================================
 9000 E:\VELaSSCo\installation\database\EDMcluster VELaSSCo v "E:\VELaSSCo\installation\scripts\VELaSSCo_cluster_0_127.txt"
 
@@ -222,10 +234,64 @@ void GetListOfAnalyses(VELaSSCoHandler *server, string sessionID, char *modelNam
 */
 
 
+
+
+void report_num_threads(int level)
+{
+   //#pragma omp single
+   //{
+      printf("Level %d: number of threads in the team - %d, %d\n", level, omp_get_num_threads(), omp_get_thread_num());
+   //}
+}
+
+
 int main(int argc, char* argv[])
 {
    int rstat;
    char errTxt[1024];
+
+    //omp_set_nested(1);
+
+    //omp_set_dynamic(1);
+    //omp_set_num_threads(128);
+
+    //#pragma omp parallel num_threads(2)
+    //{
+    //    report_num_threads(1);
+
+    //    #pragma omp parallel num_threads(6)
+    //    {
+    //        report_num_threads(2);
+    //        #pragma omp parallel num_threads(4)
+    //        {
+    //            report_num_threads(3);
+    //            int nThreads = omp_get_num_threads();
+    //            nThreads = 0;
+    //        }
+    //    }
+    //}
+    ////#pragma omp parallel num_threads(2)
+    //#pragma omp parallel for
+    //for (int i=0; i < 12; i++)
+    //{
+    //    report_num_threads(1);
+
+    //    //#pragma omp parallel num_threads(6)
+    //    #pragma omp parallel for
+    //    for (int j=0; j < 12; j++)
+    //    {
+    //        report_num_threads(2);
+    //        #pragma omp parallel num_threads(4)
+    //        {
+    //            report_num_threads(3);
+    //            int nThreads = omp_get_num_threads();
+    //            nThreads = 0;
+    //        }
+    //    }
+    //}
+
+    //int nThreads = omp_get_num_threads();
+
 
    printf("The VELaSSCo EDM Query Manager shall have four command line parameters:\n   1. Communcation port\n   2. Database folder\n   3. Database name\n   4. Database password");
    printf("\nOptional commands can be read from the file specified as the 5. parameter\n\n"); // File name for Cluster database init file");
@@ -296,6 +362,8 @@ int main(int argc, char* argv[])
          modelID = rvOM.modelID;
 
          GetBoundaryOfLocalMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
+
+         GetCoordinatesAndElementsFromMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
          CalculateBoundingBox(ourVELaSSCoHandler, sessionID, modelName, modelID);
       

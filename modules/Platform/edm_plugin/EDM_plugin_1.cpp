@@ -12,6 +12,7 @@
 #include "EDM_plugin_1.h"
 #include "VELaSSCoEDMplugin.h"
 #include "FEM_InjectorHandler.h"
+#include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
@@ -774,10 +775,6 @@ getResultValues:
                                                 addNewResult(resultsOnVertices, resType, vres, nOfValuesPrVertex, &maxID, &minID, thisNode.get_id());
                                              }
                                           }
-                                          //EDMLONG id = thisNode.get_id();
-                                          //if (id != vertices[i]) {
-                                          //   id = 1;
-                                          //}
                                        }
                                     }
                                  }
@@ -1304,12 +1301,14 @@ void VELaSSCoEDMplugin::addMeshInfo(Container<EDMVD::MeshInfoEDM> *meshContainer
    if (mesh) {
       EDMVD::MeshInfoEDM *mi = meshContainer->createNext();
       mi->name = resultInfoMemory->allocString(mesh->exists_name() ? mesh->get_name() : (char*)"");
-      // mi->elementType.shape = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : UnknownElement;
+      //mi->elementType.shape.type = VELaSSCoSM::ElementShapeType::UnknownElement;
+      //mi->elementType.shape = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : VELaSSCoSM::ElementShapeType::UnknownElement;
+      mi->elemType = mesh->exists_elementType() ? elementTypeConvert[mesh->get_elementType()] : VELaSSCoSM::ElementShapeType::UnknownElement;
       List<fem::Element*>* elems = mesh->get_elements();
       List<fem::Node*>* nodes = mesh->get_nodes();
       mi->nElements = elems ? elems->size() : 0;
       mi->nVertices = nodes ? nodes->size() : 0;
-      mi->elementType.num_nodes = (EDMULONG32)mi->nVertices;
+      mi->num_nodes = (EDMULONG32)mi->nVertices;
       mi->meshUnits = mi->meshColor = mi->coordsName = NULL;
    }
 }
@@ -1801,6 +1800,14 @@ START_TRACE(fp, "plugin - 7\n");END_TRACE
             } else {
                rstat = plugin->GetBoundaryOfSubMesh(&VELaSSCo_model, vmt, inParams, results); tr;
             }
+         } else if (strEQL(methodName, "GetNodeCoordinates")) {
+            nodeRvGetNodeCoordinates *results = new(theMA)nodeRvGetNodeCoordinates(NULL, returnValues);
+            nodeInGetNodeCoordinates *inParams = new(theMA)nodeInGetNodeCoordinates(NULL, parameters);
+            if (nOfParameters != 2 || nOfReturnValues != 3) {
+               results->return_error_str->putString("Wrong number of input parameters or result values.");
+            } else {
+               rstat = plugin->GetNodeCoordinates(&VELaSSCo_model, vmt, inParams, results); tr;
+            }
          }
       }
 START_TRACE(fp, "plugin - 10\n");END_TRACE
@@ -1932,6 +1939,134 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfSubMesh(Model *theModel, ModelType mt, n
    } else {
       retVal->status->putString("OK");
       retVal->report->putString("");
+   }
+   return rstat;
+}
+
+/*===================================================================================================================*/
+EDMLONG * VELaSSCoEDMplugin::createNodeId_to_object_id_file(fem::Mesh *mesh, char *nodeIdFileName)
+/*===================================================================================================================*/
+{
+   EDMULONG maxID = 0, minID = 0xfffffffffffffff;
+
+   Iterator<fem::Node *, fem::entityType> nodeIter(mesh->get_nodes());
+   for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+      EDMLONG id = n->get_id();
+      if (id > maxID) maxID = id; if (id < minID) minID = id;
+   }
+   const std::size_t fileSize = (maxID - minID + 3) * sizeof(EDMLONG);
+
+   EDMLONG *nodeIdArray = (EDMLONG *)dllMa->alloc(fileSize);
+   memset(nodeIdArray, 0, fileSize);
+   nodeIdArray[0] = minID;
+   nodeIdArray[1] = maxID;
+   for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
+      EDMLONG id = n->get_id();
+      nodeIdArray[id - minID + 2] = n->getInstanceId();
+   }
+   FILE *bfp = fopen(nodeIdFileName, "wb");
+   if (bfp) {
+      size_t nWritten = fwrite(nodeIdArray, 1, fileSize, bfp);
+      if (nWritten != fileSize) THROW("Error when writing to binary file in VELaSSCoEDMplugin::GetResultFromVerticesID.");
+      fclose(bfp);
+   } else {
+      THROW("Cannot open binary file in VELaSSCoEDMplugin::createNodeId_to_object_id_file.");
+   }
+   return nodeIdArray;
+}
+/*===================================================================================================================*/
+void VELaSSCoEDMplugin::getNodeCoordinates(Model *theModel, EDMULONG nOfNodes, EDMULONG *nodeIds, Container<EDMVD::Vertex> *vertices)
+/*===================================================================================================================*/
+{
+   EDMULONG maxID = nodeIdArray[1], minID = nodeIdArray[0];
+   for (int i = 0; i < nOfNodes; i++) {
+      if (nodeIds[i] >= minID && nodeIds[i] <= maxID) {
+         SdaiInstance nodeId = nodeIdArray[nodeIds[i] - minID + 2];
+         if (nodeId) {
+            tEdmiInstData nd;
+            nd.instanceId = nodeId; nd.entityData = &theModel->theEntities[fem::et_Node];
+            fem::Node thisNode(theModel, &nd);
+            EDMVD::Vertex *v = vertices->createNext();
+            v->id = nodeIds[i];
+            v->x = thisNode.get_x(); v->y = thisNode.get_y(); v->z = thisNode.get_z(); 
+            if (v->id != thisNode.get_id()) {
+               THROW("Illegal node Id found by VELaSSCoEDMplugin::GetNodeCoordinates.");
+            }
+         }
+      }
+   }
+}
+/*===================================================================================================================*/
+EDMLONG VELaSSCoEDMplugin::GetNodeCoordinates(Model *theModel, ModelType mt, nodeInGetNodeCoordinates *inParam,
+   nodeRvGetNodeCoordinates *retVal)
+/*===================================================================================================================*/
+{
+   EdmiError rstat = OK;
+   char *emsg = NULL;
+#define nOfParameters 4
+
+   try {
+      FILE *nodeIdsfp = fopen(inParam->nodeIdsFileName->value.stringVal, "rb");
+      if (nodeIdsfp) {
+         EDMULONG nOfNodes = inParam->nOfNodeIds->value.intVal;
+         EDMULONG *nodeIds = (EDMULONG*)dllMa->alloc(nOfNodes * sizeof(EDMULONG)); 
+         size_t nRead = fread(nodeIds, sizeof(EDMULONG), nOfNodes, nodeIdsfp);
+         fclose(nodeIdsfp);
+
+         Container<EDMVD::Vertex> *vertices = new(dllMa)Container<EDMVD::Vertex>(dllMa);
+
+         Iterator<fem::Mesh*, fem::entityType> meshIter(theModel->getObjectSet(fem::et_Mesh), theModel);
+         for (fem::Mesh *mesh = meshIter.first(); mesh; mesh = meshIter.next()) {
+            char *nodeIdFileName = getResultFileName("nodeId_%llu.dat", mesh->getInstanceId());
+            int nOfValuesPrVertex;
+
+            initNodeIdMapping(nodeIdFileName); nodeIdArray = NULL;
+            
+            try {
+               //Open the file mapping and map it as read-only
+               file_mapping node_file(nodeIdFileName, read_only);
+               mapped_region node_region(node_file, read_only);
+               nodeIdArray = (EDMLONG*)node_region.get_address();
+               EDMULONG bufferSize = node_region.get_size();
+
+               getNodeCoordinates(theModel, nOfNodes, nodeIds, vertices);
+
+               //EDMULONG maxID = nodeIdArray[1], minID = nodeIdArray[0];
+               //for (int i = 0; i < nOfNodes; i++) {
+               //   if (nodeIds[i] >= minID && nodeIds[i] <= maxID) {
+               //      SdaiInstance nodeId = nodeIdArray[nodeIds[i] - minID + 2];
+               //      if (nodeId) {
+               //         tEdmiInstData nd;
+               //         nd.instanceId = nodeId; nd.entityData = &theModel->theEntities[fem::et_Node];
+               //         fem::Node thisNode(theModel, &nd);
+               //         EDMVD::Vertex *v = vertices->createNext();
+               //         v->id = nodeIds[i];
+               //         v->x = thisNode.get_x(); v->y = thisNode.get_y(); v->z = thisNode.get_z(); 
+               //         if (v->id != thisNode.get_id()) {
+               //            retVal->return_error_str->putString("Illegal node Id found by VELaSSCoEDMplugin::GetNodeCoordinates.");
+               //            return rstat;
+               //         }
+               //      }
+               //   }
+               //}
+            } catch (boost::interprocess::interprocess_exception exep) {
+               try {
+                  nodeIdArray = createNodeId_to_object_id_file(mesh, getResultFileName("nodeId_%llu.dat", mesh->getInstanceId()));
+                  getNodeCoordinates(theModel, nOfNodes, nodeIds, vertices);
+               } catch (CedmError *e) {
+                  char *emsg = handleError(e);
+                  retVal->return_error_str->putString(emsg);
+                  return rstat;
+               }
+            }
+            retVal->vertices->putContainer(vertices); retVal->nOfNodesFound->putInteger(vertices->size());
+         }
+      }
+   } catch (CedmError *e) {
+      emsg = handleError(e);
+   }
+   if (emsg) {
+      retVal->return_error_str->putString(emsg);
    }
    return rstat;
 }

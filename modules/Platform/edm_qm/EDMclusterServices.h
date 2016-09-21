@@ -1,6 +1,8 @@
 
-struct EDMexecution;
-struct EDMserverContext;
+class EDMexecution;
+class EDMexecutionQueue;
+class EDMserverContext;
+class EDMserverInfo;
 
 #define MAX_PAR 20
 /*================================================================================================*/
@@ -25,7 +27,7 @@ class EDMclusterServices
    Container<EDMserverContext>                        *serverContexts;
    EDMserverContext                                   *lastServerContext;
    CMemoryAllocator                                   clusterMa;
-
+   Container<EDMserverInfo>                           *theEDMservers;
    void                                               countNofAppsrvsOfModel(ClusterModel *cm);
 public:
    Iterator<ecl::EDMdatabase*, ecl::entityType>       databaseIter;
@@ -37,27 +39,31 @@ public:
    startServices assumes that the database servers that constitute the cluster is started before this
    method is executed.
 */
-   void                       startServices();
-   void                       initClusterModel(char *serverListFileName);
-   ecl::EDMcluster            *getTheEDMcluster() { return ourCluster;}
-   void                       getUniqueServerContextID(char *idBuf);
-   SdaiModel                  getClusterModelID();
-   ecl::ClusterModel          *getClusterModel(const char *name, const char *repositoryName);
-   ecl::ClusterRepository     *getClusterRepository(const char *name);
-   EDMserverContext           *getServerContext(char *user, char *group, char *password, EDMmodel *m);
-   EDMserverContext           *getServerContext(char *user, char *group, char *password, EDMServer *srv);
-   void                       listAllEDMservers();
-   void                       stopAllEDMservers();
-   void                       getListOfModelInfoForActualExistingModels(char *outFileName);
-   void                       getListOfModelInfoForActualExistingModels(std::vector<std::string>  *infoList);
+   void                                               startServices();
+   void                                               initClusterModel(char *serverListFileName);
+   ecl::EDMcluster                                    *getTheEDMcluster() { return ourCluster;}
+   void                                               getUniqueServerContextID(char *idBuf);
+   SdaiModel                                          getClusterModelID();
+   ecl::ClusterModel                                  *getClusterModel(const char *name, const char *repositoryName);
+   ecl::ClusterRepository                             *getClusterRepository(const char *name);
+   EDMserverContext                                   *getServerContext(char *user, char *group, char *password, EDMmodel *m);
+   EDMserverContext                                   *getServerContext(char *user, char *group, char *password, EDMServer *srv);
+   void                                               listAllEDMservers();
+   void                                               stopAllEDMservers();
+   void                                               getListOfModelInfoForActualExistingModels(char *outFileName);
+   void                                               getListOfModelInfoForActualExistingModels(std::vector<std::string>  *infoList);
+   EDMServer                                          *getEDMServer(EDMmodel *m);
+   EDMserverInfo                                      *findServerInfo(EDMServer *srv);
+   CMemoryAllocator                                   *getClusterMemoryAllocator() { return &clusterMa; }
 };
 
 /*================================================================================================*/
 /*!
 EDMexecution contains all necessary data to execute one query on one edmappserver.exe.
 */
-struct EDMexecution
+class EDMexecution
 {
+public:
    CMemoryAllocator                 *ema;
    char                             *repositoryName;
    char                             *modelName;
@@ -67,17 +73,47 @@ struct EDMexecution
    CedmError                        *error;
    int                              executionTime;
    int                              modelNumber;  // used when model names have increaing integer in their names
+   EDMserverInfo                    *theEDMserver;
 };
 /*================================================================================================*/
 /*!
 EDMserverContext
 */
-struct EDMserverContext
+class EDMserverContext
 {
+public:
    bool                             inUse;
    SdaiServerContext                srvCtxt;
    char                             *port;
    char                             *host;
+};
+/*================================================================================================*/
+/*!
+EDMserverInfo
+*/
+class EDMserverInfo
+{
+public:
+   InstanceId                       serverId;
+   Container<EDMserverContext>      *srvCtxts;
+   int                              nAppservers;
+
+   EDMserverContext                 *getSrvCtxt(char *user, char *group, char *password, EDMServer *srv, EDMclusterServices *theServer);
+};
+/*================================================================================================*/
+/*!
+EDMexecutionQueue
+*/
+class EDMexecutionQueue
+{
+public:
+   EDMserverInfo                    *theEDMserver;
+   Container<EDMexecution>          *theJobs;
+   int                              nAppservers;
+   int                              nJobsRunning;
+   
+   void* operator new(size_t sz, CMemoryAllocator *ma) { return ma->allocZeroFilled(sz); }
+   EDMexecutionQueue(CMemoryAllocator *ma, EDMserverInfo *srv);
 };
 
 /*================================================================================================*/
@@ -88,21 +124,23 @@ EDMclusterExecution represents one execution of a method on a cluster of EDM dat
 class EDMclusterExecution
 {
 protected:
-   CMemoryAllocator                 ma;
-   EDMclusterServices               *theServer;
-   EDMULONG                         nParameters;
-   EDMULONG                         nAppservers;
-   tRemoteParameter                 params[MAX_PAR];
-   tRemoteParameter                 *paramAddresses[MAX_PAR];
-   tRemoteParameter                 returnValue;
-   Container<EDMexecution>         *subQueries;
-   virtual char                     *getPluginPath() { return ""; }
-   virtual char                     *getPluginName() { return ""; }
-   void                             init()
+   CMemoryAllocator                       ma;
+   EDMclusterServices                     *theServer;
+   EDMULONG                               nParameters;
+   EDMULONG                               nAppservers;
+   tRemoteParameter                       params[MAX_PAR];
+   tRemoteParameter                       *paramAddresses[MAX_PAR];
+   tRemoteParameter                       returnValue;
+   Container<EDMexecution>                *subQueries;
+   Container<EDMexecutionQueue*>           *queryQueuesOnMachines;
+  // Container<Container<EDMexecution>*>    *nodeQueries; // 
+   virtual char                           *getPluginPath() = 0;
+   virtual char                           *getPluginName() = 0;
+   void                                   init()
    {
       nParameters = 0; nAppservers = 0;
    }
-   void                             setOptimalNumberOfThreads();
+   void                                   setOptimalNumberOfThreads();
 public:
    /*!
    Execution on a ClusterModel

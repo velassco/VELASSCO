@@ -66,14 +66,16 @@ namespace EDMVD {
 
 
    typedef struct ElementType {
-//      ElementShapeType                    shape; // to avoid ambiguity meshinfo.type.type
+      VELaSSCoSM::ElementShapeType        shape; // to avoid ambiguity meshinfo.type.type
       EDMULONG                            num_nodes;
    } ElementType;
 
 
    typedef struct MeshInfoEDM {
       char                                *name;        // will return mesh info about the mesh with the specified name - error message if specified mesh does not exist.
-      ElementType                         elementType;  // used to calculate number of nodes to be returned for each element
+      //ElementType                         elementType;  // used to calculate number of nodes to be returned for each element
+      VELaSSCoSM::ElementShapeType::type  elemType;
+      EDMULONG                            num_nodes;
       EDMULONG                            nVertices;    // used to calculate buffer sizes
       EDMULONG                            nElements;    // used to calculate buffer sizes
       char                                *meshUnits;   // not used yet
@@ -458,6 +460,37 @@ struct nodeInGetBoundaryOfLocalMesh : public CppParameterClass
       addAddribute(&analysisID, rptSTRING);
       addAddribute(&timeStep, rptREAL);
       addAddribute(&meshID, rptSTRING);
+   }
+};
+
+
+/*===================================================================================================================*/
+struct nodeRvGetNodeCoordinates : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[3];
+   cppRemoteParameter                    *vertices;
+   cppRemoteParameter                    *nOfNodesFound;
+   cppRemoteParameter                    *return_error_str;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeRvGetNodeCoordinates(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&vertices, rptContainer);
+      addAddribute(&nOfNodesFound, rptINTEGER);
+      addAddribute(&return_error_str, rptSTRING);
+   }
+};
+struct nodeInGetNodeCoordinates : public CppParameterClass
+{
+   cppRemoteParameter                    *attrPointerArr[2];
+   cppRemoteParameter                    *nodeIdsFileName;
+   cppRemoteParameter                    *nOfNodeIds;
+
+   void* operator new(size_t sz, CMemoryAllocator *ma){ return ma->alloc(sz); }
+   nodeInGetNodeCoordinates(CMemoryAllocator *_ma, cppRemoteParameter *inAttrPointerArr)
+      : CppParameterClass(attrPointerArr, sizeof(attrPointerArr), _ma, inAttrPointerArr) {
+      addAddribute(&nodeIdsFileName, rptSTRING);
+      addAddribute(&nOfNodeIds, rptINTEGER);
    }
 };
 

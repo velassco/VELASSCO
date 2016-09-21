@@ -20,6 +20,8 @@ class VELaSSCoEDMplugin
    void                 setNodeId(fem::Node *n, EDMLONG nodeId);
    void                 initNodeIdMapping(char *fileName);
    void                 addMeshInfo(Container<EDMVD::MeshInfoEDM> *meshContainer, fem::Mesh *mesh);
+   EDMLONG              *createNodeId_to_object_id_file(fem::Mesh *mesh, char *nodeIdFileName);
+   void                 getNodeCoordinates(Model *theModel, EDMULONG nOfNodes, EDMULONG *nodeIds, Container<EDMVD::Vertex> *vertices);
 public:
    VELaSSCoEDMplugin(char *crf, char *rn, char *mn) {
       dllMa = new CMemoryAllocator(0x100000); resultInfoMemory = NULL; QUERY_RESULT_FOLDER = crf; repositoryName = rn; modelName = mn;
@@ -40,6 +42,7 @@ public:
    EDMLONG              GetCoordinatesAndElementsFromMesh(Model *theModel, ModelType mt, nodeInGetCoordinatesAndElementsFromMesh *inParam, nodeRvGetCoordinatesAndElementsFromMesh *retVal);
    EDMLONG              GetBoundaryOfLocalMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam, nodeRvGetBoundaryOfLocalMesh *retVal);
    EDMLONG              GetBoundaryOfSubMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam, nodeRvGetBoundaryOfLocalMesh *retVal);
+   EDMLONG              GetNodeCoordinates(Model *theModel, ModelType mt, nodeInGetNodeCoordinates *inParam, nodeRvGetNodeCoordinates *retVal);
    EDMLONG              GetListOfMeshes(Model *theModel, ModelType mt, nodeInGetListOfMeshes *inParam, nodeRvGetListOfMeshes *retVal);
    EDMLONG              InjectFiles(Model *theModel, ModelType mt, nodeInInjectFiles *inParam, nodeRvInjectFiles *retVal);
    void                 addNewResult(Container<EDMVD::ResultOnVertex> *resultsOnVertices, fem::entityType resType, void *vres, int nOfValuesPrVertex, EDMULONG *maxID, EDMULONG *minID, EDMLONG nodeID);

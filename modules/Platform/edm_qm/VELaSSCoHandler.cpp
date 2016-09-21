@@ -198,39 +198,50 @@ char *VELaSSCoHandler::getErrorMsg(int rstat)
 }
 
 /*=============================================================================================================================*/
-void VELaSSCoHandler::calculateBoundaryOfAMesh(const std::string &sessionID, //const std::string &DataLayer_sessionID,
-      const std::string &modelID, //const std::string &dataTableName,
+void VELaSSCoHandler::calculateBoundaryOfAMesh(const std::string &sessionID,
+      const std::string &modelID,
       const int meshID, const std::string &elementType,
       const std::string &analysisID, const double stepValue,
       std::string *return_binary_mesh, std::string *return_error_str)
 /*=============================================================================================================================*/
 {
    VELaSSCoMethods theQuery(theCluster);
-   printf("sessionID = %s\nmodelID =  = %s\nmeshID%d\nelementType = %s\nanalysisID = %s\nstepValue = %f\n = %s\n",
-      sessionID.data(), modelID.data(), meshID, elementType.data(), analysisID.data(), stepValue);
-   *return_binary_mesh = "calculateBoundaryOfAMesh is not implemented";
-}
-/*=============================================================================================================================*/
-void VELaSSCoHandler::getBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const std::string& sessionID,
-   const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
-/*=============================================================================================================================*/
-{
-   VELaSSCoMethods theQuery(theCluster);
    try {
-      thelog->logg(2, "-->GetBoundaryOfLocalMesh\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
+      thelog->logg(2, "-->calculateBoundaryOfAMesh\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
       if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
-         theQuery.GetBoundaryOfLocalMesh(rv, analysisID, time_step, meshID);
+         theQuery.calculateBoundaryOfLocalMesh(meshID, elementType, analysisID, stepValue, getResultFileName("getCoordinate", modelID.data()),
+            return_binary_mesh, return_error_str);
       } else {
-         char *emsg = "Model does not exist.";
-         rv.__set_status("Error"); rv.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+         *return_error_str = "Model does not exist.";
       }
    } catch (CedmError *e) {
       string errMsg;
       handleError(errMsg, e);
-      rv.__set_status("Error"); rv.__set_report(errMsg);
+      *return_error_str = errMsg;
    }
 }
+///*=============================================================================================================================*/
+//void VELaSSCoHandler::getBoundaryOfLocalMesh(rvGetBoundaryOfLocalMesh& rv, const std::string& sessionID,
+//   const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
+///*=============================================================================================================================*/
+//{
+//   VELaSSCoMethods theQuery(theCluster);
+//   try {
+//      thelog->logg(2, "-->GetBoundaryOfLocalMesh\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
+//      setCurrentSession(sessionID.data());
+//      if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
+//         theQuery.GetBoundaryOfLocalMesh(rv, analysisID, time_step, meshID);
+//      } else {
+//         char *emsg = "Model does not exist.";
+//         rv.__set_status("Error"); rv.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
+//      }
+//   } catch (CedmError *e) {
+//      string errMsg;
+//      handleError(errMsg, e);
+//      rv.__set_status("Error"); rv.__set_report(errMsg);
+//   }
+//}
 
 
 
