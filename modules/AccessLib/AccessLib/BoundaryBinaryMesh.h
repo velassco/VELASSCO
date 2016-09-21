@@ -247,8 +247,8 @@ namespace VELaSSCo {
   }
 
   inline bool BoundaryBinaryMesh::toFile( const std::string &filename) {
-    ofstream fileOut;
-    fileOut.open( filename, ios::binary | ios::out);
+    std::ofstream fileOut;
+    fileOut.open( filename, std::ios::binary | std::ios::out);
     bool ok = fileOut.good();
     if ( ok) {
       int magicNumber = 0xb0b1f11e; // BOundary BInary FILE, also to detect Big/Little endianess
@@ -264,8 +264,8 @@ namespace VELaSSCo {
   }
 
   inline bool BoundaryBinaryMesh::fromFile( const std::string &filename) {
-    ifstream fileIn;
-    fileIn.open( filename, ios::binary | ios::in);
+    std::ifstream fileIn;
+    fileIn.open( filename, std::ios::binary | std::ios::in);
     bool ok = fileIn.good();
     if ( ok) {
       int magicNumber = 0;
