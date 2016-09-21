@@ -32,6 +32,8 @@ using namespace VELaSSCo;
 std::string HBase::parseStatusDB( std::string b) {
   std::stringstream result;
 
+  result << "VELaSSCo QM + HBase version" << endl;
+
   cJSON *json = cJSON_Parse( b.c_str());
   if ( !json) 
     return "";
