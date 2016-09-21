@@ -60,8 +60,12 @@ bool EdmAccess::stopConnection()
 
 void EdmAccess::getStatusDB( std::string& _return) {
     
-    DEBUG( " Function EdmAccess::getStatusDB not implemented (QueryManager/EdmAccess.cpp).");
-	return;
+  DEBUG( " Function EdmAccess::getStatusDB not implemented (QueryManager/EdmAccess.cpp).");
+  std::stringstream result;
+  result << "VELaSSCo QM + EDM version" << endl;
+  retuls << " Function EdmAccess::getStatusDB not implemented (QueryManager/EdmAccess.cpp)." << endl;
+  _return = result.str();
+  return;
 }
 
 
