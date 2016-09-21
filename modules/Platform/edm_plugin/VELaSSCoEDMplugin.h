@@ -22,6 +22,7 @@ class VELaSSCoEDMplugin
    void                 addMeshInfo(Container<EDMVD::MeshInfoEDM> *meshContainer, fem::Mesh *mesh);
    EDMLONG              *createNodeId_to_object_id_file(fem::Mesh *mesh, char *nodeIdFileName);
    void                 getNodeCoordinates(Model *theModel, EDMULONG nOfNodes, EDMULONG *nodeIds, Container<EDMVD::Vertex> *vertices);
+   void                 findTrianglesOfMesh(Model *theModel, fem::Mesh *mesh, nodeRvGetBoundaryOfLocalMesh *retVal);
 public:
    VELaSSCoEDMplugin(char *crf, char *rn, char *mn) {
       dllMa = new CMemoryAllocator(0x100000); resultInfoMemory = NULL; QUERY_RESULT_FOLDER = crf; repositoryName = rn; modelName = mn;

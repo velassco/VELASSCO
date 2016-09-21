@@ -1163,6 +1163,46 @@ void writeTrianglesToFile(char *fileName, Container<EDMVD::Triangle> *cont)
    }
 }
 /*===================================================================================================================*/
+void VELaSSCoEDMplugin::findTrianglesOfMesh(Model *theModel, fem::Mesh *mesh, nodeRvGetBoundaryOfLocalMesh *retVal)
+/*===================================================================================================================*/
+{
+   char *triangelFileName = getResultFileName("triangles_%llu.dat", theModel->modelId);
+   FILE *triangelFile = fopen(triangelFileName, "rb");
+   EDMULONG nTrianglesPrContainerBuffer = 0x10000;
+   Container<EDMVD::Triangle>  *triangles;
+
+   if (triangelFile) {
+      triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, triangelFile);
+   } else {
+      Container<EDMVD::Triangle>  *initial_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
+
+      GetAllTriangles(mesh->get_elements(), initial_triangles, theModel);
+
+      if (initial_triangles->size() > nTrianglesPrContainerBuffer) {
+         Container<EDMVD::Triangle>  *sortable_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, initial_triangles);
+         initial_triangles = sortable_triangles;
+      }
+      initial_triangles->sort(compareTriangle);
+                     
+      EDMVD::Triangle *prev = initial_triangles->firstp();
+      triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
+      for (EDMVD::Triangle *t = initial_triangles->nextp(); t; t = initial_triangles->nextp()) {
+         if (prev->conpare(t) == 0) {
+            prev = initial_triangles->nextp();
+         } else {
+            EDMVD::Triangle *newt = triangles->createNext();
+            *newt = *prev; prev = t;
+         }
+      }
+      if (prev) *triangles->createNext() = *prev;
+
+      triangles->writeToBinaryFile(triangelFileName);
+   }
+   retVal->triangle_record_size->putInteger(sizeof(EDMVD::Triangle));
+   retVal->n_triangles->putInteger(triangles->size());
+   retVal->triangle_array->putContainer(triangles);
+}
+/*===================================================================================================================*/
 EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt, nodeInGetBoundaryOfLocalMesh *inParam,
    nodeRvGetBoundaryOfLocalMesh *retVal)
 /*===================================================================================================================*/
@@ -1182,101 +1222,68 @@ EDMLONG VELaSSCoEDMplugin::GetBoundaryOfLocalMesh(Model *theModel, ModelType mt,
       if (mt == mtDEM) {
          emsg = "GetCoordinatesAndElementsFromMesh is not implemented for DEM models.";
       } else {
-         Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
-         fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
-         if (cAnalysis) {
-            emsg = "Specified time step not found.";
-            Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps());
-            for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
-               if (ts->get_time_value() == inParam->timeStep->value.realVal) {
-                  timeStepFound = true;
-                  fem::Mesh *mesh = ts->get_mesh();
-                  //char triangelFileName[0x1000];
-                  char *triangelFileName = getResultFileName("triangles_%llu.dat", theModel->modelId);
-                  //sprintf(triangelFileName, "triangles_%llu.dat", theModel->modelId);
-                  FILE *triangelFile = fopen(triangelFileName, "rb");
-                  EDMULONG nTrianglesPrContainerBuffer = 0x10000;
-                  Container<EDMVD::Triangle>  *triangles;
-
-                  int nmilliSec = GetTickCount() - startTime;
-                  printf("Finding mesh time=%d\n", nmilliSec);
-                  if (triangelFile) {
-                     triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, triangelFile);
-                  } else {
-                     Container<EDMVD::Triangle>  *initial_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
-
-                     GetAllTriangles(mesh->get_elements(), initial_triangles, theModel);
-
-                     if (initial_triangles->size() > nTrianglesPrContainerBuffer) {
-                        Container<EDMVD::Triangle>  *sortable_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, initial_triangles);
-                        initial_triangles = sortable_triangles;
-                     }
-                     initial_triangles->sort(compareTriangle);
-                     
-                     EDMVD::Triangle *prev = initial_triangles->firstp();
-                     triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
-                     for (EDMVD::Triangle *t = initial_triangles->nextp(); t; t = initial_triangles->nextp()) {
-                        if (prev->conpare(t) == 0) {
-                           prev = initial_triangles->nextp();
-                        } else {
-                           EDMVD::Triangle *newt = triangles->createNext();
-                           *newt = *prev; prev = t;
-                        }
-                     }
-                     if (prev) *triangles->createNext() = *prev;
-
-                     triangles->writeToBinaryFile(triangelFileName);
-
-                     //prev = NULL;
-                     //int n = 0;
-                     //for (EDMVD::Triangle *t = triangles->firstp(); t; t = triangles->nextp()) {
-                     //   n++;
-                     //   if (t->node_ids[0] == 0 || t->node_ids[1] == 0 || t->node_ids[2] == 0) {
-                     //      int nasdfasdf = 9999;
-                     //   }
-                     //   if (prev) {
-                     //      if (prev->node_ids[0] == t->node_ids[0] && prev->node_ids[1] == t->node_ids[1] && prev->node_ids[2] == t->node_ids[2]) {
-                     //         int nasdfasdf = 9999;
-                     //      }
-                     //   }
-                     //   prev = t;
-                     //}
-
-                     //Container<EDMVD::Triangle>  *test_triangles_2 = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
-                     //CalculateBoundaryOfMesh(mesh->get_elements(), test_triangles_2, theModel);
-
-                     //if (test_triangles_2->size() > nTrianglesPrContainerBuffer) {
-                     //   Container<EDMVD::Triangle>  *sortable_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, test_triangles_2);
-                     //   test_triangles_2 = sortable_triangles;
-                     //}
-                     //test_triangles_2->sort(compareTriangle);
-                     //EDMVD::Triangle *t2 = test_triangles_2->firstp();
-                     //for (EDMVD::Triangle *t = triangles->firstp(); t; t = triangles->nextp()) {
-                     //   if (t2) {
-                     //      if (t->conpare(t2)) {
-                     //         int zdfgadfgadfg = 999;
-                     //      }
-                     //      t2 = test_triangles_2->nextp();
-                     //   } else {
-                     //      int sdfgsdfg = 9999;
-                     //   }
-                     //}
-                     //if (t2) {
-                     //   int sdfgsdfg = 9999;
-                     //}
-
-                     //writeTrianglesToFile("O:\\edm\\v6.0.xxx\\output\\x64\\Debug\\VELaSSCo_plugins\\test_triangles_2.txt", test_triangles_2);
-                     //writeTrianglesToFile("O:\\edm\\v6.0.xxx\\output\\x64\\Debug\\VELaSSCo_plugins\\triangles.txt", triangles);
-
-                  }
-                  retVal->triangle_record_size->putInteger(sizeof(EDMVD::Triangle));
-                  retVal->n_triangles->putInteger(triangles->size());
-                  retVal->triangle_array->putContainer(triangles);
-                  emsg = NULL;
-               }
+         if (analysisID == NULL || *analysisID == 0) {
+            Iterator<fem::Mesh*, fem::entityType> meshIter(theModel->getObjectSet(fem::et_Mesh), theModel);
+            fem::Mesh* mesh = meshIter.first();
+            if (mesh) {
+               findTrianglesOfMesh(theModel, mesh, retVal);
             }
          } else {
-            emsg = "Analysis with specified name not found.";
+            Iterator<fem::Analysis*, fem::entityType> analysisIter(theModel->getObjectSet(fem::et_Analysis), theModel);
+            fem::Analysis *cAnalysis = getFEManalysis(analysisID, &analysisIter);
+            if (cAnalysis) {
+               emsg = "Specified time step not found.";
+               Iterator<fem::TimeStep*, fem::entityType> tsIter(cAnalysis->get_time_steps());
+               for (fem::TimeStep *ts = tsIter.first(); ts; ts = tsIter.next()) {
+                  if (ts->get_time_value() == inParam->timeStep->value.realVal) {
+                     timeStepFound = true;
+                     fem::Mesh *mesh = ts->get_mesh();
+                  
+                     //char *triangelFileName = getResultFileName("triangles_%llu.dat", theModel->modelId);
+                     //FILE *triangelFile = fopen(triangelFileName, "rb");
+                     //EDMULONG nTrianglesPrContainerBuffer = 0x10000;
+                     //Container<EDMVD::Triangle>  *triangles;
+
+                     //int nmilliSec = GetTickCount() - startTime;
+                     //printf("Finding mesh time=%d\n", nmilliSec);
+                     //if (triangelFile) {
+                     //   triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, triangelFile);
+                     //} else {
+                     //   Container<EDMVD::Triangle>  *initial_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
+
+                     //   GetAllTriangles(mesh->get_elements(), initial_triangles, theModel);
+
+                     //   if (initial_triangles->size() > nTrianglesPrContainerBuffer) {
+                     //      Container<EDMVD::Triangle>  *sortable_triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, initial_triangles);
+                     //      initial_triangles = sortable_triangles;
+                     //   }
+                     //   initial_triangles->sort(compareTriangle);
+                     //   
+                     //   EDMVD::Triangle *prev = initial_triangles->firstp();
+                     //   triangles = new(dllMa)Container<EDMVD::Triangle>(dllMa, nTrianglesPrContainerBuffer);
+                     //   for (EDMVD::Triangle *t = initial_triangles->nextp(); t; t = initial_triangles->nextp()) {
+                     //      if (prev->conpare(t) == 0) {
+                     //         prev = initial_triangles->nextp();
+                     //      } else {
+                     //         EDMVD::Triangle *newt = triangles->createNext();
+                     //         *newt = *prev; prev = t;
+                     //      }
+                     //   }
+                     //   if (prev) *triangles->createNext() = *prev;
+
+                     //   triangles->writeToBinaryFile(triangelFileName);
+                     //}
+                     //retVal->triangle_record_size->putInteger(sizeof(EDMVD::Triangle));
+                     //retVal->n_triangles->putInteger(triangles->size());
+                     //retVal->triangle_array->putContainer(triangles);
+
+                     findTrianglesOfMesh(theModel, mesh, retVal);
+                  }
+                  emsg = NULL;
+               }
+            } else {
+               emsg = "Analysis with specified name not found.";
+            }
          }
       }
    } catch (CedmError *e) {
