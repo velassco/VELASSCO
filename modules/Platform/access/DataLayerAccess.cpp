@@ -650,6 +650,7 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 				return_error_str);
 
   if (return_error_str->length() != 0) {
+    // This means that the result has not been computed before.
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	  ": Failed to get stored volume lr spline: " << return_error_str);
   }
@@ -661,8 +662,9 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
     //    std::string binary_volumelr = "";
     if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
       return_error_str->clear();
-
+      //      std::cout << "data table name: " << table_name_set._data << std::endl;
       AnalyticsModule::getInstance()->createVolumeLRSplineFromBoundingBox( sessionID, modelID,
+									   table_name_set._data,
 									   resultID, stepValue,
 									   analysisID, bBox, tolerance,
 									   numSteps,
@@ -687,8 +689,13 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 			       *result_statistics,
 			       &save_err_str);
     } else {
-      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	    ": The binary blob was not created!");
+      if (return_binary_volume_lrspline->length() != 0) {
+	DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	      ": The binary blob was created but not stored!");
+      } else {
+	DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	      ": The binary blob was not created!");
+      }
     }
   }
 }

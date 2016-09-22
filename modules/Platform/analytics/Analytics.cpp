@@ -1057,6 +1057,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
 
 void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& sessionID,
 							  const std::string& modelID,
+							  const std::string &dataTableName,
 							  const std::string& resultID,
 							  const double stepValue,
 							  const std::string& analysisID,
@@ -1068,8 +1069,116 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
 							  std::string *result_statistics, // JSON format?
 							  std::string *return_error_str) {
 
+  if (tolerance < 0.0) {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": The tolerance is negative, the lrspline method will set a suitable tolerance!");
+  }
+
+  double local_num_steps = numSteps;
+  if (local_num_steps > 8) {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": Number of steps requested: " << local_num_steps << ", setting it to the maximum value 8!");
+    local_num_steps = 8;
+  }
+
+  // needs to get the vertices from the DataLayer ...
+  rvGetListOfVerticesFromMesh return_data;
+  const int meshID = 1;
+  std::string analysis_id_static_mesh("");
+  double step_value_static_mesh = 0.0;
+
+  // DEBUG("SINTEF: ERROR using DataLayer getListOfVerticesFromMesh, using the MapReduce version !!!");
+  // the MapReduce version
+  std::cout << "doing MapReduce::getListOfVerticesFromMesh" << std::endl;
+  //    HBase::TableModelEntry table_name_set;
+  //  std::string data_table_name("Simulations_Data_V4CIMNE");
+  std::string error_str = MRgetListOfVerticesFromMesh( return_data,
+						       sessionID, modelID, 
+						       dataTableName,
+						       analysis_id_static_mesh, step_value_static_mesh, 
+						       meshID);
+
+  std::vector< Vertex> &lst_vertices = return_data.vertex_list;
   DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	": MISSING: Fetch model data (FEM) from HBase!");
+	": Map Reduce version, return_status: " << return_data.status << ", # vertices:" << lst_vertices.size());  
+  //    ok = ( error_str.length() == 0);
+
+#if 0
+  try {
+    DataLayerAccess::Instance()->getListOfVerticesFromMesh( return_data,
+							    sessionID,
+							    modelID, analysis_id_static_mesh, step_value_static_mesh,
+							    meshID);
+    lst_vertices = return_data.vertex_list;
+  } catch (...) {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": ERROR calling getListOfVerticesFromMesh, exception was thrown!");
+    return_data.status = "Error";
+  }
+#endif
+
+  // mesh_vertex.__set_id( node_id);
+  // mesh_vertex.__set_x( node_x);
+  // mesh_vertex.__set_y( node_y);
+  // mesh_vertex.__set_z( node_z);
+
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": Read the vertices, return_status: " << return_data.status << ", # vertices:" << lst_vertices.size());  
+
+  // We then fetch the corresponding results.
+#if 1
+  const int divide_factor = 10;//1; // Using '1' means we fetch all data at once.
+  const int batch_size = ceil(lst_vertices.size()/divide_factor);
+  std::vector<int64_t> local_list_of_vert_id(lst_vertices.size()/divide_factor);
+  std::cout << "HACK: Only fetching a subpart of the vertices!" << std::endl;
+  std::vector<ResultOnVertex>  result_list;
+  for (int kj = 0; kj < divide_factor; ++kj) {
+    std::vector<int64_t> local_list_of_vert_id;
+    local_list_of_vert_id.reserve(batch_size);
+    for (int ki = 0; ki < batch_size; ++ki) {
+      int ind = kj*batch_size + ki;
+      if (ind > lst_vertices.size() - 1) {
+	break;
+      }
+      local_list_of_vert_id.push_back(ind);
+    }
+    rvGetResultFromVerticesID return_data_res;
+    if (local_list_of_vert_id.size() > 0) {
+      DataLayerAccess::Instance()->getResultFromVerticesID( return_data_res, 
+							    sessionID, modelID, 
+							    analysisID, stepValue,
+							    resultID, local_list_of_vert_id); 
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": Fetching result, iter: " << kj << ", return_status: " <<
+	    return_data_res.status << ", # vertices:" << result_list.size());  
+      std::vector<ResultOnVertex> local_result_list = return_data_res.result_list;
+      result_list.insert(result_list.end(), local_result_list.begin(), local_result_list.end());
+    } else {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": ERROR: The list of vertices is empty.");  
+    }
+  }
+
+  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	": Fetched result, # vertices:" << result_list.size());  
+
+#endif
+
+#if 0
+  if (lst_vertices.size() == 0) {
+      vector<int64_t> lstVertexIds(2);
+      lstVertexIds[0] = 0;
+      lstVertexIds[1] = 1;
+      DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
+								      sessionID,
+								      modelID, analysisID, stepValue,
+								      meshID, lstVertexIds);
+      lst_vertices = return_data.vertex_list;
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": Fetching selected vertices, return_status: " << return_data.status << ", # vertices:" << lst_vertices.size());  
+  }
+#endif
+
 
   DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	": MISSING: Parse data to Spline friendly!");

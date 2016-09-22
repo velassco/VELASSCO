@@ -62,6 +62,7 @@ public:
 
   void createVolumeLRSplineFromBoundingBox(const std::string& sessionID,
 					   const std::string& modelID,
+					   const std::string &dataTableName,
 					   const std::string& resultID,
 					   const double stepValue,
 					   const std::string& analysisID,

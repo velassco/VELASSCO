@@ -829,10 +829,24 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
 
   std::cout << "sessionID: " << sessionID << std::endl;
 
-  const char* model_name 		= "fine_mesh";//"fine_mesh-ascii_";
-  // Remember the trailing "/" for the model_fullpath!
-  const char* model_fullpath = "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";
-  const char* model_tablename   = "VELaSSCo_Models";//"VELaSSCo_Models_V4CIMNE";
+  // // We see if the we are on eddie.
+  // std::string precomputed_result_eddie("/localfs/home/velassco/SINTEF_test/telescope_speed_dump_31_eddie.bin");
+  // std::ifstream is_eddie(precomputed_result_eddie);
+  // bool eddie = is_eddie.good();
+  // We see if the we are on acuario.
+  std::string precomputed_result_acuario("/localfs/home/velassco/SINTEF_test/telescope_speed_dump_31_acuario.bin");
+  std::ifstream is_acuario(precomputed_result_acuario);
+  bool acuario = is_acuario.good();
+  if (acuario) {
+    std::cout << "We are on acuario!" << std::endl;
+  }
+
+  const char* model_name = (acuario) ? "fine_mesh-ascii_" : "fine_mesh";
+  const char* model_fullpath = (acuario) ?
+    "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii" :
+    "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";
+  // On Acuario we need to use VELaSSCo_Models_V4CIMNE as the original table is corrupt.
+  const char* model_tablename = (acuario) ? "VELaSSCo_Models_V4CIMNE" : "VELaSSCo_Models";
   
   std::string model_unique_name = model_tablename;
   model_unique_name += ":";
@@ -862,7 +876,7 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   //
   bool do_get_list_of_steps = true;
   double step_value = 0.0;//-1.0;
-  std::string analysisID("FEM"); // For the telescope model we are interested in the FEM data.
+  std::string analysisID("Kratos");//FEM"); // For the telescope model we are interested in the FEM data.
   if ( do_get_list_of_steps) {
     const double *return_list = NULL;
     size_t        return_num_steps = 0;
@@ -891,10 +905,12 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
       if ( return_num_steps > 3)
   	std::cout << "      Step 3 = " << return_list[ 3] << std::endl;
       size_t mid_step = (size_t)(return_num_steps/2);
-      std::cout << "mid_step: " << mid_step << std::endl;
-      step_value = return_list[ mid_step];
+      size_t last_step = (size_t)(return_num_steps/2);
+      //      std::cout << "mid_step: " << mid_step << std::endl;
+      step_value = return_list[return_num_steps-1];//mid_step];
+      std::cout << "step_value: " << step_value << std::endl;
     } else {
-      std::cout << "doTestSINTEF(): Error: " << return_error_str << std::endl;
+      std::cout << "doTestSINTEF(): return_list is NULL. Error: " << return_error_str << std::endl;
     }
   }
 
@@ -938,8 +954,10 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
     }
   }
 
-  double tolerance = 0.5;
-  int numSteps = 5; // 8 at most? 8 the default value?
+  const char* resultID = "VELOCITY";//"Velocity";//"Speed"; // Is this what we want for the telescope example? @@SINTEF201608
+  double tolerance = -1.0;//0.5;  // A negative value means that the method calculates a tolerance.
+  int numSteps = 5; // 8 the default value. Valid range: {1, 2, ..., 8}. If above it is set to 8.
+                    // A negative value means that the method selects num_steps.
   // The result arguments.
   const char*    resultBinaryLRSpline = NULL;
   size_t resultBinaryLRSplineSize;
@@ -949,9 +967,9 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   std::cout << "doTestSINTEF(): Calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
   result = valGetVolumeLRSplineFromBoundingBox( sessionID,
 						opened_modelID.c_str(), // the already opened model
-						"Speed", // Result ID, not sure if this is what we want. @@SINTEF201608
+						resultID, // "VELOCITY"
 						step_value,
-						analysisID.c_str(),
+						analysisID.c_str(), // "Kratos" for the Telescope example.
 						bBox,
 						tolerance,
 						numSteps,
