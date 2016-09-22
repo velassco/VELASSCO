@@ -786,7 +786,7 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
 
          VELaSSCo::BoundaryBinaryMesh boundary_mesh;
          VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle *theTriangles = (VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle*)ma.alloc(lastMerge->targetContainer->size() * sizeof(VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle));
-         VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle *vt = theTriangles;
+         VELaSSCo::BoundaryBinaryMesh::BoundaryTriangle *prev, *vt = theTriangles;
          VELaSSCo::BoundaryBinaryMesh::MeshPoint *thePoints = (VELaSSCo::BoundaryBinaryMesh::MeshPoint*)ma.alloc(nOfPoints * sizeof(VELaSSCo::BoundaryBinaryMesh::MeshPoint));
          VELaSSCo::BoundaryBinaryMesh::MeshPoint *pt = thePoints;
 
@@ -795,21 +795,25 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
          for (EDMVD::Triangle *t = resultContainer->firstp(); t; t = resultContainer->nextp()) {
             vt->_num_nodes = nNodesInTriangle;
             memcpy(vt->_nodes, t->node_ids_orig, sizeof(t->node_ids_orig));
-            vt++;
+            prev = vt; vt++;
          }
 
          EDMLONG nOfPointsReturned = 0;
+         memset(testBuf, 0, testBufSize);
          for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = subQueries->getElementp(i);
             nodeRvGetNodeCoordinates *retVal = (nodeRvGetNodeCoordinates *)e->returnValues;
             Container<EDMVD::Vertex> *vertices = new(&ma)Container<EDMVD::Vertex>(&ma, retVal->vertices);
             for (EDMVD::Vertex *v = vertices->firstp(); v; v = vertices->nextp()) {
-               pt->_coords[0] = v->x; pt->_coords[1] = v->y; pt->_coords[2] = v->z;
-               pt->_id = v->id; nOfPointsReturned++;
+               if (testBuf[v->id - minID] == 0) {
+                  pt->_coords[0] = v->x; pt->_coords[1] = v->y; pt->_coords[2] = v->z;
+                  pt->_id = v->id; nOfPointsReturned++;
+                  testBuf[v->id - minID] = 1;
+               }
                pt++;
             }
          }
-         boundary_mesh.set(thePoints, nOfPoints, theTriangles, resultContainer->size(), VELaSSCo::BoundaryBinaryMesh::NONE);
+         boundary_mesh.set(thePoints, nOfPointsReturned, theTriangles, resultContainer->size(), VELaSSCo::BoundaryBinaryMesh::NONE);
          *return_binary_mesh = boundary_mesh.toString();
 
          endTime = GetTickCount();
