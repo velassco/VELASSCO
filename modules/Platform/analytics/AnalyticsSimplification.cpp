@@ -157,13 +157,24 @@ static bool getBoundaryQuadrilateralsAndResultsFromJavaOutput( const char *filen
        ok = false; 
        break;
      } 
-     double x = byteSwap< double>( *( double*)&binary_data[  0]);
-     double y = byteSwap< double>( *( double*)&binary_data[  8]);
-     double z = byteSwap< double>( *( double*)&binary_data[ 16]);
+     size_t off = 0;
+     double x = byteSwap< double>( *( double*)&binary_data[ off]); off += sizeof( double);
+     double y = byteSwap< double>( *( double*)&binary_data[ off]); off += sizeof( double);
+     double z = byteSwap< double>( *( double*)&binary_data[ off]); off += sizeof( double);
      oldToNewVertexIDMap[ vertexID] = newVertexID;
      VELaSSCo::BoundaryBinaryMesh::MeshPoint newVertex = { newVertexID, { x, y, z}};
      newVertexID++;
      lst_coordinates.push_back( newVertex);
+
+     // now let's see it there are results ...
+     if ( ( value_size / 2) > off) { // value_size = length of value bytes, but in hexadecimalstring
+       // len_res = number of components
+       int len_res = byteSwap< int>( *( int *)&binary_data[ off]); off += sizeof( int);
+       for ( int i = 0; i < len_res; i++) {
+	 double component = byteSwap< double>( *( double*)&binary_data[ off]); off += sizeof( double);
+	 lst_results.push_back( component);
+       }
+     }
    } else if ( keyType == 2) { // MR_TETRAHEDRON
      // key is a MR_SimplifiedTetrahedron i.e. MR_Quadrilateral
      quadrilateral._num_nodes = byteSwap< int>( *( int *)&binary_data[ 4]); // sizeof( int)
@@ -469,8 +480,9 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
   int ret_cmd = 0;
   char meshIDstr[ 100];
   sprintf( meshIDstr, "%d", meshID);
-  char resultInfoStr[ 1000];
-  sprintf( resultInfoStr, "%d %s %d", resultInfo.resultNumber, resultInfo.type.c_str(), resultInfo.numberOfComponents);
+  char resultInfoStr[ 8000];
+  sprintf( resultInfoStr, "\"%s\" %g %d \"%s\" %d", analysisID.c_str(), stepValue,
+	   resultInfo.resultNumber, resultInfo.type.c_str(), resultInfo.numberOfComponents);
   if ( !use_yarn) {
     std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
       sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
