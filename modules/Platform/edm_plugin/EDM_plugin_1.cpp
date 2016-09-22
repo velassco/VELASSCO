@@ -1100,9 +1100,9 @@ void GetAllTriangles(List<fem::Element*> *elementAggr, Container<EDMVD::Triangle
          for (int i = 0; i < 4; i++) {
             InstanceId id0 = nodeIds[nodesInTriangles[i][0]], id1 = nodeIds[nodesInTriangles[i][1]], id2 = nodeIds[nodesInTriangles[i][2]];
             EDMVD::Triangle *t = triangles->createNext();
-            t->node_ids[0] = id0;
-            t->node_ids[1] = id1;
-            t->node_ids[2] = id2;
+            t->node_ids_orig[0] = t->node_ids[0] = id0;
+            t->node_ids_orig[1] = t->node_ids[1] = id1;
+            t->node_ids_orig[2] = t->node_ids[2] = id2;
             EDMULONG *idp0 = &t->node_ids[0], *idp1 = &t->node_ids[1], *idp2 = &t->node_ids[2];
             if (*idp0 > *idp1) swap(idp0, idp1);
             if (*idp1 > *idp2) {

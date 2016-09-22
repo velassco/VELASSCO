@@ -794,7 +794,7 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
 
          for (EDMVD::Triangle *t = resultContainer->firstp(); t; t = resultContainer->nextp()) {
             vt->_num_nodes = nNodesInTriangle;
-            memcpy(vt->_nodes, t->node_ids, sizeof(t->node_ids));
+            memcpy(vt->_nodes, t->node_ids_orig, sizeof(t->node_ids_orig));
             vt++;
          }
 
@@ -806,6 +806,7 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
             for (EDMVD::Vertex *v = vertices->firstp(); v; v = vertices->nextp()) {
                pt->_coords[0] = v->x; pt->_coords[1] = v->y; pt->_coords[2] = v->z;
                pt->_id = v->id; nOfPointsReturned++;
+               pt++;
             }
          }
          boundary_mesh.set(thePoints, nOfPoints, theTriangles, resultContainer->size(), VELaSSCo::BoundaryBinaryMesh::NONE);
@@ -1046,6 +1047,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
             meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
             VELaSSCoSM::ElementType elementType;
             //elementType.__set_shape(mi->elementType.shape);
+            elementType.__set_shape(VELaSSCoSM::ElementShapeType::TetrahedraElement);
             elementType.__set_num_nodes(mi->nVertices);
             meshInfo.__set_elementType(elementType);
             meshInfo.__set_meshNumber(meshNumber++);

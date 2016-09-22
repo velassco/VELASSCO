@@ -7,6 +7,7 @@ namespace EDMVD {
 
   struct Triangle {
       EDMULONG                            node_ids[3];
+      EDMULONG                            node_ids_orig[3];
       
       inline int                          conpare(const Triangle *x)
       {
