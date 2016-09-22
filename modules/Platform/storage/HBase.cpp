@@ -35,8 +35,47 @@ using namespace VELaSSCo;
 using namespace VELaSSCo;
 
 bool HBase::startConnection( const char *DB_hostname, const int DB_port) {
+
   _socket = new boost::shared_ptr<TTransport>( new TSocket( DB_hostname, DB_port));
+  
+
+// FIXME: To allow real multi-user between VELaSSCo Platform and HBase the transport protocol
+// have to change to TFramedTransport. TBufferedTransport is only for single-user.
+//
+// More info regarding how to execute HBase in the correct way:
+/*
++    The optional `transport` parameter specifies the Thrift transport mode to
++    use. Supported values for this parameter are ``buffered`` (the default) and
++    ``framed``. Make sure to choose the right one, since otherwise you might
++    see non-obvious connection errors or program hangs when making
++    a connection. HBase versions before 0.94 always use the buffered transport.
++    Starting with HBase 0.94, the Thrift server optionally uses a framed
++    transport, depending on the parameter passed to the ``hbase-daemon.sh start
++    thrift`` command. The default ``-threadpool`` mode uses the buffered
++    transport; the ``-hsha``, ``-nonblocking``, and ``-threadedselector`` modes
++    use the framed transport.
+
++    Options to allow framed mode:
++    $ hbase thrift start -f
++    or
++    $ hbase thrift start -nonblocking     // I RECOMEND THIS INSTEAD OF '-f' OPTION. Note that nonblocking implies framed.
++    or just obtain all the options with:
++    $ hbase thrift start -h
++    or
++    $ hbase-daemon.sh start thrift -f -nonblocking -p 9090 
+*/
+
+//Single USER:  
+  LOGGER_SM << "Initializing transport protocol to HBase (TBufferedTransport) (SINGLE USER). PLEASE CHECK THAT THE THRIFT HBASE SERVER IS RUNNING IN THE SAME MODE !" << endl;
   _transport = new boost::shared_ptr<TTransport>( new TBufferedTransport( *_socket));
+//Multi USER:
+//  LOGGER_SM << "Initializing transport protocol to HBase (TFramedTransport) (MULTI USER). PLEASE CHECK THAT THE THRIFT HBASE SERVER IS RUNNING IN THE SAME MODE !" << endl;
+//  _transport = new boost::shared_ptr<TTransport>( new TFramedTransport( *_socket));
+
+  
+// END FIXME BLOCK
+
+  
   _protocol = new boost::shared_ptr<TProtocol>( new TBinaryProtocol( *_transport));
   _hbase_client = new HbaseClient( *_protocol);
   _db_host = DB_hostname;
