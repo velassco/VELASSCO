@@ -813,6 +813,23 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
                pt++;
             }
          }
+         EDMLONG ntr = resultContainer->size();
+         vt = theTriangles;
+         for (int i=0; i < ntr; i++) {
+             for (int k=0; k < 3; k++) {
+                int j;
+                pt = thePoints;
+                for (j=0; j < nOfPointsReturned; j++) {
+                    if (vt->_nodes[k] == pt->_id)
+                        break;
+                    pt++;
+                }
+                if (j >= nOfPointsReturned) {
+                    int asdfasdf = 999;
+                }
+             }
+             vt++;
+         }
          boundary_mesh.set(thePoints, nOfPointsReturned, theTriangles, resultContainer->size(), VELaSSCo::BoundaryBinaryMesh::NONE);
          *return_binary_mesh = boundary_mesh.toString();
 
