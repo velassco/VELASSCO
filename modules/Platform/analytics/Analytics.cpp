@@ -1127,16 +1127,16 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
 
   // We then fetch the corresponding results.
 #if 1
-  const int divide_factor = 10;//1; // Using '1' means we fetch all data at once.
-  const int batch_size = ceil(lst_vertices.size()/divide_factor);
+  const size_t divide_factor = 10;//1; // Using '1' means we fetch all data at once.
+  const size_t batch_size = ceil(lst_vertices.size()/divide_factor);
   std::vector<int64_t> local_list_of_vert_id(lst_vertices.size()/divide_factor);
   std::cout << "HACK: Only fetching a subpart of the vertices!" << std::endl;
   std::vector<ResultOnVertex>  result_list;
-  for (int kj = 0; kj < divide_factor; ++kj) {
+  for (size_t kj = 0; kj < divide_factor; ++kj) {
     std::vector<int64_t> local_list_of_vert_id;
     local_list_of_vert_id.reserve(batch_size);
-    for (int ki = 0; ki < batch_size; ++ki) {
-      int ind = kj*batch_size + ki;
+    for (size_t ki = 0; ki < batch_size; ++ki) {
+      size_t ind = kj*batch_size + ki;
       if (ind > lst_vertices.size() - 1) {
 	break;
       }
