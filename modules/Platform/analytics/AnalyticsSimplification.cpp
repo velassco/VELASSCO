@@ -602,6 +602,8 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
 	      << simplified_mesh.getNumQuadrilaterals() << " tetrahedrons and " 
 	      << simplified_mesh.getNumVertices() << " vertices." << std::endl;
     *return_binary_mesh = simplified_mesh.toString();
+    const double *resArray = lst_results.data();
+    *return_result_values = std::string( ( const char *)resArray, lst_results.size() * sizeof( double));
   }
 
   DEBUG( "Deleting output files ...");
