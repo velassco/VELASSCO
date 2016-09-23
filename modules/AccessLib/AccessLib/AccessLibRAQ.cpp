@@ -367,7 +367,7 @@ extern "C" {
 	  // std::string file_name = std::string( "/tmp/valGetBoundaryOfAMesh_") + meshID + ".bin";
 	  // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
 	} else {
-	  *resultErrorStr = queryData->c_str();
+	  *resultErrorStr = queryData ? queryData->c_str() : "Undefined error";
 	}
 
 	return result;
@@ -796,9 +796,16 @@ extern "C" {
 
 	// Give back pointers to actual binary data
 	if (result == VAL_SUCCESS) {
-	  *resultMesh = ( const char *)queryData->data();
-	  *resultMeshByteSize = queryData->length();
-	  *resultValues = (const double*) &( ( ( const char *)queryData->data())[*resultMeshByteSize]);
+	  // compound result: binaryMeshSize + binaryMesh + binaryResults
+	  size_t off = 0;
+	  int64_t binaryMeshSize = 0;
+	  const char *returnData = queryData->data();
+	  memcpy( &binaryMeshSize, returnData, sizeof( int64_t)); 
+	  off += sizeof( int64_t);
+	  *resultMesh = &returnData[ off]; 
+	  off += ( size_t)binaryMeshSize;
+	  *resultMeshByteSize = ( size_t)binaryMeshSize;
+	  *resultValues = (const double*) &returnData[ off];
 	  // to debug and test:
 	  // std::string file_name = std::string( "/tmp/valGetSimplifiedMesh_") + meshID + ".bin";
 	  // dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
