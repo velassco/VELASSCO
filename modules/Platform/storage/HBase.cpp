@@ -32,6 +32,8 @@ using namespace VELaSSCo;
 
 #include "Curl_cmd.h"
 
+#include "globalSettings.h"
+
 using namespace VELaSSCo;
 
 bool HBase::startConnection( const char *DB_hostname, const int DB_port) {
@@ -39,7 +41,7 @@ bool HBase::startConnection( const char *DB_hostname, const int DB_port) {
   _socket = new boost::shared_ptr<TTransport>( new TSocket( DB_hostname, DB_port));
   
 
-// FIXME: To allow real multi-user between VELaSSCo Platform and HBase the transport protocol
+// To allow real multi-user between VELaSSCo Platform and HBase the transport protocol
 // have to change to TFramedTransport. TBufferedTransport is only for single-user.
 //
 // More info regarding how to execute HBase in the correct way:
@@ -64,16 +66,14 @@ bool HBase::startConnection( const char *DB_hostname, const int DB_port) {
 +    or
 +    $ hbase-daemon.sh start thrift -f -nonblocking -p 9090 
 */
-
-//Single USER:  
-  LOGGER_SM << "Initializing transport protocol to HBase (TBufferedTransport) (SINGLE USER). PLEASE CHECK THAT THE THRIFT HBASE SERVER IS RUNNING IN THE SAME MODE !" << endl;
-  _transport = new boost::shared_ptr<TTransport>( new TBufferedTransport( *_socket));
-//Multi USER:
-//  LOGGER_SM << "Initializing transport protocol to HBase (TFramedTransport) (MULTI USER). PLEASE CHECK THAT THE THRIFT HBASE SERVER IS RUNNING IN THE SAME MODE !" << endl;
-//  _transport = new boost::shared_ptr<TTransport>( new TFramedTransport( *_socket));
-
+  if (getTransportProtocolSetting() == 0) { //Single USER:  
+    LOGGER_SM << "Initializing transport protocol to HBase (TBufferedTransport) (SINGLE USER). PLEASE CHECK THAT THE THRIFT HBASE SERVER IS RUNNING IN THE SAME MODE !" << endl;
+    _transport = new boost::shared_ptr<TTransport>( new TBufferedTransport( *_socket));
+  } else { //Multi USER:
+    LOGGER_SM << "Initializing transport protocol to HBase (TFramedTransport) (MULTI USER). PLEASE CHECK THAT THE THRIFT HBASE SERVER IS RUNNING IN THE SAME MODE !" << endl;
+    _transport = new boost::shared_ptr<TTransport>( new TFramedTransport( *_socket));
+  }
   
-// END FIXME BLOCK
 
   
   _protocol = new boost::shared_ptr<TProtocol>( new TBinaryProtocol( *_transport));

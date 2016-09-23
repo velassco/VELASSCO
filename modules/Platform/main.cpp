@@ -48,7 +48,11 @@ int QMiD = 0;
 VELaSSCoSMClient *clp = NULL;
 
 int G_multiUser = 1; // used in queryManager/Server.cpp to start Simple or MultiUser server
+int hbase_transport = 0; // used in storage/HBase.cpp to start hbase connection in buffered or framed transport mode.
+
 int getMultiUserSetting() { return G_multiUser;}
+int getTransportProtocolSetting() { return hbase_transport;}
+
 // to get the proper location of the Analytics jar's
 char *G_VELaSSCo_base_dir = NULL;
 const char *getVELaSSCoBaseDir() { return G_VELaSSCo_base_dir;}
@@ -243,6 +247,7 @@ int main(int argc, char **argv)
     int listen_port = 26267; // standard thrift port : 9090
     const char *hbase_hostname = "localhost"; // or "pez001";
     int         hbase_port     = 9090; // hbase thrift server
+    
 #ifdef EDM
     char *EDM_qm_database_folder = "";
     char *EDM_qm_init_file = "";
@@ -256,6 +261,7 @@ int main(int argc, char **argv)
       printf( "  -port port_number         listening port for this Engine Layer server (default %d)\n", listen_port);
       printf( "  -hbase_host hostname         host name of the HBase Thrift Server (default %s)\n", hbase_hostname);
       printf( "  -hbase_port port_number      port of the HBase Thrift Server (default %d)\n", hbase_port);
+      printf( "  -hbase_transport 0|1         if 0, uses TBufferedTransport, if 1, uses TFramedTransport (default %d)\n", hbase_transport);
 #ifdef EDM
       printf( "  -dl_EDM                   EDM_qm_database_folder EDM_qm_init_file  \n");
       printf( "  -dl_EDM_inject            EDM_qm_database_folder EDM_inject_file  \n");
@@ -308,7 +314,14 @@ int main(int argc, char **argv)
 		  G_multiUser = is_multi;
 		  processed_args += 2;
 		}
-      } else {
+      } else if ( !strcasecmp( argv[ ia], "-hbase_transport")) {
+		ia++;
+		int is_multi = hbase_transport;
+		if ( sscanf( argv[ ia], "%d", &is_multi) == 1) {
+		  hbase_transport = is_multi;
+		  processed_args += 2;
+		}
+      }else {
 		break;
       }
     }
