@@ -580,9 +580,9 @@ void DataLayerAccess::calculateSimplifiedMeshWithResult( const std::string &sess
   if ( return_binary_mesh) {
     return_binary_mesh->clear();
     return_binary_results->clear();
-    // _db->getStoredSimplifiedMeshWithResults( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
-    // 					     return_binary_mesh, return_binary_results, return_error_str);
-    if ( return_binary_mesh->length() == 0) { // nothing found
+    _db->getStoredSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
+					    return_binary_mesh, return_binary_results, return_error_str);
+    if ( ( return_binary_mesh->length() == 0) || ( return_binary_results->length() == 0)) { // nothing found
       *return_error_str = ""; // reset error string
       HBase::TableModelEntry table_name_set;
       if ( _db->getVELaSSCoTableNames( sessionID, modelID, table_name_set)) {
@@ -591,11 +591,11 @@ void DataLayerAccess::calculateSimplifiedMeshWithResult( const std::string &sess
   									   return_binary_mesh, return_binary_results, return_error_str);
   	// Do not store yet the simplified mesh, as it is  not implemented
   	// and to avoid storing garbage
-  	// if ( return_binary_mesh->length() != 0) {
-  	//   std::string save_err_str;
-  	//   _db->saveSimplifiedMesh( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters,
-  	// 			   *return_binary_mesh, &save_err_str);
-  	// }
+	if ( ( return_binary_mesh->length() != 0) && ( return_binary_results->length() != 0)) {
+  	  std::string save_err_str;
+  	  _db->saveSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
+					     *return_binary_mesh, *return_binary_results, &save_err_str);
+  	}
       }
     }
   }
@@ -609,14 +609,14 @@ void DataLayerAccess::deleteStoredSimplifiedMeshWithResult( const std::string &s
 							    const  std::string &parameters,
 							    const std::string &resultID,
 							    std::string *return_error_str) {
-  // _db->getStoredSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
-  // 					  NULL, NULL, return_error_str);
-  // if ( return_error_str->length() == 0) { // i.e. boundary mesh was found
-  //   _db->deleteStoredSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
-  // 					       return_error_str);
-  // } else {
-  //   return_error_str->clear(); // not found, // already deleted?
-  // }
+  _db->getStoredSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
+  					  NULL, NULL, return_error_str);
+  if ( return_error_str->length() == 0) { // i.e. boundary mesh was found
+    _db->deleteStoredSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
+  					       return_error_str);
+  } else {
+    return_error_str->clear(); // not found, // already deleted?
+  }
 }
 
 
