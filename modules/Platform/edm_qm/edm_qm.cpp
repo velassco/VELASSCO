@@ -13,15 +13,14 @@
 #include "VELaSSCoMethods.h"
 #include <omp.h>
 
-
-void GetBoundaryOfLocalMesh(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
+void GetBoundaryOfLocalMesh(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID, char *analysisName, double timeStep)
 {
    int endTime, startTime;
    std::string result, errMsg;
 
    printf("\n--->GetBoundaryOfLocalMesh - \"%s\"\n", modelName);
    startTime = GetTickCount();
-   server->calculateBoundaryOfAMesh(sessionID, modelID, 0, "Tetrahedra", "Kratos", 21, &result, &errMsg);
+   server->calculateBoundaryOfAMesh(sessionID, modelID, 0, "Tetrahedra", analysisName, timeStep, &result, &errMsg);
    endTime = GetTickCount();
    printf("Elapsed time for GetBoundaryOfLocalMesh is %d milliseconds\n", endTime - startTime);
 
@@ -350,6 +349,12 @@ int main(int argc, char* argv[])
          string modelID;
          rvOpenModel rvOM;
          char *modelName = "telescope";
+         char *analysisName = "Kratos";
+         double timeStep = 21;
+         modelName = "VELaSSCo_HbaseBasicTest";
+         analysisName = "geometry";
+         timeStep = 10;
+
 
          printf("\n--->UserLogin\n");
          ourVELaSSCoHandler->userLogin(sessionID, "olav", "myRole", "myPassword");
@@ -361,7 +366,7 @@ int main(int argc, char* argv[])
          //printf("Comments: %s\n", rvOM.report.data());
          modelID = rvOM.modelID;
 
-         GetBoundaryOfLocalMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
+         GetBoundaryOfLocalMesh(ourVELaSSCoHandler, sessionID, modelName, modelID, analysisName, timeStep);
 
          GetCoordinatesAndElementsFromMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
 

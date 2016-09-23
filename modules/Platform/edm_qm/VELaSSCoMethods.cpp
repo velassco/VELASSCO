@@ -631,7 +631,7 @@ void writeTrianglesToFile(char *fileName, Container<EDMVD::Triangle> *cont)
             }
          }
          p = t;
-         fprintf(triangleFile, "%10llu%10llu%10llu\n", t->node_ids[0], t->node_ids[1], t->node_ids[2]);
+         fprintf(triangleFile, "%10llu%10llu%10llu%10llu%10llu%10llu\n", t->node_ids[0], t->node_ids[1], t->node_ids[2], t->node_ids_orig[0], t->node_ids_orig[1], t->node_ids_orig[2]);
       }
       fclose(triangleFile);
    }
@@ -708,7 +708,7 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
                Container<EDMVD::Triangle> *triangleContainer = new(&ma)Container<EDMVD::Triangle>(&ma, retVal->triangle_array);
                mj->addContainer(triangleContainer);
 #ifdef _DEBUG
-               //writeTrianglesToFile(tfilena, triangleContainer);
+               writeTrianglesToFile(tfilena, triangleContainer);
 #endif
             }
          }
@@ -731,6 +731,13 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
             for (int i=0; i < 3; i++) {
                if (t->node_ids[i] > maxID) maxID = t->node_ids[i];
                if (t->node_ids[i] < minID) minID = t->node_ids[i];
+               if (t->node_ids[i] == 2942089) {
+                  int asdfasdf = 999;
+               } else if (t->node_ids[i] == 2921129) {
+                  int asdfasdf = 999;
+               } else if (t->node_ids[i] == 0) {
+                  int asdfasdf = 999;
+               }
             }
          }
          EDMULONG testBufSize = maxID - minID + 1;
@@ -759,6 +766,15 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
             fclose(bbfp);
          }
 
+         for (int i=0; i < nOfUniqueNodeIds;  i++) {
+            if (uniqueNodeIds[i] == 2942089) {
+               int asdfasdf = 999;
+            } else if (uniqueNodeIds[i] == 2921129) {
+               int asdfasdf = 999;
+            } else if (uniqueNodeIds[i] == 0) {
+               int asdfasdf = 999;
+            }
+         }
          nodeInGetNodeCoordinates *incoordinateParams = new(&ma)nodeInGetNodeCoordinates(&ma, NULL);
          incoordinateParams->nodeIdsFileName->putString(tempFileForNodeIds);
          incoordinateParams->nOfNodeIds->putInteger(nOfUniqueNodeIds);
@@ -809,8 +825,8 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
                   pt->_coords[0] = v->x; pt->_coords[1] = v->y; pt->_coords[2] = v->z;
                   pt->_id = v->id; nOfPointsReturned++;
                   testBuf[v->id - minID] = 1;
+                  pt++;
                }
-               pt++;
             }
          }
          EDMLONG ntr = resultContainer->size();
@@ -825,7 +841,8 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
                     pt++;
                 }
                 if (j >= nOfPointsReturned) {
-                    int asdfasdf = 999;
+                    EDMLONG errid = vt->_nodes[k];
+                    errid = 0;
                 }
              }
              vt++;
