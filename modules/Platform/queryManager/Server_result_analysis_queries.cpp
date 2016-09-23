@@ -740,7 +740,8 @@ void QueryManagerServer::ManageGetSimplifiedMeshWithResult( Query_Result &_retur
 
   if ( error_str.length() == 0) {
     _return.__set_result( (Result::type)VAL_SUCCESS );
-    _return.__set_data( binary_mesh + binary_results);
+    int64_t binaryMeshSize = ( int64_t)binary_mesh.size();
+    _return.__set_data( std::string( ( const char *)&binaryMeshSize, sizeof( int64_t)) + binary_mesh + binary_results);
   } else {
     _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
     _return.__set_data( error_str);
