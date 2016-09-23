@@ -378,7 +378,7 @@ int main(int argc, char **argv)
                 ourCluster.stopAllEDMservers();
              } else if (cmd == "list") {
                 ourCluster.listAllEDMservers();
-             } else if (cmd.find("close_databases") == 0) {
+             } else if (cmd == "close_databases") {
                 ourCluster.closeAllEDMdatabses();
              } else if (cmd == "list_models") {
                 std::vector<std::string>  infoList;
@@ -387,7 +387,6 @@ int main(int argc, char **argv)
                 for (int i=0; i < sz; i++) {
                    printf("   %s\n", infoList.at(i).c_str());
                 }
-             }
              }
           } while (cmd.find("exit") != 0 && cmd.find("quit") != 0);
 
