@@ -376,8 +376,15 @@ int main(int argc, char **argv)
              cin >> cmd;
              if (cmd.find("stop") == 0) {
                 ourCluster.stopAllEDMservers();
-             } else if (cmd.find("list") == 0) {
+             } else if (cmd == "list") {
                 ourCluster.listAllEDMservers();
+             } else if (cmd == "list_models") {
+                std::vector<std::string>  infoList;
+                ourCluster.getListOfModelInfoForActualExistingModels(&infoList);
+                int sz = infoList.size();
+                for (int i=0; i < sz; i++) {
+                   printf("   %s\n", infoList.at(i).c_str());
+                }
              }
           } while (cmd.find("exit") != 0 && cmd.find("quit") != 0);
 
