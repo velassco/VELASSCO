@@ -539,9 +539,33 @@ void EDMclusterServices::stopAllEDMservers()
       EdmiError rstat = edmiRemoteStopServer(srvCtxts[i]->srvCtxt, "v", NULL, FORCE_TO_TERMINATE | ALL_SERVERS, NULL);
       if (rstat) {
 #pragma omp critical
-         printf("error=%llu\n", rstat);
+         printf("edmiRemoteStopServer, error=%llu - %s\n", rstat, edmiGetErrorText(rstat));
       }
    }
+   printf("stopAllEDMservers finished\n");
+}
+/*==============================================================================================================================*/
+void EDMclusterServices::closeAllEDMdatabses()
+/*==============================================================================================================================*/
+{
+   tEdmiInstData cmd;
+   EDMserverContext *srvCtxts[1000];
+   int nServers = 0;
+
+   clusterModel->reset();
+   Iterator<ecl::EDMServer*, ecl::entityType> serverIter(clusterModel->getObjectSet(ecl::et_EDMServer), clusterModel);
+   for (ecl::EDMServer *srv = serverIter.first(); srv && nServers < 1000; srv = serverIter.next()) {
+      srvCtxts[nServers++] = getServerContext("superuser", "", "v", srv);
+   }
+#pragma omp parallel for
+   for (int i = 0; i < nServers; i++) {
+      EdmiError rstat = edmiRemoteCloseDatabase(srvCtxts[i]->srvCtxt, "v", NULL);
+      if (rstat) {
+#pragma omp critical
+         printf("edmiRemoteCloseDatabase, error=%llu - %s\n", rstat, edmiGetErrorText(rstat));
+      }
+   }
+   printf("closeAllEDMdatabses finished\n");
 }
 
 /*==============================================================================================================================*/

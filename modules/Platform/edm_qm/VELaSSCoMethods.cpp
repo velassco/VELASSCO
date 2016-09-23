@@ -707,9 +707,7 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
                nodeRvGetBoundaryOfLocalMesh *retVal = (nodeRvGetBoundaryOfLocalMesh *)e->returnValues;
                Container<EDMVD::Triangle> *triangleContainer = new(&ma)Container<EDMVD::Triangle>(&ma, retVal->triangle_array);
                mj->addContainer(triangleContainer);
-#ifdef _DEBUG
-               writeTrianglesToFile(tfilena, triangleContainer);
-#endif
+               //writeTrianglesToFile(tfilena, triangleContainer);
             }
          }
 
@@ -731,13 +729,6 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
             for (int i=0; i < 3; i++) {
                if (t->node_ids[i] > maxID) maxID = t->node_ids[i];
                if (t->node_ids[i] < minID) minID = t->node_ids[i];
-               if (t->node_ids[i] == 2942089) {
-                  int asdfasdf = 999;
-               } else if (t->node_ids[i] == 2921129) {
-                  int asdfasdf = 999;
-               } else if (t->node_ids[i] == 0) {
-                  int asdfasdf = 999;
-               }
             }
          }
          EDMULONG testBufSize = maxID - minID + 1;
@@ -766,15 +757,6 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
             fclose(bbfp);
          }
 
-         for (int i=0; i < nOfUniqueNodeIds;  i++) {
-            if (uniqueNodeIds[i] == 2942089) {
-               int asdfasdf = 999;
-            } else if (uniqueNodeIds[i] == 2921129) {
-               int asdfasdf = 999;
-            } else if (uniqueNodeIds[i] == 0) {
-               int asdfasdf = 999;
-            }
-         }
          nodeInGetNodeCoordinates *incoordinateParams = new(&ma)nodeInGetNodeCoordinates(&ma, NULL);
          incoordinateParams->nodeIdsFileName->putString(tempFileForNodeIds);
          incoordinateParams->nOfNodeIds->putInteger(nOfUniqueNodeIds);
@@ -829,24 +811,24 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
                }
             }
          }
-         EDMLONG ntr = resultContainer->size();
-         vt = theTriangles;
-         for (int i=0; i < ntr; i++) {
-             for (int k=0; k < 3; k++) {
-                int j;
-                pt = thePoints;
-                for (j=0; j < nOfPointsReturned; j++) {
-                    if (vt->_nodes[k] == pt->_id)
-                        break;
-                    pt++;
-                }
-                if (j >= nOfPointsReturned) {
-                    EDMLONG errid = vt->_nodes[k];
-                    errid = 0;
-                }
-             }
-             vt++;
-         }
+         //EDMLONG ntr = resultContainer->size();
+         //vt = theTriangles;
+         //for (int i=0; i < ntr; i++) {
+         //    for (int k=0; k < 3; k++) {
+         //       int j;
+         //       pt = thePoints;
+         //       for (j=0; j < nOfPointsReturned; j++) {
+         //           if (vt->_nodes[k] == pt->_id)
+         //               break;
+         //           pt++;
+         //       }
+         //       if (j >= nOfPointsReturned) {
+         //           EDMLONG errid = vt->_nodes[k];
+         //           errid = 0;
+         //       }
+         //    }
+         //    vt++;
+         //}
          boundary_mesh.set(thePoints, nOfPointsReturned, theTriangles, resultContainer->size(), VELaSSCo::BoundaryBinaryMesh::NONE);
          *return_binary_mesh = boundary_mesh.toString();
 

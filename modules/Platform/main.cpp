@@ -321,7 +321,7 @@ int main(int argc, char **argv)
 		  hbase_transport = is_multi;
 		  processed_args += 2;
 		}
-      }else {
+      } else {
 		break;
       }
     }
@@ -378,6 +378,8 @@ int main(int argc, char **argv)
                 ourCluster.stopAllEDMservers();
              } else if (cmd == "list") {
                 ourCluster.listAllEDMservers();
+             } else if (cmd.find("close_databases") == 0) {
+                ourCluster.closeAllEDMdatabses();
              } else if (cmd == "list_models") {
                 std::vector<std::string>  infoList;
                 ourCluster.getListOfModelInfoForActualExistingModels(&infoList);
@@ -385,6 +387,7 @@ int main(int argc, char **argv)
                 for (int i=0; i < sz; i++) {
                    printf("   %s\n", infoList.at(i).c_str());
                 }
+             }
              }
           } while (cmd.find("exit") != 0 && cmd.find("quit") != 0);
 

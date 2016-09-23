@@ -50,6 +50,7 @@ public:
    EDMserverContext                                   *getServerContext(char *user, char *group, char *password, EDMServer *srv);
    void                                               listAllEDMservers();
    void                                               stopAllEDMservers();
+   void                                               closeAllEDMdatabses();
    void                                               getListOfModelInfoForActualExistingModels(char *outFileName);
    void                                               getListOfModelInfoForActualExistingModels(std::vector<std::string>  *infoList);
    EDMServer                                          *getEDMServer(EDMmodel *m);

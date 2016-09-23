@@ -1970,13 +1970,6 @@ EDMLONG * VELaSSCoEDMplugin::createNodeId_to_object_id_file(fem::Mesh *mesh, cha
    for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
       EDMLONG id = n->get_id();
       nodeIdArray[id - minID + 2] = n->getInstanceId();
-            if (id == 2942089) {
-               int asdfasdf = 999;
-            } else if (id == 2921129) {
-               int asdfasdf = 999;
-            } else if (id == 0) {
-               int asdfasdf = 999;
-            }
    }
    FILE *bfp = fopen(nodeIdFileName, "wb");
    if (bfp) {
@@ -1994,14 +1987,6 @@ void VELaSSCoEDMplugin::getNodeCoordinates(Model *theModel, EDMULONG nOfNodes, E
 {
    EDMULONG maxID = nodeIdArray[1], minID = nodeIdArray[0];
    for (int i = 0; i < nOfNodes; i++) {
-            if (nodeIds[i] == 2942089) {
-               int asdfasdf = 999;
-            } else if (nodeIds[i] == 2921129) {
-               int asdfasdf = 999;
-            } else if (nodeIds[i] == 0) {
-               int asdfasdf = 999;
-            }
-
       if (nodeIds[i] >= minID && nodeIds[i] <= maxID) {
          SdaiInstance nodeId = nodeIdArray[nodeIds[i] - minID + 2];
          if (nodeId) {
