@@ -68,15 +68,15 @@ bool getColumnQualifierStringFromRow( std::string &retValue, const TRowResult &r
   return num_data;
 }
 
-void SplitBinaryMeshInChunks( std::vector< std::string> &lst_chunks_data, const std::string &binary_mesh) {
+void SplitBinaryDataInChunks( std::vector< std::string> &lst_chunks_data, const std::string &binary_data) {
   const size_t chunk_size = 8 * 1024 * 1024;
   size_t start_idx = 0;
-  size_t end_idx = binary_mesh.size();
+  size_t end_idx = binary_data.size();
   for ( start_idx = 0; start_idx < end_idx; start_idx += chunk_size) {
     size_t cur_chunk_size = chunk_size;
     if ( start_idx + cur_chunk_size > end_idx)
       cur_chunk_size = end_idx - start_idx;
-    lst_chunks_data.push_back( binary_mesh.substr( start_idx, cur_chunk_size));
+    lst_chunks_data.push_back( binary_data.substr( start_idx, cur_chunk_size));
   }
 }
 
@@ -387,6 +387,7 @@ bool HBase::getStoredVQueryExtraData( const std::string &sessionID,
 bool HBase::getStoredVQueryExtraDataSplitted( const std::string &sessionID,
 					      const std::string &modelID,
 					      const std::string &analysisID, const double stepValue,
+					      int partitionID,
 					      const std::string &vqueryName, const std::string &vqueryParameters,
 					      std::vector< std::string> *lst_vquery_results) { // list = 1 entry per partition
   TableModelEntry table_set;
@@ -411,8 +412,8 @@ bool HBase::getStoredVQueryExtraDataSplitted( const std::string &sessionID,
   }
 
 
-  std::string startRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0);
-  std::string stopRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, ( int)0x7fffffff);
+  std::string startRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, partitionID);// 0);
+  std::string stopRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, partitionID + 1);// ( int)0x7fffffff);
   std::string prefixRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
 
   std::string qrNumStr = "";
@@ -702,3 +703,119 @@ bool HBase::deleteAllStoredCalculationsForThisModel( const std::string &sessionI
   }
   return ok;
 }
+
+bool HBase::storeQueryInfoInMetadataTable( const std::string &sessionID,
+					   const std::string &modelID,
+					   const std::string &analysisID, const double stepValue,
+					   const std::string &vqueryName, const std::string &vqueryParameters) {
+  bool ok = true;
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return false;
+  }
+  std::string tableName = table_set._stored_vquery_metadata;
+  if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
+    ok = createStoredMetadataTable( table_set._stored_vquery_metadata);
+    if ( !ok) return false;
+  }
+  
+  StrMap attr;
+  // adding metadata row:
+  std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  std::vector< Mutation> metadata_mutations;
+  metadata_mutations.push_back( Mutation());
+  metadata_mutations.back().column = "Q:vq";
+  metadata_mutations.back().value = vqueryName;
+  metadata_mutations.push_back( Mutation());
+  metadata_mutations.back().column = "Q:qp";
+  metadata_mutations.back().value = vqueryParameters;
+  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+  LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
+  LOGGER_SM << "   saving metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
+  std::string tmp_report = "   metadata row saved";
+  try {
+    _hbase_client->mutateRow( tableName, metadataRowKey, metadata_mutations, attr);
+  } catch ( const IOError &ioe) {
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    tmp_report = tmp.str();
+    ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  } catch ( TException &tx) {
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    tmp_report = tmp.str();
+    ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  }
+  LOGGER_SM << "     report = " << tmp_report << std::endl;  
+
+  return ok;
+}
+
+
+bool HBase::storeQueryDataInDataTable( const std::string &sessionID,
+				       const std::string &modelID,
+				       const std::string &analysisID, const double stepValue,
+				       int partitionID,
+				       const std::string &vqueryName, const std::string &vqueryParameters,
+				       const std::string &vqueryData) {
+  bool ok = true;
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return false;
+  }
+  if ( !checkIfTableExists( table_set._stored_vquery_data)) {
+    // create data table
+    ok = createStoredMetadataTable( table_set._stored_vquery_data);
+    if ( !ok) return false;
+  }
+
+  std::string tableName = table_set._stored_vquery_data;
+
+  // cell can only be 8MB big .... may be ( with 10MB it raises an exception)
+  std::vector< std::string> lst_chunks_data;
+  SplitBinaryDataInChunks( lst_chunks_data, vqueryData);
+
+  // adding data row:
+  StrMap attr;
+  std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, partitionID);
+  std::vector< Mutation> data_mutations;
+  data_mutations.push_back( Mutation());
+  data_mutations.back().column = "Q:qrNum";
+  {
+    std::stringstream tmp;
+    tmp << lst_chunks_data.size();
+    data_mutations.back().value = tmp.str();
+  }
+  char tmp_col[ 100];
+  for ( size_t idx = 0; idx < lst_chunks_data.size(); idx++) {
+    data_mutations.push_back( Mutation());
+    sprintf( tmp_col, "Q:qr_%d", ( int)idx); // at 8MB each chunk, i hope we'll never have 2*10^9 * 10 MB bytes !!!
+    data_mutations.back().column = std::string( tmp_col);
+    data_mutations.back().value = lst_chunks_data[ idx];
+  }
+  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+  LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
+  LOGGER_SM << "   saving data cells with " << vqueryData.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
+  std::string tmp_report = "   data row saved";
+  try {
+    _hbase_client->mutateRow( tableName, dataRowKey, data_mutations, attr);
+  } catch ( const IOError &ioe) {
+    std::stringstream tmp;
+    tmp << "IOError = " << ioe.what();
+    tmp_report = tmp.str();
+    ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  } catch ( TException &tx) {
+    std::stringstream tmp;
+    tmp << "TException = " << tx.what();
+    tmp_report = tmp.str();
+    ok = false;
+    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
+  }
+  LOGGER_SM << "     report = " << tmp_report << std::endl;  
+
+  return ok;
+}
+

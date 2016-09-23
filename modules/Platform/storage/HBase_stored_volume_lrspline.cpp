@@ -109,7 +109,8 @@ bool HBase::deleteStoredVolumeLRSpline( const std::string& sessionID,
     " \"" << analysisID << "\" " << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
     bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance << " " << numSteps;
   const std::string &vqueryParameters = vqueryParametersStream.str();
-  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
+  // VolumeLRBspline stored in partitionID = 0
+  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
 						 vqueryName, vqueryParameters, 
 						 NULL); // we don't want the data just to check if it's there
   if ( !found) {
@@ -217,7 +218,7 @@ bool HBase::saveVolumeLRSpline( const std::string& sessionID,
   // cell can only be 8MB big .... may be ( with 10MB it raises an exception)
   std::vector< std::string> lst_chunks_data;
   // The splitting of the binary mesh shuld work well with any binary data.
-  SplitBinaryMeshInChunks( lst_chunks_data, binary_volume_lrspline);
+  SplitBinaryDataInChunks( lst_chunks_data, binary_volume_lrspline);
 
   DEBUG("SINTEF: " << __FILE__ << __FUNCTION__ << ": Number of binary chunks: " << lst_chunks_data.size());
 
@@ -318,7 +319,8 @@ bool HBase::alreadyStoredVolumeLRSpline( const std::string& sessionID,
   vqueryParametersStream << modelID << " " << resultID << " " << stepValue <<
     " \"" << analysisID << "\" " << bBox[0] << " " << bBox[1] << " " << bBox[2] << " " << 
     bBox[3] << " " << bBox[4] << " " << bBox[5] << " " << tolerance << " " << numSteps;
-  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
+  // VolumeLRBspline stored in partitionID = 0
+  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
 						 vqueryName, vqueryParametersStream.str(), 
 						 NULL); // we don't want the data just to check if it's there
 

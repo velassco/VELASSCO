@@ -49,7 +49,7 @@ using namespace VELaSSCo;
 
 
 ////////////////////////////////////////////////////////////////////////
-// Stored SimplfiedMesh
+// Stored SimplifiedMesh
 ////////////////////////////////////////////////////////////////////////
 
 void HBase::getStoredSimplifiedMesh( const std::string &sessionID,
@@ -66,7 +66,8 @@ void HBase::getStoredSimplifiedMesh( const std::string &sessionID,
   // get number of pieces, i.e. metadata Q:qrNum
   // ?not needed? eventually retrieve all i can ....
 
-  bool scan_ok = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
+  // binary mesh stored in partitionID = 0
+  bool scan_ok = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
 						   vqueryName, vqueryParametersStream.str(),
 						   &lst_simplified_meshes);
   if ( !scan_ok) {
@@ -92,7 +93,8 @@ bool HBase::deleteStoredSimplifiedMesh( const std::string &sessionID,
   std::string vqueryName = "GetSimplifiedMesh";
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" << analysisID << "\" " << stepValue << " \"" << parameters << "\"";
-  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue,
+  // binary mesh stored in partitionID = 0
+  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
 						 vqueryName, vqueryParametersStream.str(), 
 						 NULL); // we don't want the data just to check if it's there
   if ( !found) {
@@ -183,82 +185,175 @@ bool HBase::saveSimplifiedMesh( const std::string &sessionID,
     if ( !ok) return false;
   }
 
-  // cell can only be 8MB big .... may be ( with 10MB it raises an exception)
-  std::vector< std::string> lst_chunks_data;
-  SplitBinaryMeshInChunks( lst_chunks_data, binary_mesh);
+  ok = storeQueryInfoInMetadataTable( sessionID, modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  if ( !ok) return false;
+  ok = storeQueryDataInDataTable( sessionID, modelID, analysisID, stepValue, 0, vqueryName, vqueryParameters, binary_mesh);
+  return ok; // guess the rows are ok...  
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// Stored SimplifiedMeshWithResult
+////////////////////////////////////////////////////////////////////////
+
+void HBase::getStoredSimplifiedMeshWithResult( const std::string &sessionID,
+					       const std::string &modelID,
+					       const int meshID, const std::string &elementType,
+					       const std::string &analysisID, const double stepValue,
+					       const std::string &parameters, const std::string &resultID,
+					       std::string *return_binary_mesh, std::string *return_binary_results, 
+					       std::string *return_error_str) {
+  std::string vqueryName = "GetSimplifiedMeshWithResult";
+  std::stringstream vqueryParametersStream;
+  vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" 
+			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";
+  std::vector< std::string> lst_simplified_dataes; // should only be one !!!
+
+  // get number of pieces, i.e. metadata Q:qrNum
+  // ?not needed? eventually retrieve all i can ....
+
+  // binary mesh stored in partitionID = 0
+  bool scan_ok = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
+						   vqueryName, vqueryParametersStream.str(),
+						   &lst_simplified_dataes);
+  if ( !scan_ok || ( lst_simplified_dataes.size() <= 0)) {
+    *return_error_str = std::string( "Stored mesh data from simplified mesh with results not found.");
+    return;
+  }
+  if ( return_binary_mesh) {
+    *return_binary_mesh = lst_simplified_dataes[ 0];
+  }
+  lst_simplified_dataes.clear();
+  // binary results stored in partitionID = 1
+  scan_ok = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 1,
+						   vqueryName, vqueryParametersStream.str(),
+						   &lst_simplified_dataes);
+  if ( !scan_ok || ( lst_simplified_dataes.size() <= 0)) {
+    *return_error_str = std::string( "Stored results data from simplified mesh with results not found.");
+  }
+  if ( return_binary_results) {
+    *return_binary_results = lst_simplified_dataes[ 0];
+  }
+}
+
+bool HBase::deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
+					const std::string &modelID,
+					const int meshID, const std::string &elementType,
+					const std::string &analysisID, const double stepValue,
+					const std::string &parameters, const std::string &resultID,
+					std::string *return_error_str) {
+  std::string vqueryName = "GetSimplifiedMeshWithResult";
+  std::stringstream vqueryParametersStream;
+  vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" 
+			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";
+  // binary mesh stored in partitionID = 0
+  bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
+						 vqueryName, vqueryParametersStream.str(), 
+						 NULL); // we don't want the data just to check if it's there
+  // binary results stored in partitionID = 1
+  bool found2 = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 1,
+						 vqueryName, vqueryParametersStream.str(), 
+						 NULL); // we don't want the data just to check if it's there
+  if ( !found && !found2) {
+    // already deleted?
+    // *return_error_str = std::string( "Stored simplified mesh not found.");
+    return_error_str->clear();
+    return true; // not/never stored
+  }
+
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return false; // no information about tables for this user and this session
+  }
+
+  const std::string &vqueryParameters = vqueryParametersStream.str();
+
+  LOGGER_SM << "DELETING stored simplified mesh for '" << vqueryParameters << "'" << std::endl;
+  // reset tables:
+  bool reset_tables = false;
+  if ( reset_tables) {
+    if ( checkIfTableExists( table_set._stored_vquery_metadata)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_metadata);
+      _hbase_client->deleteTable(  table_set._stored_vquery_metadata);
+    }
+    if ( checkIfTableExists( table_set._stored_vquery_data)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_data);
+      _hbase_client->deleteTable(  table_set._stored_vquery_data);
+    }
+  }
+
+  // delete the row in the metadata table
+  if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
+    return true; // not created yet? i.e. already deleted...
+  }
 
   std::string tableName = table_set._stored_vquery_metadata;
-
-  StrMap attr;
-  // adding metadata row:
   std::string metadataRowKey = createStoredMetadataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters);
-  std::vector< Mutation> metadata_mutations;
-  metadata_mutations.push_back( Mutation());
-  metadata_mutations.back().column = "Q:vq";
-  metadata_mutations.back().value = vqueryName;
-  metadata_mutations.push_back( Mutation());
-  metadata_mutations.back().column = "Q:qp";
-  metadata_mutations.back().value = vqueryParameters;
-  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
-  LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
-  LOGGER_SM << "   saving metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
-  std::string tmp_report = "   metadata row saved";
-  try {
-    _hbase_client->mutateRow( tableName, metadataRowKey, metadata_mutations, attr);
-  } catch ( const IOError &ioe) {
-    std::stringstream tmp;
-    tmp << "IOError = " << ioe.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  } catch ( TException &tx) {
-    std::stringstream tmp;
-    tmp << "TException = " << tx.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  }
-  LOGGER_SM << "     report = " << tmp_report << std::endl;  
+  bool ok = deleteStoredRow( tableName, metadataRowKey, "deleting stored Metadata row");
 
+  // now delete the row in the data table
+  if ( !checkIfTableExists( table_set._stored_vquery_data)) {
+    return true; // not created yet? i.e. already deleted...
+  }
   tableName = table_set._stored_vquery_data;
+  // binary mesh in partition 0
+  std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0);
+  ok = deleteStoredRow( tableName, dataRowKey, "deleting stored Data row");
+  // binary results in partition 1
+  dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 1);
+  ok = deleteStoredRow( tableName, dataRowKey, "deleting stored Data row");
+  return ok;
+}
 
-  // adding data row:
-  std::string dataRowKey = createStoredDataRowKey( modelID, analysisID, stepValue, vqueryName, vqueryParameters, 0); // only one simplified mesh, in partition 0
-  std::vector< Mutation> data_mutations;
-  data_mutations.push_back( Mutation());
-  data_mutations.back().column = "Q:qrNum";
-  {
-    std::stringstream tmp;
-    tmp << lst_chunks_data.size();
-    data_mutations.back().value = tmp.str();
+bool HBase::saveSimplifiedMeshWithResult( const std::string &sessionID,
+					  const std::string &modelID,
+					  const int meshID, const std::string &elementType,
+					  const std::string &analysisID, const double stepValue,
+					  const std::string &parameters, const std::string &resultID,
+					  const std::string &binary_mesh, const std::string &binary_results, 
+					  std::string *return_error_str) {
+  TableModelEntry table_set;
+  if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
+    return false;
   }
-  char tmp_col[ 100];
-  for ( size_t idx = 0; idx < lst_chunks_data.size(); idx++) {
-    data_mutations.push_back( Mutation());
-    sprintf( tmp_col, "Q:qr_%d", ( int)idx); // at 8MB each chunk, i hope we'll never have 2*10^9 * 10 MB bytes !!!
-    data_mutations.back().column = std::string( tmp_col);
-    data_mutations.back().value = lst_chunks_data[ idx];
-  }
-  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
-  LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
-  LOGGER_SM << "   saving data cells with " << binary_mesh.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
-  tmp_report = "   data row saved";
-  try {
-    _hbase_client->mutateRow( tableName, dataRowKey, data_mutations, attr);
-  } catch ( const IOError &ioe) {
-    std::stringstream tmp;
-    tmp << "IOError = " << ioe.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  } catch ( TException &tx) {
-    std::stringstream tmp;
-    tmp << "TException = " << tx.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  }
-  LOGGER_SM << "     report = " << tmp_report << std::endl;  
 
+  std::string vqueryName = "GetSimplifiedMeshWithResult";
+  std::stringstream vqueryParametersStream;
+  vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" 
+			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";
+  const std::string &vqueryParameters = vqueryParametersStream.str();
+
+  LOGGER_SM << "Saving simplified mesh for '" << vqueryParameters << "'" << std::endl;
+  // create tables if needed
+  bool ok = false;
+  // reset tables:
+  bool reset_tables = false;
+  if ( reset_tables) {
+    if ( checkIfTableExists( table_set._stored_vquery_metadata)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_metadata);
+      _hbase_client->deleteTable(  table_set._stored_vquery_metadata);
+    }
+    if ( checkIfTableExists( table_set._stored_vquery_data)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_data);
+      _hbase_client->deleteTable(  table_set._stored_vquery_data);
+    }
+  }
+  if ( !checkIfTableExists( table_set._stored_vquery_metadata)) {
+    ok = createStoredMetadataTable( table_set._stored_vquery_metadata);
+    if ( !ok) return false;
+  }
+  if ( !checkIfTableExists( table_set._stored_vquery_data)) {
+    // create data table
+    ok = createStoredMetadataTable( table_set._stored_vquery_data);
+    if ( !ok) return false;
+  }
+
+  ok = storeQueryInfoInMetadataTable( sessionID, modelID, analysisID, stepValue, vqueryName, vqueryParameters);
+  if ( !ok) return false;
+
+  // binary mesh in partition 0
+  ok = storeQueryDataInDataTable( sessionID, modelID, analysisID, stepValue, 0, vqueryName, vqueryParameters, binary_mesh);
+  // binary results in partition 1
+  ok = storeQueryDataInDataTable( sessionID, modelID, analysisID, stepValue, 1, vqueryName, vqueryParameters, binary_results);
   return ok; // guess the rows are ok...  
 }

@@ -205,20 +205,40 @@ namespace VELaSSCo
 				  const std::string &modelID,
 				  const int meshID, const std::string &elementType,
 				  const std::string &analysisID, const double stepValue,
-				  const  std::string &parameters,
+				  const std::string &parameters,
 				  std::string *return_binary_mesh, std::string *return_error_str);
     bool deleteStoredSimplifiedMesh( const std::string &sessionID,
 				     const std::string &modelID,
 				     const int meshID, const std::string &elementType,
 				     const std::string &analysisID, const double stepValue,
-				     const  std::string &parameters,
+				     const std::string &parameters,
 				     std::string *return_error_str);
     bool saveSimplifiedMesh( const std::string &sessionID,
 			     const std::string &modelID,
 			     const int meshID, const std::string &elementType,
 			     const std::string &analysisID, const double stepValue,
-			     const  std::string &parameters,
+			     const std::string &parameters,
 			     const std::string &binary_mesh, std::string *return_error_str);
+    void getStoredSimplifiedMeshWithResult( const std::string &sessionID,
+					    const std::string &modelID,
+					    const int meshID, const std::string &elementType,
+					    const std::string &analysisID, const double stepValue,
+					    const std::string &parameters, const std::string &resultID,
+					    std::string *return_binary_mesh, std::string *return_binary_results, 
+					    std::string *return_error_str);
+    bool deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
+					       const std::string &modelID,
+					       const int meshID, const std::string &elementType,
+					       const std::string &analysisID, const double stepValue,
+					       const std::string &parameters, const std::string &resultID,
+					       std::string *return_error_str);
+    bool saveSimplifiedMeshWithResult( const std::string &sessionID,
+				       const std::string &modelID,
+				       const int meshID, const std::string &elementType,
+				       const std::string &analysisID, const double stepValue,
+				       const std::string &parameters, const std::string &resultID,
+				       const std::string &binary_mesh, const std::string &binary_results, 
+				       std::string *return_error_str);
     bool deleteAllStoredCalculations( const std::string &sessionID,
 				      const std::string &modelID,
 				      std::string *return_error_str);
@@ -228,6 +248,7 @@ namespace VELaSSCo
     bool getStoredVQueryExtraDataSplitted( const std::string &sessionID,
 					   const std::string &modelID,
 					   const std::string &analysisID, const double stepValue,
+					   int partitionID,
 					   const std::string &vqueryName, const std::string &vqueryParameters,
 					   // list = 1 entry per partition, may be null only to check if there is data
 					   std::vector< std::string> *lst_vquery_results);
@@ -240,6 +261,18 @@ namespace VELaSSCo
     bool deleteAllStoredCalculationsForThisModel( const std::string &sessionID,
 						  const std::string &modelID,
 						  std::string *return_error_str);
+
+    bool storeQueryInfoInMetadataTable( const std::string &sessionID,
+					const std::string &modelID,
+					const std::string &analysisID, const double stepValue,
+					const std::string &vqueryName, const std::string &vqueryParameters);
+
+    bool storeQueryDataInDataTable( const std::string &sessionID,
+				    const std::string &modelID,
+				    const std::string &analysisID, const double stepValue,
+				    int partitionID,
+				    const std::string &vqueryName, const std::string &vqueryParameters,
+				    const std::string &data);
 
     void getStoredVolumeLRSpline( const std::string& sessionID,
 				  const std::string& modelID,
