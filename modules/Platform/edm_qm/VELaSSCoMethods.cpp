@@ -625,7 +625,6 @@ void writeTrianglesToFile(char *fileName, Container<EDMVD::Triangle> *cont)
       for (EDMVD::Triangle *t = cont->firstp(); t; t = cont->nextp()) {
          if (p) {
             if (p->conpare(t) >= 0) {
-               //THROW("Merge error in VELaSSCoMethods::GetBoundaryOfLocalMesh.")
                if (++nError < 100)
                   fprintf(triangleFile, "Merge error in VELaSSCoMethods::GetBoundaryOfLocalMesh.");
             }

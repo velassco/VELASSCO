@@ -365,14 +365,14 @@ int main(int argc, char* argv[])
          //printf("Returned modelID: %s\n", rvOM.modelID.data());
          //printf("Comments: %s\n", rvOM.report.data());
          modelID = rvOM.modelID;
+      
+         GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
          GetBoundaryOfLocalMesh(ourVELaSSCoHandler, sessionID, modelName, modelID, analysisName, timeStep);
 
          GetCoordinatesAndElementsFromMesh(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
          CalculateBoundingBox(ourVELaSSCoHandler, sessionID, modelName, modelID);
-      
-         GetListOfAnalyses(ourVELaSSCoHandler, sessionID, modelName, modelID);
 
          GetListOfMeshes(ourVELaSSCoHandler, sessionID, modelName, modelID);
 

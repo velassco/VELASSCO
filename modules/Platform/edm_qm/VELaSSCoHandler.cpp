@@ -210,8 +210,31 @@ void VELaSSCoHandler::calculateBoundaryOfAMesh(const std::string &sessionID,
       thelog->logg(2, "-->calculateBoundaryOfAMesh\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
       if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
-         theQuery.calculateBoundaryOfLocalMesh(meshID, elementType, analysisID, stepValue, getResultFileName("getCoordinate", modelID.data()),
-            return_binary_mesh, return_error_str);
+         bool dataOnFile = false;
+         char *bomFileName = getResultFileName("boundary_of_mesh_", modelID.data());
+         FILE *bomfp = fopen(bomFileName, "r");
+         if (bomfp) {
+            fseek(bomfp, 0L, SEEK_END);
+            EDMULONG filesz = ftell(bomfp); fclose(bomfp);
+            bomfp = fopen(bomFileName, "rb");
+            if (bomfp) {
+               return_binary_mesh->resize(filesz);
+               size_t nDoubleRead = fread((void*)return_binary_mesh->data(), 1, filesz, bomfp);
+               fclose(bomfp); dataOnFile = true;
+            }
+         }
+         if (! dataOnFile) {
+            theQuery.calculateBoundaryOfLocalMesh(meshID, elementType, analysisID, stepValue, getResultFileName("getCoordinate", modelID.data()),
+               return_binary_mesh, return_error_str);
+            if (return_error_str->size() == 0) {
+               bomFileName = getResultFileName("boundary_of_mesh_", modelID.data());
+               bomfp = fopen(bomFileName, "wb");
+               if (bomfp) {
+                  size_t nDoubleWritten = fwrite(return_binary_mesh->data(), 1, return_binary_mesh->size(), bomfp);
+                  fclose(bomfp);
+               }
+            }
+         }
       } else {
          *return_error_str = "Model does not exist.";
       }
@@ -437,7 +460,31 @@ void VELaSSCoHandler::getListOfAnalyses(rvGetListOfAnalyses& _return, const std:
       thelog->logg(2, "-->getListOfAnalyses\nsessionID=%s\nmodelID=%s\n\n", sessionID.data(), modelID.data());
       setCurrentSession(sessionID.data());
       if (theQuery.OpenClusterModelAndPrepareExecution(modelID)) {
-         theQuery.GetListOfAnalyses(_return);
+         bool dataInFile = false;
+         char *analysisesFileName = getResultFileName("analysis_names_", modelID.data());
+         FILE *analysisesFp = fopen(analysisesFileName, "r");
+         if (analysisesFp) {
+            vector<string> names;
+            char name[2048];
+            while (fgets(name, sizeof(name), analysisesFp)) {
+               names.push_back(name);
+            }
+            fclose(analysisesFp);
+            _return.__set_analyses(names);
+            _return.__set_report(""); _return.__set_status("OK");
+         }
+         if (! dataInFile) {
+            theQuery.GetListOfAnalyses(_return);
+            if (strEQL(_return.status.data(), "OK")) {
+               analysisesFp = fopen(analysisesFileName, "w");
+               if (analysisesFp) {
+                  for (vector<string>::iterator nameIter = _return.analyses.begin(); nameIter != _return.analyses.end(); nameIter++) {
+                     fprintf(analysisesFp, "%s\n", (char*)nameIter->data());
+                  }
+                  fclose(analysisesFp);
+               }
+            }
+         }
       } else {
          char *emsg = "Model does not exist.";
          _return.__set_status("Error"); _return.__set_report(emsg); thelog->logg(1, "status=Error\nerror report=%s\n\n", emsg);
