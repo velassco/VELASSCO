@@ -231,8 +231,8 @@ extern "C" {
 					      const char     *modelID,
 					      const char     *analysisName,
 					      const char     *staticMeshID,
-					      const char     *stepOptions,  // ALL, SINGLE, INTERVAL
-					      const double   *lstSteps, //ALL (Ignored), SINGLE (1 double), INTERVAL (2 doubles)
+					      const char     *stepOptions,  // ALL, SINGLE, INTERVAL, FREQUENCY
+					      const double   *lstSteps, //ALL (Ignored), SINGLE (1 double), INTERVAL (2 doubles), FREQUENCY (1 double)
 					      const int       numSteps, // the size of lstSteps SINGLE(1)
 					      const char     *CoarseGrainingMethod,
 					      const double   width,
@@ -240,7 +240,10 @@ extern "C" {
 					      const bool     processContacts,
 					      const bool     doTemporalAVG,
 					      const char     *TemporalAVGOptions, //ALL, TEMPORALWINDOW
-						  const double   deltaT,
+					      const double   deltaT,
+					      const bool     doSpatialIntegral,
+					      const char     *integralDimension, // 1D
+					      const char     *integralDirection, // X, Y, Z
 					      /* out */
 					      const char   	**queryOutcome,  
 					      const char     **resultErrorStr); // in case of error

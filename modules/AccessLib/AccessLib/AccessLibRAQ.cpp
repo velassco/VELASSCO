@@ -229,7 +229,10 @@ extern "C" {
 					      const bool     processContacts,
 					      const bool     doTemporalAVG,
 					      const char     *TemporalAVGOptions, //ALL, TEMPORALWINDOW
-						  const double   deltaT,
+					      const double   deltaT,
+                                              const bool     doSpatialIntegral,
+                                              const char     *integralDimension, // 1D                                                                                                                                                                                                                                       
+                                              const char     *integralDirection, // X, Y, Z 
 					      /* out */
 					      const char   	**queryOutcome,  
 					      const char     **resultErrorStr) { // in case of error
@@ -299,7 +302,10 @@ extern "C" {
 	queryCommand << "  \"processContacts\" : \"" <<    processContacts << "\",\n";    
 	queryCommand << "  \"doTemporalAVG\" : \"" <<      doTemporalAVG << "\",\n";      
 	queryCommand << "  \"temporalAVGOptions\" : \"" << TemporalAVGOptions << "\",\n"; 
-	queryCommand << "  \"deltaT\" : \"" << deltaT << "\"\n"; 
+	queryCommand << "  \"deltaT\" : \"" << deltaT << "\",\n"; 
+	queryCommand << "  \"doSpatialIntegral\" : \"" << doSpatialIntegral << "\",\n";
+	queryCommand << "  \"integralDimension\" : \"" << integralDimension << "\",\n";
+	queryCommand << "  \"integralDirection\" : \"" << integralDirection << "\"\n";
 	queryCommand << "}\n";
 
 	// Send command string and get back result data
