@@ -122,7 +122,7 @@ Container<double> *VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv,
          for (double *ts = timeStepList.firstp(); timeStepList.moreElements(); ts = timeStepList.nextp()) {
             bool found = false;
             for (double *ats = allTimeSteps->firstp(); allTimeSteps->moreElements(); ats = allTimeSteps->nextp()) {
-               if (ats == ts ) {
+               if (*ats == *ts ) {
                   found = true; break;
                }
             }
@@ -1070,6 +1070,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
             elementType.__set_num_nodes(mi->nVertices);
             meshInfo.__set_elementType(elementType);
             meshInfo.__set_meshNumber(meshNumber++);
+            meshInfo.__set_nElements(mi->nElements);
 
             meshInfos.push_back(meshInfo);
          }
