@@ -1065,12 +1065,10 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
             VELaSSCoSM::MeshInfo meshInfo;
             meshInfo.__set_name(mi->name); meshInfo.__set_nElements(mi->nElements);  meshInfo.__set_nVertices(mi->nVertices);
             VELaSSCoSM::ElementType elementType;
-            //elementType.__set_shape(mi->elementType.shape);
             elementType.__set_shape(VELaSSCoSM::ElementShapeType::TetrahedraElement);
-            elementType.__set_num_nodes(mi->nVertices);
+            elementType.__set_num_nodes(4);
             meshInfo.__set_elementType(elementType);
             meshInfo.__set_meshNumber(meshNumber++);
-            meshInfo.__set_nElements(mi->nElements);
 
             meshInfos.push_back(meshInfo);
          }
