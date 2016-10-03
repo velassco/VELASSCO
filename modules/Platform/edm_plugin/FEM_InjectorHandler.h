@@ -38,13 +38,8 @@ public:
    Container<char*>                       *resultNames;
    Container<double>                      *temesteps;
 
-   FEM_InjectorHandler(dbSchema *s)  {
-      currentSchema = s; cLineno = 0; cAnalysis = NULL; cTimeStep = NULL; cTimestepId = 0;
-      currentRepository = NULL; model_ma.init(0x100000); m = NULL;
-      maxNodeId = maxElementId = 0;
-      resultNames = new(&model_ma)Container<char*>(&model_ma);
-
-}
+   FEM_InjectorHandler(dbSchema *s)  ;
+   ~FEM_InjectorHandler()  ;
    
    void                                   setDatabase(Database *_db) { db = _db; }
    void                                   setCurrentSession(const char *sessionID) { } 

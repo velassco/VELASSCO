@@ -235,7 +235,7 @@ void FEM_InjectorHandler::InjectResultFile()
                   readNextLine();
                }
                if (strEQL(line, "Values\n")) readNextLine();
-               while (bytesRead && strNEQ(line, "End values\n")) {
+               while (bytesRead && strNEQ(line, "End values\n") && strNEQ(line, "end values\n")) {
                   int nColumns = sscanf(line, "%llu %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
                      &nodeID, &nID[0], &nID[1], &nID[2], &nID[3], &nID[4], &nID[5], &nID[6], &nID[7], &nID[8], &nID[9], &nID[10]);
                   fem::Result *r;
@@ -297,7 +297,7 @@ void FEM_InjectorHandler::AnalyzeResultFile()
                   readNextLine();
                }
                if (strEQL(line, "Values\n")) readNextLine();
-               while (bytesRead && strNEQ(line, "End values\n")) {
+               while (bytesRead && strNEQ(line, "End values\n") && strNEQ(line, "end values\n")) {
                   readNextLine();
                }
             } else {
@@ -456,6 +456,18 @@ void FEM_InjectorHandler::AnalyzeMeshFile()
 //100 0.2 1 1
 //101 0.30000001 1 1
 
+FEM_InjectorHandler::FEM_InjectorHandler(dbSchema *s)
+{
+   currentSchema = s; cLineno = 0; cAnalysis = NULL; cTimeStep = NULL; cTimestepId = 0;
+   currentRepository = NULL; model_ma.init(0x100000); m = NULL;
+   maxNodeId = maxElementId = 0;
+   resultNames = new(&model_ma)Container<char*>(&model_ma);
+}
+
+FEM_InjectorHandler::~FEM_InjectorHandler()
+{
+   model_ma.freeAllMemory();
+}
 
 
 
