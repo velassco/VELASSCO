@@ -381,7 +381,8 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
 						  const std::string &stepOptions, const int numSteps, const double *lstSteps,
 						  const std::string &cGMethod, const double width, const double cutoffFactor,
 						  const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGOptions,
-						  const double deltaT, std::string *returnQueryOutcome, std::string *return_error_str) {
+						  const double deltaT,  const bool doSpatialIntegral, const std::string &integralDimension, 
+						  const std::string &integralDirection, std::string *returnQueryOutcome, std::string *return_error_str) {
   bool use_yarn = true;;
   
   if (use_yarn) {
@@ -422,9 +423,18 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
     // s_deltaT << deltaT;
     s_deltaT << deltaT;
 
-    parameters+= cGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + temporalAVGOptions + " " + s_deltaT.str();
+
+    // spatial integral
+    std::string do_spatial_int;
+    if (doSpatialIntegral)
+      do_spatial_int = "true";
+    else
+      do_spatial_int = "false";
+
+
+    parameters+= cGMethod +  " " + s_width.str() + " " + s_cutoff.str() + " " + proc_cont + " " + do_temp_avg + " " + temporalAVGOptions + " " + s_deltaT.str() + " " + do_spatial_int + " " + integralDimension + " " + integralDirection;
     
-    std::string cmd_line = HADOOP_YARN + " jar " + GetFullAnalyticsQualifier( "GetDiscrete2ContinuumOfAModel") + " " + parameters;
+    std::string cmd_line = HADOOP_YARN + " jar " + GetFullAnalyticsQualifier( "D2C_v2-1.0") + " d2c.v2.Main " + parameters;
     
     int ret = 0;
     ret = system(cmd_line.c_str());

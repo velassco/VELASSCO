@@ -429,14 +429,16 @@ void DataLayerAccess::calculateDiscrete2Continuum(const std::string &sessionID, 
 						  const std::string &stepOptions, const int numSteps, const double *lstSteps,
 						  const std::string &cGMethod, const double width, const double cutoffFactor,
 						  const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGOptions,
-						  const double deltaT, std::string *returnQueryOutcome, std::string *return_error_str) {
+						  const double deltaT, const bool doSpatialIntegral, const std::string &integralDimension, 
+						  const std::string &integralDirection, std::string *returnQueryOutcome, std::string *return_error_str) {
   
   AnalyticsModule::getInstance()->calculateDiscrete2Continuum( sessionID, modelID,
 							       analysisID, staticMeshID, 
 							       stepOptions, numSteps, lstSteps,
 							       cGMethod, width, cutoffFactor, 
 							       processContacts, doTemporalAVG, temporalAVGOptions, 
-							       deltaT, returnQueryOutcome, return_error_str);	
+							       deltaT, doSpatialIntegral, integralDimension, 
+							       integralDirection, returnQueryOutcome, return_error_str);	
 }
 
 // std::string DataLayerAccess::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &return_data, 

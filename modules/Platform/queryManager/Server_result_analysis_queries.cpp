@@ -222,6 +222,9 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   bool doTemporalAVG             = pt.get< bool>("doTemporalAVG");
   std::string temporalAVGOptions = pt.get<std::string>("temporalAVGOptions");
   double deltaT    =	pt.get< double>("deltaT");
+  bool doSpatialIntegral         = pt.get< bool>("doSpatialIntegral");
+  std::string integralDimension  = pt.get<std::string>("integralDimension");
+  std::string integralDirection  = pt.get<std::string>("integralDirection");
  
  
   std::string dl_sessionID = GetDataLayerSessionID( sessionID);
@@ -241,6 +244,9 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
   std::cout << "DTA -" << doTemporalAVG   << "-" << std::endl;
   std::cout << "TAO -" << temporalAVGOptions  << "-" << std::endl;
   std::cout << "DT -" <<  deltaT << "-" << std::endl;
+  std::cout << "DSI" << doSpatialIntegral << "-" << std::endl;
+  std::cout << "IDm" << integralDimension << "-" << std::endl;
+  std::cout << "IDi" << integralDirection << "-" << std::endl;
   
   std::string query_outcome;
   std::string error_str;
@@ -258,7 +264,8 @@ void QueryManagerServer::ManageGetDiscrete2Continuum( Query_Result &_return, con
     queryServer->calculateDiscrete2Continuum ( GetQueryManagerSessionID( sessionID), modelID,
 								 analysisName, staticMeshID, stepOptions, numSteps, lstSteps.data(),
 								 coarseGrainingMethod, width, cutoffFactor, processContacts, 
-								 doTemporalAVG, temporalAVGOptions, deltaT, &query_outcome, &error_str);
+					       doTemporalAVG, temporalAVGOptions, deltaT, doSpatialIntegral,
+					       integralDimension, integralDirection, &query_outcome, &error_str);
 							  
     // GraphicsModule *graphics = GraphicsModule::getInstance();
   } catch ( TException &e) {

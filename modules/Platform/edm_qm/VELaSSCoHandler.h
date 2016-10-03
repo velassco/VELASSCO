@@ -246,7 +246,7 @@ public:
       const int numSteps, const double *lstSteps, const std::string &coarseGrainingMethod,
       const double width, const double cutoffFactor,
       const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGoptions,
-      const double deltaT,
+      const double deltaT, const bool doSpatialIntegral, const std::string &integralDimension, const std::string &integralDirection,
       std::string *returnQueryOutcome, std::string *return_error_str)
    {
       return_error_str->append("calculateDiscrete2Continuum is not implemented");
