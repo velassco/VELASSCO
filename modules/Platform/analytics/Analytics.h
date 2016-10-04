@@ -14,6 +14,7 @@ class AnalyticsModule
 {
 public:
   static AnalyticsModule *getInstance();
+  void setHBaseConnection( VELaSSCo::HBase *db) { _hbaseDB = db;}
 
   void getResultFromVerticesID( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,
 			     const std::string &analysisID, const int numSteps, const double *lstSteps,
@@ -60,6 +61,13 @@ public:
 					  std::string *return_binary_mesh, std::string *return_result_values,
 					  std::string *return_error_str);
 
+  bool checkAndCompletePartitionResults( const std::string &sessionID,
+					 const std::string &modelID, const std::string &dataTableName,
+					 const int meshID, const std::string &elementType,
+					 const std::string &analysisID, const double stepValue,
+					 const std::string &parameters, const std::string &resultName,
+					 std::string *return_error_str);
+
   void createVolumeLRSplineFromBoundingBox(const std::string& sessionID,
 					   const std::string& modelID,
 					   const std::string &dataTableName,
@@ -76,12 +84,13 @@ public:
   
 
 private:
-  AnalyticsModule() {};
+  AnalyticsModule(): _hbaseDB( NULL) {};
   AnalyticsModule( AnalyticsModule const&) {};
   AnalyticsModule &operator=( AnalyticsModule const&) { return *this;};
     
 private:
   static AnalyticsModule *m_pInstance;
+  VELaSSCo::HBase *_hbaseDB;
 };
 
 #endif // _ANALYTICS_MODULE_H_

@@ -16,6 +16,7 @@
 // so it's located in the AccessLibrary folder
 #include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 
+#include "HBase.h"
 #include "AnalyticsCommon.h"
 #include "Simplification.h"
 using namespace VELaSSCo;
@@ -435,11 +436,12 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
 							 const std::string &resultName,
 							 std::string *return_binary_mesh, std::string *return_result_values,
 							 std::string *return_error_str) {
-  // bool return_demo_mesh = false;
-  // if ( return_demo_mesh) {
-  //   *return_binary_mesh = demo_simplified_mesh();
-  //   return;
-  // }
+  // check data in HBase:
+//  bool check = checkAndCompletePartitionResults( sessionID, modelID, dataTableName, meshID, elementType,
+//						 analysisID, stepValue, parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
+//						 resultName, return_error_str);
+//  if ( !check)
+//    return;
 
   // parsing parameters
   Simplification::Parameters simpParam;
@@ -617,4 +619,354 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
   // delete local tmp files ...
   DEBUG( "Deleting temporary files ...");
   recursive_rmdir( yarn_output_folder.c_str());
+}
+
+class MR_PartitionAndVertexID {
+public:
+  MR_PartitionAndVertexID(): _partitionID( -1), _vertexID( -1L) {};
+  MR_PartitionAndVertexID( int part, int64_t vert) {
+    _partitionID = part;
+    vert = _vertexID;
+  }
+  MR_PartitionAndVertexID( const MR_PartitionAndVertexID &pi) {
+    _partitionID = pi._partitionID;
+    _vertexID = pi._vertexID;
+  }
+  MR_PartitionAndVertexID &operator=( const MR_PartitionAndVertexID &pi) {
+    _partitionID = pi._partitionID;
+    _vertexID = pi._vertexID;
+    return *this;
+  }
+  void set( int part, int64_t vert) {
+    _partitionID = part;
+    _vertexID = vert;
+  }
+  void setPartitionID( int part) {
+    _partitionID = part;
+  }
+  void setVertexID( int64_t vert) {
+    _vertexID = vert;
+  }
+
+  bool operator<( const MR_PartitionAndVertexID &pv) const { // needed by std::sort())
+      return ( _partitionID < pv._partitionID) || ( ( _partitionID == pv._partitionID) && ( _vertexID < pv._vertexID));
+  }
+  
+  int _partitionID;
+  int64_t _vertexID;
+};
+
+static bool getListOfPartitionsAndVerticesIDSFromJavaOutput( const char *filename, std::vector< MR_PartitionAndVertexID> &lst_PartitionAndVertexIDs) {
+  FILE *fi = fopen( filename, "r");
+  bool ok = true;
+  
+  ssize_t n_read = 0;
+  size_t hexa_data_line_size = 64 * 1024;
+  char *hexa_data_line = ( char *)malloc( hexa_data_line_size * sizeof( char));
+  size_t binary_data_size = 32 * 1024;
+  char *binary_data = ( char *)malloc( binary_data_size * sizeof( char));
+  
+  while ( !feof( fi)) {
+    n_read = getline( &hexa_data_line, &hexa_data_line_size, fi);
+    if ( n_read == -1) {
+      if ( !feof( fi)) {
+	DEBUG( "getListOfPartitionsAndVerticesIDSFromJavaOutput: error reading MR output file");
+	ok = false; 
+      }
+      break;
+    }
+    
+    char *separator = strchr( hexa_data_line, '\t');
+    char *key = hexa_data_line, *value = NULL;
+    size_t key_size = n_read - 1; // the final '\n'
+    size_t value_size = 0;
+    if ( separator) {
+      key_size = separator - hexa_data_line;
+      *separator = '\0';
+      separator++;
+      value = separator;
+      value_size = n_read - key_size - 2; // the '\t' and the '\n';
+    }
+    
+    // process key part:
+    if ( !FromHexString( binary_data, binary_data_size, key, key_size)) {
+     DEBUG( "getListOfPartitionsAndVerticesIDSFromJavaOutput: error translating hexadecimal key string to binary data.");
+     ok = false; 
+     break;
+   }
+
+   int part = byteSwap< int>( *( int*)&binary_data[ 0]);
+   int64_t vert = byteSwap< int>( *( int*)&binary_data[ 4]); // sizeof( int)
+   lst_PartitionAndVertexIDs.push_back( MR_PartitionAndVertexID( part, vert));
+ } // !feof( fi)
+ fclose( fi);
+
+ return ok;
+}
+
+bool AnalyticsModule::checkAndCompletePartitionResults( const std::string &sessionID,
+							const std::string &modelID, const std::string &dataTableName,
+							const int meshID, const std::string &elementType,
+							const std::string &analysisID, const double stepValue,
+							const std::string &parameters, const std::string &resultName,
+							std::string *return_error_str) {
+  // parsing parameters
+  Simplification::Parameters simpParam;
+  simpParam.fromString( parameters);
+  LOGGER << "    checkAndCompletePartitionResults parameters read: " << simpParam.toString() << std::endl;
+
+  Simplification::Box bcube;
+  getModelBoundingCube( sessionID, modelID, bcube);
+
+  ResultInfo resultInfo;
+  bool found = _hbaseDB->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, resultInfo);
+  if ( !found ) {
+    std::stringstream buffer;
+    buffer << " result " << resultName << " information not found";
+    LOGGER << buffer.str() << std::endl;
+    *return_error_str = buffer.str();
+    return false;
+  }
+  // get result number from name in resultInfo.resultNumber;
+
+  // at the moment only CLI interface:
+  // modelID, if it's binary, convert it to 32-digit hexastring:
+  char model_ID_hex_string[ 1024];
+  std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
+
+  // remove local
+  // delete local temporary files
+  std::string yarn_output_folder = ToLower( "missing_ids_of_vertices_without_results_" + sessionID + "_" + cli_modelID);
+  std::string local_tmp_folder = create_tmpdir();
+  std::string local_output_folder = local_tmp_folder + "/" + yarn_output_folder;
+  recursive_rmdir( yarn_output_folder.c_str());
+
+  //GetSimplifiedMeshWithResult/dist/GetSimplifiedMeshWithResult.jar 1 60069901000000006806990100000000 Simulations_Data_V4CIMNE 1 Tetrahedra static
+  std::string analytics_program = GetFullAnalyticsQualifier( "GetMissingIDsOfVerticesWithoutResults");
+
+  bool use_yarn = true;//false;;//true;
+  // running java:
+  int ret_cmd = 0;
+  char meshIDstr[ 100];
+  sprintf( meshIDstr, "%d", meshID);
+  char resultInfoStr[ 8000];
+  sprintf( resultInfoStr, "\"%s\" %g %d \"%s\" %d", analysisID.c_str(), stepValue,
+	   resultInfo.resultNumber, resultInfo.type.c_str(), resultInfo.numberOfComponents);
+  if ( !use_yarn) {
+    std::string cmd_line = "java -jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
+      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\" " + resultInfoStr;
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    local_output_folder = yarn_output_folder;
+  } else { 
+    // Using yarn:
+    // execute and copy to localdir the result's files
+    // running Yarn:
+    std::string cmd_line = HADOOP_YARN + " jar " + analytics_program + " " + GetFullHBaseConfigurationFilename() + " " + 
+      sessionID + " " + cli_modelID + " " + dataTableName + " " + meshIDstr + " " + elementType + " static" +
+      " \"" + simpParam.toString() + "\" \"" + bcube.toString() + "\" " + resultInfoStr;
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    // output in '../simplified_mesh_with_result_sessionID_modelID/part-r-00000' but in hdfs
+    // error in '../simplified_mesh_with_result_sessionID_modelID/error.txt'
+    // copy it to local:
+    // cmd_line = hadoop_bin + "/hdfs dfs -copyToLocal simplified_mesh_with_result .";
+    cmd_line = HADOOP_HDFS + " dfs -copyToLocal " + yarn_output_folder + " " + local_tmp_folder;
+    ret_cmd = system( cmd_line.c_str());
+    if ( ret_cmd == -1) {
+      DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
+    }
+  }
+
+  // ret_cmd is -1 on error
+
+  // output in '../simplified_mesh_with_result_sessionID_modelID/part-r-00000'
+  // error in '../simplified_mesh_with_result_sessionID_modelID/error.txt'
+  char filename[ 8192];
+  sprintf( filename, "%s/part-r-00000", local_output_folder.c_str());
+  FILE *fi = fopen( filename, "rb");
+ 
+  if (!fi) {
+    // try reading error file
+    bool errorfile_read = false;
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
+    }
+	ifs.close();
+    
+    if ( !errorfile_read) {
+      *return_error_str = std::string( "Problems executing ") + __FUNCTION__ + 
+	( use_yarn ? " Yarn" : " Java") + std::string( " job.");
+      if ( use_yarn) {
+	*return_error_str += std::string( "\nIs 'yarn' and 'hdfs' in the path?");
+      }
+    }
+    return false;
+  }
+  fclose( fi);
+
+  std::string step_error = "";
+
+  std::vector< MR_PartitionAndVertexID> lst_PartitionAndVertexIDs;
+  bool ok = getListOfPartitionsAndVerticesIDSFromJavaOutput( filename, lst_PartitionAndVertexIDs);
+  if ( !ok) step_error = "error in getListOfPartitionsAndVerticesIDSFromJavaOutput";
+
+  // verify output:
+  if ( !ok) {
+    // try reading error file
+    bool errorfile_read = false;
+    sprintf( filename, "%s/error.txt", local_output_folder.c_str());
+    std::ifstream ifs(filename);
+    if (ifs.is_open()) {
+    	std::stringstream buffer;
+    	buffer << ifs.rdbuf();
+    	*return_error_str = buffer.str();
+    	errorfile_read = true;
+    }
+    ifs.close();
+	
+    if ( !errorfile_read) {
+      *return_error_str = std::string( "Problems with ") + FUNCTION_NAME + 
+	( use_yarn ? " Yarn" : " Java") + std::string( " results:\n");
+      if ( use_yarn) {
+	*return_error_str += std::string( "Is 'yarn' and 'hdfs' in the path?\n");
+      }
+      if ( !ok) {
+	*return_error_str += "\treading analytics output file\n";
+	*return_error_str += "\tSTEP " + step_error + "\n";
+      }
+    }
+  } else {
+    std::cout << "Number of vertices wihtout results =  " 
+	      << lst_PartitionAndVertexIDs.size() << std::endl;
+  }
+
+  DEBUG( "Deleting output files ...");
+  if ( use_yarn) {
+    std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + yarn_output_folder;
+    DEBUG( cmd_line);
+    ret_cmd = system( cmd_line.c_str());
+    recursive_rmdir( local_tmp_folder.c_str());
+  }
+
+  // delete local tmp files ...
+  DEBUG( "Deleting temporary files ...");
+  recursive_rmdir( yarn_output_folder.c_str());
+
+
+  size_t numVerticesWithoutResults = lst_PartitionAndVertexIDs.size();
+  if ( numVerticesWithoutResults == 0)
+    return true;
+
+  // Complete the missing data
+  // assume we only have this one analysis:
+  std::string tmp_report;
+  std::vector< double> listOfSteps;
+    
+  std::string status = _hbaseDB->getListOfSteps( tmp_report, listOfSteps, sessionID, modelID, analysisID);
+
+  // group missing vertices by partition ( should already be, more or less)
+  std::sort( lst_PartitionAndVertexIDs.begin(), lst_PartitionAndVertexIDs.end());
+  
+  std::vector< int64_t> listOfVerticesID;
+  for ( std::vector< MR_PartitionAndVertexID>::const_iterator ipv = lst_PartitionAndVertexIDs.begin(); ipv < lst_PartitionAndVertexIDs.end(); ipv++) {
+    listOfVerticesID.push_back( ipv->_vertexID);
+  }
+  // for( std::vector< double>::const_iterator it = listOfSteps.begin(); it < listOfSteps.end(); it++) {
+  // at the moment, let's just test with the last time-step
+  {
+    double currentStep = listOfSteps.back();
+    std::vector< ResultInfo> listOfResults;
+    status = _hbaseDB->getListOfResults( tmp_report, listOfResults, sessionID, modelID, analysisID, currentStep);
+    for( std::vector< ResultInfo>::const_iterator ir = listOfResults.begin(); ir < listOfResults.end(); ir++) {
+        std::string currentResult = ir->name;
+      std::unordered_map< int64_t, std::vector< double> > vertexResultsMap;
+      {
+	std::vector< ResultOnVertex> listOfResults;
+	status = _hbaseDB->getResultFromVerticesID( tmp_report, listOfResults,
+					  sessionID, modelID, analysisID, currentStep,  
+					  currentResult, listOfVerticesID);
+        for ( std::vector< ResultOnVertex>::const_iterator irv = listOfResults.begin(); irv < listOfResults.end(); irv++) {
+            vertexResultsMap[ irv->id] = irv->value;
+        }
+      }
+      
+      // Now write them in the corresponding partition ...
+      size_t numMissing = lst_PartitionAndVertexIDs.size();
+      if ( numMissing > 0) {
+          // first row key
+          int currentPartition = -1; // never will be a partitionID == -1
+          std::string currentRowKey;
+          std::vector< Mutation> lstResultUpdates;
+          for ( std::vector< MR_PartitionAndVertexID>::const_iterator currentMissing = lst_PartitionAndVertexIDs.begin();
+                  currentMissing < lst_PartitionAndVertexIDs.end(); currentMissing++) {
+              int newPartition = currentMissing->_partitionID;
+              if ( currentPartition != newPartition) {
+                  // write Result Updates
+                  if ( lstResultUpdates.size() > 0) {
+                      // ok = _hbaseDB->storeMutationsInTable( dataTableName, currentRowKey, lstResultUpdates, "checkAndCompletePartitionResults");
+                      if ( !ok) {
+                          LOGGER << "Error storing the missing result IDs." << std::endl;
+                          break;
+                      }
+                      lstResultUpdates.clear();
+                  }
+                  // create new rowkey
+                  currentRowKey = _hbaseDB->createDataRowKey( modelID, analysisID, currentStep, newPartition);
+                  currentPartition = newPartition;
+              }
+              
+              // create mutations for missing vertices ID
+              {
+                  char buf[ 100];
+                  sprintf( buf, "r%06d_", ir->resultNumber);
+                  std::string columQualifier( buf);
+                  int64_t vertexID_bigEndian = byteSwap< int64_t>( currentMissing->_vertexID);
+                  columQualifier += std::string( ( const char *)&vertexID_bigEndian, sizeof( int64_t));
+                  
+                  std::unordered_map< int64_t, std::vector< double> > ::const_iterator it_resultValues = vertexResultsMap.find( currentMissing->_vertexID);
+                  if ( it_resultValues != vertexResultsMap.end()) {
+                      std::string columValue;
+                      for ( std::vector< double>::const_iterator resValue = it_resultValues->second.begin();
+                              resValue < it_resultValues->second.end(); resValue++) {
+                          double resValue_bigEndian = byteSwap< double>( *resValue);
+                          columValue += std::string( ( const char *)&resValue_bigEndian, sizeof( resValue_bigEndian));
+                      }
+                      lstResultUpdates.push_back( Mutation());
+                      lstResultUpdates.back().column = columQualifier;
+                      lstResultUpdates.back().value = columValue;
+                  }
+              }
+              
+          } // loop along missingVertices
+          
+          // write pending Result Updates
+          if ( lstResultUpdates.size() > 0) {
+              // ok = _hbaseDB->storeMutationsInTable( dataTableName, currentRowKey, lstResultUpdates, "checkAndCompletePartitionResults");
+              if ( !ok) {
+                  LOGGER << "Error storing the missing result IDs." << std::endl;
+                  break;
+              }
+              lstResultUpdates.clear();
+          }
+      } // if ( numMissing > 0)
+    }
+  }
+
+  found = DataLayerAccess::Instance()->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, resultInfo);
+  if ( !found ) {
+    std::stringstream buffer;
+    buffer << " result " << resultName << " information not found";
+    LOGGER << buffer.str() << std::endl;
+    *return_error_str = buffer.str();
+    return false;
+  }
+
+  return true;
 }
