@@ -683,6 +683,18 @@ bool HBase::deleteAllStoredCalculationsForThisModel( const std::string &sessionI
     return false; // no information about tables for this user and this session
   }
 
+  bool reset_tables = false;
+  if ( reset_tables) {
+    if ( checkIfTableExists( table_set._stored_vquery_metadata)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_metadata);
+      _hbase_client->deleteTable(  table_set._stored_vquery_metadata);
+    }
+    if ( checkIfTableExists( table_set._stored_vquery_data)) {
+      _hbase_client->disableTable(  table_set._stored_vquery_data);
+      _hbase_client->deleteTable(  table_set._stored_vquery_data);
+    }
+  }
+
   // need to get all rowkeys and then
   // foreach rk in lst_rowkeys do 
   //   _hbase_client->deleteAllRow( tableName, rowKey, attr); 
@@ -732,28 +744,41 @@ bool HBase::storeQueryInfoInMetadataTable( const std::string &sessionID,
   LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
   LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
   LOGGER_SM << "   saving metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
-  std::string tmp_report = "   metadata row saved";
+  
+  ok = storeMutationsInTable( tableName, metadataRowKey, metadata_mutations, "storeQueryInfoInMetadataTable");
+  
+  return ok;
+}
+
+bool HBase::storeMutationsInTable( const std::string &tableName, const std::string &rowKey,
+        const std::vector< Mutation> &lstMutations, const std::string &errorPrefixMessage) {
+  // adding data row:
+  StrMap attr;
+  LOGGER_SM << errorPrefixMessage << std::endl;
+  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+  LOGGER_SM << "         rowKey = " << rowKey << std::endl;
+  LOGGER_SM << "   saving " << lstMutations.size() << " mutations" << std::endl;
+  std::string tmp_report = "row saved";
+  bool ok = true;
   try {
-    _hbase_client->mutateRow( tableName, metadataRowKey, metadata_mutations, attr);
+    _hbase_client->mutateRow( tableName, rowKey, lstMutations, attr);
   } catch ( const IOError &ioe) {
     std::stringstream tmp;
     tmp << "IOError = " << ioe.what();
-    tmp_report = tmp.str();
+    tmp_report = errorPrefixMessage + ": " + tmp.str();
     ok = false;
     LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   } catch ( TException &tx) {
     std::stringstream tmp;
     tmp << "TException = " << tx.what();
-    tmp_report = tmp.str();
+    tmp_report = errorPrefixMessage + ": " + tmp.str();
     ok = false;
     LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
-  LOGGER_SM << "     report = " << tmp_report << std::endl;  
-
+  LOGGER_SM << errorPrefixMessage << ": " << " report = " << tmp_report << std::endl;  
   return ok;
 }
-
-
+    
 bool HBase::storeQueryDataInDataTable( const std::string &sessionID,
 				       const std::string &modelID,
 				       const std::string &analysisID, const double stepValue,
@@ -798,24 +823,9 @@ bool HBase::storeQueryDataInDataTable( const std::string &sessionID,
   LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
   LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
   LOGGER_SM << "   saving data cells with " << vqueryData.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
-  std::string tmp_report = "   data row saved";
-  try {
-    _hbase_client->mutateRow( tableName, dataRowKey, data_mutations, attr);
-  } catch ( const IOError &ioe) {
-    std::stringstream tmp;
-    tmp << "IOError = " << ioe.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  } catch ( TException &tx) {
-    std::stringstream tmp;
-    tmp << "TException = " << tx.what();
-    tmp_report = tmp.str();
-    ok = false;
-    LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
-  }
-  LOGGER_SM << "     report = " << tmp_report << std::endl;  
-
+  
+  ok = storeMutationsInTable( tableName, dataRowKey, data_mutations, "storeQueryDataInDataTable");
+  
   return ok;
 }
 

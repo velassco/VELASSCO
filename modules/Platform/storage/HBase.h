@@ -343,6 +343,8 @@ namespace VELaSSCo
     } ;
     // returns true if info is found ( i.e. OpenModel was issued)
     bool getVELaSSCoTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const;
+    std::string createDataRowKey( const std::string &modelID, const std::string &analysysID, const double stepValue, const int partitionID, const char *format="%02x"); // for the stepvalue hex string
+    bool storeMutationsInTable( const std::string &tableName, const std::string &rowKey, const std::vector< Mutation> &lstMutations, const std::string &errorPrefixMessage);
 
   private:
     HbaseClient *_hbase_client;
@@ -358,7 +360,6 @@ namespace VELaSSCo
     std::vector< std::string> getModelListTables() const;
 
     std::string createMetaRowKey( const std::string &modelID, const std::string &analysysID, const double stepValue, const char *format="%02x"); // for the stepvalue hex string
-    std::string createDataRowKey( const std::string &modelID, const std::string &analysysID, const double stepValue, const int partitionID, const char *format="%02x"); // for the stepvalue hex string
     std::string createMetaRowKeyPrefix( const std::string &modelID, const std::string &analysysID);
     // to access stored data
     bool checkIfTableExists( const std::string &tableName);
@@ -391,7 +392,6 @@ namespace VELaSSCo
 					       std::vector< std::string> &lstRowKeysForThisModel);
     bool getStoredDataRowKeysForThisModel( const std::string &tableName, const std::string &modelID, 
 					   std::vector< std::string> &lstRowKeysForThisModel);
-					    
   };
 
   typedef std::vector< std::string> StrVec;
