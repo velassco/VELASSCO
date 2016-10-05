@@ -16,6 +16,7 @@
 // so it's located in the AccessLibrary folder
 #include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 
+#include "HBase.h"
 #include "AnalyticsCommon.h"
 #include "Simplification.h"
 using namespace VELaSSCo;
@@ -435,12 +436,12 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
 							 const std::string &resultName,
 							 std::string *return_binary_mesh, std::string *return_result_values,
 							 std::string *return_error_str) {
-//  // check data in HBase:
-//  bool check = checkAndCompletePartitionResults( sessionID, modelID, dataTableName, meshID, elementType,
-//						 analysisID, stepValue, parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
-//						 resultName, return_error_str);
-//  if ( !check)
-//    return;
+  // check data in HBase:
+  bool check = checkAndCompletePartitionResults( sessionID, modelID, dataTableName, meshID, elementType,
+						 analysisID, stepValue, parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
+						 resultName, return_error_str);
+  if ( !check)
+    return;
 
   // parsing parameters
   Simplification::Parameters simpParam;
@@ -625,7 +626,7 @@ public:
   MR_PartitionAndVertexID(): _partitionID( -1), _vertexID( -1L) {};
   MR_PartitionAndVertexID( int part, int64_t vert) {
     _partitionID = part;
-    vert = _vertexID;
+    _vertexID = vert;
   }
   MR_PartitionAndVertexID( const MR_PartitionAndVertexID &pi) {
     _partitionID = pi._partitionID;
@@ -647,6 +648,10 @@ public:
     _vertexID = vert;
   }
 
+  bool operator<( const MR_PartitionAndVertexID &pv) const { // needed by std::sort())
+      return ( _partitionID < pv._partitionID) || ( ( _partitionID == pv._partitionID) && ( _vertexID < pv._vertexID));
+  }
+  
   int _partitionID;
   int64_t _vertexID;
 };
@@ -691,7 +696,7 @@ static bool getListOfPartitionsAndVerticesIDSFromJavaOutput( const char *filenam
    }
 
    int part = byteSwap< int>( *( int*)&binary_data[ 0]);
-   int64_t vert = byteSwap< int>( *( int*)&binary_data[ 4]); // sizeof( int)
+   int64_t vert = byteSwap< int64_t>( *( int64_t *)&binary_data[ 4]); // sizeof( int)
    lst_PartitionAndVertexIDs.push_back( MR_PartitionAndVertexID( part, vert));
  } // !feof( fi)
  fclose( fi);
@@ -714,7 +719,7 @@ bool AnalyticsModule::checkAndCompletePartitionResults( const std::string &sessi
   getModelBoundingCube( sessionID, modelID, bcube);
 
   ResultInfo resultInfo;
-  bool found = DataLayerAccess::Instance()->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, resultInfo);
+  bool found = _hbaseDB->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, resultInfo);
   if ( !found ) {
     std::stringstream buffer;
     buffer << " result " << resultName << " information not found";
@@ -811,7 +816,7 @@ bool AnalyticsModule::checkAndCompletePartitionResults( const std::string &sessi
   std::vector< MR_PartitionAndVertexID> lst_PartitionAndVertexIDs;
   bool ok = getListOfPartitionsAndVerticesIDSFromJavaOutput( filename, lst_PartitionAndVertexIDs);
   if ( !ok) step_error = "error in getListOfPartitionsAndVerticesIDSFromJavaOutput";
-
+  
   // verify output:
   if ( !ok) {
     // try reading error file
@@ -838,7 +843,7 @@ bool AnalyticsModule::checkAndCompletePartitionResults( const std::string &sessi
       }
     }
   } else {
-    std::cout << "Number of vertices wihtout results =  " 
+    std::cout << "Number of vertices without results =  " 
 	      << lst_PartitionAndVertexIDs.size() << std::endl;
   }
 
@@ -856,40 +861,133 @@ bool AnalyticsModule::checkAndCompletePartitionResults( const std::string &sessi
 
 
   size_t numVerticesWithoutResults = lst_PartitionAndVertexIDs.size();
-  if ( numVerticesWithoutResults == 0)
+  if ( numVerticesWithoutResults == 0) {
     return true;
+  } else {
+      LOGGER << "NEEDS to fix results for " << numVerticesWithoutResults << " vertices" << std::endl;
+  }
 
   // Complete the missing data
   // assume we only have this one analysis:
   std::string tmp_report;
   std::vector< double> listOfSteps;
-  std::string status = getListOfSteps( tmp_report, listOfSteps, sessionID, modelID, analysisID);
+    
+  std::string status = _hbaseDB->getListOfSteps( tmp_report, listOfSteps, sessionID, modelID, analysisID);
 
+  // group missing vertices by partition ( should already be, more or less)
+  std::sort( lst_PartitionAndVertexIDs.begin(), lst_PartitionAndVertexIDs.end());
+  
   std::vector< int64_t> listOfVerticesID;
-  for ( std::vector< MR_PartitionAndVertexID>::const_iterator ipv = lst_PartitionAndVertexIDs.begin(); ipv < lst_PartitionAndVertexIDs,end(); ipv++) {
+  for ( std::vector< MR_PartitionAndVertexID>::const_iterator ipv = lst_PartitionAndVertexIDs.begin(); ipv < lst_PartitionAndVertexIDs.end(); ipv++) {
     listOfVerticesID.push_back( ipv->_vertexID);
   }
-  for( std::vector< double>::const_iterator it = listOfSteps.begin(); it < listOfSteps.end(); it++) {
+  for( std::vector< double>::const_iterator itStep = listOfSteps.begin(); itStep < listOfSteps.end(); itStep++)
+  // at the moment, let's just test with the last time-step
+  {
+    double currentStep = *itStep; // listOfSteps.back();
     std::vector< ResultInfo> listOfResults;
-    status = getListOfResults( tmp_report, listOfResults, sessionID, modelID, analysisID, stepValue);
-    for( std::vector< ResultInfo>::const_iterator ir = listOfResults.begin(); ir < listOfResults.end(); ir++) {
-      std::vector<ResultOnVertex> listOfResults;
-      status = getResultFromVerticesID( tmp_report, listOfResults,
-					sessionID, modelID, analysisID, timeStep,  
-					const std::string &resultID, listOfVerticesID );
+    status = _hbaseDB->getListOfResults( tmp_report, listOfResults, sessionID, modelID, analysisID, currentStep);
+    for( std::vector< ResultInfo>::const_iterator ir = listOfResults.begin(); ir < listOfResults.end(); ir++)
+    {
+        // const ResultInfo *ir = &listOfResults[0];
+        // at the moment, let's just test with the last time-step
+        
+        std::string currentResult = ir->name;
+      std::unordered_map< int64_t, std::vector< double> > vertexResultsMap;
+      {
+	std::vector< ResultOnVertex> listOfResults;
+	status = _hbaseDB->getResultFromVerticesID( tmp_report, listOfResults,
+					  sessionID, modelID, analysisID, currentStep,  
+					  currentResult, listOfVerticesID);
+        for ( std::vector< ResultOnVertex>::const_iterator irv = listOfResults.begin(); irv < listOfResults.end(); irv++) {
+            vertexResultsMap[ irv->id] = irv->value;
+        }
+      }
       
       // Now write them in the corresponding partition ...
-    }
-  }
+      bool storeVerbose = false;
+      size_t numMissing = lst_PartitionAndVertexIDs.size();
+      if ( numMissing > 0) {
+          size_t numCommitedResults = 0;
+          int numCommitedPartitions = 0;
+          // first row key
+          int currentPartition = -1; // never will be a partitionID == -1
+          std::string currentRowKey;
+          std::vector< Mutation> lstResultUpdates;
+          for ( std::vector< MR_PartitionAndVertexID>::const_iterator currentMissing = lst_PartitionAndVertexIDs.begin();
+                  currentMissing < lst_PartitionAndVertexIDs.end(); currentMissing++) {
+              int newPartition = currentMissing->_partitionID;
+              if ( currentPartition != newPartition) {
+                  // write Result Updates
+                  if ( lstResultUpdates.size() > 0) {
+                      ok = _hbaseDB->storeMutationsInTable( dataTableName, currentRowKey, lstResultUpdates, "checkAndCompletePartitionResults", storeVerbose);
+                      if ( !ok) {
+                          LOGGER << "Error storing the missing result IDs." << std::endl;
+                          break;
+                      }
+                      // LOGGER << "checkAndCompletePartitionResults timeStep=" << currentStep << " Result=" << currentResult << " Partition=" << currentPartition << " written " << lstResultUpdates.size() << " values" << std::endl;
+                      numCommitedResults += lstResultUpdates.size();
+                      numCommitedPartitions++;
+                      lstResultUpdates.clear();
+                  }
+                  // create new rowkey
+                  currentRowKey = _hbaseDB->createDataRowKey( modelID, analysisID, currentStep, newPartition);
+                  currentPartition = newPartition;
+              }
+              
+              // create mutations for missing vertices ID
+              {
+                  char buf[ 100];
+                  sprintf( buf, "R:r%06dvl_", ir->resultNumber);
+                  std::string columQualifier( buf);
+                  int64_t vertexID_bigEndian = byteSwap< int64_t>( currentMissing->_vertexID);
+                  columQualifier += std::string( ( const char *)&vertexID_bigEndian, sizeof( int64_t));
+                  
+                  std::unordered_map< int64_t, std::vector< double> > ::const_iterator it_resultValues = vertexResultsMap.find( currentMissing->_vertexID);
+                  if ( it_resultValues != vertexResultsMap.end()) {
+                      std::string columValue;
+                      for ( std::vector< double>::const_iterator resValue = it_resultValues->second.begin();
+                              resValue < it_resultValues->second.end(); resValue++) {
+                          double resValue_bigEndian = byteSwap< double>( *resValue);
+                          columValue += std::string( ( const char *)&resValue_bigEndian, sizeof( resValue_bigEndian));
+                      }
+                      lstResultUpdates.push_back( Mutation());
+                      lstResultUpdates.back().column = columQualifier;
+                      lstResultUpdates.back().value = columValue;
+                  }
+              }
+              
+          } // loop along missingVertices
+          
+          // write pending Result Updates
+          if ( lstResultUpdates.size() > 0) {
+              ok = _hbaseDB->storeMutationsInTable( dataTableName, currentRowKey, lstResultUpdates, "checkAndCompletePartitionResults", storeVerbose);
+              if ( !ok) {
+                  LOGGER << "Error storing the missing result IDs." << std::endl;
+                  // break;
+              }
+              // LOGGER << "checkAndCompletePartitionResults timeStep=" << currentStep << " Result=" << currentResult << " Partition=" << currentPartition << " written " << lstResultUpdates.size() << " values" << std::endl;
+              numCommitedResults += lstResultUpdates.size();
+              numCommitedPartitions++;
+              LOGGER << "checkAndCompletePartitionResults timeStep=" << currentStep << " Result=" << currentResult 
+                      << " committed " << numCommitedResults << " result values in " << numCommitedPartitions << " partitions" << std::endl;
+              lstResultUpdates.clear();
+          }
+      } // if ( numMissing > 0)
+    } // for currentResult in listOfResults
+    LOGGER << "checkAndCompletePartitionResults done" << std::endl;
+  } // for currentStep in listOfSteps
 
-  bool found = DataLayerAccess::Instance()->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, resultInfo);
-  if ( !found ) {
-    std::stringstream buffer;
-    buffer << " result " << resultName << " information not found";
-    LOGGER << buffer.str() << std::endl;
-    *return_error_str = buffer.str();
-    return false;
-  }
+//  found = DataLayerAccess::Instance()->getResultInfoFromResultName( sessionID, modelID, analysisID, stepValue, resultName, resultInfo);
+//  if ( !found ) {
+//    std::stringstream buffer;
+//    buffer << " result " << resultName << " information not found";
+//    LOGGER << buffer.str() << std::endl;
+//    *return_error_str = buffer.str();
+//    return false;
+//  }
 
   return true;
 }
+
+
