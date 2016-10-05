@@ -741,23 +741,27 @@ bool HBase::storeQueryInfoInMetadataTable( const std::string &sessionID,
   metadata_mutations.push_back( Mutation());
   metadata_mutations.back().column = "Q:qp";
   metadata_mutations.back().value = vqueryParameters;
-  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
-  LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
-  LOGGER_SM << "   saving metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
-  
-  ok = storeMutationsInTable( tableName, metadataRowKey, metadata_mutations, "storeQueryInfoInMetadataTable");
+  // LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+  // LOGGER_SM << "         rowKey = " << metadataRowKey << std::endl;
+  LOGGER_SM << "   storing metadata cells with " << vqueryName.size() + vqueryParameters.size() << " bytes" << std::endl;
+  bool storeVerbose = false;
+  ok = storeMutationsInTable( tableName, metadataRowKey, metadata_mutations, "storeQueryInfoInMetadataTable", storeVerbose);
   
   return ok;
 }
 
 bool HBase::storeMutationsInTable( const std::string &tableName, const std::string &rowKey,
-        const std::vector< Mutation> &lstMutations, const std::string &errorPrefixMessage) {
+        const std::vector< Mutation> &lstMutations, const std::string &errorPrefixMessage, bool storeVerbose) {
   // adding data row:
   StrMap attr;
-  LOGGER_SM << errorPrefixMessage << std::endl;
-  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
-  LOGGER_SM << "         rowKey = " << rowKey << std::endl;
-  LOGGER_SM << "   saving " << lstMutations.size() << " mutations" << std::endl;
+  const Mutation &firstMutation = lstMutations[ 0];
+  if ( storeVerbose) {
+      LOGGER_SM << errorPrefixMessage << ": "
+              << " Accessing table '" << tableName << "' with" 
+              << " rowKey = " << rowKey
+              << " to save " << lstMutations.size() << " mutations: " 
+              << " column=" << firstMutation.column << " value=" << firstMutation.value << " ..." << std::endl;
+  }
   std::string tmp_report = "row saved";
   bool ok = true;
   try {
@@ -775,7 +779,9 @@ bool HBase::storeMutationsInTable( const std::string &tableName, const std::stri
     ok = false;
     LOGGER_SM << "EXCEPTION: " << tmp_report << std::endl;
   }
-  LOGGER_SM << errorPrefixMessage << ": " << " report = " << tmp_report << std::endl;  
+  if ( storeVerbose) {
+      LOGGER_SM << errorPrefixMessage << ": " << " report = " << tmp_report << std::endl;  
+  }
   return ok;
 }
     
@@ -820,11 +826,12 @@ bool HBase::storeQueryDataInDataTable( const std::string &sessionID,
     data_mutations.back().column = std::string( tmp_col);
     data_mutations.back().value = lst_chunks_data[ idx];
   }
-  LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
-  LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
-  LOGGER_SM << "   saving data cells with " << vqueryData.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
+  // LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
+  // LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
+  LOGGER_SM << "   storing data cells with " << vqueryData.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
   
-  ok = storeMutationsInTable( tableName, dataRowKey, data_mutations, "storeQueryDataInDataTable");
+  bool storeVerbose = false;
+  ok = storeMutationsInTable( tableName, dataRowKey, data_mutations, "storeQueryDataInDataTable", storeVerbose);
   
   return ok;
 }

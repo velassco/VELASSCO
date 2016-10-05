@@ -344,7 +344,7 @@ namespace VELaSSCo
     // returns true if info is found ( i.e. OpenModel was issued)
     bool getVELaSSCoTableNames( const std::string &sessionID, const std::string &modelID, TableModelEntry &tables) const;
     std::string createDataRowKey( const std::string &modelID, const std::string &analysysID, const double stepValue, const int partitionID, const char *format="%02x"); // for the stepvalue hex string
-    bool storeMutationsInTable( const std::string &tableName, const std::string &rowKey, const std::vector< Mutation> &lstMutations, const std::string &errorPrefixMessage);
+    bool storeMutationsInTable( const std::string &tableName, const std::string &rowKey, const std::vector< Mutation> &lstMutations, const std::string &errorPrefixMessage, bool storeVerbose);
 
   private:
     HbaseClient *_hbase_client;
