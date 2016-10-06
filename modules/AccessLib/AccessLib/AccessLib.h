@@ -302,6 +302,23 @@ extern "C" {
     );
 
   // at the moment it only works with tetrahedral meshes.
+  VAL_Result VAL_API valGetIsoSurface( /* in */
+				      VAL_SessionID   sessionID,
+				      const char     *modelID,
+				      const char     *meshID,
+				      const char     *analysisID,
+				      const double    stepValue,
+				      const char     *resultID,
+				      const int      resultComp,
+				      /* out */
+				      const char     **resultMesh,
+				      // binary data with the mesh vertices and elements
+				      // the resultMesh format is described in BoundaryBinaryMesh.h
+				      // we store the resulting simplified tetras as Quads in this format
+				      size_t         *resultMeshByteSize,
+				      const char     **resultErrorStr); // in case of error
+
+  // at the moment it only works with tetrahedral meshes.
   VAL_Result VAL_API valGetSimplifiedMesh( /* in */
 					   VAL_SessionID   sessionID,
 					   const char     *modelID,

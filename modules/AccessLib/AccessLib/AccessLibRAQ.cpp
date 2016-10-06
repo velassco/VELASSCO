@@ -753,6 +753,72 @@ extern "C" {
   CATCH_ERROR;
   }
 
+  VAL_Result VAL_API valGetIsoSurface( /* in */
+				      VAL_SessionID   sessionID,
+				      const char     *modelID,
+				      const char     *meshID,
+				      const char     *analysisID,
+				      const double    stepValue,
+				      const char     *resultID,
+				      const int      resultComp,
+				      /* out */
+				      const char     **resultMesh,
+				      // binary data with the mesh vertices and elements
+				      // the resultMesh format is described in BoundaryBinaryMesh.h
+				      // we store the resulting simplified tetras as Quads in this format
+				      size_t         *resultMeshByteSize,
+				      const char     **resultErrorStr) { // in case of error
+  CHECK_SESSION_ID( sessionID );
+  CHECK_QUERY_POINTER( modelID );
+  CHECK_QUERY_POINTER( meshID );
+  CHECK_QUERY_POINTER( analysisID );
+  CHECK_QUERY_POINTER( resultID );
+  CHECK_QUERY_POINTER( resultMesh );
+  CHECK_QUERY_POINTER( resultMeshByteSize );
+  CHECK_QUERY_POINTER( resultErrorStr );
+
+  //validate component
+    
+  *resultMesh = NULL;
+  *resultErrorStr = NULL;
+  
+  API_TRACE;
+  try
+    {
+      std::stringstream  queryCommand;
+      const std::string *queryData = NULL;
+      
+      // Build JSON command string
+      queryCommand << "{\n"
+		   << "  \"name\"       : \"" << "GetIsosurface" << "\",\n"
+		   << "  \"modelID\"    : \"" << modelID         << "\",\n"
+		   << "  \"meshID\"     : \"" << meshID          << "\",\n"
+		   << "  \"analysisID\" : \"" << analysisID      << "\",\n"
+		   << "  \"stepValue\"  : \"" << stepValue       << "\",\n"
+		   << "  \"resultID\"   : \"" << resultID        << "\",\n"
+		   << "  \"resultComp\" : \"" << resultComp      << "\"\n";
+      queryCommand << "}\n";
+
+      // Send command string and get back result data
+      VAL_Result result = g_clients[sessionID]->Query( sessionID, queryCommand.str(), queryData);
+
+      // Give back pointers to actual binary data
+      if (result == VAL_SUCCESS) {
+	*resultMesh = ( const char *)queryData->data();
+	*resultMeshByteSize = queryData->length();
+	
+	// to debug and test:
+	// std::string file_name = std::string( "/tmp/valGetSimplifiedMesh_") + meshID + ".bin";
+	// dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
+      } else {
+	*resultErrorStr = queryData ? queryData->c_str() : "No returned data: (NULL)";
+      }
+      
+      return result;
+    }
+    CATCH_ERROR;
+  }
+
   VAL_Result VAL_API valGetSimplifiedMeshWithResult( /* in */
 						    VAL_SessionID   sessionID,
 						    const char     *modelID,

@@ -498,6 +498,76 @@ char *streol( const char *s) {
   return *r ? ( char *)r : NULL;
 }
 
+int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
+{
+  VAL_Result    result;
+  const char *status = NULL;
+  char hex_string[ 1024];
+
+  std::string table_model("VELaSSCo_Models");
+  std::string suffix_table = "";
+  std::string path_model_eddie = "/exports/eddie3_apps_local/apps/community/VELaSSCo/simulation_files/Telescope_128subdomains_ascii";
+  std::string path_model_acuario = "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";
+  std::string unique_name = table_model + suffix_table + ":";
+  if (useAcuario)
+    {
+      unique_name += path_model_acuario;
+    }
+  else
+    {
+      unique_name += path_model_eddie;
+    }
+  unique_name = table_model + suffix_table + ":*:fine_mesh";
+  const char *access = "";
+  const char *return_modelID = NULL;
+  std::cout << "doing OpenModel of " << unique_name << std::endl;
+  result = valOpenModel(sessionID, unique_name.c_str(), access, &status, &return_modelID);
+  CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
+  std::cout << "OpenModel: " << std::endl;
+  std::cout << "   status = " << ( status ? status : "(null)") << std::endl;
+  if ( return_modelID) {
+    std::cout << "   model_modelID = " << ModelID_DoHexStringConversionIfNecesary( return_modelID, hex_string, 1024) << std::endl;
+  } else {
+    // logout as it is not valid ...
+    std::cout << "   ERROR model could not be opened, login out ..." << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  // need to store as return_modelID points to a temporary storage that will be reused in next query
+  std::string opened_modelID(return_modelID);
+  const char* analysisID = "Kratos";
+  const char* meshID="m000001 no se usa";
+  double stepValue = 21;
+  const char* resultID = "r000003";
+  int resultComp = 0;
+  double isovalue = 0.5;
+  const char *resultMesh;
+  size_t resultMeshByteSize;
+  const char*resultErrorStr;
+
+  std::cout << "return_modelID = " << return_modelID << std::endl;
+  result = valGetIsoSurface( /* in */
+			    sessionID,
+			    return_modelID,
+			    meshID,
+			    analysisID,
+			    stepValue,
+			    resultID,
+			    resultComp,
+			    /* out */
+			    &resultMesh,
+			    // binary data with the mesh vertices and elements
+			    // the resultMesh format is described in BoundaryBinaryMesh.h
+			    &resultMeshByteSize,
+			    &resultErrorStr);
+  
+  CheckVALResult(result,
+		 getStringFromCharPointers("valGetIsoSurface",resultErrorStr ));
+  std::cout << "valGetIsoSurface: " << std::endl;
+  std::cout << "   status = " << (resultErrorStr ? resultErrorStr : "(null)") << std::endl;
+  return EXIT_SUCCESS;
+}
+
 int doTestMiguel( const VAL_SessionID sessionID) {
   VAL_Result    result;
   const char *status = NULL;
@@ -1081,10 +1151,12 @@ int main(int argc, char* argv[])
   std::cout << "   status = " << ( status ? status : "(null)") << std::endl;  
 
   //ret = doTestiCores(sessionID);
-  ret = doTestMorteza( sessionID);
+  //ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
   //ret= doTestDC (sessionID);
   //ret = doTestSINTEF(sessionID);
+
+  ret = doTestIsoSurface(sessionID, true);
   
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  
