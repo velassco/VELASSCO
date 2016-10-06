@@ -526,6 +526,31 @@ void DataLayerAccess::deleteStoredBoundaryOfAMesh( const std::string &sessionID,
 }
 
 
+void DataLayerAccess::calculateIsoSurface( const std::string &sessionID,
+					   const std::string &modelID,
+					   const int meshID,
+					   const std::string &analysisID, const double stepValue,
+					   const std::string &resultName, const int resultComp, const double isoValue,
+					   std::string *return_binary_mesh, std::string *return_error_str)
+{
+  if (return_binary_mesh)
+    {
+      return_binary_mesh->clear();
+      *return_error_str = ""; // reset error string
+      HBase::TableModelEntry table_name_set;
+      if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set))
+	{
+	  AnalyticsModule::getInstance()->calculateIsoSurface(sessionID, modelID, table_name_set._data, 
+							      meshID, analysisID, stepValue, resultName,
+							      resultComp, isoValue,
+							      return_binary_mesh, return_error_str);
+	}
+      else
+	{
+	  *return_error_str = "Unable to get name of Data table";
+	}
+    }
+}
 
 void DataLayerAccess::calculateSimplifiedMesh( const std::string &sessionID,
 					       const std::string &modelID,

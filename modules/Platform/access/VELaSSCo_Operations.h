@@ -149,6 +149,13 @@ public:
   					    const std::string &analysisID, const double stepValue,
   					    std::string *return_error_str) = 0;
   
+  virtual void calculateIsoSurface( const std::string &sessionID,
+				    const std::string &modelID,
+				    const int meshID,
+				    const std::string &analysisID, const double stepValue,
+				    const std::string &resultName, const int resultComp, const double isoValue,
+				    std::string *return_binary_mesh, std::string *return_error_str) = 0;
+
   virtual void calculateSimplifiedMesh( const std::string &sessionID,
 					const std::string &modelID,
 					const int meshID, const std::string &elementType,

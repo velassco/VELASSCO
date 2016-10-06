@@ -472,6 +472,77 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
   }
 }
 
+void QueryManagerServer::ManageGetIsoSurface(Query_Result &_return, const SessionID sessionID, const std::string& query)
+{
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string name       = pt.get<std::string>( "name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string meshName     = pt.get<std::string>( "meshName"); // in fact it's the mesh name
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  std::string resultName = pt.get<std::string>( "resultName");
+  int resultComp       = pt.get<int>( "resultComp");
+  double isoValue       = pt.get<double>( "isoValue");
+
+
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "Msh-" << meshName           << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue       << "-" << std::endl;
+  std::cout << "Rn -" << resultName       << "-" << std::endl;
+  std::cout << "Rc -" << resultComp       << "-" << std::endl;
+  std::cout << "Iv -" << isoValue       << "-" << std::endl;
+
+  std::string error_str;
+
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+  int meshID = 1;
+  
+  std::string binary_mesh = "";
+  try {
+    queryServer->calculateIsoSurface(GetQueryManagerSessionID(sessionID), 
+				     modelID,
+				     meshID,
+				     analysisID, stepValue, 
+				     resultName, resultComp, isoValue,
+				     &binary_mesh, &error_str);
+      // GraphicsModule *graphics = GraphicsModule::getInstance();
+      // just to link to the GraphicsModule;
+    } catch ( TException &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+    } catch ( exception &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+    }
+
+  if ( error_str.length() == 0) {
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( binary_mesh);
+  } else {
+    _return.__set_result((Result::type)VAL_UNKNOWN_ERROR);
+    _return.__set_data(error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  isosurface = ( " << _return.data.length() << " bytes)" << std::endl;
+  if ( error_str.length() == 0) {
+    LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+  } else {
+    LOGGER << "  error  : \n" << _return.data << std::endl;
+  }
+}
 
 void QueryManagerServer::ManageGetSimplifiedMesh( Query_Result &_return, const SessionID sessionID, const std::string& query) {
   // Parse query JSON

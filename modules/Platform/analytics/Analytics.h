@@ -53,6 +53,12 @@ public:
 				const std::string &parameters,
 				std::string *return_binary_mesh, std::string *return_error_str);
 
+  void calculateIsoSurface(const std::string &sessionID,
+			   const std::string &modelID, const std::string &dataTableName,
+			   const int meshID, const std::string &analysisID, const double stepValue,
+			   const std::string &resultName, const int resultComp, const double isoValue,
+			   std::string *return_binary_mesh, std::string *return_error_str);
+
   void calculateSimplifiedMeshWithResult( const std::string &sessionID,
 					  const std::string &modelID, const std::string &dataTableName,
 					  const int meshID, const std::string &elementType,

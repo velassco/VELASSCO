@@ -121,6 +121,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageGetDiscrete2Continuum( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageDeleteBoundaryOfAMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetIsoSurface( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetSimplifiedMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageDeleteSimplifiedMesh( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetSimplifiedMeshWithResult( Query_Result &_return, const SessionID sessionID, const std::string& query);
