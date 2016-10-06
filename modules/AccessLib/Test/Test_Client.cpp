@@ -422,6 +422,7 @@ static const char alphanum[]="012345678ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno
     return s;
 }
 
+#if 0
 int doTestDC( const VAL_SessionID sessionID){
   srand(time(0));
   VAL_Result    result;
@@ -484,8 +485,7 @@ int doTestDC( const VAL_SessionID sessionID){
   return 0;
 
 }
-
-
+#endif
 
 // eol = end of line
 bool is_eol( const char c) {
