@@ -504,20 +504,20 @@ int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
   const char *status = NULL;
   char hex_string[ 1024];
 
+  std::cout << "[doTestIsoSurface] -- START\n";
+  
   std::string table_model("VELaSSCo_Models");
   std::string suffix_table = "";
-  std::string path_model_eddie = "/exports/eddie3_apps_local/apps/community/VELaSSCo/simulation_files/Telescope_128subdomains_ascii";
-  std::string path_model_acuario = "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";
-  std::string unique_name = table_model + suffix_table + ":";
+  std::string unique_name = table_model + suffix_table + ":*:";
   if (useAcuario)
     {
-      unique_name += path_model_acuario;
+      unique_name += "fine_mesh";
     }
   else
     {
-      unique_name += path_model_eddie;
+      unique_name += "fine_mesh-ascii_";
     }
-  unique_name = table_model + suffix_table + ":*:fine_mesh";
+  
   const char *access = "";
   const char *return_modelID = NULL;
   std::cout << "doing OpenModel of " << unique_name << std::endl;
@@ -536,11 +536,11 @@ int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
   // need to store as return_modelID points to a temporary storage that will be reused in next query
   std::string opened_modelID(return_modelID);
   const char* analysisID = "Kratos";
-  const char* meshID="m000001 no se usa";
+  const char* meshName="Mesh (no se usa)";
   double stepValue = 21;
   const char* resultID = "r000003";
   int resultComp = 0;
-  double isovalue = 0.5;
+  double isoValue = 0.5;
   const char *resultMesh;
   size_t resultMeshByteSize;
   const char*resultErrorStr;
@@ -549,11 +549,12 @@ int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
   result = valGetIsoSurface( /* in */
 			    sessionID,
 			    return_modelID,
-			    meshID,
+			    meshName,
 			    analysisID,
 			    stepValue,
 			    resultID,
 			    resultComp,
+			    isoValue,
 			    /* out */
 			    &resultMesh,
 			    // binary data with the mesh vertices and elements
@@ -1156,7 +1157,8 @@ int main(int argc, char* argv[])
   //ret= doTestDC (sessionID);
   //ret = doTestSINTEF(sessionID);
 
-  ret = doTestIsoSurface(sessionID, true);
+  char *using_acuario = getenv("USING_ACUARIO");
+  ret = doTestIsoSurface(sessionID, (using_acuario!=NULL && using_acuario[0]!='\0'));
   
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  
