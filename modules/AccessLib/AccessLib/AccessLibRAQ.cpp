@@ -756,11 +756,12 @@ extern "C" {
   VAL_Result VAL_API valGetIsoSurface( /* in */
 				      VAL_SessionID   sessionID,
 				      const char     *modelID,
-				      const char     *meshID,
+				      const char     *meshName,
 				      const char     *analysisID,
 				      const double    stepValue,
-				      const char     *resultID,
+				      const char     *resultName,
 				      const int      resultComp,
+				      const double   isoValue,
 				      /* out */
 				      const char     **resultMesh,
 				      // binary data with the mesh vertices and elements
@@ -770,9 +771,9 @@ extern "C" {
 				      const char     **resultErrorStr) { // in case of error
   CHECK_SESSION_ID( sessionID );
   CHECK_QUERY_POINTER( modelID );
-  CHECK_QUERY_POINTER( meshID );
+  CHECK_QUERY_POINTER( meshName );
   CHECK_QUERY_POINTER( analysisID );
-  CHECK_QUERY_POINTER( resultID );
+  CHECK_QUERY_POINTER( resultName );
   CHECK_QUERY_POINTER( resultMesh );
   CHECK_QUERY_POINTER( resultMeshByteSize );
   CHECK_QUERY_POINTER( resultErrorStr );
@@ -790,13 +791,14 @@ extern "C" {
       
       // Build JSON command string
       queryCommand << "{\n"
-		   << "  \"name\"       : \"" << "GetIsosurface" << "\",\n"
-		   << "  \"modelID\"    : \"" << modelID         << "\",\n"
-		   << "  \"meshID\"     : \"" << meshID          << "\",\n"
-		   << "  \"analysisID\" : \"" << analysisID      << "\",\n"
-		   << "  \"stepValue\"  : \"" << stepValue       << "\",\n"
-		   << "  \"resultID\"   : \"" << resultID        << "\",\n"
-		   << "  \"resultComp\" : \"" << resultComp      << "\"\n";
+		   << "  \"name\"       : \""   << "GetIsoSurface" << "\",\n"
+		   << "  \"modelID\"    : \""   << modelID         << "\",\n"
+		   << "  \"meshName\"     : \""   << meshName          << "\",\n"
+		   << "  \"analysisID\" : \""   << analysisID      << "\",\n"
+		   << "  \"stepValue\"  : \""   << stepValue       << "\",\n"
+		   << "  \"resultName\" : \""   << resultName      << "\",\n"
+		   << "  \"resultComp\" : \""   << resultComp      << "\",\n"
+		   << "  \"isoValue\"   : \""   << isoValue        << "\"\n";
       queryCommand << "}\n";
 
       // Send command string and get back result data

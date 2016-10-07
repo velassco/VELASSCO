@@ -305,11 +305,12 @@ extern "C" {
   VAL_Result VAL_API valGetIsoSurface( /* in */
 				      VAL_SessionID   sessionID,
 				      const char     *modelID,
-				      const char     *meshID,
+				      const char     *meshName,
 				      const char     *analysisID,
 				      const double    stepValue,
-				      const char     *resultID,
+				      const char     *resultName,
 				      const int      resultComp,
+				      const double   isoValue,
 				      /* out */
 				      const char     **resultMesh,
 				      // binary data with the mesh vertices and elements
