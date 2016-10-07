@@ -31,10 +31,10 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   logFile += sessionID;
   logFile += ".log";
   
-  cmdline << "spark-submit --master yarn --num-executors 40 --class com.cimne.velassco.ComputeIsoSurfaceApp "
+  cmdline << "spark-submit --master yarn --driver-memory 3g --executor-memory 3g --num-executors 40 --class com.cimne.velassco.ComputeIsoSurfaceApp "
 	  << pathJar << " --model_id " << modelID << " --analysis " << analysisID << " --timestep " << stepValue
-	  << " --result " << resultName << " --component " << resultComp << " --output_path " << outputFile
-	  << " > " << logFile;
+	  << " --result " << resultName << " --component " << resultComp << " --isovalue " <<  isoValue
+	  << " --output_path " << outputFile << " > " << logFile;
   int ret = system(cmdline.str().c_str());
   LOGGER << "[AnalyticsModule::calculateIsoSurface] -- invoking spark job as:\n";
   LOGGER << cmdline.str() << std::endl;
