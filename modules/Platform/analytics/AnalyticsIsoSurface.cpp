@@ -66,9 +66,12 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
       return;
     }
 
-  std::ifstream inputMeshLocal(localMeshFile, std::ios::binary);
   return_error_str->clear();
   return_binary_mesh->clear();
+  std::ifstream inputMeshLocal(localMeshFile, std::ios::binary);
+  inputMeshLocal.seekg(0, std::ios::end);
+  return_binary_mesh->reserve(inputMeshLocal.tellg());
+  inputMeshLocal.seekg(0, std::ios::beg);
   std::copy(std::istreambuf_iterator<char>(inputMeshLocal), 
 	    std::istreambuf_iterator<char>(),
 	    return_binary_mesh->begin());
