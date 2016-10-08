@@ -1,3 +1,6 @@
+#include <fstream>
+#include <iterator>
+#include <algorithm>
 #include <sstream>
 #include "DataLayerAccess.h" // must be included before Analytics
 #include "AnalyticsCommon.h"
@@ -23,9 +26,9 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   std::string pathJar(getVELaSSCoBaseDir());
   pathJar += "/AnalyticsSparkJobs/VelasscoSpark-0.1-SNAPSHOT.jar";
 
-  std::string outputFile("Mesh_IsoSurface_");
-  outputFile += sessionID;
-  outputFile += ".dat";
+  std::string outputHdfsFile("Mesh_IsoSurface_");
+  outputHdfsFile += sessionID;
+  outputHdfsFile += ".dat";
 
   std::string logFile("/tmp/Output_IsoSurface_");
   logFile += sessionID;
@@ -34,11 +37,41 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   cmdline << "spark-submit --master yarn --driver-memory 3g --executor-memory 3g --num-executors 40 --class com.cimne.velassco.ComputeIsoSurfaceApp "
 	  << pathJar << " --model_id " << modelID << " --analysis \"" << analysisID << "\" --timestep " << stepValue
 	  << " --result \"" << resultName << "\" --component " << resultComp << " --isovalue " <<  isoValue
-	  << " --output_path " << outputFile << " > " << logFile;
+	  << " --output_path " << outputHdfsFile << " > " << logFile;
   LOGGER << "[AnalyticsModule::calculateIsoSurface] -- invoking spark job as:\n";
   LOGGER << cmdline.str() << std::endl;
   int ret = system(cmdline.str().c_str());
-  
-  *return_error_str = "[calculateIsoSurface] -- almost implemented";
+
+  if (ret != 0)
+    {
+      LOGGER << "spark job return status is fail = " << ret << std::endl;
+      std::stringstream ss;
+      ss << "error executing system, ret = " << ret;
+      // here we can read the output of the system and complete de
+      // error message
+      *return_error_str = ss.str();
+      return;
+    }
+  std::stringstream cmd_dfs;
+  std::string localMeshFile("/tmp/");
+  localMeshFile += outputHdfsFile;
+  cmd_dfs << "hdfs dfs -copyToLocal " << outputHdfsFile << " " << localMeshFile;
+  ret = system(cmd_dfs.str().c_str());
+  if (ret != 0)
+    {
+      LOGGER << "hdfs dfs return status is fail = " << ret << std::endl;
+      std::stringstream ss;
+      ss << "error executing hdfs dfs -copyToLocal, ret = " << ret;
+      *return_error_str = ss.str();
+      return;
+    }
+
+  std::ifstream inputMeshLocal(localMeshFile, std::ios::binary);
+  return_error_str->clear();
+  return_binary_mesh->clear();
+  std::copy(std::istreambuf_iterator<char>(inputMeshLocal), 
+	    std::istreambuf_iterator<char>(),
+	    return_binary_mesh->begin());
+  //*return_error_str = "[calculateIsoSurface] -- almost implemented";
 }
 
