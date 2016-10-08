@@ -75,6 +75,7 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   std::copy(std::istreambuf_iterator<char>(inputMeshLocal), 
 	    std::istreambuf_iterator<char>(),
 	    return_binary_mesh->begin());
+  LOGGER << "return_binary_mesh.length() = " << return_binary_mesh->length() << std::endl;
   //*return_error_str = "[calculateIsoSurface] -- almost implemented";
 }
 
