@@ -35,9 +35,9 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
 	  << pathJar << " --model_id " << modelID << " --analysis \"" << analysisID << "\" --timestep " << stepValue
 	  << " --result \"" << resultName << "\" --component " << resultComp << " --isovalue " <<  isoValue
 	  << " --output_path " << outputFile << " > " << logFile;
-  int ret = system(cmdline.str().c_str());
   LOGGER << "[AnalyticsModule::calculateIsoSurface] -- invoking spark job as:\n";
   LOGGER << cmdline.str() << std::endl;
+  int ret = system(cmdline.str().c_str());
   
   *return_error_str = "[calculateIsoSurface] -- almost implemented";
 }
