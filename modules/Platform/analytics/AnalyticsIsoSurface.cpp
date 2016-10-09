@@ -17,10 +17,16 @@ using namespace VELaSSCo;
 #pragma message( "WARNING: ")
 
 void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
-					  const std::string &modelID, const std::string &dataTableName,
-					  const int meshID, const std::string &analysisID, const double stepValue,
-					  const std::string &resultName, const int resultComp, const double isoValue,
-					  std::string *return_binary_mesh, std::string *return_error_str)
+					  const std::string &modelID,
+					  const std::string &dataTableName,
+					  const int meshID,
+					  const std::string &analysisID,
+					  const double stepValue,
+					  const std::string &resultName,
+					  const int resultComp,
+					  const double isoValue,
+					  std::string *return_binary_mesh,
+					  std::string *return_error_str)
 {
   std::stringstream cmdline;
   std::string pathJar(getVELaSSCoBaseDir());
@@ -53,9 +59,9 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
       return;
     }
   std::stringstream cmd_dfs;
-  std::string localMeshFile("/tmp/");
-  localMeshFile += outputHdfsFile;
-  cmd_dfs << "hdfs dfs -copyToLocal " << outputHdfsFile << " " << localMeshFile;
+  std::string localFileName("/tmp/");
+  localFileName += outputHdfsFile;
+  cmd_dfs << "hdfs dfs -copyToLocal " << outputHdfsFile << " " << localFileName;
   ret = system(cmd_dfs.str().c_str());
   if (ret != 0)
     {
@@ -67,14 +73,10 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
     }
 
   return_error_str->clear();
-  return_binary_mesh->clear();
-  std::ifstream inputMeshLocal(localMeshFile, std::ios::binary);
-  inputMeshLocal.seekg(0, std::ios::end);
-  return_binary_mesh->reserve(inputMeshLocal.tellg());
-  inputMeshLocal.seekg(0, std::ios::beg);
-  std::copy(std::istreambuf_iterator<char>(inputMeshLocal), 
-	    std::istreambuf_iterator<char>(),
-	    return_binary_mesh->begin());
+  //return_binary_mesh->clear();
+  std::ifstream ifsLocal(localFileName, std::ios::binary);
+  return_binary_mesh->assign(std::istreambuf_iterator<char>(ifsLocal),
+  std::istreambuf_iterator<char>());
   LOGGER << "return_binary_mesh.length() = " << return_binary_mesh->length() << std::endl;
   //*return_error_str = "[calculateIsoSurface] -- almost implemented";
 }
