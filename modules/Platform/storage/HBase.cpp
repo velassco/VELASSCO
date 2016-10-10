@@ -521,12 +521,42 @@ std::string HBase::parse1DEM(string b, std::string LOVertices)
 }
 
 std::string HBase::getResultFromVerticesID( std::string& report, std::vector<ResultOnVertex> &listOfResults,
-					 const std::string &sessionID, const std::string &modelID,
-    			     const std::string &analysisID, const double       timeStep,  
-				     const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID )
-{
+					    const std::string &sessionID, const std::string &modelID,
+					    const std::string &analysisID, const double timeStep,  
+					    const std::string &resultID,   const std::vector<int64_t> &listOfVerticesID ) {
   //return getResultOnVertices_curl( sessionID, modelID, analysisID, timeStep, resultID, listOfVertices );
-  return getResultFromVerticesID_thrift( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
+  // asking results for too many vertices collapses hbase thrift raising a IOException ...
+  // so splitting the data query into severals
+  size_t chunkSize = 1000000;
+  size_t numVerticesID = listOfVerticesID.size();
+  if ( numVerticesID < chunkSize) {
+    return getResultFromVerticesID_thrift( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
+  } else {
+    std::string returnStr;
+    size_t numChunks = ( numVerticesID + chunkSize - 1) / chunkSize;
+    size_t cur_idx = 0;
+    LOGGER_SM << "getResultFromVerticesID: listOfVerticesID too big, splitted in " 
+	      << numChunks << " chunks of " << chunkSize << " vertices" << std::endl;
+    for ( size_t iChunk = 0; iChunk < numChunks; iChunk++) {
+      std::vector< int64_t> chunkListOfVerticesID;
+      for ( size_t count = 0; ( count < chunkSize) && ( cur_idx < numVerticesID); count++) {
+	chunkListOfVerticesID.push_back( listOfVerticesID[ cur_idx]);
+	cur_idx++;
+      }
+      std::vector< ResultOnVertex> chunkListOfResults;
+      returnStr = getResultFromVerticesID_thrift( report, chunkListOfResults, 
+						  sessionID, modelID, analysisID, timeStep, resultID, 
+						  chunkListOfVerticesID );
+      LOGGER_SM << "getResultFromVerticesID: chunk " << iChunk + 1 << "/" << numChunks << " done, status = " << returnStr << std::endl;
+      if ( returnStr == "Error") {
+	break;
+      }
+      for ( std::vector< ResultOnVertex>::const_iterator iResult = chunkListOfResults.begin(); iResult < chunkListOfResults.end(); iResult++) {
+	listOfResults.push_back( *iResult);
+      }
+    }
+    return returnStr;
+  }
   //return getResultFromVerticesID_thrift_filter( report, listOfResults, sessionID, modelID, analysisID, timeStep, resultID, listOfVerticesID );
 }
 
@@ -1374,12 +1404,13 @@ std::string HBase::parse1FEM(std::string b)
 		}
 		// tetrahedrons
 		else if(tmp_cq.find("M:m020406_") == 0){
-			int64_t indices[4];
-			
-			indices[0] = *((int64_t*)(&tmp_value[0 ]));			
-			indices[1] = *((int64_t*)(&tmp_value[8 ]));
-			indices[2] = *((int64_t*)(&tmp_value[16]));
-			indices[3] = *((int64_t*)(&tmp_value[24]));
+		  /// Not used:
+			/// int64_t indices[4];
+			/// 
+			/// indices[0] = *((int64_t*)(&tmp_value[0 ]));			
+			/// indices[1] = *((int64_t*)(&tmp_value[8 ]));
+			/// indices[2] = *((int64_t*)(&tmp_value[16]));
+			/// indices[3] = *((int64_t*)(&tmp_value[24]));
 			
 			//cout << "indices = ";
 			//for(size_t iii = 0; iii < 4; iii++)  cout << indices[iii] << " ";
@@ -1387,16 +1418,17 @@ std::string HBase::parse1FEM(std::string b)
 			
 		}
 		else if(tmp_cq.find("M:m844444_") == 0){
-			int64_t indices[8];
-			
-			indices[0] = *((int64_t*)(&tmp_value[0 ]));			
-			indices[1] = *((int64_t*)(&tmp_value[8 ]));
-			indices[2] = *((int64_t*)(&tmp_value[16]));
-			indices[3] = *((int64_t*)(&tmp_value[24]));
-			indices[4] = *((int64_t*)(&tmp_value[32]));			
-			indices[5] = *((int64_t*)(&tmp_value[40]));
-			indices[6] = *((int64_t*)(&tmp_value[48]));
-			indices[7] = *((int64_t*)(&tmp_value[56]));
+		  /// Not used:
+			/// int64_t indices[8];
+			/// 
+			/// indices[0] = *((int64_t*)(&tmp_value[0 ]));			
+			/// indices[1] = *((int64_t*)(&tmp_value[8 ]));
+			/// indices[2] = *((int64_t*)(&tmp_value[16]));
+			/// indices[3] = *((int64_t*)(&tmp_value[24]));
+			/// indices[4] = *((int64_t*)(&tmp_value[32]));			
+			/// indices[5] = *((int64_t*)(&tmp_value[40]));
+			/// indices[6] = *((int64_t*)(&tmp_value[48]));
+			/// indices[7] = *((int64_t*)(&tmp_value[56]));
 			
 			//cout << "indices = ";
 			//for(size_t iii = 0; iii < 8; iii++)  cout << indices[iii] << " ";
