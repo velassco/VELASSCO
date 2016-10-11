@@ -56,6 +56,7 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
       LOGGER << "spark job return status is fail = " << ret << std::endl;
       std::stringstream ss;
       ss << "error executing system, ret = " << ret;
+      ss << " ( is 'spark-submit' in the path?) ";
       // here we can read the output of the system and complete de
       // error message
       *return_error_str = ss.str();
