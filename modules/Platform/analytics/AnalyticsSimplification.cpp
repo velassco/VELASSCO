@@ -408,10 +408,23 @@ void AnalyticsModule::calculateSimplifiedMesh( const std::string &sessionID,
       *return_error_str += std::string( " number of tetrahedrons = ") + std::string( tmp) + "\n";
     }
   } else {
+    // check mesh size:
     std::cout << "simplified mesh has " 
 	      << simplified_mesh.getNumQuadrilaterals() << " tetrahedrons and " 
 	      << simplified_mesh.getNumVertices() << " vertices." << std::endl;
-    *return_binary_mesh = simplified_mesh.toString();
+    if ( simplified_mesh.getNumQuadrilaterals() < ( int64_t)simpParam.getMaxNumberOfElements()) {
+      *return_binary_mesh = simplified_mesh.toString();
+    } else {
+      LOGGER << "Simplified mesh TOO BIG. Limit is = " << simpParam.getMaxNumberOfElements() << std::endl;
+      std::stringstream buffer;
+      buffer << "Simplified mesh TOO BIG. Limit is = " << simpParam.getMaxNumberOfElements() << std::endl;
+      buffer << "and simplified mesh has " 
+	     << simplified_mesh.getNumQuadrilaterals() << " tetrahedrons and " 
+	     << simplified_mesh.getNumVertices() << " vertices." << std::endl;
+      buffer << "Please, reduce the number of cells in the simplification grid or" << std::endl
+	     << "increase the maximum number of elements." << std::endl;
+      *return_error_str = buffer.str();
+    }
   }
 
   DEBUG( "Deleting output files ...");
@@ -601,12 +614,25 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
       *return_error_str += std::string( " number of tetrahedrons = ") + std::string( tmp) + "\n";
     }
   } else {
+    // check mesh size:
     std::cout << "simplified mesh has " 
 	      << simplified_mesh.getNumQuadrilaterals() << " tetrahedrons and " 
 	      << simplified_mesh.getNumVertices() << " vertices." << std::endl;
-    *return_binary_mesh = simplified_mesh.toString();
-    const double *resArray = lst_results.data();
+    if ( simplified_mesh.getNumQuadrilaterals() < ( int64_t)simpParam.getMaxNumberOfElements()) {
+      *return_binary_mesh = simplified_mesh.toString();
+      const double *resArray = lst_results.data();
     *return_result_values = std::string( ( const char *)resArray, lst_results.size() * sizeof( double));
+    } else {
+      LOGGER << "Simplified mesh TOO BIG. Limit is = " << simpParam.getMaxNumberOfElements() << std::endl;
+      std::stringstream buffer;
+      buffer << "Simplified mesh TOO BIG. Limit is = " << simpParam.getMaxNumberOfElements() << std::endl;
+      buffer << "and simplified mesh has " 
+	     << simplified_mesh.getNumQuadrilaterals() << " tetrahedrons and " 
+	     << simplified_mesh.getNumVertices() << " vertices." << std::endl;
+      buffer << "Please, reduce the number of cells in the simplification grid or" << std::endl
+	     << "increase the maximum number of elements." << std::endl;
+      *return_error_str = buffer.str();
+    }
   }
 
   DEBUG( "Deleting output files ...");
