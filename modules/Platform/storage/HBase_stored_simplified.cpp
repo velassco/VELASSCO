@@ -19,6 +19,8 @@
 // Curl
 #include <curl/curl.h>
 
+#include "Simplification.h" // in analytics/...
+
 // VELaSSCo
 #include "HBase.h"
 //#include "VELaSSCoSM.h" // for class FullyQualifiedModelName
@@ -56,9 +58,19 @@ void HBase::getStoredSimplifiedMesh( const std::string &sessionID,
 				     const std::string &modelID,
 				     const int meshID, const std::string &elementType,
 				     const std::string &analysisID, const double stepValue,
-				     const std::string &parameters, 
+				     const std::string &parameters_in, 
 				     std::string *return_binary_mesh, std::string *return_error_str) {
   std::string vqueryName = "GetSimplifiedMesh";
+  // not all parameters are suitable as storage discriminator, i.e. they are not used to generate the information,
+  // for instance parameters == "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;" 
+  // and "MaximumNumberOfElements" is not used to generate the simplified mesh but only as output restriction criteria
+  // so removing it from the vqueryParameters
+  std::string parameters;
+  {
+    Simplification::Parameters simpParam;
+    simpParam.fromString( parameters);
+    parameters = simpParam.asRowKeyPartString();
+  }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" << analysisID << "\" " << stepValue << " \"" << parameters << "\"";
   std::vector< std::string> lst_simplified_meshes; // should only be one !!!
@@ -88,9 +100,19 @@ bool HBase::deleteStoredSimplifiedMesh( const std::string &sessionID,
 					const std::string &modelID,
 					const int meshID, const std::string &elementType,
 					const std::string &analysisID, const double stepValue,
-					const std::string &parameters, 
+					const std::string &parameters_in, 
 					std::string *return_error_str) {
   std::string vqueryName = "GetSimplifiedMesh";
+  // not all parameters are suitable as storage discriminator, i.e. they are not used to generate the information,
+  // for instance parameters == "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;" 
+  // and "MaximumNumberOfElements" is not used to generate the simplified mesh but only as output restriction criteria
+  // so removing it from the vqueryParameters
+  std::string parameters;
+  {
+    Simplification::Parameters simpParam;
+    simpParam.fromString( parameters);
+    parameters = simpParam.asRowKeyPartString();
+  }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" << analysisID << "\" " << stepValue << " \"" << parameters << "\"";
   // binary mesh stored in partitionID = 0
@@ -148,7 +170,7 @@ bool HBase::saveSimplifiedMesh( const std::string &sessionID,
 				const std::string &modelID,
 				const int meshID, const std::string &elementType,
 				const std::string &analysisID, const double stepValue,
-				const std::string &parameters, 
+				const std::string &parameters_in, 
 				const std::string &binary_mesh, std::string *return_error_str) {
   TableModelEntry table_set;
   if ( !getVELaSSCoTableNames( sessionID, modelID, table_set)) {
@@ -156,6 +178,16 @@ bool HBase::saveSimplifiedMesh( const std::string &sessionID,
   }
 
   std::string vqueryName = "GetSimplifiedMesh";
+  // not all parameters are suitable as storage discriminator, i.e. they are not used to generate the information,
+  // for instance parameters == "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;" 
+  // and "MaximumNumberOfElements" is not used to generate the simplified mesh but only as output restriction criteria
+  // so removing it from the vqueryParameters
+  std::string parameters;
+  {
+    Simplification::Parameters simpParam;
+    simpParam.fromString( parameters);
+    parameters = simpParam.asRowKeyPartString();
+  }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" << analysisID << "\" " << stepValue << " \"" << parameters << "\"";
   const std::string &vqueryParameters = vqueryParametersStream.str();
@@ -200,10 +232,20 @@ void HBase::getStoredSimplifiedMeshWithResult( const std::string &sessionID,
 					       const std::string &modelID,
 					       const int meshID, const std::string &elementType,
 					       const std::string &analysisID, const double stepValue,
-					       const std::string &parameters, const std::string &resultID,
+					       const std::string &parameters_in, const std::string &resultID,
 					       std::string *return_binary_mesh, std::string *return_binary_results, 
 					       std::string *return_error_str) {
   std::string vqueryName = "GetSimplifiedMeshWithResult";
+  // not all parameters are suitable as storage discriminator, i.e. they are not used to generate the information,
+  // for instance parameters == "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;" 
+  // and "MaximumNumberOfElements" is not used to generate the simplified mesh but only as output restriction criteria
+  // so removing it from the vqueryParameters
+  std::string parameters;
+  {
+    Simplification::Parameters simpParam;
+    simpParam.fromString( parameters);
+    parameters = simpParam.asRowKeyPartString();
+  }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" 
 			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";
@@ -240,9 +282,19 @@ bool HBase::deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
 					const std::string &modelID,
 					const int meshID, const std::string &elementType,
 					const std::string &analysisID, const double stepValue,
-					const std::string &parameters, const std::string &resultID,
+					const std::string &parameters_in, const std::string &resultID,
 					std::string *return_error_str) {
   std::string vqueryName = "GetSimplifiedMeshWithResult";
+  // not all parameters are suitable as storage discriminator, i.e. they are not used to generate the information,
+  // for instance parameters == "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;" 
+  // and "MaximumNumberOfElements" is not used to generate the simplified mesh but only as output restriction criteria
+  // so removing it from the vqueryParameters
+  std::string parameters;
+  {
+    Simplification::Parameters simpParam;
+    simpParam.fromString( parameters);
+    parameters = simpParam.asRowKeyPartString();
+  }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" 
 			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";
@@ -309,7 +361,7 @@ bool HBase::saveSimplifiedMeshWithResult( const std::string &sessionID,
 					  const std::string &modelID,
 					  const int meshID, const std::string &elementType,
 					  const std::string &analysisID, const double stepValue,
-					  const std::string &parameters, const std::string &resultID,
+					  const std::string &parameters_in, const std::string &resultID,
 					  const std::string &binary_mesh, const std::string &binary_results, 
 					  std::string *return_error_str) {
   TableModelEntry table_set;
@@ -318,6 +370,16 @@ bool HBase::saveSimplifiedMeshWithResult( const std::string &sessionID,
   }
 
   std::string vqueryName = "GetSimplifiedMeshWithResult";
+  // not all parameters are suitable as storage discriminator, i.e. they are not used to generate the information,
+  // for instance parameters == "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;" 
+  // and "MaximumNumberOfElements" is not used to generate the simplified mesh but only as output restriction criteria
+  // so removing it from the vqueryParameters
+  std::string parameters;
+  {
+    Simplification::Parameters simpParam;
+    simpParam.fromString( parameters);
+    parameters = simpParam.asRowKeyPartString();
+  }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" 
 			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";

@@ -820,18 +820,33 @@ bool HBase::storeQueryDataInDataTable( const std::string &sessionID,
     data_mutations.back().value = tmp.str();
   }
   char tmp_col[ 100];
+  // too many mutations also causes an IOException 
+  // so we write every 32 mutations ( 8 * 32 = 256 MB) into HBase
+  LOGGER_SM << "   storing data cells with " << vqueryData.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
+  bool storeVerbose = false;
+  int numChunks = 0;
   for ( size_t idx = 0; idx < lst_chunks_data.size(); idx++) {
     data_mutations.push_back( Mutation());
     sprintf( tmp_col, "Q:qr_%d", ( int)idx); // at 8MB each chunk, i hope we'll never have 2*10^9 * 10 MB bytes !!!
     data_mutations.back().column = std::string( tmp_col);
     data_mutations.back().value = lst_chunks_data[ idx];
+    numChunks++;
+    if ( numChunks == 32) {
+      ok = storeMutationsInTable( tableName, dataRowKey, data_mutations, "storeQueryDataInDataTable", storeVerbose);
+      if ( !ok) 
+	break;
+      LOGGER_SM << "   stored " << ( idx + 1) << " chunks." << std::endl;
+      data_mutations.clear();
+    }
   }
   // LOGGER_SM << " Accessing table '" << tableName << "' with" << std::endl;
   // LOGGER_SM << "         rowKey = " << dataRowKey << std::endl;
-  LOGGER_SM << "   storing data cells with " << vqueryData.size() << " bytes in " << lst_chunks_data.size() << " separated qualifiers" << std::endl;
-  
-  bool storeVerbose = false;
-  ok = storeMutationsInTable( tableName, dataRowKey, data_mutations, "storeQueryDataInDataTable", storeVerbose);
+  if ( data_mutations.size() > 0) {
+    ok = storeMutationsInTable( tableName, dataRowKey, data_mutations, "storeQueryDataInDataTable", storeVerbose);
+    if ( ok) {
+      LOGGER_SM << "   stored " << lst_chunks_data.size() << " chunks." << std::endl;
+    }
+  }
   
   return ok;
 }
