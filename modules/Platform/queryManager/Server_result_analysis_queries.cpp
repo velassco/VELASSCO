@@ -512,7 +512,7 @@ void QueryManagerServer::ManageGetIsoSurface(Query_Result &_return, const Sessio
 
   std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
   rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, "", 0.0);
   int meshID = -1;
   std::string elementType = "";
   if ( _return_.meshInfos.size() == 0) {
