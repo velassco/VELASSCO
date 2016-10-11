@@ -881,10 +881,19 @@ bool AnalyticsModule::checkAndCompletePartitionResults( const std::string &sessi
   for ( std::vector< MR_PartitionAndVertexID>::const_iterator ipv = lst_PartitionAndVertexIDs.begin(); ipv < lst_PartitionAndVertexIDs.end(); ipv++) {
     listOfVerticesID.push_back( ipv->_vertexID);
   }
+  // bcn 340m / 370m
+  const str::string bigBarcelonaModel = "ff8748a3d00b2cddec8a819a5a6c4823";
   for( std::vector< double>::const_iterator itStep = listOfSteps.begin(); itStep < listOfSteps.end(); itStep++)
   // at the moment, let's just test with the last time-step
   {
     double currentStep = *itStep; // listOfSteps.back();
+
+    // bcn 370m model in eddie, already done for these timesteps:
+    if ( ( currentStep < 140) && ( modelID == bigBarcelonaModel)) {
+      LOGGER << "Skipping timestep = " << currentStep << " of the modelid = " << bigBarcelonaModel << "." << std::endl;
+      continue;
+    }
+    
     std::vector< ResultInfo> listOfResults;
     status = _hbaseDB->getListOfResults( tmp_report, listOfResults, sessionID, modelID, analysisID, currentStep);
     for( std::vector< ResultInfo>::const_iterator ir = listOfResults.begin(); ir < listOfResults.end(); ir++)
