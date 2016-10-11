@@ -618,13 +618,11 @@ void DataLayerAccess::calculateSimplifiedMeshWithResult( const std::string &sess
   	AnalyticsModule::getInstance()->calculateSimplifiedMeshWithResult( sessionID, modelID, table_name_set._data, 
   									   meshID, elementType, analysisID, stepValue, parameters, resultID,
   									   return_binary_mesh, return_binary_results, return_error_str);
-  	// Do not store yet the simplified mesh, as it is  not implemented
-  	// and to avoid storing garbage
-	////// if ( ( return_binary_mesh->length() != 0) && ( return_binary_results->length() != 0)) {
-  	//////   std::string save_err_str;
-  	//////   _db->saveSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
-	////// 				     *return_binary_mesh, *return_binary_results, &save_err_str);
-  	////// }
+  	if ( ( return_binary_mesh->length() != 0) && ( return_binary_results->length() != 0)) {
+  	  std::string save_err_str;
+  	  _db->saveSimplifiedMeshWithResult( sessionID, modelID, meshID, elementType, analysisID, stepValue, parameters, resultID,
+					     *return_binary_mesh, *return_binary_results, &save_err_str);
+  	}
       }
     }
   }
