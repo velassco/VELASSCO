@@ -1,14 +1,17 @@
 /* -*- c++ -*- */
 #pragma once
 
-#include <istream>
-#include <ostream>
+#include <string>
+#include <iostream>
 #include <sstream>
 #include <stddef.h>  // defines NULL
 #include <stdlib.h>
 
 #include <math.h>
 #include <float.h>
+#include <assert.h>
+
+#include "Helpers.h"
 
 namespace VELaSSCo {
   namespace Simplification {
@@ -18,6 +21,8 @@ namespace VELaSSCo {
       Parameters(): _size( 0), _max_num_elements( 0), _boundary_weight( 1.0) {}
       bool fromString( const std::string str_parameters);
       std::string toString() const;
+      std::string asRowKeyPartString() const;
+      int getMaxNumberOfElements() const { return _max_num_elements;}
     private:
       // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
       int _size, _max_num_elements;
@@ -51,9 +56,22 @@ namespace VELaSSCo {
   
     inline std::string Parameters::toString() const {
       // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
-      ostringstream oss;
+      std::ostringstream oss;
       oss << "GridSize=" << _size << ";";
       oss << "MaximumNumberOfElements=" << _max_num_elements << ";";
+      oss << "BoundaryWeight=" << _boundary_weight << ";";
+      return oss.str();
+    }
+
+    // not all parameters are suitable as storage discriminator, i.e. they are not used to generate the information,
+    // for instance parameters == "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;" 
+    // and "MaximumNumberOfElements" is not used to generate the simplified mesh but only as output restriction criteria
+    // so removing it from the vqueryParameters
+    inline std::string Parameters::asRowKeyPartString() const {
+      // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
+      std::ostringstream oss;
+      oss << "GridSize=" << _size << ";";
+      // oss << "MaximumNumberOfElements=" << _max_num_elements << ";";
       oss << "BoundaryWeight=" << _boundary_weight << ";";
       return oss.str();
     }
@@ -284,7 +302,7 @@ namespace VELaSSCo {
     
     inline std::string Box::toString() const {
       // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
-      ostringstream oss;
+      std::ostringstream oss;
       oss.precision( 18);
       oss << _min.x << ";" << _min.y << ";" << _min.z << ";"
 	  << _max.x << ";" << _max.y << ";" << _max.z;
