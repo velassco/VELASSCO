@@ -490,7 +490,7 @@ void QueryManagerServer::ManageGetIsoSurface(Query_Result &_return, const Sessio
   double isoValue       = pt.get<double>( "isoValue");
 
 
-  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+  std::string dl_sessionID = GetDataLayerSessionID(sessionID);
 
   std::cout << "S   " << sessionID        << std::endl;
   std::cout << "dlS " << dl_sessionID     << std::endl;
@@ -502,20 +502,46 @@ void QueryManagerServer::ManageGetIsoSurface(Query_Result &_return, const Sessio
   std::cout << "Rc -" << resultComp       << "-" << std::endl;
   std::cout << "Iv -" << isoValue       << "-" << std::endl;
 
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+  
   std::string error_str;
 
   // from the mesh name, get the Mesh number
   // eventually the Mesh information could have been cached ...
-  int meshID = 1;
-  
+
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes _return_;
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
+  int meshID = -1;
+  std::string elementType = "";
+  if ( _return_.meshInfos.size() == 0) {
+    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+    error_str = "There is no mesh metadata.";
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	elementType = getStrFromElementType( it->elementType.shape);
+	break;
+      }
+    }
+    if (meshID == -1) { // not found
+      error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
+    }
+  }
   std::string binary_mesh = "";
-  try {
-    queryServer->calculateIsoSurface(GetQueryManagerSessionID(sessionID), 
-				     modelID,
-				     meshID,
-				     analysisID, stepValue, 
-				     resultName, resultComp, isoValue,
-				     &binary_mesh, &error_str);
+  if ( error_str.length() == 0) {
+    std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << " and elementType = " << elementType << std::endl;
+    try {
+      queryServer->calculateIsoSurface(GetQueryManagerSessionID(sessionID), 
+				       modelID,
+				       meshID,
+				       analysisID, stepValue, 
+				       resultName, resultComp, isoValue,
+				       &binary_mesh, &error_str);
       // GraphicsModule *graphics = GraphicsModule::getInstance();
       // just to link to the GraphicsModule;
     } catch ( TException &e) {
@@ -523,6 +549,7 @@ void QueryManagerServer::ManageGetIsoSurface(Query_Result &_return, const Sessio
     } catch ( exception &e) {
       std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
     }
+  }
 
   if ( error_str.length() == 0) {
     _return.__set_result( (Result::type)VAL_SUCCESS );
