@@ -13,6 +13,7 @@
 
 // VELaSSCo
 #include "AccessLib.h"
+#include "BoundaryBinaryMesh.h"
 
 // from Helpers.h
 #include <iostream>
@@ -498,7 +499,7 @@ char *streol( const char *s) {
   return *r ? ( char *)r : NULL;
 }
 
-int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
+int doTestIsoSurface( const VAL_SessionID sessionID)
 {
   VAL_Result    result;
   const char *status = NULL;
@@ -509,13 +510,32 @@ int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
   std::string table_model("VELaSSCo_Models");
   std::string suffix_table = "";
   std::string unique_name = table_model + suffix_table + ":*:";
+
+  char *using_acuario = getenv("USING_ACUARIO");
+  bool useAcuario = (using_acuario!=NULL && using_acuario[0]!='\0');
+  
+  char *iso_testcase_env = getenv("ISOSURF_TESTCASE");
+  std::string iso_testcase;
+  if (iso_testcase_env!=NULL)
+    {
+      iso_testcase = iso_testcase_env;
+    }
+  
   if (useAcuario)
     {
+      // spark job does not work in acuario, because hbase is 0.98
       unique_name += "fine_mesh";
     }
   else
     {
-      unique_name += "fine_mesh-ascii_";
+      if (iso_testcase == "" || iso_testcase != "telescope")
+	{
+	  unique_name += "VELaSSCo_HbaseBasicTest_part";
+	}
+      else
+	{
+	  unique_name += "fine_mesh-ascii_";
+	}
     }
   
   const char *access = "";
@@ -535,16 +555,36 @@ int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
 
   // need to store as return_modelID points to a temporary storage that will be reused in next query
   std::string opened_modelID(return_modelID);
-  const char* analysisID = "Kratos";
-  const char* meshName="Mesh (no se usa)";
-  double stepValue = 21;
-  const char* resultID = "r000003";
-  int resultComp = 0;
-  double isoValue = 0.5;
+
+  const char* analysisID;
+  const char* meshName;
+  double stepValue;
+  const char* resultName;
+  int resultComp;
+  double isoValue;
   const char *resultMesh;
   size_t resultMeshByteSize;
   const char*resultErrorStr;
 
+  if (iso_testcase == "" || iso_testcase != "telescope")
+    {
+      analysisID = "geometry";
+      meshName="Mesh (no se usa)";
+      stepValue = 2;
+      resultName = "Vector function";
+      resultComp = 0;
+      isoValue = 0.5;
+    }
+  else
+    {
+      analysisID = "Kratos";
+      meshName="Mesh (no se usa)";
+      stepValue = 21;
+      resultName = "VELOCITY";
+      resultComp = 0;
+      isoValue = 0.5;
+    }
+  
   std::cout << "return_modelID = " << return_modelID << std::endl;
   result = valGetIsoSurface( /* in */
 			    sessionID,
@@ -552,7 +592,7 @@ int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
 			    meshName,
 			    analysisID,
 			    stepValue,
-			    resultID,
+			    resultName,
 			    resultComp,
 			    isoValue,
 			    /* out */
@@ -566,6 +606,14 @@ int doTestIsoSurface( const VAL_SessionID sessionID, bool useAcuario)
 		 getStringFromCharPointers("valGetIsoSurface",resultErrorStr ));
   std::cout << "valGetIsoSurface: " << std::endl;
   std::cout << "   status = " << (resultErrorStr ? resultErrorStr : "(null)") << std::endl;
+  if (resultErrorStr == NULL)
+    {
+      std::cout << "results mesh has size = " << resultMeshByteSize << std::endl;
+      VELaSSCo::BoundaryBinaryMesh bbm;
+
+      bbm.fromString(resultMesh, resultMeshByteSize, VELaSSCo::BoundaryBinaryMesh::NONE);
+      std::cout << "The mesh has " << bbm.getNumVertices() << " number of vertexes\n";
+    }
   return EXIT_SUCCESS;
 }
 
@@ -1157,8 +1205,7 @@ int main(int argc, char* argv[])
   //ret= doTestDC (sessionID);
   //ret = doTestSINTEF(sessionID);
 
-  char *using_acuario = getenv("USING_ACUARIO");
-  ret = doTestIsoSurface(sessionID, (using_acuario!=NULL && using_acuario[0]!='\0'));
+  ret = doTestIsoSurface(sessionID);
   
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  
