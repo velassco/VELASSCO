@@ -380,6 +380,8 @@ EDMLONG VELaSSCoEDMplugin::GetResultAtPoints(Model *theModel, ModelType mt, node
          }
          _return.__set_status("OK");
          _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
+
+
       } else {
          _return.__set_status("Error"); _return.__set_report("Model does not exist.");
       }
@@ -1048,10 +1050,14 @@ void CalculateBoundaryOfMesh(List<fem::Element*> *elementAggr, Container<EDMVD::
             nodes[ix++].findNodeInfo(np, theModel);
          }
          static int nodesInTriangles[4][3] = {
+//            { 0, 1, 2 },
+//            { 0, 3, 1 },
+//            { 1, 3, 2 },
+//            { 2, 3, 0 },
             { 0, 1, 2 },
             { 0, 1, 3 },
-            { 0, 2, 3 },
             { 1, 2, 3 },
+            { 2, 0, 3 },
          };
          for (int i = 0; i < 4; i++) {
             NodeInfo *ni0 = &nodes[nodesInTriangles[i][0]], *ni1 = &nodes[nodesInTriangles[i][1]], *ni2 = &nodes[nodesInTriangles[i][2]];
@@ -1092,10 +1098,14 @@ void GetAllTriangles(List<fem::Element*> *elementAggr, Container<EDMVD::Triangle
             nodeIds[ix++] = np->get_id();
          }
          static int nodesInTriangles[4][3] = {
+//            { 0, 1, 2 },
+//            { 0, 1, 3 },
+//            { 0, 2, 3 },
+//            { 1, 2, 3 },
             { 0, 1, 2 },
-            { 0, 1, 3 },
-            { 0, 2, 3 },
-            { 1, 2, 3 },
+            { 1, 0, 3 },
+            { 2, 1, 3 },
+            { 3, 0, 2 },
          };
          for (int i = 0; i < 4; i++) {
             InstanceId id0 = nodeIds[nodesInTriangles[i][0]], id1 = nodeIds[nodesInTriangles[i][1]], id2 = nodeIds[nodesInTriangles[i][2]];
