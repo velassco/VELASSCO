@@ -22,6 +22,7 @@ public:
    char *getErrorMsg(int rstat);
    void defineLogger(CLoggWriter *lw) { thelog = lw; }
    void handleError(string &errMsg, CedmError *e);
+   void printLogHeader();
 
    /**
    * Return the status of the different services

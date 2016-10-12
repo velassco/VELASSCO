@@ -1,5 +1,6 @@
 
 #include "stdafx.h"
+#include "CLogger.h"
 
 #include <omp.h>
 
@@ -93,17 +94,17 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
    ecl::EDMdatabase *cEDMdatabase = NULL;
    char *cClusterRepositoryName, *cClusterModelName, *cEDMmodelName;
 
-   printf("\ninit_file=%s\n", serverListFileName);
+   //printf("\ninit_file=%s\n", serverListFileName);
    if (serverListFileName) {
       serverListFile = fopen(serverListFileName, "r");
       if (serverListFile) {
-         printf("init_file opened\n", serverListFileName);
+         //printf("init_file opened\n", serverListFileName);
          clusterModel->open("EDMcluster", sdaiRW);
-         printf("EDMclusterServices::initClusterModel - 1\n");
+         //printf("EDMclusterServices::initClusterModel - 1\n");
          CHECK(edmiDeleteModelContents(clusterModel->modelId));
          CMemoryAllocator *ma = clusterModel->ma;
          while (fgets(buf, sizeof(buf), serverListFile)){
-            printf("init_file_line=%s\n", buf);
+            //printf("init_file_line=%s\n", buf);
             int nCoulmn = sscanf(buf, "%s %s %s %s %s %s %s", command, param1, param2, param3, param4, param5, param6);
             if (strEQL(command, "EDMcluster")) {
                if (ourCluster == NULL) {
@@ -171,7 +172,21 @@ void EDMclusterServices::initClusterModel(char *serverListFileName)
    }
 }
 
+/*==============================================================================================================================*/
+void EDMclusterServices::printClusterInfo(CLoggWriter *logger)
+/*==============================================================================================================================*/
+{
+   logger->logg(0, "The cluster have the following servers:\n     Servers    Number of\n               application\n                 servers\n");
 
+   int nServer = 0, nAppServer = 0;
+
+   Iterator<ecl::EDMServer*, ecl::entityType> serverIter(clusterModel->getObjectSet(ecl::et_EDMServer), clusterModel);
+   for (EDMServer *srv = serverIter.first(); srv; srv = serverIter.next()) {
+      logger->logg(2, "%12s  %7d\n", srv->get_Host(), srv->get_nAppservers());
+      nServer++; nAppServer += srv->get_nAppservers();
+   }
+   logger->logg(4, "\nTotal %d server%s and %d EDM application server%s.\n", nServer, nServer > 1 ? "s":"", nAppServer, nAppServer > 1 ? "s":"");
+}
 
 
 /*==============================================================================================================================*/

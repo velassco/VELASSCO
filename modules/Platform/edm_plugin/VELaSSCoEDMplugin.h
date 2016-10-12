@@ -46,7 +46,7 @@ public:
    EDMLONG              GetNodeCoordinates(Model *theModel, ModelType mt, nodeInGetNodeCoordinates *inParam, nodeRvGetNodeCoordinates *retVal);
    EDMLONG              GetListOfMeshes(Model *theModel, ModelType mt, nodeInGetListOfMeshes *inParam, nodeRvGetListOfMeshes *retVal);
    EDMLONG              InjectFiles(Model *theModel, ModelType mt, nodeInInjectFiles *inParam, nodeRvInjectFiles *retVal);
-   void                 addNewResult(Container<EDMVD::ResultOnVertex> *resultsOnVertices, fem::entityType resType, void *vres, int nOfValuesPrVertex, EDMULONG *maxID, EDMULONG *minID, EDMLONG nodeID);
+   void                 addNewResult(Container<EDMVD::ResultOnVertex> *resultsOnVertices, fem::entityType resType, void *vres, int nOfValuesPrVertex, EDMULONG *maxID, EDMULONG *minID, EDMLONG nodeID, EDMLONG id);
    EDMLONG              CalculateBoundingBox(Model *theModel, ModelType mt, nodeInCalculateBoundingBox *inParam, nodeRvCalculateBoundingBox *retVal);
    EDMLONG              GetResultAtPoints(Model *theModel, ModelType mt, nodeInGetResultAtPoints *inParam, nodeRvGetResultAtPoints *retVal);
    //EDMLONG              GetElementOfPointsInSpace(rvGetElementOfPointsInSpace& _return, const std::string& sessionID, const std::string& modelName, const std::vector<Point> & points);

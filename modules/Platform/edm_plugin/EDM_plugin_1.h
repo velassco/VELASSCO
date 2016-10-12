@@ -174,7 +174,8 @@ namespace EDMVD {
    } DEMelement;
 
    typedef struct ResultOnVertex {
-      EDMULONG                            id;
+      EDMULONG                            nodeId;
+      EDMULONG                            sequenceNo;  // in input data
       double                              value[1];
    } ResultOnVertex;
 

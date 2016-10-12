@@ -62,7 +62,7 @@ using namespace std;
 using namespace ecl;
 
 #include "CppParameterClass.h"
-
+#include "CLogger.h"
 #include "EDMclusterServices.h"
 
 

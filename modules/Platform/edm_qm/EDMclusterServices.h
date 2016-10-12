@@ -56,6 +56,7 @@ public:
    EDMServer                                          *getEDMServer(EDMmodel *m);
    EDMserverInfo                                      *findServerInfo(EDMServer *srv);
    CMemoryAllocator                                   *getClusterMemoryAllocator() { return &clusterMa; }
+   void                                               printClusterInfo(CLoggWriter *logg);
 };
 
 /*================================================================================================*/

@@ -640,7 +640,7 @@ using namespace boost::interprocess;
 
 /*===================================================================================================================*/
 void VELaSSCoEDMplugin::addNewResult(Container<EDMVD::ResultOnVertex> *resultsOnVertices, fem::entityType resType, void *vres,
-                                 int nOfValuesPrVertex, EDMULONG *maxID, EDMULONG *minID, EDMLONG nodeID)
+                                 int nOfValuesPrVertex, EDMULONG *maxID, EDMULONG *minID, EDMLONG nodeID, EDMLONG seqNo)
 /*===================================================================================================================*/
 {
    fem::Result *res;
@@ -668,9 +668,9 @@ void VELaSSCoEDMplugin::addNewResult(Container<EDMVD::ResultOnVertex> *resultsOn
    } else {
       THROW("Resulttype not supported in GetResultFromVerticesID.");
    }
-   rov->id = nodeID;
-   if (rov->id > *maxID) *maxID = rov->id;
-   if (rov->id < *minID) *minID = rov->id;
+   rov->sequenceNo = seqNo; rov->nodeId = nodeID;
+   if (nodeID > *maxID) *maxID = nodeID;
+   if (nodeID < *minID) *minID = nodeID;
 }
 
 /*===================================================================================================================*/
@@ -772,7 +772,7 @@ getResultValues:
                                              }
                                              fem::ResultHeader *thisRes = res->get_result_header();
                                              if (thisRes && thisRes->getInstanceId() == resultId) {
-                                                addNewResult(resultsOnVertices, resType, vres, nOfValuesPrVertex, &maxID, &minID, thisNode.get_id());
+                                                addNewResult(resultsOnVertices, resType, vres, nOfValuesPrVertex, &maxID, &minID, thisNode.get_id(), i);
                                              }
                                           }
                                        }
@@ -812,7 +812,7 @@ getResultValues:
                               // get result for all nodes in the mesh!!
                               for (void *vres = valuestIter.first(&resType); vres; vres = valuestIter.next(&resType)) {
 
-                                 addNewResult(resultsOnVertices, resType, vres, nOfValuesPrVertex, &maxID, &minID, 0);
+                                 addNewResult(resultsOnVertices, resType, vres, nOfValuesPrVertex, &maxID, &minID, 0, 0);
 
                               }
                            }

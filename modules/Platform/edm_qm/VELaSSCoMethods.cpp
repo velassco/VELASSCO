@@ -31,7 +31,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
             int QendTime = GetTickCount();
-            printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s, time=%d\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL", QendTime - QstartTime);
+            //printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s, time=%d\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL", QendTime - QstartTime);
          } catch (CedmError *e) {
             delete e; nError++;
          }
@@ -546,8 +546,8 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
             vertexResults->relocateStructContainer(relocateInfo->bufferInfo);
             vertexResultsArr[i] = vertexResults;
             for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
-               if (verticesExist[rov->id] == 0) {
-                  verticesExist[rov->id] = 1;
+               if (verticesExist[rov->nodeId] == 0) {
+                  verticesExist[rov->nodeId] = 1;
                   n_result_records++;
                } else {
                   nDuplicates++;
@@ -565,8 +565,11 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
 #else
          vector<VELaSSCoSM::ResultOnVertex>  result_array;
          EDMLONG resSize = result_array.size();
-         result_array.reserve(n_result_records);
-         resSize = result_array.size();
+         VELaSSCoSM::ResultOnVertex VELaSSCoSM_dummy;
+         // Fill the vector for later random acces
+         for (int j=0; j < n_result_records; j++) result_array.push_back(VELaSSCoSM_dummy);
+         //result_array.reserve(n_result_records);
+         //resSize = result_array.size();
 #endif
          memset(verticesExist, 0, sizeof(unsigned char *)* (maxID + 1));
 
@@ -574,22 +577,21 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          for (int i = 0; i < nOfSubdomains; i++) {
             Container<EDMVD::ResultOnVertex> *vertexResults = vertexResultsArr[i];
             for (EDMVD::ResultOnVertex *rov = vertexResults->firstp(); rov; rov = vertexResults->nextp()) {
-               if (verticesExist[rov->id] == 0) {
+               if (verticesExist[rov->nodeId] == 0) {
 #ifdef BLOB
                   memmove(cp, rov, ResultOnVertexSize);
                   cp += ResultOnVertexSize;
 #else
                   vector<double> values;
-                  //values.reserve(nOfValuesPrVertex);
                   VELaSSCoSM::ResultOnVertex VELaSSCoSM_rov;
-                  VELaSSCoSM_rov.__set_id(rov->id);
+                  VELaSSCoSM_rov.__set_id(rov->nodeId);
                   for (int vi = 0; vi < nOfValuesPrVertex; vi++) {
                      values.push_back(rov->value[vi]);
                   }
                   VELaSSCoSM_rov.__set_value(values); 
-                  result_array.push_back(VELaSSCoSM_rov);
+                  result_array[rov->sequenceNo] = VELaSSCoSM_rov;
 #endif
-                  verticesExist[rov->id] = 1;
+                  verticesExist[rov->nodeId] = 1;
                }
             }
          }
@@ -1090,7 +1092,6 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
 #ifndef NOT_NESTED
 
       EDMULONG nOfSubdomains = subQueries->size();
-      bool errorFound = false;
 
       omp_set_num_threads(32);
       for (EDMexecution *e = subQueries->firstp(); e; e = subQueries->nextp()) {
@@ -1111,10 +1112,13 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
       for (int i = 0; i < nOfSubdomains; i++) {
          int nt = omp_get_num_threads();
          EDMexecution *e = subQueries->getElementp(i);
+         bool errorFound = false;
          ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
 #pragma omp critical
-         if (! errorFound) {
-            msgs->add(ma.allocString(((nodeRvInjectFiles *)e->returnValues)->report->value.stringVal));
+         if (errorFound) {
+            char ebuf[1024];
+            sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %ull\n", e->error? e->error->rstat : -1);
+            msgs->add(ma.allocString(ebuf));
          }
       }
 
@@ -1153,8 +1157,9 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
                cJob = jobList->getElementp(j);
                ExecuteRemoteCppMethod(cJob, "InjectFEMfiles", cJob->inParams, &errorFound);
                #pragma omp critical
-               if (! errorFound) {
-                  msgs->add(ma.allocString(((nodeRvInjectFiles *)cJob->returnValues)->report->value.stringVal));
+               if (errorFound) {
+                  nodeRvInjectFiles *rvp = (nodeRvInjectFiles *)e->returnValues;
+                  msgs->add(ma.allocString((rvp && rvp->report) ? rvp->report->value.stringVal : "Undefined error."));
                }
             }
          }
