@@ -412,6 +412,7 @@ void VELaSSCoHandler::closeModel(std::string& _return, const std::string& sessio
 {
 
    try {
+
       _return = "CloseModel" + string(" is not implemented");
    } catch (CedmError *e) {
       string errMsg;
@@ -722,9 +723,9 @@ void VELaSSCoHandler::printLogHeader()
 /*=============================================================================================================================*/
 {
    if (thelog) {
-      char date[9];
-	   _strdate(date);
-      thelog->logg(1, "EDNqueryManager started %s\n\n", date);
+      time_t now = time(NULL);
+      struct tm *t = localtime(&now);
+      thelog->logg(5, "EDNqueryManager started %02d.%02d.%04d %02d:%02d\n\n", t->tm_mday, t->tm_mon+1, t->tm_year + 1900, t->tm_hour,t->tm_min);
       theCluster->printClusterInfo(thelog);
       thelog->logg(0, "\n\n\n");
    }
