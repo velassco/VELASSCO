@@ -799,7 +799,7 @@ void QueryManagerServer::ManageGetSimplifiedMeshWithResult( Query_Result &_retur
   // asume static meshes
   // analysisID and stepValue is used for the result selection
   // queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, "", 0.0);
+  queryServer->getListOfMeshes(_return_, dl_sessionID, modelID, "", 0.0);
   int meshID = -1;
   std::string elementType = "";
   if ( _return_.meshInfos.size() == 0) {

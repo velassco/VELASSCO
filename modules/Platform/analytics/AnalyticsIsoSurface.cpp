@@ -40,13 +40,20 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   logFile += sessionID;
   logFile += ".log";
 
+  
   char strMeshID[64];
   sprintf(strMeshID, "m%06d", meshID);
   cmdline << "spark-submit --master yarn --driver-memory 3g --executor-memory 3g --num-executors 40 --class com.cimne.velassco.ComputeIsoSurfaceApp "
 	  << pathJar << " --model_id " << modelID << " --analysis \"" << analysisID << "\" --timestep " << stepValue
 	  << " --mesh_id " << strMeshID
 	  << " --result \"" << resultName << "\" --component " << resultComp << " --isovalue " <<  isoValue
-	  << " --output_path " << outputHdfsFile << " > " << logFile;
+	  << " --output_path " << outputHdfsFile;
+  std::string suffixV4CIMNE("_V4CIMNE");
+  if(dataTableName.rfind(suffixV4CIMNE) == (dataTableName.size()-suffixV4CIMNE.size())) {
+    LOGGER << " requested non official table = " << suffixV4CIMNE << std::endl;
+    cmdline << " --suffix _V4CIMNE";
+  }
+  cmdline << " > " << logFile;
   LOGGER << "[AnalyticsModule::calculateIsoSurface] -- invoking spark job as:\n";
   LOGGER << cmdline.str() << std::endl;
   int ret = system(cmdline.str().c_str());
@@ -65,7 +72,7 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   std::stringstream cmd_dfs;
   std::string localFileName("/tmp/");
   localFileName += outputHdfsFile;
-  cmd_dfs << "hdfs dfs -copyToLocal " << outputHdfsFile << " " << localFileName;
+  cmd_dfs << "hdfs dfs -copyToLocal -f " << outputHdfsFile << " " << localFileName;
   ret = system(cmd_dfs.str().c_str());
   if (ret != 0)
     {
