@@ -43,7 +43,7 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   
   char strMeshID[64];
   sprintf(strMeshID, "m%06d", meshID);
-  cmdline << "spark-submit --master yarn --driver-memory 3g --executor-memory 3g --num-executors 40 --class com.cimne.velassco.ComputeIsoSurfaceApp "
+  cmdline << "spark-submit --master yarn --driver-memory 5g --executor-memory 3g --num-executors 40 --class com.cimne.velassco.ComputeIsoSurfaceApp "
 	  << pathJar << " --model_id " << modelID << " --analysis \"" << analysisID << "\" --timestep " << stepValue
 	  << " --mesh_id " << strMeshID
 	  << " --result \"" << resultName << "\" --component " << resultComp << " --isovalue " <<  isoValue
