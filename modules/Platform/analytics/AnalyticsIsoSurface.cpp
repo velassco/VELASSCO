@@ -72,11 +72,14 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   std::stringstream cmd_dfs;
   std::string localFileName("/tmp/");
   localFileName += outputHdfsFile;
-  cmd_dfs << "hdfs dfs -copyToLocal -f " << outputHdfsFile << " " << localFileName;
+  // make sure local files does not exists
+  unlink( localFileName.c_str());
+  cmd_dfs << "hdfs dfs -copyToLocal " << outputHdfsFile << " " << localFileName;
   ret = system(cmd_dfs.str().c_str());
   if (ret != 0)
     {
       LOGGER << "hdfs dfs return status is fail = " << ret << std::endl;
+      LOGGER << " doing " << cmd_dfs.str().c_str() << std::endl;
       std::stringstream ss;
       ss << "error executing hdfs dfs -copyToLocal, ret = " << ret;
       *return_error_str = ss.str();
