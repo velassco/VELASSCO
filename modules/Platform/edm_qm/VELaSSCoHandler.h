@@ -346,12 +346,16 @@ public:
                     std::string *return_error_str) {}
   // needed by DeleteSimplifiedMeshWithResult vquery
   void deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
-						     const std::string &modelID,
-						     const int meshID, const std::string &elementType,
-						     const std::string &analysisID, const double stepValue,
-						     const  std::string &parameters,
-						     const std::string &resultID,
-                       std::string *return_error_str) {}
+					     const std::string &modelID,
+					     const int meshID, const std::string &elementType,
+					     const std::string &analysisID, const double stepValue,
+					     const  std::string &parameters,
+					     const std::string &resultID,
+                                             std::string *return_error_str) {}
+
+  void calculateIsoSurface(const string&, const string&, int, const string&, double, const string&, int, double, std::string*, std::string*) {}
+
+
 
 
 };
