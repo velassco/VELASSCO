@@ -150,6 +150,17 @@ else
   JAR_DST_FOLDER = /local/VELaSSCo
 endif
 
+# Spark jobs: only on velassco-cluster01
+ifeq ($(HOSTNAME),pez001)
+else ifeq ($(HOSTNAME),acuario)
+else
+  SPARK_FOLDER = AnalyticsSparkJobs
+  SPARK_FULL_JARS = $(wildcard $(SPARK_FOLDER)/*jar)
+  SPARK_JARS = ${SPARK_FULL_JARS:$(SPARK_FOLDER)/%=%}
+endif
+
+
+
 JAR_SRC_FILES = $(wildcard $(JAR_SRC_FOLDER)/*$(JAR_SUFFIX)*jar)
 JAR_FILES = ${JAR_SRC_FILES:$(JAR_SRC_FOLDER)/%=%}
 
@@ -225,6 +236,21 @@ check_jars:
 	  for jj in $(JAR_FILES) ; do \
 	    echo "  checking $$jj ..."; \
 	    diff_out=`diff -q $(JAR_SRC_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj` ; \
+	    if [ "$$diff_out" == "" ] ; then \
+	      echo -e "  ... \033[32;1midentical\033[0m"; \
+	    else  \
+	      echo -e "  ... \033[31;1mDIFFERENT!!!!\033[0m"; \
+	    fi \
+	  done ; \
+	  echo "--> done" ; \
+	else \
+	  echo "--> No JAR files to check" ; \
+	fi;
+	@if [ "$(SPARK_JARS)" != "" ] ; then \
+	  echo "Checking JAR files in $(SPARK_FOLDER) --" ; \
+	  for jj in $(SPARK_JARS) ; do \
+	    echo "  checking $$jj ..."; \
+	    diff_out=`diff -q $(SPARK_FOLDER)/$$jj $(JAR_DST_FOLDER)/$$jj` ; \
 	    if [ "$$diff_out" == "" ] ; then \
 	      echo -e "  ... \033[32;1midentical\033[0m"; \
 	    else  \
