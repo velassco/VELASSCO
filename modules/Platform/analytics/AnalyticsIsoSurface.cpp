@@ -40,6 +40,10 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   logFile += sessionID;
   logFile += ".log";
 
+  std::string errorFile("/tmp/Error_IsoSurface_");
+  errorFile += sessionID;
+  errorFile += ".log";
+  remove(errorFile.c_str());
   
   char strMeshID[64];
   sprintf(strMeshID, "m%06d", meshID);
@@ -47,7 +51,7 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
 	  << pathJar << " --model_id " << modelID << " --analysis \"" << analysisID << "\" --timestep " << stepValue
 	  << " --mesh_id " << strMeshID
 	  << " --result \"" << resultName << "\" --component " << resultComp << " --isovalue " <<  isoValue
-	  << " --output_path " << outputHdfsFile;
+	  << " --output_path " << outputHdfsFile << " --error_path " << errorFile;
   std::string suffixV4CIMNE("_V4CIMNE");
   if(dataTableName.rfind(suffixV4CIMNE) == (dataTableName.size()-suffixV4CIMNE.size())) {
     LOGGER << " requested non official table = " << suffixV4CIMNE << std::endl;
@@ -58,6 +62,17 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   LOGGER << cmdline.str() << std::endl;
   int ret = system(cmdline.str().c_str());
 
+  std::ifstream ifsErrorFile(errorFile);
+  // check for controlled error situations
+  if(ifsErrorFile.good())
+    {
+      // there is error info generated
+      return_error_str->assign(std::istreambuf_iterator<char>(ifsErrorFile),
+			       std::istreambuf_iterator<char>());
+      return;
+    }
+  
+  // non controlled error situation
   if (ret != 0)
     {
       LOGGER << "spark job return status is fail = " << ret << std::endl;
@@ -69,6 +84,8 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
       *return_error_str = ss.str();
       return;
     }
+
+  // if no error, then copy the result from HDFS
   std::stringstream cmd_dfs;
   std::string localFileName("/tmp/");
   localFileName += outputHdfsFile;
@@ -90,8 +107,9 @@ void AnalyticsModule::calculateIsoSurface(const std::string &sessionID,
   //return_binary_mesh->clear();
   std::ifstream ifsLocal(localFileName, std::ios::binary);
   return_binary_mesh->assign(std::istreambuf_iterator<char>(ifsLocal),
-  std::istreambuf_iterator<char>());
+			     std::istreambuf_iterator<char>());
+  ifsLocal.close();
+  remove(localFileName.c_str());
   LOGGER << "return_binary_mesh.length() = " << return_binary_mesh->length() << std::endl;
-  //*return_error_str = "[calculateIsoSurface] -- almost implemented";
 }
 
