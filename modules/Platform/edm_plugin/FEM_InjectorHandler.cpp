@@ -235,7 +235,7 @@ void FEM_InjectorHandler::InjectResultFile()
                   readNextLine();
                }
                if (strEQL(line, "Values\n")) readNextLine();
-               while (bytesRead && strNEQ(line, "End values\n") && strNEQ(line, "end values\n")) {
+               while (bytesRead && strcasecmp(line, "end values\n")) {
                   int nColumns = sscanf(line, "%llu %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
                      &nodeID, &nID[0], &nID[1], &nID[2], &nID[3], &nID[4], &nID[5], &nID[6], &nID[7], &nID[8], &nID[9], &nID[10]);
                   fem::Result *r;
@@ -297,7 +297,7 @@ void FEM_InjectorHandler::AnalyzeResultFile()
                   readNextLine();
                }
                if (strEQL(line, "Values\n")) readNextLine();
-               while (bytesRead && strNEQ(line, "End values\n") && strNEQ(line, "end values\n")) {
+               while (bytesRead && strcasecmp(line, "end values\n")) {
                   readNextLine();
                }
             } else {
