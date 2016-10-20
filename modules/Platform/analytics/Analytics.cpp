@@ -963,7 +963,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
     }
     if ( coordsName.size() > 0) {
       for ( std::vector< MeshInfo>::const_iterator mi = listOfMeshes.begin(); mi < listOfMeshes.end(); mi++) {
-	if ( coordsName == mi->coordsName) {
+	if ( coordsName == mi->name) {
 	  coordsMeshId = mi->meshNumber;
 	}
       }
