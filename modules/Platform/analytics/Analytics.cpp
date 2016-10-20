@@ -949,6 +949,27 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   if ( !ok) step_error = "error in getListOfUsedNodeIDs";
 
   // needs to get the vertices from the DataLayer ...
+  int coordsMeshId = meshID;
+  {
+    // may be the mesh number for the coordinates is not the same as the current MeshID
+    rvGetListOfMeshes returnedListOfMeshes;
+    DataLayerAccess::Instance()->getListOfMeshes( returnedListOfMeshes, sessionID, modelID, analysisID, stepValue);
+    const std::vector< MeshInfo> &listOfMeshes = returnedListOfMeshes.meshInfos;
+    std::string coordsName = "";
+    for ( std::vector< MeshInfo>::const_iterator mi = listOfMeshes.begin(); mi < listOfMeshes.end(); mi++) {
+      if ( meshID == mi->meshNumber) {
+	coordsName = mi->coordsName;
+      }
+    }
+    if ( coordsName.size() > 0) {
+      for ( std::vector< MeshInfo>::const_iterator mi = listOfMeshes.begin(); mi < listOfMeshes.end(); mi++) {
+	if ( coordsName == mi->coordsName) {
+	  coordsMeshId = mi->meshNumber;
+	}
+      }
+    }
+    DEBUG( "Mesh number " << meshID << " has coords in mesh '" << coordsName << "' with id = " << coordsMeshId);
+  }
   rvGetListOfVerticesFromMesh return_data;
   if ( ok) {
     // bool use_data_layer = true;
@@ -961,7 +982,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
       DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
 								      sessionID,
 								      modelID, analysisID, stepValue,
-								      meshID, lstVertexIds);
+								      coordsMeshId, lstVertexIds);
     // } else {
     if ( return_data.status == "Error") {
 	std::cout << "ERROR using DataLayer getListOfSelectedVerticesFromMesh, using the MapReduce version !!!" << std::endl;
@@ -971,7 +992,7 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
 							   sessionID, modelID, 
 							   dataTableName,
 							   analysisID, stepValue, 
-							   meshID);
+							   coordsMeshId);
       ok = ( error_str.length() == 0);
     }
     
