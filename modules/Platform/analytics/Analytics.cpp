@@ -962,10 +962,18 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
       }
     }
     if ( coordsName.size() > 0) {
-      for ( std::vector< MeshInfo>::const_iterator mi = listOfMeshes.begin(); mi < listOfMeshes.end(); mi++) {
-	if ( coordsName == mi->name) {
-	  coordsMeshId = mi->meshNumber;
-	}
+      // for ( std::vector< MeshInfo>::const_iterator mi = listOfMeshes.begin(); mi < listOfMeshes.end(); mi++) {
+      // 	if ( coordsName == mi->name) {
+      // 	  coordsMeshId = mi->meshNumber;
+      // 	}
+      // }
+      // coords name is the qualifier's name = c000001, so getting the coords mesh number from it:
+      int itmp = 0;
+      int n = sscanf( coordsName.c_str(), "c%d", &itmp);
+      if ( n == 1) {
+	coordsMeshId = itmp;
+      } else {
+	DEBUG( "Error processing coordsName = '" << coordsName << "' and got coords mesh number = " << itmp << " with error = " << n);
       }
     }
     DEBUG( "Mesh number " << meshID << " has coords in mesh '" << coordsName << "' with id = " << coordsMeshId);
