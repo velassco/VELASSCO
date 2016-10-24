@@ -430,13 +430,14 @@ bool HBase::getStoredVQueryExtraDataSplitted( const std::string &sessionID,
     return false;
   }
 
-  LOGGER_SM << "Getting the " << qrNumStr << " pieces of the stored boundary mesh." << std::endl;
+  std::string dataTypeMsg = vqueryName + " data";
+  LOGGER_SM << "Getting the " << qrNumStr << " pieces of calculated " << dataTypeMsg << "." << std::endl;
   std::vector< std::string> retLstValues;//( qrNum); // preallocate number of entries
   scan_ok = getColumnQualifierStringListFromTable( retLstValues,
 						   table_set._stored_vquery_data,
 						   startRowKey, stopRowKey,
 						   "Q", "qr_", qrNum,
-						   "Getting boundary mesh pieces");
+						   "Getting " + dataTypeMsg + " pieces");
   if ( !scan_ok || !retLstValues.size()) {
     return false;
   }
