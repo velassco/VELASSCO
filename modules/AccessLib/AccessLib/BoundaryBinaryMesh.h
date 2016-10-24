@@ -200,7 +200,7 @@ namespace VELaSSCo {
   inline bool BoundaryBinaryMesh::fromString( const char *binaryMeshData, const size_t binaryMeshSize, 
 					      const BoundaryBinaryMesh::t_memory_management mem_str) {
     int64_t numReadVertices = 0, numReadFaces = 0;
-    int n = sscanf( binaryMeshData, "NumberOfVertices: %" SCNi64 " NumberOfFaces: %"SCNi64, &numReadVertices, &numReadFaces);
+    int n = sscanf( binaryMeshData, "NumberOfVertices: %" SCNi64 " NumberOfFaces: %" SCNi64, &numReadVertices, &numReadFaces);
     if ( n != 2) {
       return false;
     }
