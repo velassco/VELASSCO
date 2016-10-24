@@ -436,9 +436,9 @@ void AnalyticsModule::calculateDiscrete2Continuum(const std::string &sessionID, 
     
     std::string cmd_line = HADOOP_YARN + " jar " + GetFullAnalyticsQualifier( "D2C_v2-1.0") + " d2c.v2.Main " + parameters;
     
+    DEBUG( cmd_line.c_str());
     int ret = 0;
     ret = system(cmd_line.c_str());
-    DEBUG( cmd_line.c_str());
     if ( ret == -1) {
       DEBUG( "Is 'yarn' and 'hdfs' in the path?\n");
     }
@@ -982,18 +982,19 @@ void AnalyticsModule::calculateBoundaryOfAMesh( const std::string &sessionID,
   if ( ok) {
     // bool use_data_layer = true;
     // if ( use_data_layer) {
-      std::cout << "doing DataLayer::getListOfSelectedVerticesFromMesh" << std::endl;
-      std::vector< int64_t> lstVertexIds;
-      for ( std::unordered_set< int64_t>::const_iterator itr = lst_UsedNodeIDs.begin(); itr != lst_UsedNodeIDs.end(); itr++) {
-	lstVertexIds.push_back( *itr);
-      }
-      DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
-								      sessionID,
-								      modelID, analysisID, stepValue,
-								      coordsMeshId, lstVertexIds);
+    std::cout << "doing DataLayer::getListOfSelectedVerticesFromMesh" << std::endl;
+    std::vector< int64_t> lstVertexIds;
+    for ( std::unordered_set< int64_t>::const_iterator itr = lst_UsedNodeIDs.begin(); itr != lst_UsedNodeIDs.end(); itr++) {
+      lstVertexIds.push_back( *itr);
+    }
+    DataLayerAccess::Instance()->getListOfSelectedVerticesFromMesh( return_data,
+    								    sessionID,
+    								    modelID, analysisID, stepValue,
+    								    coordsMeshId, lstVertexIds);
     // } else {
     if ( return_data.status == "Error") {
-	std::cout << "ERROR using DataLayer getListOfSelectedVerticesFromMesh, using the MapReduce version !!!" << std::endl;
+      std::cout << "ERROR " << std::endl;
+      std::cout << "using DataLayer getListOfSelectedVerticesFromMesh, using the MapReduce version !!!" << std::endl;
       // the MapReduce version
       std::cout << "doing MapReduce::getListOfVerticesFromMesh" << std::endl;
       std::string error_str = MRgetListOfVerticesFromMesh( return_data,
