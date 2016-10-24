@@ -450,12 +450,12 @@ void AnalyticsModule::calculateSimplifiedMeshWithResult( const std::string &sess
 							 std::string *return_binary_mesh, std::string *return_result_values,
 							 std::string *return_error_str) {
   // needs this to correct the simulation results of the Bacelona models !!!
-  // // check data in HBase:
-  // bool check = checkAndCompletePartitionResults( sessionID, modelID, dataTableName, meshID, elementType,
-  // 						 analysisID, stepValue, parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
-  // 						 resultName, return_error_str);
-  // if ( !check)
-  //   return;
+  // check data in HBase:
+//   bool check = checkAndCompletePartitionResults( sessionID, modelID, dataTableName, meshID, elementType,
+//   						 analysisID, stepValue, parameters, // "GridSize=1024;MaximumNumberOfElements=10000000;BoundaryWeight=100.0;"
+//   						 resultName, return_error_str);
+//   if ( !check)
+//     return;
 
   // parsing parameters
   Simplification::Parameters simpParam;
@@ -910,16 +910,16 @@ bool AnalyticsModule::checkAndCompletePartitionResults( const std::string &sessi
   }
   // bcn 340m / 370m
   const std::string bigBarcelonaModel = "ff8748a3d00b2cddec8a819a5a6c4823";
-  for( std::vector< double>::const_iterator itStep = listOfSteps.begin(); itStep < listOfSteps.end(); itStep++)
-  // at the moment, let's just test with the last time-step
+  // for( std::vector< double>::const_iterator itStep = listOfSteps.begin(); itStep < listOfSteps.end(); itStep++)
+  // at the moment, let's just test with the selected time-step
   {
-    double currentStep = *itStep; // listOfSteps.back();
+    double currentStep = stepValue;// *itStep; // listOfSteps.back();
 
-    // bcn 370m model in eddie, already done for these timesteps:
-    if ( ( currentStep < 140) && ( modelID == bigBarcelonaModel)) {
-      LOGGER << "Skipping timestep = " << currentStep << " of the modelid = " << bigBarcelonaModel << "." << std::endl;
-      continue;
-    }
+    // // bcn 370m model in eddie, already done for these timesteps:
+    // if ( ( currentStep < 140) && ( modelID == bigBarcelonaModel)) {
+    //   LOGGER << "Skipping timestep = " << currentStep << " of the modelid = " << bigBarcelonaModel << "." << std::endl;
+    //   continue;
+    // }
     
     std::vector< ResultInfo> listOfResults;
     status = _hbaseDB->getListOfResults( tmp_report, listOfResults, sessionID, modelID, analysisID, currentStep);
