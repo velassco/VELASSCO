@@ -68,11 +68,14 @@ void HBase::getStoredSimplifiedMesh( const std::string &sessionID,
   std::string parameters;
   {
     Simplification::Parameters simpParam;
-    simpParam.fromString( parameters);
+    simpParam.fromString( parameters_in);
     parameters = simpParam.asRowKeyPartString();
   }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" << analysisID << "\" " << stepValue << " \"" << parameters << "\"";
+
+  LOGGER_SM << "Looking for simplified mesh for '" << vqueryParametersStream.str() << "'" << std::endl;
+
   std::vector< std::string> lst_simplified_meshes; // should only be one !!!
 
   // get number of pieces, i.e. metadata Q:qrNum
@@ -110,11 +113,12 @@ bool HBase::deleteStoredSimplifiedMesh( const std::string &sessionID,
   std::string parameters;
   {
     Simplification::Parameters simpParam;
-    simpParam.fromString( parameters);
+    simpParam.fromString( parameters_in);
     parameters = simpParam.asRowKeyPartString();
   }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" << analysisID << "\" " << stepValue << " \"" << parameters << "\"";
+  LOGGER_SM << "Looking for simplified mesh for '" << vqueryParametersStream.str() << "'" << std::endl;
   // binary mesh stored in partitionID = 0
   bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
 						 vqueryName, vqueryParametersStream.str(), 
@@ -185,7 +189,7 @@ bool HBase::saveSimplifiedMesh( const std::string &sessionID,
   std::string parameters;
   {
     Simplification::Parameters simpParam;
-    simpParam.fromString( parameters);
+    simpParam.fromString( parameters_in);
     parameters = simpParam.asRowKeyPartString();
   }
   std::stringstream vqueryParametersStream;
@@ -243,7 +247,7 @@ void HBase::getStoredSimplifiedMeshWithResult( const std::string &sessionID,
   std::string parameters;
   {
     Simplification::Parameters simpParam;
-    simpParam.fromString( parameters);
+    simpParam.fromString( parameters_in);
     parameters = simpParam.asRowKeyPartString();
   }
   std::stringstream vqueryParametersStream;
@@ -253,6 +257,8 @@ void HBase::getStoredSimplifiedMeshWithResult( const std::string &sessionID,
 
   // get number of pieces, i.e. metadata Q:qrNum
   // ?not needed? eventually retrieve all i can ....
+
+  LOGGER_SM << "Looking for simplified mesh with results for '" << vqueryParametersStream.str() << "'" << std::endl;
 
   // binary mesh stored in partitionID = 0
   bool scan_ok = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
@@ -292,12 +298,13 @@ bool HBase::deleteStoredSimplifiedMeshWithResult( const std::string &sessionID,
   std::string parameters;
   {
     Simplification::Parameters simpParam;
-    simpParam.fromString( parameters);
+    simpParam.fromString( parameters_in);
     parameters = simpParam.asRowKeyPartString();
   }
   std::stringstream vqueryParametersStream;
   vqueryParametersStream << modelID << " " << meshID << " " << elementType << " \"" 
 			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";
+  LOGGER_SM << "Looking for simplified mesh with results for '" << vqueryParametersStream.str() << "'" << std::endl;
   // binary mesh stored in partitionID = 0
   bool found = getStoredVQueryExtraDataSplitted( sessionID, modelID, analysisID, stepValue, 0,
 						 vqueryName, vqueryParametersStream.str(), 
@@ -377,7 +384,7 @@ bool HBase::saveSimplifiedMeshWithResult( const std::string &sessionID,
   std::string parameters;
   {
     Simplification::Parameters simpParam;
-    simpParam.fromString( parameters);
+    simpParam.fromString( parameters_in);
     parameters = simpParam.asRowKeyPartString();
   }
   std::stringstream vqueryParametersStream;
@@ -385,7 +392,7 @@ bool HBase::saveSimplifiedMeshWithResult( const std::string &sessionID,
 			 << analysisID << "\" " << stepValue << " \"" << parameters << "\"" << " \"" << resultID << "\"";
   const std::string &vqueryParameters = vqueryParametersStream.str();
 
-  LOGGER_SM << "Saving simplified mesh for '" << vqueryParameters << "'" << std::endl;
+  LOGGER_SM << "Saving simplified mesh with results for '" << vqueryParameters << "'" << std::endl;
   // create tables if needed
   bool ok = false;
   // reset tables:
