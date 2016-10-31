@@ -26,6 +26,7 @@ void GetBoundaryOfLocalMesh(VELaSSCoHandler *server, string sessionID, char *mod
 
 }
 
+
 void GetListOfResultsFromTimeStepAndAnalysis(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID, char *analysisName, double timeStep)
 {
    int endTime, startTime;
@@ -39,12 +40,27 @@ void GetListOfResultsFromTimeStepAndAnalysis(VELaSSCoHandler *server, string ses
    printf("Elapsed time for GetBoundaryOfLocalMesh is %d milliseconds\n", endTime - startTime);
 
 }
-
+int64_t vertArr[] = {
+278669, 287934, 289862, 290555, 293416, 293917, 296381, 297980, 298436, 299575, 300054, 304354, 307537, 308340, 308996, 309043, 311063, 311155, 311974, 313065, 313720, 314029, 314299, 314676, 315213, 315342, 316580, 317700, 318053, 319623, 320101, 320173, 320570, 321241, 321673, 322082, 323207, 323258, 323325, 324739, 324904, 324931, 325033, 325547, 326009, 326419, 327501, 327753, 327837, 328284, 328750, 329455, 330193, 330701, 330779, 331309, 331978, 331982, 332692, 332836, 333079, 334482, 334494, 334628, 334725, 335455, 335848, 336223, 337303, 337359, 338017, 338902, 339058, 339085, 339312, 339433, 339760, 340450, 340697, 341081, 341666, 341825, 342188, 342307, 342523, 343115, 343140, 343281, 343888, 343971, 344235, 344969, 344985, 345005, 345137, 345524, 345704, 345803, 345851, 346461, 346560, 346591, 346901, 347291, 347406, 347708, 348075, 348379, 348805, 349103, 349164, 349667, 350214, 350278, 350335, 350380, 350453, 350559, 350720, 350860, 350895, 351174, 351326, 351443, 352159, 352275, 352584, 352637, 353081, 
+353257, 353317, 353453, 353521, 353541, 353579, 353673, 353887, 353899, 354071, 354317, 354542, 354677, 354845, 354940, 355010, 355080, 355335, 355850, 355928, 356178, 356223, 356318, 356580, 356885, 86824, 87050, 87121, 90701, 91248, 91822, 92352, 92750, 92757, 93655, 93717, 93767, 94146, 94509, 95436, 95458, 95502, 95620, 96643, 97115, 97515, 97945, 98461, 98521, 98741, 99481, 99629, 99725, 99783, 99789, 100097, 100300, 100379, 100498, 100517, 100694, 101466, 101508, 101831, 101871, 101931, 101934, 101967, 101991, 102093, 102424, 103086, 103857, 104056, 104318, 104586, 104592, 104597, 104623, 104726, 104790, 104995, 105124, 105157, 105382, 105436, 105541, 105867, 105947, 105965, 106215, 106221, 106428, 106907, 107044, 107370, 107486, 107912, 108017, 108204, 108214, 108279, 108584, 108633, 108912, 108922, 108941, 108944, 108955, 108961, 108979, 109037, 109108, 109155, 109251, 109341, 109422, 109643, 109695, 109700, 109928, 110282, 110292, 110456, 110548, 110569, 
+110792, 110886, 110897, 110998, 111162, 111177, 111342, 111448, 111567, 111773, 111836, 111981, 112261, 112547, 112590, 113010, 113122, 113142, 113199, 113262, 113271, 113328, 113389, 113465, 113513, 113683, 113718, 113880, 114001, 114015, 114031, 114109, 114279, 114406, 114416, 114494, 114881, 114895, 115041, 115182, 115191, 115250, 115296, 115553, 115617, 115625, };
 void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *modelName, string modelID)
 {
    int endTime, startTime;
    rvGetResultFromVerticesID verticesResultRV;
    vector<int64_t> listOfVertices;
+   int timeStep = 21;
+
+   //for (int i=0; i < (sizeof(vertArr) / sizeof(int64_t)); i++) {
+   //   listOfVertices.push_back(vertArr[i]);
+   //}
+   server->getResultFromVerticesID(verticesResultRV, sessionID, modelID, "Kratos", timeStep, "PARTITION INDEX", listOfVertices);
+   for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
+      vector<double>::iterator valuesIter = resIter->value.begin();
+      printf("%12Lf\n", *valuesIter);
+   }
+
+   listOfVertices.clear();
 
    listOfVertices.push_back(278669);
    listOfVertices.push_back(2814146);
@@ -78,7 +94,6 @@ void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *mo
 //#endif
 //      printf(verticesResultRV.report.data());
 //   }
-   int timeStep = 21;
    for (int i=1; i < 20; i++) {
       server->getResultFromVerticesID(verticesResultRV, sessionID, modelID, "Kratos", timeStep, "PRESSURE", listOfVertices);
       printf("\n%10d %10d", i, timeStep);

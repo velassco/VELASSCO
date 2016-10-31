@@ -49,6 +49,7 @@ extern "C" {
 #include "cpp10_EDM_interface.h"
 }
 
+#include <omp.h>
 
 #include "EDMcluster_entityTypes.h"
 #include "container.h"

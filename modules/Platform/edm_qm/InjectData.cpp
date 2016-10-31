@@ -99,7 +99,7 @@ void VELaSSCoMethods::CreateCubeFromFileSequence(Container<char*> *FileNameForma
    if (subQueries) {
       EDMULONG nOfSubdomains = subQueries->size();
       bool errorFound = false;
-      for (EDMexecution *e = subQueries->firstp(); e; e = subQueries->nextp()) {
+      for (EDMexecution *e = subQueries->first(); e; e = subQueries->next()) {
          nodeInInjectFiles *inParams = new(&ma)nodeInInjectFiles(&ma, NULL);
          int i = 0, cModelno = FirstModelNo;
          for (char *fnf = FileNameFormats->first(); fnf && i < MAX_INJECT_FILES && cModelno <= LastModelNo; fnf = FileNameFormats->next()) {
@@ -115,14 +115,14 @@ void VELaSSCoMethods::CreateCubeFromFileSequence(Container<char*> *FileNameForma
       startTime = GetTickCount();
 #pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
-         e = subQueries->getElementp(i);
+         e = subQueries->getElement(i);
          ExecuteRemoteCppMethod(e, "AnalyzeFEMfiles", e->inParams, &errorFound);
       }
 
       nodeRvInjectFiles *retValueWithError = NULL;
       EDMLONG maxNodeId = 0, maxElementId = 0;
       for (int i = 0; i < nOfSubdomains; i++) {
-         EDMexecution *e = subQueries->getElementp(i);
+         EDMexecution *e = subQueries->getElement(i);
          nodeRvInjectFiles *retVal = (nodeRvInjectFiles *)e->returnValues;
          if(strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
@@ -140,7 +140,7 @@ void VELaSSCoMethods::CreateCubeFromFileSequence(Container<char*> *FileNameForma
          Container<double> *timesteps = new(&ma)Container<double>(&ma);
          msgs->add(ma.allocString(t));
          for (int i = 0; i < nOfSubdomains; i++) {
-            EDMexecution *e = subQueries->getElementp(i);
+            EDMexecution *e = subQueries->getElement(i);
             nodeRvInjectFiles *retVal = (nodeRvInjectFiles *)e->returnValues;
             Container<char*> *resultNamesFromOneFile = new(&ma)Container<char*>(&ma, retVal->resultNames);
             char *thisResult, *rn;

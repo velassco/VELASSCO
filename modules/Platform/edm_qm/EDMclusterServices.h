@@ -48,6 +48,7 @@ public:
    ecl::ClusterRepository                             *getClusterRepository(const char *name);
    EDMserverContext                                   *getServerContext(char *user, char *group, char *password, EDMmodel *m);
    EDMserverContext                                   *getServerContext(char *user, char *group, char *password, EDMServer *srv);
+   EDMserverContext                                   *getServerContext(char *user, char *group, char *password, char *host, char *port);
    void                                               listAllEDMservers();
    void                                               stopAllEDMservers();
    void                                               closeAllEDMdatabses();
@@ -86,8 +87,7 @@ class EDMserverContext
 public:
    bool                             inUse;
    SdaiServerContext                srvCtxt;
-   char                             *port;
-   char                             *host;
+   EDMserverInfo                    *theServer;
 };
 /*================================================================================================*/
 /*!
@@ -99,8 +99,14 @@ public:
    InstanceId                       serverId;
    Container<EDMserverContext>      *srvCtxts;
    int                              nAppservers;
+   char                             *port;
+   char                             *host;
+   EDMclusterServices               *theCluster;
+   omp_lock_t                       srvCtxtLock;
 
+   void                             init(char *host, char *port, EDMclusterServices *theCluster);
    EDMserverContext                 *getSrvCtxt(char *user, char *group, char *password, EDMServer *srv, EDMclusterServices *theServer);
+   EDMserverContext                 *getSrvCtxt(char *user, char *group, char *password);
 };
 /*================================================================================================*/
 /*!
@@ -111,6 +117,7 @@ class EDMexecutionQueue
 public:
    EDMserverInfo                    *theEDMserver;
    Container<EDMexecution>          *theJobs;
+   EDMexecution                     *nextJob;
    int                              nAppservers;
    int                              nJobsRunning;
    
@@ -133,7 +140,8 @@ protected:
    tRemoteParameter                       params[MAX_PAR];
    tRemoteParameter                       *paramAddresses[MAX_PAR];
    tRemoteParameter                       returnValue;
-   Container<EDMexecution>                *subQueries;
+   //Container<EDMexecution>                *subQueries;
+   Container<EDMexecution*>                *subQueries; // tho objects are created from the job queue on its machine node
    Container<EDMexecutionQueue*>           *queryQueuesOnMachines;
   // Container<Container<EDMexecution>*>    *nodeQueries; // 
    virtual char                           *getPluginPath() = 0;
