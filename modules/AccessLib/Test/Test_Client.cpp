@@ -960,12 +960,68 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
     std::cout << "We are on acuario!" << std::endl;
   }
 
-  const char* model_name = (acuario) ? "fine_mesh-ascii_" : "fine_mesh";
-  const char* model_fullpath = (acuario) ?
-    "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii" :
-    "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/";
-  // On Acuario we need to use VELaSSCo_Models_V4CIMNE as the original table is corrupt.
+  // On Acuario the original table is corrupt, hence we need to use an alternative.
   const char* model_tablename = (acuario) ? "VELaSSCo_Models_V4CIMNE" : "VELaSSCo_Models";
+  // The model_name should be renamed to include a description of the object (like Telescope) in the name ...
+  const char* model_name = (acuario) ? "fine_mesh-ascii_" : "fine_mesh";
+
+  //
+  // Test GetListOfModels()
+  //
+  const char *return_list = NULL;
+  const char *group_qualifier = model_tablename;
+  const char *name_pattern = model_name;
+  result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
+  CheckVALResult(result, getStringFromCharPointers( "valGetListOfModels ", status));
+  std::cout << "in VELaSSCo_models:" << std::endl;
+  std::cout << "   status = " << status << std::endl;
+  std::cout << "   model_list = " << return_list << std::endl;
+
+  std::string full_path("");
+#if 1
+  // Since the valGetListOfModels() does not actually use name_pattern we must do this manually.
+  std::stringstream return_list_ss(return_list);
+  // int chars_length = return_list_ss.size();//std::strlen(return_list);
+  // std::cout << "num_chars: " << chars_length << std::endl;
+  // std::string model_list(return_list, chars_length);
+  // model_list.read((char*)return_list_non_const, chars_length);
+  std::vector<std::string> lines;
+  int cntr = 0;
+  while (return_list_ss) {
+    std::string line;
+    std::getline(return_list_ss, line);
+    //    std::cout << "line # " << cntr << ": " << line << std::endl;
+    lines.push_back(line);
+    ++cntr;
+  }
+  //  std::cout << "num_lines: " << lines.size() << std::endl;
+  const int num_models = lines.size()/4; // First line with number of models. And also a blank line at the end it seems.
+  //  std::cout << "num_models: " << num_models << std::endl;
+  // We pick the model with the matching name.
+  int num_matches = 0;
+  for (size_t ki = 0; ki < num_models; ++ki) {
+    std::string line_name = lines[ki*4+1];
+    std::string name = line_name.substr(6);
+    if (name.compare(model_name) == 0) {
+      //      std::cout << "Found the model with name '" << name << "'!" << std::endl;
+      ++ num_matches;
+      // We extract the full path for the model.
+      std::string line_full_path = lines[ki*4+2];
+      full_path = line_full_path.substr(10);
+      //      std::cout << "full_path: '" << full_path << "'" << std::endl;
+    } else {
+      std::cout << "'" << name << "' != '" << std::string(model_name) << "'" << std::endl;
+    }
+  }
+  if (num_matches != 1) {
+    std::cout << "doTestSINTEF(): Did not find our unique test model, num_matches = " << num_matches << std::endl;
+  }
+#endif
+
+  const char* model_fullpath = (full_path.size() > 0) ? full_path.c_str() :
+    ( (acuario) ?
+      "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii" :
+      "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/" );
   
   std::string model_unique_name = model_tablename;
   model_unique_name += ":";
@@ -990,12 +1046,19 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   }
   std::string opened_modelID(return_modelID );
 
+  // We fetch the list of analysis IDs for the model.
+  const char *return_list_analyses = NULL;
+  result = valGetListOfAnalyses(sessionID,
+				opened_modelID.c_str(),
+				&status,
+				&return_list_analyses);
+  std::string analysisID("Kratos");//FEM"); // For the telescope model we are interested in the FEM data.
+
  //
   // Test GetListOfTimeSteps
   //
   bool do_get_list_of_steps = true;
   double step_value = 0.0;//-1.0;
-  std::string analysisID("Kratos");//FEM"); // For the telescope model we are interested in the FEM data.
   if ( do_get_list_of_steps) {
     const double *return_list = NULL;
     size_t        return_num_steps = 0;
@@ -1033,6 +1096,27 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
     }
   }
 
+  // We fetch the list of results for the analysisID.
+  const char *return_list_results = NULL;
+  result = valGetListOfResults(sessionID,
+			       opened_modelID.c_str(),
+			       analysisID.c_str(),
+			       step_value,
+			       &status,
+			       &return_list_results);
+  const char* resultID = "VELOCITY";//"PRESSURE";//"Speed"; // For the Telescope example.
+
+  // We fetch a list of all meshes for the model.
+  const char *return_list_meshes = NULL;
+  std::string analysis_id_static_mesh("");
+  double step_value_static_mesh = 0.0;
+  result = valGetListOfMeshes(sessionID,
+			      opened_modelID.c_str(),
+			      analysis_id_static_mesh.c_str(),
+			      step_value_static_mesh,
+			      &status,
+			      &return_list_meshes);
+
   double bBox[6];
   bBox[0] = 0.0; // We initialize it with something illegal.
   bBox[1] = 0.0;
@@ -1047,11 +1131,13 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
     const char *return_error_str = NULL;
     std::vector<double> steps(1);
     steps[0] = step_value;
+    // We want the bounding box for the static mesh.
     result = valGetBoundingBox( sessionID, opened_modelID.c_str(), // the already opened model
   				NULL, 0, // use all vertices ID
-  				analysisID.c_str(),
+  				analysis_id_static_mesh.c_str(),//analysisID.c_str(),
   				"SINGLE",
-				&steps[0], 1,
+				&step_value_static_mesh,//&steps[0],
+				1,
   				&return_bbox, &return_error_str);
     CheckVALResult(result, getStringFromCharPointers( "valGetBoundingBox ", return_error_str));
     ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
@@ -1073,8 +1159,7 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
     }
   }
 
-  const char* resultID = "VELOCITY";//"Velocity";//"Speed"; // Is this what we want for the telescope example? @@SINTEF201608
-  double tolerance = -1.0;//0.5;  // A negative value means that the method calculates a tolerance.
+  double tolerance = -1.0;//0.5;  // A negative value means that the method calculates a suitable tolerance.
   int numSteps = 5; // 8 the default value. Valid range: {1, 2, ..., 8}. If above it is set to 8.
                     // A negative value means that the method selects num_steps.
   // The result arguments.
@@ -1084,14 +1169,16 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   size_t resultStatisticsSize;
   const char*    resultErrorStr = NULL;
   std::cout << "doTestSINTEF(): Calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
+  const char* meshID = "Kratos Tetrahedra3D4 Mesh";
   result = valGetVolumeLRSplineFromBoundingBox( sessionID,
-						opened_modelID.c_str(), // the already opened model
-						resultID, // "VELOCITY"
-						step_value,
+						opened_modelID.c_str(), // The already opened model.
+						meshID, // "Kratos Tetrahedra3D4 Mesh" for the Telescope example.
+						resultID, // "VELOCITY" for the Telescope example.
+						step_value, // Using the last timestep.
 						analysisID.c_str(), // "Kratos" for the Telescope example.
-						bBox,
-						tolerance,
-						numSteps,
+						bBox, // Of the static mesh (possibly a subset).
+						tolerance, // Positive value (< 0.0 => method chooses).
+						numSteps, // Legal values: {1, 2, ..., 8} (< 0 => method chooses).
 						&resultBinaryLRSpline,
 						&resultBinaryLRSplineSize,
 						&resultStatistics,
@@ -1176,7 +1263,7 @@ int main(int argc, char* argv[])
   // Test GetListOfModels()
   //
   const char *return_list = NULL;
-  const char *group_qualifier = ""; // loop over all available 4 tables
+  const char *group_qualifier = "VELaSSCo_Models"; // loop over all available 4 tables
   const char *name_pattern = "*";
   result = valGetListOfModels( sessionID, group_qualifier, name_pattern, &status, &return_list);
   CheckVALResult(result, getStringFromCharPointers( "valGetListOfModels ", status));
