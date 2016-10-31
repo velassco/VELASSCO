@@ -1018,6 +1018,7 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
   // get parameters:
   std::string name         = pt.get<std::string>( "name");
   std::string modelID      = pt.get<std::string>( "modelID");
+  std::string meshName     = pt.get<std::string>( "meshID"); // in fact it's the mesh name
   std::string resultID     = pt.get<std::string>( "resultID");
   double stepValue         = pt.get< double>( "stepValue");
   std::string analysisID   = pt.get<std::string>( "analysisID");
@@ -1040,40 +1041,70 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
 
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
+  std::string error_str;
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes _return_;
+  std::string analysis_id_static_mesh("");
+  double step_value_static_mesh = 0.0;
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysis_id_static_mesh.c_str(), step_value_static_mesh);
+  //analysisID, stepValue);
+  int meshID = -1;
+  std::string elementType = "";
+  if ( _return_.meshInfos.size() == 0) {
+    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+    error_str = "There is no mesh metadata.";
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	std::cout << "Found the meshID: " << meshID << std::endl;
+	elementType = getStrFromElementType( it->elementType.shape);
+	break;
+      }
+    }
+    if ( meshID == -1) { // not found
+      error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
+    }
+  }
+
   std::string binary_volume_lrspline = "";
   std::string result_statistics;
-  std::string error_str;
-  try {
-
-    queryServer->calculateVolumeLRSplineFromBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
-							 resultID, stepValue, analysisID, &bBox[0], tolerance, numSteps,
-							 /* out */
-							 &binary_volume_lrspline,
-							 &result_statistics,
-							 &error_str);
-    // GraphicsModule *graphics = GraphicsModule::getInstance();
-    // just to link to the GraphicsModule;
-  } catch ( TException &e) {
-    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
-  } catch ( exception &e) {
-    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
-  }
   if ( error_str.length() == 0) {
-    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": The error_str was not set, success!");
-    _return.__set_result( (Result::type)VAL_SUCCESS );
-    _return.__set_data( binary_volume_lrspline );//result_statistics );
-    // @@sbr201609 Skipping the statistics for now.
-  } else {
-    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
-    _return.__set_data( error_str);
-  }
+    try {
+      queryServer->calculateVolumeLRSplineFromBoundingBox( GetQueryManagerSessionID( sessionID), modelID, meshID,
+							   resultID, stepValue, analysisID, &bBox[0], tolerance, numSteps,
+							   /* out */
+							   &binary_volume_lrspline,
+							   &result_statistics,
+							   &error_str);
+      // GraphicsModule *graphics = GraphicsModule::getInstance();
+      // just to link to the GraphicsModule;
+    } catch ( TException &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+    } catch ( exception &e) {
+      std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+    }
+    if ( error_str.length() == 0) {
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": The error_str was not set, success!");
+      _return.__set_result( (Result::type)VAL_SUCCESS );
+      _return.__set_data( binary_volume_lrspline );//result_statistics );
+      // @@sbr201609 Skipping the statistics for now.
+    } else {
+      _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+      _return.__set_data( error_str);
+    }
 		  
-  LOGGER                                             << std::endl;
-  LOGGER << "Output:"                                << std::endl;
-  LOGGER << "  result : "   << _return.result        << std::endl;
-  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
-  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+    LOGGER                                             << std::endl;
+    LOGGER << "Output:"                                << std::endl;
+    LOGGER << "  result : "   << _return.result        << std::endl;
+    // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+    LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
+  }
 }
 
 
@@ -1088,6 +1119,7 @@ void QueryManagerServer::ManageDeleteVolumeLRSplineFromBoundingBox( Query_Result
   // get parameters:
   std::string name         = pt.get<std::string>( "name");
   std::string modelID      = pt.get<std::string>( "modelID");
+  std::string meshName     = pt.get<std::string>( "meshID"); // in fact it's the mesh name
   std::string resultID     = pt.get<std::string>( "resultID");
   double stepValue         = pt.get< double>( "stepValue");
   std::string analysisID   = pt.get<std::string>( "analysisID");
@@ -1112,11 +1144,40 @@ void QueryManagerServer::ManageDeleteVolumeLRSplineFromBoundingBox( Query_Result
 
   std::string error_str;
 
+  // from the mesh name, get the Mesh number
+  // eventually the Mesh information could have been cached ...
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes _return_;
+  std::string analysis_id_static_mesh("");
+  double step_value_static_mesh = 0.0;
+  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysis_id_static_mesh, step_value_static_mesh);
+  //analysisID, stepValue);
+  int meshID = -1;
+  std::string elementType = "";
+  if ( _return_.meshInfos.size() == 0) {
+    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+    error_str = "There is no mesh metadata.";
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+          it != _return_.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	elementType = getStrFromElementType( it->elementType.shape);
+	break;
+      }
+    }
+    if ( meshID == -1) { // not found
+      error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
+    }
+  }
+
+
   bool storedVolumeLRSplineFound = false; // @@sbr201609 This value is never changed ...
   try {
     //AnalyticsModule::getInstance()->calculateBoundaryOfAMesh( GetQueryManagerSessionID( sessionID),
     error_str = "";
-    queryServer->deleteVolumeLRSplineFromBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+    queryServer->deleteVolumeLRSplineFromBoundingBox( GetQueryManagerSessionID( sessionID), modelID, meshID,
 						      resultID, stepValue, analysisID, &bBox[0], tolerance, numSteps,
 						      &error_str);
     // GraphicsModule *graphics = GraphicsModule::getInstance();

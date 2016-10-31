@@ -217,6 +217,7 @@ public:
   // This function calls to Analytics module.
   void calculateVolumeLRSplineFromBoundingBox(const std::string& sessionID,
 					      const std::string& modelID,
+					      const int meshID,
 					      const std::string& resultID,
 					      const double stepValue,
 					      const std::string& analysisID,
@@ -229,6 +230,7 @@ public:
 					      std::string *return_error_str);
   void deleteVolumeLRSplineFromBoundingBox(const std::string& sessionID,
 					   const std::string& modelID,
+					   const int meshID,
 					   const std::string& resultID,
 					   const double stepValue,
 					   const std::string& analysisID,

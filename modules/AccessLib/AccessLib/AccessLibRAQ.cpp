@@ -989,6 +989,7 @@ extern "C" {
   VAL_Result VAL_API valGetVolumeLRSplineFromBoundingBox( /* in */
 							 VAL_SessionID   sessionID,
 							 const char     *modelID,
+							 const char     *meshID,
 							 const char     *resultID,
 							 const double    stepValue,
 							 const char     *analysisID,
@@ -1003,6 +1004,7 @@ extern "C" {
 							 const char    **resultErrorStr) { // in case of error
     CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
+    CHECK_QUERY_POINTER( meshID );
     CHECK_QUERY_POINTER( resultID );
     CHECK_QUERY_POINTER( analysisID );
     CHECK_QUERY_POINTER( bBox );
@@ -1026,6 +1028,7 @@ extern "C" {
 	queryCommand << "{\n"
 		     << "  \"name\"       : \"" << "ComputeVolumeLRSplineFromBoundingBox" << "\",\n"
 		     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+		     << "  \"meshID\"    : \"" << meshID                   << "\",\n"
 		     << "  \"resultID\"     : \"" << resultID                   << "\",\n"
 		     << "  \"stepValue\"  : \"" << stepValue                  << "\",\n"
 		     << "  \"analysisID\" : \"" << analysisID                << "\",\n"
@@ -1080,6 +1083,7 @@ extern "C" {
   VAL_Result VAL_API valDeleteVolumeLRSplineFromBoundingBox( /* in */
 							    VAL_SessionID   sessionID,
 							    const char     *modelID,
+							    const char     *meshID,
 							    const char     *resultID,
 							    const double    stepValue,
 							    const char     *analysisID,
@@ -1090,6 +1094,7 @@ extern "C" {
 							    const char    **resultErrorStr) { // in case of error
     CHECK_SESSION_ID( sessionID );
     CHECK_QUERY_POINTER( modelID );
+    CHECK_QUERY_POINTER( meshID );
     CHECK_QUERY_POINTER( resultID );
     CHECK_QUERY_POINTER( analysisID );
     CHECK_QUERY_POINTER( bBox );
@@ -1109,6 +1114,7 @@ extern "C" {
 	queryCommand << "{\n"
 		     << "  \"name\"       : \"" << "DeleteVolumeLRSplineFromBoundingBox" << "\",\n"
 		     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+		     << "  \"meshID\"    : \"" << meshID                   << "\",\n"
 		     << "  \"resultID\"     : \"" << resultID                   << "\",\n"
 		     << "  \"stepValue\"  : \"" << stepValue                  << "\",\n"
 		     << "  \"analysisID\" : \"" << analysisID                << "\",\n"

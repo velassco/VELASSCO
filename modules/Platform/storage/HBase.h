@@ -276,6 +276,7 @@ namespace VELaSSCo
 
     void getStoredVolumeLRSpline( const std::string& sessionID,
 				  const std::string& modelID,
+				  const int meshID,
 				  const std::string& resultID,
 				  const double stepValue,
 				  const std::string& analysisID,
@@ -287,6 +288,7 @@ namespace VELaSSCo
 				  std::string *return_error_str);
     bool deleteStoredVolumeLRSpline( const std::string& sessionID,
 				     const std::string& modelID,
+				     const int meshID,
 				     const std::string& resultID,
 				     const double stepValue,
 				     const std::string& analysisID,
@@ -296,6 +298,7 @@ namespace VELaSSCo
 				     std::string *return_error_str);
     bool saveVolumeLRSpline( const std::string& sessionID,
 			     const std::string& modelID,
+			     const int meshID,
 			     const std::string& resultID,
 			     const double stepValue,
 			     const std::string& analysisID,
@@ -307,6 +310,7 @@ namespace VELaSSCo
 			     std::string *return_error_str);
     bool alreadyStoredVolumeLRSpline( const std::string& sessionID,
 				      const std::string& modelID,
+				      const int meshID,
 				      const std::string& resultID,
 				      const double stepValue,
 				      const std::string& analysisID,

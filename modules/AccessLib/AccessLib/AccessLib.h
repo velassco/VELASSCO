@@ -381,6 +381,7 @@ extern "C" {
   VAL_Result VAL_API valGetVolumeLRSplineFromBoundingBox( /* in */
 							 VAL_SessionID   sessionID,
 							 const char     *modelID,
+							 const char     *meshID,
 							 const char     *resultID,
 							 const double    stepValue,
 							 const char     *analysisID,
@@ -396,6 +397,7 @@ extern "C" {
   VAL_Result VAL_API valDeleteVolumeLRSplineFromBoundingBox( /* in */
 							    VAL_SessionID   sessionID,
 							    const char     *modelID,
+							    const char     *meshID,
 							    const char     *resultID,
 							    const double    stepValue,
 							    const char     *analysisID,

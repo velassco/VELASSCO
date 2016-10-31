@@ -658,6 +658,7 @@ void DataLayerAccess::deleteAllStoredCalculationsForThisModel( const std::string
 
 void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& sessionID,
 							     const std::string& modelID,
+							     const int meshID,
 							     const std::string& resultID,
 							     const double stepValue,
 							     const std::string& analysisID,
@@ -670,7 +671,7 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 							     std::string *return_error_str)
 {
 
-  _db->getStoredVolumeLRSpline( sessionID, modelID, resultID, stepValue,
+  _db->getStoredVolumeLRSpline( sessionID, modelID, meshID, resultID, stepValue,
 				analysisID, bBox, tolerance, numSteps,
 				return_binary_volume_lrspline,
 				result_statistics,
@@ -685,13 +686,14 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
   if ( return_binary_volume_lrspline->length() == 0) { // nothing found
     *return_error_str = ""; // reset error string
 
+    // We fetch the name of the table_name_set we are using.
     HBase::TableModelEntry table_name_set;
-    //    std::string binary_volumelr = "";
     if ( _db->getVELaSSCoTableNames(sessionID, modelID, table_name_set)) {
       return_error_str->clear();
       //      std::cout << "data table name: " << table_name_set._data << std::endl;
       AnalyticsModule::getInstance()->createVolumeLRSplineFromBoundingBox( sessionID, modelID,
 									   table_name_set._data,
+									   meshID,
 									   resultID, stepValue,
 									   analysisID, bBox, tolerance,
 									   numSteps,
@@ -710,7 +712,7 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
       // We store a config file on the xml format (but stored binary?), which includes:
       // modelID + stepValue + bBox + tolerance + numSteps + resultStatistics.
       std::string save_err_str;
-      _db->saveVolumeLRSpline( sessionID, modelID, resultID, stepValue,
+      _db->saveVolumeLRSpline( sessionID, modelID, meshID, resultID, stepValue,
 			       analysisID, bBox, tolerance, numSteps,
 			       *return_binary_volume_lrspline,
 			       *result_statistics,
@@ -730,6 +732,7 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 
 void DataLayerAccess::deleteVolumeLRSplineFromBoundingBox(const std::string& sessionID,
 							     const std::string& modelID,
+							     const int meshID,
 							     const std::string& resultID,
 							     const double stepValue,
 							     const std::string& analysisID,
@@ -739,6 +742,7 @@ void DataLayerAccess::deleteVolumeLRSplineFromBoundingBox(const std::string& ses
 							     std::string *return_error_str) {
   _db->getStoredVolumeLRSpline( sessionID, 
 				modelID,
+				meshID,
 				resultID,
 				stepValue,
 				analysisID,
@@ -747,6 +751,7 @@ void DataLayerAccess::deleteVolumeLRSplineFromBoundingBox(const std::string& ses
   if ( return_error_str->length() == 0) { // i.e. boundary mesh was found
     _db->deleteStoredVolumeLRSpline( sessionID, 
 				     modelID,
+				     meshID,
 				     resultID, stepValue,
 				     analysisID, bBox, tolerance, numSteps,
 				     return_error_str);
