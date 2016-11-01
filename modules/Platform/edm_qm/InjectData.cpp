@@ -56,6 +56,7 @@ void VELaSSCoHandler::InjectData(char *commandFileName)
             if (nOfFileNameMatches == 1) {
                if (strEQL(Command, "InjectFileSequence")) {
                   if (theQuery.OpenClusterModelAndPrepareExecution(modelID, EDMmodelNameFormat, FirstModelNo, LastModelNo)) {
+                     theQuery.printJobQueues();
                      theQuery.InjectFileSequence(&FileNameFormats, FirstModelNo, LastModelNo, EDMmodelNameFormat, &messages);
                      thelog->logg(0, "    Injection of data finished.\n");
                      for (char *msg = messages.first(); msg; msg = messages.next()) {

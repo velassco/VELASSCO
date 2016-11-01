@@ -237,11 +237,14 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
 {
    EDMLONG rstat = OK;
    int startTime = GetTickCount();
+   EDMserverContext *theCtxt = NULL;
    
    try {
       *errorFound = false;
       int nTimeouts = 0; execParams->executionTime = -1;
-      EDMserverContext *theCtxt = execParams->theEDMserver->getSrvCtxt("superuser", "", "v");
+      theCtxt = execParams->theEDMserver->getSrvCtxt("superuser", "", "v");
+#pragma omp critical
+      printf("Execution of %s on %s.%s\n", methodName, execParams->repositoryName, execParams->modelName);
       do {
          if (inputParameters && inputParameters->nOfAttributes) {
             rstat = edmiRemoteExecuteCppMethod(theCtxt->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
@@ -259,6 +262,7 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
    } catch (CedmError *e) {
       execParams->error = e; *errorFound = true;
    }
+   if (theCtxt) theCtxt->inUse = false;
    int endTime = GetTickCount();
    execParams->executionTime = endTime - startTime;
 }
@@ -343,6 +347,20 @@ void EDMclusterExecution::setOptimalNumberOfThreads()
       omp_set_num_threads(nAppservers);
 }
 /*==============================================================================================================================*/
+void EDMclusterExecution::printJobQueues()
+/*
+================================================================================================================================*/
+{
+   for (EDMexecutionQueue *queue = queryQueuesOnMachines->first(); queue; queue = queryQueuesOnMachines->next()) {
+      printf("Job queue for macine %s:%s\n", queue->theEDMserver->host, queue->theEDMserver->port);
+      printf("Number of application servers %d, object ID=%llu\n", queue->theEDMserver->nAppservers, queue->theEDMserver->serverId);
+      for (EDMexecution *e = queue->theJobs->firstp(); e; e = queue->theJobs->nextp()) {
+         printf("Query on model number=%4d - %s.%s\n", e->modelNumber, e->repositoryName, e->modelName);
+      }
+      printf("\n");
+   }
+} 
+/*==============================================================================================================================*/
 bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo)
 /*
    modelID is object id of the ClusterModel object retrn by the open model method.
@@ -370,45 +388,6 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
             int nOfJobs = 0;
 
             for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
-               //if (m) {
-               //   EDMexecution *exp = NULL;
-               //   char *cModelName = m->get_name();
-               //   if (ModelNameFormat) {
-               //      sprintf(modelName, ModelNameFormat, nextModelNo);
-               //      if (strEQL(modelName, cModelName)) {
-               //         exp = subQueries->createNext(); exp->modelName = cModelName;
-               //         exp->modelNumber = nextModelNo;  nextModelNo++;
-               //      }
-               //   } else {
-               //      exp = subQueries->createNext(); exp->modelName = cModelName;
-               //   }
-               //   if (exp) {
-               //      ecl::EDMrepository *r = m->get_repository();
-               //      exp->repositoryName = r ? r->get_name() : (char*)"";
-               //      exp->ema = new CMemoryAllocator(0x100000);
-               //      exp->serverCtxtRecord = theServer->getServerContext("superuser", "", "v", m);
-               //      exp->error = NULL;
-
-               //      // Add support for nested parallel execution
-               //      EDMServer *srv = theServer->getEDMServer(m);
-               //      EDMserverInfo *srvInf = theServer->findServerInfo(srv);
-               //      EDMexecutionQueue *jobsOnNode;
-               //      for (jobsOnNode = queryQueuesOnMachines->first(); jobsOnNode; jobsOnNode = queryQueuesOnMachines->next()) {
-               //         if (jobsOnNode->theEDMserver == srvInf) {
-               //               break;
-               //         }
-               //      }
-               //      if (! jobsOnNode) {
-               //         jobsOnNode = new(&ma)EDMexecutionQueue(&ma, srvInf);
-               //      }
-               //      EDMexecution *exp2 = jobsOnNode->theJobs->createNext();
-               //      *exp2 = *exp;
-               //      exp2->serverCtxtRecord = srvInf->getSrvCtxt("superuser", "", "v", srv, theServer);
-               //      exp2->theEDMserver = srvInf;
-
-               //      if (ModelNameFormat && nextModelNo > LastModelNo)
-               //         break;
-               //   }
 
                if (m) {
                   // Add support for nested parallel execution
@@ -443,11 +422,9 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                      exp->error = NULL;
                      exp->theEDMserver = srvInf;
                      nOfJobs++;
-//                     if (ModelNameFormat && nextModelNo > LastModelNo)
-//                        break;
                   }
 
-                  m = modelIter.next();// nOfJobs++;
+                  m = modelIter.next();
                }
             }
             // Jobs are distributed to the different threads before execution starts.
@@ -494,18 +471,6 @@ void EDMserverInfo::init(char *_host, char *_port, EDMclusterServices *tc)
 {
    omp_init_lock(&srvCtxtLock); host = _host; port = _port; theCluster = tc;
 }
-///*==============================================================================================================================*/
-//EDMserverInfo::EDMserverInfo()
-///*==============================================================================================================================*/
-//{
-//   omp_init_lock(&srvCtxtLock);
-//}
-///*==============================================================================================================================*/
-//EDMserverInfo::~EDMserverInfo()
-///*==============================================================================================================================*/
-//{
-//   omp_destroy_lock(&srvCtxtLock);
-//}
 /*==============================================================================================================================*/
 EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *password)
 /*==============================================================================================================================*/
@@ -524,6 +489,7 @@ EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *passw
    srvCtxt->inUse = true; srvCtxt->theServer = this;
    theCluster->getUniqueServerContextID(serverContextName);
    CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &srvCtxt->srvCtxt));
+   printf("New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
    omp_unset_lock(&srvCtxtLock);
    return srvCtxt;
 }

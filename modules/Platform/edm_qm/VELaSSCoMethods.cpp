@@ -1127,24 +1127,20 @@ int n = 0;
 
 #pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
-         //try {
-            int st1 = GetTickCount();
-            EDMexecution *e = subQueries->getElement(i);
-            bool errorFound = false;
-            ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
-            int st2 = GetTickCount();
+         int st1 = GetTickCount();
+         EDMexecution *e = subQueries->getElement(i);
+         bool errorFound = false;
+         ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
+         int st2 = GetTickCount();
 #pragma omp critical
       printf("i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
 #pragma omp critical
-            if (errorFound) {
-               char ebuf[1024];
-               sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %ull\n", e->error? e->error->rstat : -1);
-               msgs->add(ma.allocString(ebuf));
-            }
-//         } catch (...) {
-//#pragma omp critical
-//            printf("i=%4d, n=%4d, GPF\n", i, n);
-//         }
+         if (errorFound) {
+            char ebuf[1024];
+            sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %ull\n", e->error? e->error->rstat : -1);
+            printf(ebuf);
+            msgs->add(ma.allocString(ebuf));
+         }
       }
 
 #else

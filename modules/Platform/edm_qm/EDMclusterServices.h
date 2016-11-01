@@ -168,6 +168,7 @@ public:
    void                             ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters, bool *errorFound);
    void                             writeErrorMessageForSubQueries(string &errMsg);
    void                             printExecutionReport(string &msg);
+   void                             printJobQueues();
 };
 
 
