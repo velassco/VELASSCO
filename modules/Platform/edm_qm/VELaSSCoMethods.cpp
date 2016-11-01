@@ -6,6 +6,10 @@
 #include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 #include <omp.h>
 
+#ifndef TRACE
+#define START_TRACE 
+#define END_TRACE  
+#endif 
 
 
 //#define PRAGMA_OMP_PARALLEL_FOR #pragma omp parallel for
@@ -343,6 +347,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
             retValueWithError = retVal; break;
          }
          n_vertices += metaData->n_vertices; n_elements += metaData->n_elements;
+
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
@@ -652,13 +657,24 @@ void VELaSSCoMethods::calculateBoundaryOfLocalMesh(const int meshID, const std::
       inParams->meshID->putString("Hallo world");
       bool errorFound = false;
 
+	omp_set_num_threads(128);
+START_TRACE printf("omp_get_max_threads()=%4d, omp_get_num_procs()=%4d\n", omp_get_max_threads(), omp_get_num_procs());  END_TRACE
+
       startTime = GetTickCount();
 #pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
          EDMexecution *e = subQueries->getElement(i);
          nodeRvGetBoundaryOfLocalMesh *retVal = new(e->ema)nodeRvGetBoundaryOfLocalMesh(e->ema, NULL);
          e->returnValues = retVal;
+         int exeStart = GetTickCount() - startTime;
          ExecuteRemoteCppMethod(e, "GetBoundaryOfLocalMesh", inParams, &errorFound);
+
+
+
+#pragma omp critical
+         {
+          START_TRACE printf("errorFound=%d, omp_get_thread_num()=%4d, i=%4d, time=%6d, exeStart=%6d\n", errorFound, omp_get_thread_num(), i, GetTickCount() - startTime, exeStart);  END_TRACE
+         }
       }
       if (errorFound) {
          string errorMsg;
@@ -1093,7 +1109,6 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
 
       EDMULONG nOfSubdomains = subQueries->size();
 
-      omp_set_num_threads(32);
       for (EDMexecution *e = subQueries->first(); e; e = subQueries->next()) {
          nodeInInjectFiles *inParams = new(&ma)nodeInInjectFiles(&ma, NULL);
          int i = 0, cModelno = FirstModelNo;
@@ -1106,20 +1121,30 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
          e->returnValues = retVal; e->inParams = inParams;
       }
 
+      printf("\nEDMmodelNameFormat=%s - %d-%d, omp_get_max_threads=%d, nOfSubdomains=%llu\n", EDMmodelNameFormat, FirstModelNo, LastModelNo, omp_get_max_threads(), nOfSubdomains);
       startTime = GetTickCount();
+int n = 0;
 
 #pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
-         int nt = omp_get_num_threads();
-         EDMexecution *e = subQueries->getElement(i);
-         bool errorFound = false;
-         ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
+         //try {
+            int st1 = GetTickCount();
+            EDMexecution *e = subQueries->getElement(i);
+            bool errorFound = false;
+            ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
+            int st2 = GetTickCount();
 #pragma omp critical
-         if (errorFound) {
-            char ebuf[1024];
-            sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %ull\n", e->error? e->error->rstat : -1);
-            msgs->add(ma.allocString(ebuf));
-         }
+      printf("i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
+#pragma omp critical
+            if (errorFound) {
+               char ebuf[1024];
+               sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %ull\n", e->error? e->error->rstat : -1);
+               msgs->add(ma.allocString(ebuf));
+            }
+//         } catch (...) {
+//#pragma omp critical
+//            printf("i=%4d, n=%4d, GPF\n", i, n);
+//         }
       }
 
 #else

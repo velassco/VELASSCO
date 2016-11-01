@@ -338,7 +338,8 @@ EDMserverInfo *EDMclusterServices::findServerInfo(EDMServer *srv)
 void EDMclusterExecution::setOptimalNumberOfThreads()
 /*==============================================================================================================================*/
 {
-   if (nAppservers > 0) 
+
+    if (nAppservers > 0) 
       omp_set_num_threads(nAppservers);
 }
 /*==============================================================================================================================*/
@@ -437,16 +438,16 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                   if (exp) {
                      ecl::EDMrepository *r = m->get_repository();
                      exp->repositoryName = r ? r->get_name() : (char*)"";
-                     exp->ema = new CMemoryAllocator(0x100000);
+                     exp->ema = new CMemoryAllocator(0x1000);
                      exp->serverCtxtRecord = NULL;
                      exp->error = NULL;
                      exp->theEDMserver = srvInf;
-
-                     if (ModelNameFormat && nextModelNo > LastModelNo)
-                        break;
+                     nOfJobs++;
+//                     if (ModelNameFormat && nextModelNo > LastModelNo)
+//                        break;
                   }
 
-                  m = modelIter.next(); nOfJobs++;
+                  m = modelIter.next();// nOfJobs++;
                }
             }
             // Jobs are distributed to the different threads before execution starts.
@@ -459,7 +460,8 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
             queue = NULL;
             int n, nOfQueues = queryQueuesOnMachines->size();
             for (int i=0; i < nOfJobs; i++) {
-               EDMexecution *exp = NULL;
+
+                EDMexecution *exp = NULL;
                for (n=0; n < nOfQueues && exp == NULL; n++) {
                   if (queue == NULL) queue = queryQueuesOnMachines->first();
                   exp = queue->nextJob;
