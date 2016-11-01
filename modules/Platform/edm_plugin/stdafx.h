@@ -40,4 +40,10 @@ using namespace std;
 #else
 #define DLL_EXPORT
 #endif
+
+#ifdef _MSC_VER 
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
+
 // TODO: reference additional headers your program requires here
