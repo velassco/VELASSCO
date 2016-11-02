@@ -484,6 +484,7 @@ EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *passw
          return srvCtxt;
       }
    }
+#pragma omp critical
    srvCtxt = srvCtxts->createNext();
    srvCtxt->inUse = true; srvCtxt->theServer = this;
    theCluster->getUniqueServerContextID(serverContextName);

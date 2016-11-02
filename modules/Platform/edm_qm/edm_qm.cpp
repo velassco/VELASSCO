@@ -343,15 +343,14 @@ int main(int argc, char* argv[])
       }
       ourCluster.startServices();
 
-      VELaSSCoMethods findAllModels(&ourCluster);
-
-      ourVELaSSCoHandler->defineCluster(&ourCluster);
-
       FILE *logFile = fopen("c:/temp/EDMqueryManager.log", "w");
-      //CLoggWriter    ourLogger(logFile, true, true);
-      CLoggWriter    ourLogger(logFile, false, false);
+      CLoggWriter    ourLogger(logFile, true, true);
       ourVELaSSCoHandler->defineLogger(&ourLogger);
+      ourVELaSSCoHandler->defineCluster(&ourCluster);
       ourVELaSSCoHandler->printLogHeader();
+
+      VELaSSCoMethods findAllModels(&ourCluster, &ourLogger);
+
 
       if (argc >= 7) {
          // Temporarly solution for server file injection
