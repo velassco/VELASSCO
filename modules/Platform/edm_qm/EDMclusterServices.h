@@ -106,7 +106,8 @@ public:
 
    void                             init(char *host, char *port, EDMclusterServices *theCluster);
    EDMserverContext                 *getSrvCtxt(char *user, char *group, char *password, EDMServer *srv, EDMclusterServices *theServer);
-   EDMserverContext                 *getSrvCtxt(char *user, char *group, char *password);
+   EDMserverContext                 *getSrvCtxt(char *user, char *group, char *password, CLoggWriter *thelog);
+   EDMserverContext                 *getSrvCtxt(char *user, char *group, char *password, EDMmodel *m);
 };
 /*================================================================================================*/
 /*!
@@ -165,10 +166,10 @@ public:
    void                             addInputParameter(SdaiPrimitiveType ptype, void *param);
    void                             buildServerContexts(char *user, char *group, char *password);
    void                             buildServerContexts(char *user, char *group, char *password, ClusterModel *cm);
-   void                             ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters, bool *errorFound);
+   void                             ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters, bool *errorFound, CLoggWriter *thelog);
    void                             writeErrorMessageForSubQueries(string &errMsg);
    void                             printExecutionReport(string &msg);
-   void                             printJobQueues();
+   void                             printJobQueues(CLoggWriter *thelog);
 };
 
 

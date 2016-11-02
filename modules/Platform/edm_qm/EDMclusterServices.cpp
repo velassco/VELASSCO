@@ -1,6 +1,5 @@
 
 #include "stdafx.h"
-#include "CLogger.h"
 
 #include <omp.h>
 
@@ -232,7 +231,7 @@ void* ourMemoryAllocator(SdaiVoid _ma, EDMLONG size)
 }
 /*==============================================================================================================================*/
 void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters,
-   bool *errorFound)
+   bool *errorFound, CLoggWriter *thelog)
 /*==============================================================================================================================*/
 {
    EDMLONG rstat = OK;
@@ -242,9 +241,9 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
    try {
       *errorFound = false;
       int nTimeouts = 0; execParams->executionTime = -1;
-      theCtxt = execParams->theEDMserver->getSrvCtxt("superuser", "", "v");
+      theCtxt = execParams->theEDMserver->getSrvCtxt("superuser", "", "v", thelog);
 #pragma omp critical
-      printf("Execution of %s on %s.%s\n", methodName, execParams->repositoryName, execParams->modelName);
+      thelog->logg(3, "Execution of %s on %s.%s\n", methodName, execParams->repositoryName, execParams->modelName);
       do {
          if (inputParameters && inputParameters->nOfAttributes) {
             rstat = edmiRemoteExecuteCppMethod(theCtxt->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
@@ -347,17 +346,17 @@ void EDMclusterExecution::setOptimalNumberOfThreads()
       omp_set_num_threads(nAppservers);
 }
 /*==============================================================================================================================*/
-void EDMclusterExecution::printJobQueues()
+void EDMclusterExecution::printJobQueues(CLoggWriter *thelog)
 /*
 ================================================================================================================================*/
 {
    for (EDMexecutionQueue *queue = queryQueuesOnMachines->first(); queue; queue = queryQueuesOnMachines->next()) {
-      printf("Job queue for macine %s:%s\n", queue->theEDMserver->host, queue->theEDMserver->port);
-      printf("Number of application servers %d, object ID=%llu\n", queue->theEDMserver->nAppservers, queue->theEDMserver->serverId);
+      thelog->logg(2, "Job queue for macine %s:%s\n", queue->theEDMserver->host, queue->theEDMserver->port);
+      thelog->logg(2, "Number of application servers %d, object ID=%llu\n", queue->theEDMserver->nAppservers, queue->theEDMserver->serverId);
       for (EDMexecution *e = queue->theJobs->firstp(); e; e = queue->theJobs->nextp()) {
-         printf("Query on model number=%4d - %s.%s\n", e->modelNumber, e->repositoryName, e->modelName);
+         thelog->logg(3, "Query on model number=%4d - %s.%s\n", e->modelNumber, e->repositoryName, e->modelName);
       }
-      printf("\n");
+      thelog->logg(0, "\n");
    }
 } 
 /*==============================================================================================================================*/
@@ -472,7 +471,7 @@ void EDMserverInfo::init(char *_host, char *_port, EDMclusterServices *tc)
    omp_init_lock(&srvCtxtLock); host = _host; port = _port; theCluster = tc;
 }
 /*==============================================================================================================================*/
-EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *password)
+EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *password, CLoggWriter *thelog)
 /*==============================================================================================================================*/
 {
    char                                serverContextName[2048];
@@ -489,7 +488,7 @@ EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *passw
    srvCtxt->inUse = true; srvCtxt->theServer = this;
    theCluster->getUniqueServerContextID(serverContextName);
    CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &srvCtxt->srvCtxt));
-   printf("New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
+   thelog->logg(4, "New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
    omp_unset_lock(&srvCtxtLock);
    return srvCtxt;
 }
@@ -814,6 +813,7 @@ void EDMclusterServices::getListOfModelInfoForActualExistingModels(std::vector<s
             rstat = edmiRemoteGetAttrsBN(srvCtxts[i]->srvCtxt,modelId,0,1,NULL,"INSTANCES",sdaiINTEGER,&myint);
             if (rstat) {
               if((rstat != sdaiEVALUEUNSET) && (rstat !=sdaiEATTRUNDEF)){
+
                 throw new CedmError(rstat,NULL,0);
               } else {
                  myint = 0;

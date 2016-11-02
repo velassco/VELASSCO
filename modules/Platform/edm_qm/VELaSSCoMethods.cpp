@@ -33,7 +33,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             EDMexecution *e = subQueries->getElement(i);
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
-            ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
+            ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound, thelog);
             int QendTime = GetTickCount();
             //printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s, time=%d\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL", QendTime - QstartTime);
          } catch (CedmError *e) {
@@ -104,7 +104,7 @@ Container<double> *VELaSSCoMethods::GetListOfTimeSteps(rvGetListOfTimeSteps& rv,
          EDMexecution *e = subQueries->getElement(i);
          nodeRvGetListOfTimeSteps *retVal = new(e->ema)nodeRvGetListOfTimeSteps(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetListOfTimeSteps", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetListOfTimeSteps", inParams, &errorFound, thelog);
       }
       if (errorFound) {
          string errorMsg;
@@ -171,7 +171,7 @@ void VELaSSCoMethods::GetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
          // create return value object for this subquery, retVal
          nodeRvGetListOfVerticesFromMesh *retVal = new(e->ema)nodeRvGetListOfVerticesFromMesh(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetListOfVerticesFromMesh", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetListOfVerticesFromMesh", inParams, &errorFound, thelog);
       }
       // Execution in single thread mode from here
       if (errorFound) {
@@ -242,7 +242,7 @@ void VELaSSCoMethods::GetListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
          EDMexecution *e = subQueries->getElement(i);
          nodeRvGetListOfResultsFromTimeStepAndAnalysis *retVal = new(e->ema)nodeRvGetListOfResultsFromTimeStepAndAnalysis(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetListOfResultsFromTimeStepAndAnalysis", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetListOfResultsFromTimeStepAndAnalysis", inParams, &errorFound, thelog);
       }
       if (errorFound) {
          string errorMsg;
@@ -323,7 +323,7 @@ void VELaSSCoMethods::GetCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
          EDMexecution *e = subQueries->getElement(i);
          nodeRvGetCoordinatesAndElementsFromMesh *retVal = new(e->ema)nodeRvGetCoordinatesAndElementsFromMesh(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetCoordinatesAndElementsFromMesh", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetCoordinatesAndElementsFromMesh", inParams, &errorFound, thelog);
       }
       if (errorFound) {
          string errorMsg;
@@ -435,7 +435,7 @@ void VELaSSCoMethods::calculateBoundingBox(const std::string &analysisID, const 
          }
          nodeRvCalculateBoundingBox *retVal = new(e->ema)nodeRvCalculateBoundingBox(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "CalculateBoundingBox", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "CalculateBoundingBox", inParams, &errorFound, thelog);
       }
       t2 = GetTickCount();
       if (errorFound) {
@@ -501,7 +501,7 @@ void VELaSSCoMethods::GetResultFromVerticesID(rvGetResultFromVerticesID& rv, con
          }
          nodeRvGetResultFromVerticesID *retVal = new(e->ema)nodeRvGetResultFromVerticesID(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetResultFromVerticesID", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetResultFromVerticesID", inParams, &errorFound, thelog);
       }
       t2 = GetTickCount();
       if (errorFound) {
@@ -667,7 +667,8 @@ START_TRACE printf("omp_get_max_threads()=%4d, omp_get_num_procs()=%4d\n", omp_g
          nodeRvGetBoundaryOfLocalMesh *retVal = new(e->ema)nodeRvGetBoundaryOfLocalMesh(e->ema, NULL);
          e->returnValues = retVal;
          int exeStart = GetTickCount() - startTime;
-         ExecuteRemoteCppMethod(e, "GetBoundaryOfLocalMesh", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetBoundaryOfLocalMesh", inParams, &errorFound, thelog);
+
 
 
 
@@ -786,7 +787,7 @@ START_TRACE printf("omp_get_max_threads()=%4d, omp_get_num_procs()=%4d\n", omp_g
             EDMexecution *e = subQueries->getElement(i);
             nodeRvGetNodeCoordinates *retVal = new(e->ema)nodeRvGetNodeCoordinates(e->ema, NULL);
             e->returnValues = retVal;
-            ExecuteRemoteCppMethod(e, "GetNodeCoordinates", incoordinateParams, &errorFound);
+            ExecuteRemoteCppMethod(e, "GetNodeCoordinates", incoordinateParams, &errorFound, thelog);
             #pragma omp critical
             {
                nOfPoints += retVal->nOfNodesFound->value.intVal;
@@ -881,7 +882,7 @@ START_TRACE printf("omp_get_max_threads()=%4d, omp_get_num_procs()=%4d\n", omp_g
 //         EDMexecution *e = subQueries->getElement(i);
 //         nodeRvGetBoundaryOfLocalMesh *retVal = new(e->ema)nodeRvGetBoundaryOfLocalMesh(e->ema, NULL);
 //         e->returnValues = retVal;
-//         ExecuteRemoteCppMethod(e, "GetBoundaryOfSubMesh", inParams, &errorFound);
+//         ExecuteRemoteCppMethod(e, "GetBoundaryOfSubMesh", inParams, &errorFound, thelog);
 //      }
 //      if (errorFound) {
 //         string errorMsg;
@@ -1026,7 +1027,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          EDMexecution *e = subQueries->getElement(i);
          nodeRvGetListOfMeshes *retVal = new(e->ema)nodeRvGetListOfMeshes(e->ema, NULL);
          e->returnValues = retVal;
-         ExecuteRemoteCppMethod(e, "GetListOfMeshes", inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "GetListOfMeshes", inParams, &errorFound, thelog);
       }
       if (errorFound) {
          string errorMsg;
@@ -1121,7 +1122,7 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
          e->returnValues = retVal; e->inParams = inParams;
       }
 
-      printf("\nEDMmodelNameFormat=%s - %d-%d, omp_get_max_threads=%d, nOfSubdomains=%llu\n", EDMmodelNameFormat, FirstModelNo, LastModelNo, omp_get_max_threads(), nOfSubdomains);
+      thelog->logg(5, "\nEDMmodelNameFormat=%s - %d-%d, omp_get_max_threads=%d, nOfSubdomains=%llu\n", EDMmodelNameFormat, FirstModelNo, LastModelNo, omp_get_max_threads(), nOfSubdomains);
       startTime = GetTickCount();
 int n = 0;
 
@@ -1130,14 +1131,14 @@ int n = 0;
          int st1 = GetTickCount();
          EDMexecution *e = subQueries->getElement(i);
          bool errorFound = false;
-         ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
+         ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound, thelog);
          int st2 = GetTickCount();
 #pragma omp critical
-      printf("i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
+      thelog->logg(6, "i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
 #pragma omp critical
          if (errorFound) {
             char ebuf[1024];
-            sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %ull\n", e->error? e->error->rstat : -1);
+            thelog->logg(1, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %ull\n", e->error? e->error->rstat : -1);
             printf(ebuf);
             msgs->add(ma.allocString(ebuf));
          }
@@ -1176,7 +1177,7 @@ int n = 0;
             #pragma omp parallel for
             for (int j=0; j < nAppservers; j++) {
                cJob = jobList->getElementp(j);
-               ExecuteRemoteCppMethod(cJob, "InjectFEMfiles", cJob->inParams, &errorFound);
+               ExecuteRemoteCppMethod(cJob, "InjectFEMfiles", cJob->inParams, &errorFound, thelog);
                #pragma omp critical
                if (errorFound) {
                   nodeRvInjectFiles *rvp = (nodeRvInjectFiles *)e->returnValues;

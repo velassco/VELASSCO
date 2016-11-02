@@ -112,7 +112,7 @@ void VELaSSCoHandler::userLogout(std::string& _return, const std::string& sessio
 void VELaSSCoHandler::getResultFromVerticesID(rvGetResultFromVerticesID& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep, const std::string& resultID, const std::vector<int64_t> & listOfVertices)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->GetResultFromVerticesID\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
@@ -155,7 +155,7 @@ void VELaSSCoHandler::getCoordinatesAndElementsFromMesh(rvGetCoordinatesAndEleme
    const std::string& analysisID, const double timeStep, const MeshInfo& meshInfo)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->GetCoordinatesAndElementsFromMesh\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
@@ -210,7 +210,7 @@ void VELaSSCoHandler::calculateBoundaryOfAMesh(const std::string &sessionID,
 /*=============================================================================================================================*/
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->calculateBoundaryOfAMesh\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
@@ -255,7 +255,7 @@ void VELaSSCoHandler::calculateBoundaryOfAMesh(const std::string &sessionID,
 //   const std::string& modelID, const std::string& meshID, const std::string& analysisID, const double time_step)
 ///*=============================================================================================================================*/
 //{
-//   VELaSSCoMethods theQuery(theCluster);
+//   VELaSSCoMethods theQuery(theCluster, thelog);
 //   try {
 //      thelog->logg(2, "-->GetBoundaryOfLocalMesh\nmodelID=%s\n", modelID.data());
 //      setCurrentSession(sessionID.data());
@@ -413,6 +413,7 @@ void VELaSSCoHandler::closeModel(std::string& _return, const std::string& sessio
 
    try {
 
+
       _return = "CloseModel" + string(" is not implemented");
    } catch (CedmError *e) {
       string errMsg;
@@ -467,7 +468,7 @@ void VELaSSCoHandler::getThumbnailOfAModel(rvGetThumbnailOfAModel& _return, cons
 void VELaSSCoHandler::getListOfAnalyses(rvGetListOfAnalyses& _return, const std::string& sessionID, const std::string& modelID)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->getListOfAnalyses\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
@@ -529,7 +530,7 @@ void VELaSSCoHandler::calculateBoundingBox(const std::string &sessionID, const s
    double *return_bbox, std::string *return_error_str)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       char *emsg = NULL;
       thelog->logg(2, "-->calculateBoundingBox\nmodelID=%s\n", modelID.data());
@@ -588,7 +589,7 @@ FILE *VELaSSCoHandler::getStoredQueryResult(const char *p1, const char *p2, cons
 void VELaSSCoHandler::getListOfTimeSteps(rvGetListOfTimeSteps& _return, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const std::string &stepOptions, const int numSteps, const double *lstSteps)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->GetListOfAnalyses\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
@@ -619,7 +620,7 @@ void VELaSSCoHandler::getListOfTimeSteps(rvGetListOfTimeSteps& _return, const st
 void VELaSSCoHandler::getListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->GetListOfResultsFromTimeStepAndAnalysis\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
@@ -641,7 +642,7 @@ void VELaSSCoHandler::getListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
 void VELaSSCoHandler::getListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->getListOfVerticesFromMesh\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
@@ -675,7 +676,7 @@ void VELaSSCoHandler::getListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
 void VELaSSCoHandler::getListOfMeshes(rvGetListOfMeshes& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double timeStep)
 {
    int startTime = GetTickCount();
-   VELaSSCoMethods theQuery(theCluster);
+   VELaSSCoMethods theQuery(theCluster, thelog);
    try {
       thelog->logg(2, "-->GetListOfMeshes\nmodelID=%s\n", modelID.data());
       setCurrentSession(sessionID.data());
