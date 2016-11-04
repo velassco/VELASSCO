@@ -360,7 +360,7 @@ void EDMclusterExecution::printJobQueues(CLoggWriter *thelog)
    }
 } 
 /*==============================================================================================================================*/
-bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo)
+bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo, CLoggWriter *thelog)
 /*
    modelID is object id of the ClusterModel object retrn by the open model method.
 ================================================================================================================================*/
@@ -409,6 +409,8 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                      if (strEQL(modelName, cModelName)) {
                         exp = jobsOnNode->theJobs->createNext(); exp->modelName = cModelName;
                         exp->modelNumber = nextModelNo;  nextModelNo++;
+                     } else if (thelog) {
+                        thelog->logg(2, "Error in ModelNameFormat: %s - %s\n", modelName, cModelName);
                      }
                   } else {
                      exp = jobsOnNode->theJobs->createNext(); exp->modelName = cModelName;
@@ -618,6 +620,7 @@ void EDMclusterServices::closeAllEDMdatabses()
       srvCtxts[nServers++] = getServerContext("superuser", "", "v", srv);
    }
 #pragma omp parallel for
+
    for (int i = 0; i < nServers; i++) {
       EdmiError rstat = edmiRemoteCloseDatabase(srvCtxts[i]->srvCtxt, "v", NULL);
       if (rstat) {

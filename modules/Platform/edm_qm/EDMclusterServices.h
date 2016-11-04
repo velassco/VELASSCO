@@ -159,7 +159,7 @@ public:
    EDMclusterExecution(EDMclusterServices *cs);
    ~EDMclusterExecution();
    bool                             OpenClusterModelAndPrepareExecution(const std::string& modelID);
-   bool                             OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo);
+   bool                             OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo, CLoggWriter *thelog=NULL);
    /*!
    addInputParameter.
    */
