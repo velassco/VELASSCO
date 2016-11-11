@@ -44,5 +44,6 @@ else
 fi
 
 echo "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-
-"$BASEDIR"/bin/QueryManager.exe "$@"
+output_log=QueryManager_`whoami`_`date +%Y.%m.%d-%H:%M:%S`.log
+echo "LOG FILE = $output_log"
+"$BASEDIR"/bin/QueryManager.exe "$@" |& tee $output_log
