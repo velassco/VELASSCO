@@ -1106,7 +1106,7 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
 {
    int startTime, endTime;
    if (subQueries) {
-#ifndef NOT_NESTED
+//#ifndef NOT_NESTED
 
       EDMULONG nOfSubdomains = subQueries->size();
 
@@ -1124,71 +1124,96 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
 
       thelog->logg(5, "\nEDMmodelNameFormat=%s - %d-%d, omp_get_max_threads=%d, nOfSubdomains=%llu\n", EDMmodelNameFormat, FirstModelNo, LastModelNo, omp_get_max_threads(), nOfSubdomains);
       startTime = GetTickCount();
-int n = 0;
+      int n = 0;
 
-#pragma omp parallel for
+      EDMexecution *prev = NULL, *e;
+
+#pragma omp parallel for firstprivate (prev) //private(e)
       for (int i = 0; i < nOfSubdomains; i++) {
+         //e = getNextJob(prev);
+         //EDMexecution *e = subQueries->getElement(i);
+         EDMexecution *e = getNextJob(i, prev);
          int st1 = GetTickCount();
-         EDMexecution *e = subQueries->getElement(i);
          bool errorFound = false;
          ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound, thelog);
          int st2 = GetTickCount();
 #pragma omp critical
-         {
-            thelog->logg(6, "i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
-            if (errorFound) {
-               char ebuf[1024];
-               thelog->logg(1, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %llu\n", e->error? e->error->rstat : -1);
-               printf(ebuf);
-               msgs->add(ma.allocString(ebuf));
-            }
+         thelog->logg(6, "i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
+#pragma omp critical
+         if (errorFound) {
+            char ebuf[1024];
+            sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %llu\n", e->error? e->error->rstat : -1);
+            thelog->logg(0, ebuf);
+            printf(ebuf);
+            msgs->add(ma.allocString(ebuf));
          }
+         prev = e;
       }
 
-#else
-
-      bool errorFound = false;
-      int nServers = nodeQueries->size();
-
-      omp_set_nested(1); omp_set_dynamic(1); omp_set_num_threads(128);
-
-      for (Container<EDMexecution> *jobList = nodeQueries->first(); jobList; jobList = nodeQueries->next()) {
-         for (EDMexecution *cJob = jobList->firstp(); cJob; cJob = jobList->nextp()) {
-            nodeInInjectFiles *inParams = new(&ma)nodeInInjectFiles(&ma, NULL);
-            int i = 0, cModelno = FirstModelNo;
-            for (char *fnf = FileNameFormats->first(); fnf && i < MAX_INJECT_FILES && cModelno <= LastModelNo; fnf = FileNameFormats->next()) {
-               char fnbuf[2048];
-               sprintf(fnbuf, fnf, cJob->modelNumber);
-               inParams->attrPointerArr[i++]->putString(ma.allocString(fnbuf));
-            }
-            nodeRvInjectFiles *retVal = new(cJob->ema)nodeRvInjectFiles(cJob->ema, NULL);
-            cJob->returnValues = retVal; cJob->inParams = inParams;
-         }
-      }
-
-      startTime = GetTickCount();
-      #pragma omp parallel num_threads(nServers)
-      #pragma omp parallel for
-      for (int i=0; i < nServers; i++) {
-         Container<EDMexecution> *jobList = nodeQueries->getElement(i);
-         EDMexecution *cJob, *firstJob = jobList->firstp();
-         if (firstJob) {
-            int nAppservers = firstJob->theEDMserver->nAppservers;
-            #pragma omp parallel num_threads(nAppservers)
-            #pragma omp parallel for
-            for (int j=0; j < nAppservers; j++) {
-               cJob = jobList->getElementp(j);
-               ExecuteRemoteCppMethod(cJob, "InjectFEMfiles", cJob->inParams, &errorFound, thelog);
-               #pragma omp critical
-               if (errorFound) {
-                  nodeRvInjectFiles *rvp = (nodeRvInjectFiles *)e->returnValues;
-                  msgs->add(ma.allocString((rvp && rvp->report) ? rvp->report->value.stringVal : "Undefined error."));
-               }
-            }
-         }
-      }
-
-#endif
+//
+//#pragma omp parallel for
+//      for (int i = 0; i < nOfSubdomains; i++) {
+//         int st1 = GetTickCount();
+//         EDMexecution *e = subQueries->getElement(i);
+//         bool errorFound = false;
+//         ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound, thelog);
+//         int st2 = GetTickCount();
+//#pragma omp critical
+//      thelog->logg(6, "i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
+//#pragma omp critical
+//         if (errorFound) {
+//            char ebuf[1024];
+//            sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %llu\n", e->error? e->error->rstat : -1);
+//            thelog->logg(0, ebuf);
+//            printf(ebuf);
+//            msgs->add(ma.allocString(ebuf));
+//         }
+//      }
+//
+//#else
+//
+//      bool errorFound = false;
+//      int nServers = nodeQueries->size();
+//
+//      omp_set_nested(1); omp_set_dynamic(1); omp_set_num_threads(128);
+//
+//      for (Container<EDMexecution> *jobList = nodeQueries->first(); jobList; jobList = nodeQueries->next()) {
+//         for (EDMexecution *cJob = jobList->firstp(); cJob; cJob = jobList->nextp()) {
+//            nodeInInjectFiles *inParams = new(&ma)nodeInInjectFiles(&ma, NULL);
+//            int i = 0, cModelno = FirstModelNo;
+//            for (char *fnf = FileNameFormats->first(); fnf && i < MAX_INJECT_FILES && cModelno <= LastModelNo; fnf = FileNameFormats->next()) {
+//               char fnbuf[2048];
+//               sprintf(fnbuf, fnf, cJob->modelNumber);
+//               inParams->attrPointerArr[i++]->putString(ma.allocString(fnbuf));
+//            }
+//            nodeRvInjectFiles *retVal = new(cJob->ema)nodeRvInjectFiles(cJob->ema, NULL);
+//            cJob->returnValues = retVal; cJob->inParams = inParams;
+//         }
+//      }
+//
+//      startTime = GetTickCount();
+//      #pragma omp parallel num_threads(nServers)
+//      #pragma omp parallel for
+//      for (int i=0; i < nServers; i++) {
+//         Container<EDMexecution> *jobList = nodeQueries->getElement(i);
+//         EDMexecution *cJob, *firstJob = jobList->firstp();
+//         if (firstJob) {
+//            int nAppservers = firstJob->theEDMserver->nAppservers;
+//            #pragma omp parallel num_threads(nAppservers)
+//            #pragma omp parallel for
+//            for (int j=0; j < nAppservers; j++) {
+//               cJob = jobList->getElementp(j);
+//               ExecuteRemoteCppMethod(cJob, "InjectFEMfiles", cJob->inParams, &errorFound, thelog);
+//               #pragma omp critical
+//               if (errorFound) {
+//                  nodeRvInjectFiles *rvp = (nodeRvInjectFiles *)e->returnValues;
+//                  msgs->add(ma.allocString((rvp && rvp->report) ? rvp->report->value.stringVal : "Undefined error."));
+//               }
+//            }
+//         }
+//      }
+//
+//#endif
       endTime = GetTickCount();
       char t[1024];
       sprintf(t, "   Time used %d millisec", endTime - startTime);

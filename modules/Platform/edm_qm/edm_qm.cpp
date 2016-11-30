@@ -363,7 +363,8 @@ int main(int argc, char* argv[])
          string sessionID;
          string modelID;
          rvOpenModel rvOM;
-         char *modelName = "telescope";
+         //char *modelName = "telescope";
+         char *modelName = "Barcelona_4m";
          char *analysisName = "Kratos";
          double timeStep = 21;
          //modelName = "VELaSSCo_HbaseBasicTest";

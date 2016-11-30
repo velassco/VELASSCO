@@ -77,6 +77,7 @@ public:
    int                              executionTime;
    int                              modelNumber;  // used when model names have increaing integer in their names
    EDMserverInfo                    *theEDMserver;
+   EDMexecutionQueue                *myQueue;      // the execution queue where this job is found 
 };
 /*================================================================================================*/
 /*!
@@ -133,6 +134,8 @@ EDMclusterExecution represents one execution of a method on a cluster of EDM dat
 */
 class EDMclusterExecution
 {
+   omp_lock_t                             nextJobLock;
+   EDMexecutionQueue                      *nextQueueToVisit;
 protected:
    CMemoryAllocator                       ma;
    EDMclusterServices                     *theServer;
@@ -141,10 +144,8 @@ protected:
    tRemoteParameter                       params[MAX_PAR];
    tRemoteParameter                       *paramAddresses[MAX_PAR];
    tRemoteParameter                       returnValue;
-   //Container<EDMexecution>                *subQueries;
-   Container<EDMexecution*>                *subQueries; // tho objects are created from the job queue on its machine node
-   Container<EDMexecutionQueue*>           *queryQueuesOnMachines;
-  // Container<Container<EDMexecution>*>    *nodeQueries; // 
+   Container<EDMexecution*>               *subQueries; // tho objects are created from the job queue on its machine node
+   Container<EDMexecutionQueue*>          *queryQueuesOnMachines;
    virtual char                           *getPluginPath() = 0;
    virtual char                           *getPluginName() = 0;
    void                                   init()
@@ -170,6 +171,16 @@ public:
    void                             writeErrorMessageForSubQueries(string &errMsg);
    void                             printExecutionReport(string &msg);
    void                             printJobQueues(CLoggWriter *thelog);
+   /*!
+   getNextJob returns the next job to be executed. The job is selected in an optmal way so that all
+   application servers are used.
+   This method must be called after the method OpenClusterModelAndPrepareExecution.
+   It returns NULL when all sub-jobs are returned.
+   If prevJob is specified and there are more jobs for the server where prevJob is executed,
+   the next job will be on the same server.
+   */
+   EDMexecution                     *getNextJob(EDMexecution *prevJob);
+   EDMexecution                     *getNextJob(EDMULONG i, EDMexecution *prevJob);
 };
 
 

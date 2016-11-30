@@ -193,12 +193,6 @@ void EDMclusterServices::printClusterInfo(CLoggWriter *logger)
 
 
 /*==============================================================================================================================*/
-EDMclusterExecution::EDMclusterExecution(EDMclusterServices *cs)
-/*==============================================================================================================================*/
-{
-   theServer = cs; ma.init(0x10000); subQueries = NULL;
-}
-/*==============================================================================================================================*/
 EDMexecutionQueue::EDMexecutionQueue(CMemoryAllocator *ma, EDMserverInfo *srv)
 /*==============================================================================================================================*/
 {
@@ -206,6 +200,12 @@ EDMexecutionQueue::EDMexecutionQueue(CMemoryAllocator *ma, EDMserverInfo *srv)
    nJobsRunning = 0; theEDMserver = srv; nAppservers = srv->nAppservers;
 }
 
+/*==============================================================================================================================*/
+EDMclusterExecution::EDMclusterExecution(EDMclusterServices *cs)
+/*==============================================================================================================================*/
+{
+   theServer = cs; ma.init(0x10000); subQueries = NULL; nextQueueToVisit = NULL; omp_init_lock(&nextJobLock);
+}
 /*==============================================================================================================================*/
 EDMclusterExecution::~EDMclusterExecution()
 /*==============================================================================================================================*/
@@ -284,6 +284,41 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(const std::string&
 /*==============================================================================================================================*/
 {
    return OpenClusterModelAndPrepareExecution(EDM_ATOI64(modelID.data()), NULL, 0, 0);
+}
+/*==============================================================================================================================* /
+EDMexecution *EDMclusterExecution::getNextJob(EDMULONG i, EDMexecution *prevJob)
+/*==============================================================================================================================* /
+{
+   return subQueries->getElement(i);
+}
+/*==============================================================================================================================*/
+EDMexecution *EDMclusterExecution::getNextJob(EDMULONG i, EDMexecution *prevJob)
+/*==============================================================================================================================*/
+{
+   omp_set_lock(&nextJobLock);
+   EDMexecution *nextJob = NULL;
+   if (prevJob && prevJob->myQueue && prevJob->myQueue->nextJob) {
+      nextJob = prevJob->myQueue->nextJob; prevJob->myQueue->nextJob = prevJob->myQueue->theJobs->nextp();
+   }
+   if (nextJob == NULL) {
+      EDMexecutionQueue *whereIstarted = nextQueueToVisit;
+      do {
+         if (nextQueueToVisit == NULL) {
+            nextQueueToVisit = queryQueuesOnMachines->first();
+         }
+         if (nextQueueToVisit->nextJob) {
+            nextJob = nextQueueToVisit->nextJob; nextQueueToVisit->nextJob = nextQueueToVisit->theJobs->nextp();
+         }
+         nextQueueToVisit = queryQueuesOnMachines->next();
+         if (nextQueueToVisit == whereIstarted) {
+            break;
+         } else if (nextQueueToVisit == NULL) {
+            nextQueueToVisit = queryQueuesOnMachines->first();
+         }
+      } while (nextJob == NULL);
+   }
+   omp_unset_lock(&nextJobLock);
+   return nextJob;
 }
 /*==============================================================================================================================*/
 void EDMclusterServices::countNofAppsrvsOfModel(ClusterModel *cm)
@@ -409,11 +444,13 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                      if (strEQL(modelName, cModelName)) {
                         exp = jobsOnNode->theJobs->createNext(); exp->modelName = cModelName;
                         exp->modelNumber = nextModelNo;  nextModelNo++;
+                        exp->myQueue = jobsOnNode;
                      } else if (thelog) {
                         thelog->logg(2, "Error in ModelNameFormat: %s - %s\n", modelName, cModelName);
                      }
                   } else {
                      exp = jobsOnNode->theJobs->createNext(); exp->modelName = cModelName;
+                     exp->myQueue = jobsOnNode;
                   }
                   if (exp) {
                      ecl::EDMrepository *r = m->get_repository();
@@ -432,24 +469,28 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
             // This is not an optimal solution, but it will fit very well in the current implementation of the queries.
             // Later we can optimize: I.e. have a more dynamic allocation af jobs
             EDMexecutionQueue *queue;
+            int nj = 0;
             for (queue = queryQueuesOnMachines->first(); queue; queue = queryQueuesOnMachines->next()) {
+               for (EDMexecution *exp = queue->theJobs->firstp(); exp; exp = queue->theJobs->nextp()) {
+                  subQueries->add(exp); nj++;
+               }
                queue->nextJob = queue->theJobs->firstp(); 
             }
             queue = NULL;
-            int n, nOfQueues = queryQueuesOnMachines->size();
-            for (int i=0; i < nOfJobs; i++) {
+            //int n, nOfQueues = queryQueuesOnMachines->size();
+            //for (int i=0; i < nOfJobs; i++) {
 
-                EDMexecution *exp = NULL;
-               for (n=0; n < nOfQueues && exp == NULL; n++) {
-                  if (queue == NULL) queue = queryQueuesOnMachines->first();
-                  exp = queue->nextJob;
-                  if (exp) {
-                     subQueries->add(exp);
-                     queue->nextJob = queue->theJobs->nextp();
-                  }
-                  queue = queryQueuesOnMachines->next();
-               }
-            }
+            //    EDMexecution *exp = NULL;
+            //   for (n=0; n < nOfQueues && exp == NULL; n++) {
+            //      if (queue == NULL) queue = queryQueuesOnMachines->first();
+            //      exp = queue->nextJob;
+            //      if (exp) {
+            //         subQueries->add(exp);
+            //         queue->nextJob = queue->theJobs->nextp();
+            //      }
+            //      queue = queryQueuesOnMachines->next();
+            //   }
+            //}
             for (int i = 0; i < nOfJobs; i++) {
                EDMexecution *e = subQueries->getElement(i);
                if (!e) {
@@ -620,7 +661,6 @@ void EDMclusterServices::closeAllEDMdatabses()
       srvCtxts[nServers++] = getServerContext("superuser", "", "v", srv);
    }
 #pragma omp parallel for
-
    for (int i = 0; i < nServers; i++) {
       EdmiError rstat = edmiRemoteCloseDatabase(srvCtxts[i]->srvCtxt, "v", NULL);
       if (rstat) {
