@@ -243,7 +243,7 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
       int nTimeouts = 0; execParams->executionTime = -1;
       theCtxt = execParams->theEDMserver->getSrvCtxt("superuser", "", "v", thelog);
 #pragma omp critical
-      thelog->logg(3, "Execution of %s on %s.%s\n", methodName, execParams->repositoryName, execParams->modelName);
+      thelog->logg(4, "Execution of %s on %s.%s srvctxtId=%llu\n", methodName, execParams->repositoryName, execParams->modelName, theCtxt->srvCtxt);
       do {
          if (inputParameters && inputParameters->nOfAttributes) {
             rstat = edmiRemoteExecuteCppMethod(theCtxt->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
