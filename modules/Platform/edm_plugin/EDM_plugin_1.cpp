@@ -1685,27 +1685,31 @@ START_TRACE(fp, "plugin - 5\n");END_TRACE
             if (inParams->attrPointerArr[i]->type == rptSTRING) {
                char *file_name = inParams->attrPointerArr[i]->value.stringVal;tr;
                femInjector.injectorFileName = file_name;tr;
-               femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;tr;
-START_TRACE(fp, "plugin - inject file %s\n", file_name);END_TRACE
-               if (femInjector.fp) {
-                  int extPos = strlen(file_name) - 9;
-                  if (extPos > 0 && strnEQL(file_name + extPos, ".post.msh", 9)) {
-                     if (analyze) {
-                        femInjector.AnalyzeMeshFile();tr;
-                     } else {
-                        femInjector.InjectMeshFile();tr;
-                     }
-                  } else if (extPos > 0 && strnEQL(file_name + extPos, ".post.res", 9)) {
-                     if (analyze) {
-                        femInjector.AnalyzeResultFile();tr;
-                     } else {
-                        femInjector.InjectResultFile();tr;
-                     }
-                  }
-                  fclose(femInjector.fp);tr;
+               if (strnEQL(file_name, "E:\\VELaSSCo\\installation\\testdata\\Barcelona\\Barcelona_fullmodel_8m_100M", 1)) {//71
+                  Sleep(10);
                } else {
+                  femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;tr;
+START_TRACE(fp, "plugin - inject file %s\n", file_name);END_TRACE
+                  if (femInjector.fp) {
+                     int extPos = strlen(file_name) - 9;
+                     if (extPos > 0 && strnEQL(file_name + extPos, ".post.msh", 9)) {
+                        if (analyze) {
+                           femInjector.AnalyzeMeshFile();tr;
+                        } else {
+                           femInjector.InjectMeshFile();tr;
+                        }
+                     } else if (extPos > 0 && strnEQL(file_name + extPos, ".post.res", 9)) {
+                        if (analyze) {
+                           femInjector.AnalyzeResultFile();tr;
+                        } else {
+                           femInjector.InjectResultFile();tr;
+                        }
+                     }
+                     fclose(femInjector.fp);tr;
+                  } else {
 START_TRACE(fp, "plugin - Illegal FEM file name %s\n", file_name);END_TRACE
-                   femInjector.printError("Illegal FEM file name");tr;
+                     femInjector.printError("Illegal FEM file name");tr;
+                  }
                }
             }
          }
@@ -1722,7 +1726,7 @@ START_TRACE(fp, "plugin - 6\n");END_TRACE
                dp = 0;
             }
          } else {
-            CHECK(edmiCommitTransaction());tr;
+            //CHECK(edmiCommitTransaction());tr;
             femInjector.flushObjectsAndClose();tr;
             sprintf(msg, "Injection to %s.%s finished. Time used=%d milliseconds.", repositoryName, modelName, endTime - startTime);
             START_TRACE(fp, "%s\n", msg);END_TRACE
