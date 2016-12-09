@@ -160,7 +160,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="dem_schema_velassco.cpp" />
-    <ClCompile Include="EDM_Injector.cpp" />
     <ClCompile Include="EDM_plugin_1.cpp" />
     <ClCompile Include="FEM_InjectorHandler.cpp" />
     <ClCompile Include="fem_schema_velassco.cpp" />

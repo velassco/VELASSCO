@@ -1621,7 +1621,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
       //EdmiError trrstat = edmiTrace(DEFINE_TRACE, TRACE_CALLS | TRACE_ARGS | TRACE_RETURNS | TRACE_ERRORS | TRACE_TO_STDOUT, 0, "");
       //trrstat = edmiTrace(START_TRACE, 0, 0, "");
       int startTime, endTime;
-      startTime = GetTickCount();
+      startTime = GetTickCount();tr;
 
       if (ourLogger == NULL) {
          char fn[2048], hn[512];
@@ -1631,7 +1631,7 @@ extern "C" EDMLONG DLL_EXPORT dll_main(char *repositoryName, char *modelName, ch
             sprintf(fn, "plugin_1_%d_%d.log", rand(), getpid());
          } else {
             sprintf(fn, "%s/plugin_1_%s_%d.log", lff, hn, getpid());
-         }
+         }tr;
          logFileName = (char*)malloc(strlen(fn) + 1); strcpy(logFileName, fn);
          FILE *logFilep = fopen(fn , "w");
          ourLogger = new CLoggWriter(logFilep, true, true);
@@ -1642,7 +1642,7 @@ START_TRACE (fp, "plugin - 1, %s.%s - %s\n", repositoryName, modelName, methodNa
          char *env = getenv("QUERY_RESULT_FOLDER");
          if (env) {
             QUERY_RESULT_FOLDER = (char*)malloc(strlen(env) + 2); strcpy(QUERY_RESULT_FOLDER, env);
-            char *ec = QUERY_RESULT_FOLDER + strlen(env) - 1;
+            char *ec = QUERY_RESULT_FOLDER + strlen(env) - 1;tr;
             if (*ec == '\\') {
                *ec = '/';
             } else if (*ec != '/') {
@@ -1651,8 +1651,7 @@ START_TRACE (fp, "plugin - 1, %s.%s - %s\n", repositoryName, modelName, methodNa
          } else {
             QUERY_RESULT_FOLDER = "";
          }
-      }
-START_TRACE(fp, "plugin - 2\n");END_TRACE
+      }tr;
       VELaSSCoEDMplugin *plugin = new VELaSSCoEDMplugin(QUERY_RESULT_FOLDER, repositoryName, modelName); tr;
       CMemoryAllocator *theMA = plugin->getMemoryAllocator(); tr;
       *threadObject = (void*)plugin;
@@ -1680,41 +1679,37 @@ START_TRACE(fp, "plugin - 2\n");END_TRACE
             femInjector.setCurrentModel(modelName);tr;
             femInjector.DeleteCurrentModelContent();tr;
          }
-START_TRACE(fp, "plugin - 5\n");END_TRACE
          for (int i = 0; i < MAX_INJECT_FILES; i++) {
             if (inParams->attrPointerArr[i]->type == rptSTRING) {
                char *file_name = inParams->attrPointerArr[i]->value.stringVal;tr;
                femInjector.injectorFileName = file_name;tr;
-               if (strnEQL(file_name, "E:\\VELaSSCo\\installation\\testdata\\Barcelona\\Barcelona_fullmodel_8m_100M", 1)) {//71
+               if (strEQL(file_name, "Speed test")) {
                   Sleep(10);
                } else {
                   femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;tr;
-START_TRACE(fp, "plugin - inject file %s\n", file_name);END_TRACE
                   if (femInjector.fp) {
                      int extPos = strlen(file_name) - 9;
                      if (extPos > 0 && strnEQL(file_name + extPos, ".post.msh", 9)) {
                         if (analyze) {
-                           femInjector.AnalyzeMeshFile();tr;
+                           tr;femInjector.AnalyzeMeshFile();tr;
                         } else {
-                           femInjector.InjectMeshFile();tr;
+                           tr;femInjector.InjectMeshFile();tr;
                         }
                      } else if (extPos > 0 && strnEQL(file_name + extPos, ".post.res", 9)) {
                         if (analyze) {
-                           femInjector.AnalyzeResultFile();tr;
+                           tr;femInjector.AnalyzeResultFile();tr;
                         } else {
-                           femInjector.InjectResultFile();tr;
+                           tr;femInjector.InjectResultFile();tr;
                         }
                      }
                      fclose(femInjector.fp);tr;
                   } else {
-START_TRACE(fp, "plugin - Illegal FEM file name %s\n", file_name);END_TRACE
                      femInjector.printError("Illegal FEM file name");tr;
                   }
                }
             }
          }
-START_TRACE(fp, "plugin - 6\n");END_TRACE
-         endTime = GetTickCount();
+         endTime = GetTickCount();tr;
          char msg[2048];
          if (analyze) {
             results->status->putString("OK");tr;
@@ -1733,7 +1728,6 @@ START_TRACE(fp, "plugin - 6\n");END_TRACE
             results->status->putString("OK");tr;
             results->report->putString(msg);tr;
          }
-START_TRACE(fp, "plugin - 7\n");END_TRACE
       } else {
          Model VELaSSCo_model(&VELaSSCo_Repository, theMA, NULL); tr;
          VELaSSCo_model.open(modelName, sdaiRO); tr;
@@ -1831,17 +1825,17 @@ START_TRACE(fp, "plugin - 7\n");END_TRACE
             }
          }
       }
-START_TRACE(fp, "plugin - 10\n");END_TRACE
+START_TRACE(fp, "plugin - 10  Function finished OK\n");END_TRACE
       endTime = GetTickCount();
       //ourLogger->logg(4, "Query %s on %s.%s finished.\nExection time: %d millisec.\n\n", methodName, repositoryName, modelName,  endTime - startTime);
 
    } catch (CedmError *e) {
       rstat = e->rstat; delete e;
-START_TRACE(fp, "plugin - 11  %s  %s  %s  %d  %d\n", repositoryName, modelName, methodName, rstat, lineNo);END_TRACE
+START_TRACE(fp, "plugin - 11 Error %s  %s  %s  %d  %d %s %s %d\n", repositoryName, modelName, methodName, rstat, lineNo, e->message ? e->message : edmiGetErrorText(rstat), e->fileName ? e->fileName : "", e->lineNo);END_TRACE
 //      edmiAbortTransaction();
       //logError(repositoryName, modelName, methodName, rstat, lineNo);
    } catch (...) {
-START_TRACE(fp, "plugin - 12\n");END_TRACE
+START_TRACE(fp, "plugin - 12 crash!!\n");END_TRACE
   //    edmiAbortTransaction();
       //logError(repositoryName, modelName, methodName, "GPF exception", lineNo);
       rstat = sdaiESYSTEM;
