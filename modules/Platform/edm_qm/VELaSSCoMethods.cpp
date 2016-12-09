@@ -5,6 +5,7 @@
 #include "VELaSSCo_utils.h"
 #include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 #include <omp.h>
+#include <sys/timeb.h>
 
 #ifndef TRACE
 #define START_TRACE 
@@ -15,8 +16,27 @@
 //#define PRAGMA_OMP_PARALLEL_FOR #pragma omp parallel for
 #define PARALLEL 1
 //#define #pragma omp parallel for
-
-
+static char tb[256];
+char* sprintfTime2()
+{
+#ifdef _WINDOWS
+   struct _timeb timebuffer;
+#else
+   struct timeb timebuffer;
+#endif /* _WINDOWS */
+   int hh,mm,ss,ms;
+#ifdef _WINDOWS
+   _ftime(&timebuffer);
+#else
+   ftime(&timebuffer);
+#endif /* _WINDOWS */
+	hh = (timebuffer.time / 3600) % 24;
+	mm = (timebuffer.time / 60) % 60;
+	ss = (timebuffer.time) % 60;
+	ms = (int) timebuffer.millitm;
+	sprintf(tb,"%02d:%02d:%02d.%03d",hh,mm,ss,ms);
+	return tb;
+}
 /*=============================================================================================================================*/
 void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
 /*=============================================================================================================================*/
@@ -1130,15 +1150,20 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
 
 #pragma omp parallel for firstprivate (prev) //private(e)
       for (int i = 0; i < nOfSubdomains; i++) {
-         //e = getNextJob(prev);
-         //EDMexecution *e = subQueries->getElement(i);
+         int my_n = n++;
          EDMexecution *e = getNextJob(i, prev);
          int st1 = GetTickCount();
          bool errorFound = false;
+#pragma omp critical
+         thelog->logg(6, "Si%6d n%6d                                     Inject on %s.%s. %s:%s\n", i, my_n, e->repositoryName, e->modelName, e->theEDMserver->host, e->theEDMserver->port);
          ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound, thelog);
          int st2 = GetTickCount();
 #pragma omp critical
-         thelog->logg(6, "i=%4d, n=%4d, omp_get_thread_num=%4d, Start time=%6d, End time=%6d, Exec time=%6d\n", i, n++, omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
+         {
+            if (my_n % 10 == 0)
+            thelog->logg(0, "       i       n     time     thread    Start      End     Exec\n");
+            thelog->logg(7, "Fi%6d n%6d %s %6d %8d %8d %8d\n", i, my_n, sprintfTime2(), omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
+         }
 #pragma omp critical
          if (errorFound) {
             char ebuf[1024];
