@@ -441,6 +441,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                   char *cModelName = m->get_name();
                   if (ModelNameFormat) {
                      sprintf(modelName, ModelNameFormat, nextModelNo);
+                     thelog->logg(4, "ModelName: %s - %s, %llu, %d\n", cModelName, modelName, i, nextModelNo);
                      if (strEQL(modelName, cModelName)) {
                         exp = jobsOnNode->theJobs->createNext(); exp->modelName = cModelName;
                         exp->modelNumber = nextModelNo;  nextModelNo++;
