@@ -1683,7 +1683,7 @@ START_TRACE (fp, "plugin - 1, %s.%s - %s\n", repositoryName, modelName, methodNa
             if (inParams->attrPointerArr[i]->type == rptSTRING) {
                char *file_name = inParams->attrPointerArr[i]->value.stringVal;tr;
                femInjector.injectorFileName = file_name;tr;
-               if (strEQL(file_name, "Speed test")) {
+               if (strEQL(file_name, "SpeedTest")) {
                   Sleep(10);
                } else {
                   femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;tr;
