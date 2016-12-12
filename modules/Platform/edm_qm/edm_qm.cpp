@@ -37,7 +37,7 @@ void GetListOfResultsFromTimeStepAndAnalysis(VELaSSCoHandler *server, string ses
    startTime = GetTickCount();
    server->getListOfResultsFromTimeStepAndAnalysis(rv, sessionID, modelID, analysisName, timeStep);
    endTime = GetTickCount();
-   printf("Elapsed time for GetBoundaryOfLocalMesh is %d milliseconds\n", endTime - startTime);
+   printf("Elapsed time for GetListOfResultsFromTimeStepAndAnalysis is %d milliseconds\n", endTime - startTime);
 
 }
 int64_t vertArr[] = {
@@ -51,9 +51,9 @@ void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *mo
    vector<int64_t> listOfVertices;
    int timeStep = 21;
 
-   //for (int i=0; i < (sizeof(vertArr) / sizeof(int64_t)); i++) {
-   //   listOfVertices.push_back(vertArr[i]);
-   //}
+   for (int i=0; i < (sizeof(vertArr) / sizeof(int64_t)); i++) {
+      listOfVertices.push_back(vertArr[i]);
+   }
    server->getResultFromVerticesID(verticesResultRV, sessionID, modelID, "Kratos", timeStep, "PARTITION INDEX", listOfVertices);
    for (vector<VELaSSCoSM::ResultOnVertex>::iterator resIter = verticesResultRV.result_list.begin(); resIter != verticesResultRV.result_list.end(); resIter++) {
       vector<double>::iterator valuesIter = resIter->value.begin();
@@ -94,7 +94,7 @@ void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *mo
 //#endif
 //      printf(verticesResultRV.report.data());
 //   }
-   for (int i=1; i < 20; i++) {
+   for (int i=1; i < 4; i++) {
       server->getResultFromVerticesID(verticesResultRV, sessionID, modelID, "Kratos", timeStep, "PRESSURE", listOfVertices);
       printf("\n%10d %10d", i, timeStep);
       timeStep += 20;
@@ -102,6 +102,7 @@ void GetResultFromVerticesID(VELaSSCoHandler *server, string sessionID, char *mo
          vector<double>::iterator valuesIter = resIter->value.begin();
          printf("%12Lf", *valuesIter);
       }
+      printf("\n");
    }
    //printf("\n\nVELOCITY\n");
    //timeStep = 21;
@@ -363,8 +364,8 @@ int main(int argc, char* argv[])
          string sessionID;
          string modelID;
          rvOpenModel rvOM;
-         //char *modelName = "telescope";
-         char *modelName = "Barcelona_4m";
+         char *modelName = "telescope";
+         //char *modelName = "Barcelona_4m";
          char *analysisName = "Kratos";
          double timeStep = 21;
          //modelName = "VELaSSCo_HbaseBasicTest";

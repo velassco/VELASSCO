@@ -376,9 +376,16 @@ EDMserverInfo *EDMclusterServices::findServerInfo(EDMServer *srv)
 void EDMclusterExecution::setOptimalNumberOfThreads()
 /*==============================================================================================================================*/
 {
-
     if (nAppservers > 0) 
       omp_set_num_threads(nAppservers);
+}
+/*==============================================================================================================================*/
+void EDMclusterExecution::initQueues()
+/*==============================================================================================================================*/
+{
+   for (EDMexecutionQueue *queue = queryQueuesOnMachines->first(); queue; queue = queryQueuesOnMachines->next()) {
+      queue->nextJob = queue->theJobs->firstp(); 
+   }
 }
 /*==============================================================================================================================*/
 void EDMclusterExecution::printJobQueues(CLoggWriter *thelog)
@@ -478,20 +485,6 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                queue->nextJob = queue->theJobs->firstp(); 
             }
             queue = NULL;
-            //int n, nOfQueues = queryQueuesOnMachines->size();
-            //for (int i=0; i < nOfJobs; i++) {
-
-            //    EDMexecution *exp = NULL;
-            //   for (n=0; n < nOfQueues && exp == NULL; n++) {
-            //      if (queue == NULL) queue = queryQueuesOnMachines->first();
-            //      exp = queue->nextJob;
-            //      if (exp) {
-            //         subQueries->add(exp);
-            //         queue->nextJob = queue->theJobs->nextp();
-            //      }
-            //      queue = queryQueuesOnMachines->next();
-            //   }
-            //}
             for (int i = 0; i < nOfJobs; i++) {
                EDMexecution *e = subQueries->getElement(i);
                if (!e) {

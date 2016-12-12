@@ -181,6 +181,7 @@ public:
    */
    EDMexecution                     *getNextJob(EDMexecution *prevJob);
    EDMexecution                     *getNextJob(EDMULONG i, EDMexecution *prevJob);
+   void                             initQueues();
 };
 
 
