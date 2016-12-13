@@ -638,7 +638,16 @@ void VELaSSCoHandler::getListOfResultsFromTimeStepAndAnalysis(rvGetListOfResults
    thelog->logg(1, "Execution time=%d millisec.\n\n", GetTickCount() - startTime);
 }
 
-
+/**
+ * Extract a list of vertices from the open model and the selected meshID
+ * as of OP-22.116
+ *
+ * @param sessionID
+ * @param modelID
+ * @param analysisID
+ * @param stepValue
+ * @param meshID
+ */
 void VELaSSCoHandler::getListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID)
 {
    int startTime = GetTickCount();
@@ -658,6 +667,27 @@ void VELaSSCoHandler::getListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
       rv.__set_status("Error"); rv.__set_report(errMsg);
    }
    thelog->logg(1, "Execution time=%d millisec.\n\n", GetTickCount() - startTime);
+}
+
+/**
+ * Extract a list of selected vertices from the open model and the selected meshID
+ *
+ * @param sessionID
+ * @param modelID
+ * @param analysisID
+ * @param stepValue
+ * @param meshID
+ * @param listOfVerticesID
+ */
+void VELaSSCoHandler::getListOfSelectedVerticesFromMesh(rvGetListOfVerticesFromMesh& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID, const std::vector<int64_t> &listOfVerticesID)
+{
+   try {
+      _return = "getListOfSelectedVerticesFromMesh" + string(" is not implemented");
+   } catch (CedmError *e) {
+      string errMsg;
+      handleError(errMsg, e);
+      _return = errMsg;
+   }
 }
 
 /**
