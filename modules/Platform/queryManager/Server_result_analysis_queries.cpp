@@ -315,32 +315,19 @@ void QueryManagerServer::ManageGetBoundaryOfAMesh( Query_Result &_return, const 
   // queryServer->getBoundingBox( sessionID, query);
   // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
 
+  // get MeshID and elementType from MeshName:
   std::string error_str;
-
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
-  int meshID = -1;
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, analysisID, stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
   
   std::string binary_mesh = "";
@@ -408,29 +395,18 @@ void QueryManagerServer::ManageDeleteBoundaryOfAMesh( Query_Result &_return, con
 
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
-  int meshID = -1;
+  // get MeshID and elementType from MeshName:
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, analysisID, stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
   
   bool storedBoundaryFound = false;
@@ -502,36 +478,25 @@ void QueryManagerServer::ManageGetIsoSurface(Query_Result &_return, const Sessio
   std::cout << "Rc -" << resultComp       << "-" << std::endl;
   std::cout << "Iv -" << isoValue       << "-" << std::endl;
 
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-  
+  // static mesh:
+  std::string static_analysisID = "";
+  double static_stepValue = 0.0;
+
+  // get MeshID and elementType from MeshName:
   std::string error_str;
-
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, "", 0.0);
-  int meshID = -1;
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, static_analysisID, static_stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if (meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
+
   std::string binary_mesh = "";
   if ( error_str.length() == 0) {
     std::cout << "Mesh name " << meshName << " has mesh number = " << meshID << " and elementType = " << elementType << std::endl;
@@ -599,32 +564,19 @@ void QueryManagerServer::ManageGetSimplifiedMesh( Query_Result &_return, const S
   // queryServer->getBoundingBox( sessionID, query);
   // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
 
+  // get MeshID and elementType from MeshName:
   std::string error_str;
-
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
-  int meshID = -1;
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, analysisID, stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
   
   std::string binary_mesh = "";
@@ -695,29 +647,18 @@ void QueryManagerServer::ManageDeleteSimplifiedMesh( Query_Result &_return, cons
 
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
-  int meshID = -1;
+  // get MeshID and elementType from MeshName:
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, analysisID, stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
   
   bool storedSimplifiedFound = false;
@@ -789,35 +730,22 @@ void QueryManagerServer::ManageGetSimplifiedMeshWithResult( Query_Result &_retur
   // queryServer->getBoundingBox( sessionID, query);
   // and access the Simulations_VQuery_Results_Metadata and Simulations_VQuery_Results_Data tables
 
+  // static mesh:
+  std::string static_analysisID = "";
+  double static_stepValue = 0.0;
+  // get MeshID and elementType from MeshName:
   std::string error_str;
-
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  // asume static meshes
-  // analysisID and stepValue is used for the result selection
-  // queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
-  queryServer->getListOfMeshes(_return_, dl_sessionID, modelID, "", 0.0);
-  int meshID = -1;
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, static_analysisID, static_stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
   
   std::string binary_mesh = "";
@@ -894,29 +822,21 @@ void QueryManagerServer::ManageDeleteSimplifiedMeshWithResult( Query_Result &_re
 
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysisID, stepValue);
-  int meshID = -1;
+  // static mesh:
+  std::string static_analysisID = "";
+  double static_stepValue = 0.0;
+  // get MeshID and elementType from MeshName:
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, static_analysisID, static_stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
   
   bool storedSimplifiedFound = false;
@@ -1041,35 +961,23 @@ void QueryManagerServer::ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_
 
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
+  // static mesh:
+  std::string static_analysisID = "";
+  double static_stepValue = 0.0;
+  // get MeshID and elementType from MeshName:
   std::string error_str;
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  std::string analysis_id_static_mesh("");
-  double step_value_static_mesh = 0.0;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysis_id_static_mesh.c_str(), step_value_static_mesh);
-  //analysisID, stepValue);
-  int meshID = -1;
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, static_analysisID, static_stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	std::cout << "Found the meshID: " << meshID << std::endl;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
-  }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
+  }  
 
   std::string binary_volume_lrspline = "";
   std::string result_statistics;
@@ -1142,36 +1050,23 @@ void QueryManagerServer::ManageDeleteVolumeLRSplineFromBoundingBox( Query_Result
 
   _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR); // default value
 
+  // static mesh:
+  std::string static_analysisID = "";
+  double static_stepValue = 0.0;
+  // get MeshID and elementType from MeshName:
   std::string error_str;
-
-  // from the mesh name, get the Mesh number
-  // eventually the Mesh information could have been cached ...
-  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
-  rvGetListOfMeshes _return_;
-  std::string analysis_id_static_mesh("");
-  double step_value_static_mesh = 0.0;
-  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, analysis_id_static_mesh, step_value_static_mesh);
-  //analysisID, stepValue);
-  int meshID = -1;
   std::string elementType = "";
-  if ( _return_.meshInfos.size() == 0) {
-    _return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
-    error_str = "There is no mesh metadata.";
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, static_analysisID, static_stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
   } else {
-    for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
-          it != _return_.meshInfos.end(); it++) {
-      if ( AreEqualNoCase( it->name, meshName)) {
-	meshID = it->meshNumber;
-	elementType = getStrFromElementType( it->elementType.shape);
-	break;
-      }
-    }
-    if ( meshID == -1) { // not found
-      error_str = "Mesh name " + meshName + " not in metadata.";
-      std::cout << error_str << std::endl;
-    }
+    meshID = meshInfo.meshNumber;
+    elementType = getStrFromElementType( meshInfo.elementType.shape);
   }
-
 
   bool storedVolumeLRSplineFound = false; // @@sbr201609 This value is never changed ...
   try {

@@ -50,6 +50,10 @@ using boost::shared_ptr;
 
 using namespace  ::VELaSSCo;
 
+// used for the common operations, like:
+// GetMeshInfoFromMeshName
+extern VELaSSCo_Operations *queryServer;
+
 /*
  * function offered by the QueryManager 
  */
@@ -110,6 +114,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetListOfTimeSteps( _return, sessionID, query);
   } else if ( name == "GetListOfResults") {
     ManageGetListOfResults( _return, sessionID, query);
+  } else if ( name == "GetMeshVertices") {
+    ManageGetMeshVertices( _return, sessionID, query);
     /* Result Analysis Queries */
   } else if ( name == "GetBoundingBox") {
     ManageGetBoundingBox( _return, sessionID, query);
@@ -254,3 +260,45 @@ int StartServer( const int server_port) {
   exit( 0); // need this to exit QueryManager daemon
   return 0; // return only, will close connections but still remain asking for commands interactively ...
 }
+
+// returns -1 if not found, and an error messare in str_error
+// resultStatus may be one of: 
+//   VAL_NO_MESH_INFORMATION_FOUND, VAL_NO_MESH_INFORMATION_FOUND, VAL_NO_MESH_INFORMATION_FOUND
+VAL_Result QueryManagerServer::GetMeshInfoFromMeshName( const std::string &dl_sessionID, const std::string &modelID, 
+							const std::string &analysisID, double stepValue,
+							const std::string &meshName, 
+							MeshInfo &meshInfo,
+							std::string &error_str) {
+  // from the mesh name, get the Mesh Info ( number, element type, ...)
+  // eventually the Mesh information could have been cached ...
+  VAL_Result resultStatus = VAL_UNKNOWN_ERROR;
+
+  std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+  rvGetListOfMeshes returnQueryData;
+  queryServer->getListOfMeshes( returnQueryData, dl_sessionID, modelID, analysisID, stepValue);
+  int meshID = -1;
+  if ( returnQueryData.meshInfos.size() == 0) {
+    resultStatus = VAL_NO_MESH_INFORMATION_FOUND;
+    error_str = "There is no mesh metadata.";
+    std::cout << error_str << std::endl;
+  } else {
+    for ( std::vector< MeshInfo>::iterator it = returnQueryData.meshInfos.begin();
+          it != returnQueryData.meshInfos.end(); it++) {
+      if ( AreEqualNoCase( it->name, meshName)) {
+	meshID = it->meshNumber;
+	meshInfo = *it;
+	resultStatus = VAL_SUCCESS;
+	std::cout << "  found = " << meshID << std::endl;
+	break;
+      }
+    }
+    if ( meshID == -1) { // not found
+      resultStatus = VAL_MESH_ID_NOT_FOUND;
+      error_str = "Mesh name " + meshName + " not in metadata.";
+      std::cout << error_str << std::endl;
+    }
+  }
+
+  return resultStatus;
+}
+

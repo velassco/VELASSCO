@@ -734,3 +734,111 @@ void QueryManagerServer::ManageGetListOfResults( Query_Result &_return, const Se
   // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
   LOGGER << "  data   : \n" << _return.data << std::endl;
 } // ManageGetListOfMeshes
+
+void QueryManagerServer::ManageGetMeshVertices( Query_Result& _return, 
+						const SessionID sessionID, const std::string& query ) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+  
+  std::string name       = pt.get<std::string>("name");
+  std::string modelID    = pt.get<std::string>( "modelID");
+  std::string analysisID = pt.get<std::string>( "analysisID");
+  double stepValue       = pt.get< double>( "stepValue");
+  std::string meshName    = pt.get<std::string>("meshID");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::cout << "S   " << sessionID        << std::endl;
+  std::cout << "dlS " << dl_sessionID     << std::endl;
+  std::cout << "M  -" << modelID          << "-" << std::endl;
+  std::cout << "An -" << analysisID       << "-" << std::endl;
+  std::cout << "Sv -" << stepValue        << "-" << std::endl;
+  std::cout << "Msh-" << meshName           << "-" << std::endl;
+
+  //std::cout << "Vertex IDs = " << vertexIDs << std::endl;
+  
+  // the vertexID list is encoded in a base64 string
+  std::string vertexIDs  = pt.get<std::string>("vertexIDs");
+  std::string raw_data = base64_decode( vertexIDs);
+  size_t num_vertexIDs = raw_data.length() / sizeof( int64_t);
+  int64_t *lst_vertexIDs = ( int64_t *)raw_data.data();
+  std::vector<int64_t> listOfVerticesIDs( lst_vertexIDs, lst_vertexIDs + num_vertexIDs);
+   
+  // just to provide feed-back:
+  if ( num_vertexIDs) {
+    LOGGER << "optional list of Vertices ID provided with " << num_vertexIDs << " vertices," << std::endl;
+    size_t last = ( num_vertexIDs < 100) ? num_vertexIDs : 100;
+    std::ostringstream oss;
+    oss << "parameter base64-decoded: "
+	<< num_vertexIDs << " vertexIDs" << std::endl << "  ids = ";
+    for ( size_t idx = 0; idx < last; idx++) {
+      if ( idx) oss << ", ";
+      oss << listOfVerticesIDs[ idx];
+    }
+    if ( num_vertexIDs > 100) {
+      oss << ", ..., " << listOfVerticesIDs[ num_vertexIDs - 1];
+    }
+    LOGGER << oss.str() << " ." << std::endl;
+  } else {
+    LOGGER << "optional list of Vertices ID not provided." << std::endl;
+  }
+
+  // get MeshID from MeshName:
+  std::string error_str;
+  int meshID = -1;
+  MeshInfo meshInfo;
+  VAL_Result resultStatus = GetMeshInfoFromMeshName( dl_sessionID, modelID, analysisID, stepValue,
+						     meshName, meshInfo, error_str);
+  if ( resultStatus != VAL_SUCCESS) {
+    // error
+    _return.__set_result( ( Result::type)resultStatus);
+  } else {
+    meshID = meshInfo.meshNumber;
+  }
+
+  rvGetListOfVerticesFromMesh queryReturnData;
+  if ( listOfVerticesIDs.size() == 0) {
+    // get all vertices:
+    queryServer->getListOfVerticesFromMesh( queryReturnData,
+					    dl_sessionID, modelID, analysisID, stepValue, meshID);
+  } else {
+    queryServer->getListOfSelectedVerticesFromMesh( queryReturnData,
+						    dl_sessionID, modelID, analysisID, stepValue, meshID,
+						    listOfVerticesIDs);
+  }
+
+  // Pack into string
+  const std::vector< Vertex> &listOfVertices = queryReturnData.vertex_list;
+  if ( listOfVertices.size() > 0) {
+    std::string result;
+    std::ostringstream oss;
+    size_t nVertices = listOfVertices.size();
+    LOGGER << "--> returned numVertices = " << nVertices << " ." << std::endl;
+    oss.write((char*)&nVertices, sizeof(int64_t));
+    // first the id's
+    // then the xyz coordinates;
+    for ( size_t idx = 0; idx < listOfVertices.size(); idx++) {
+      oss.write( ( char *)&( listOfVertices[ idx].id), sizeof( int64_t));
+    }
+    for ( size_t idx = 0; idx < listOfVertices.size(); idx++) {
+      const Vertex &vInfo = listOfVertices[ idx];
+      oss.write( ( char *)&( vInfo.x), sizeof( double));
+      oss.write( ( char *)&( vInfo.y), sizeof( double));
+      oss.write( ( char *)&( vInfo.z), sizeof( double));
+    }
+    LOGGER << "--> returned listOfVertices.size() = " << listOfVertices.size() << " ." << std::endl;
+    result = oss.str();
+    _return.__set_data(result);  
+  } else {
+    LOGGER << "--> nothing returned ." << std::endl;
+    std::string result;
+    std::ostringstream oss;
+    int64_t zero = 0;
+    oss.write((char*)&zero, sizeof(size_t));
+    oss.write((char*)&zero, sizeof(size_t));
+    result = oss.str();
+    _return.__set_data(result); 
+  }
+} // ManageGetMeshVertices

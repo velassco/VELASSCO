@@ -29,6 +29,9 @@
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
 #include "Compression.h"
 
+// AccessLib.h is only used for the return codes ( enum values)
+#include "../../AccessLib/AccessLib/AccessLib.h"
+
 // ***************************************************************************
 //
 // Actual implementation of QueryManager functions.
@@ -115,6 +118,8 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfResults( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetMeshDrawData( Query_Result& _return, const SessionID sessionID, const std::string& query );
+  void ManageGetMeshVertices( Query_Result& _return, const SessionID sessionID, const std::string& query );
+
   /* Result Analysis Queries */
   void ManageGetBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageDeleteBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
@@ -159,6 +164,16 @@ public:
     m_compression.setCompressionThreshold( VL_COMPRESSION_MINIMUM_DATA_SIZE_TO_COMPRESS);
     m_compression_enabled = false; // compression disabled until enabled explicitly by the AccessLib
   }
+
+  // returns one of: 
+  //   VAL_NO_MESH_INFORMATION_FOUND, VAL_NO_MESH_INFORMATION_FOUND, VAL_NO_MESH_INFORMATION_FOUND
+  // and an error messare in str_error
+  VAL_Result GetMeshInfoFromMeshName( const std::string &dl_sessionID, const std::string &modelID, 
+				      const std::string &analysisID, double stepValue,
+				      const std::string &meshName, 
+				      MeshInfo &meshInfo,
+				      std::string &str_error);
+
 }; // class QueryManagerServer
 
 
@@ -216,3 +231,4 @@ std::string as_string(boost::property_tree::ptree const& pt, boost::property_tre
 }
 
 extern int StartServer( const int server_port);
+
