@@ -180,16 +180,31 @@ extern "C" {
 					   );
   
   VAL_Result VAL_API valGetMeshDrawData( /* in */
-						VAL_SessionID     sessionID,
-						const char*       modelID,
-						const char*       analysisID,
-						double            timeStep,
-						const char*       meshID,
+					VAL_SessionID     sessionID,
+					const char*       modelID,
+					const char*       analysisID,
+					double            timeStep,
+					const char*       meshID,
+					
+					/* out */
+					const char                      **result_status,
+					const VELaSSCo::RTFormat::File  **result_mesh_draw_data
+					 );
 
-						/* out */
-            const char                      **result_status,
-            const VELaSSCo::RTFormat::File  **result_mesh_draw_data
-            );
+  VAL_Result VAL_API valGetMeshVertices( /* in */
+					VAL_SessionID     sessionID,
+					const char       *modelID,
+					const char       *analysisID,
+					double            timeStep,
+					const char       *meshID,
+					const int64_t    *vertexIDs, /* may be NULL */
+					
+					/* out */
+					const char      **result_status,
+					const int64_t   **resultVertexIDs,
+					const double    **resultVertexCoordinates, /* x1y1z1x2y2z2x3y3z3x4y4z4...*/
+					size_t           *resultNumVertices
+					 );
   
   /*
    * 2xx RAQ - Result Analysis Queries

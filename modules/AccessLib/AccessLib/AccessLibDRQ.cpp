@@ -9,6 +9,7 @@
 #include "Client.h"
 #include "Helpers.h"
 #include "DemoServer.h" // for the StartServer() function
+#include "base64.h"
 
 #include "AccessLibCommon.h"
 
@@ -267,6 +268,96 @@ VAL_Result VAL_API valGetListOfResults(  /* in */
     }
   CATCH_ERROR;
 } // valGetListOfResults
+
+  
+VAL_Result VAL_API valGetMeshVertices( /* in */
+				      VAL_SessionID     sessionID,
+				      const char       *modelID,
+				      const char       *analysisID,
+				      double            timeStep,
+				      const char       *meshID,
+				      const int64_t    *vertexIDs, /* may be NULL */
+				      
+				      /* out */
+				      const char      **result_status,
+				      const int64_t   **resultVertexIDs,
+				      const double    **resultVertexCoordinates, /* x1y1z1x2y2z2x3y3z3x4y4z4...*/
+				      size_t           *resultNumVertices
+				       ) {
+    CHECK_SESSION_ID( sessionID );
+    CHECK_QUERY_POINTER( modelID );
+    CHECK_QUERY_POINTER( meshID );
+    CHECK_QUERY_POINTER( analysisID );
+    // vertexIDs may be null to retrieve all vertices
+    // CHECK_QUERY_POINTER( vertexIDs );
+    CHECK_QUERY_POINTER( resultVertexIDs );
+    CHECK_QUERY_POINTER( resultVertexCoordinates );
+    CHECK_QUERY_POINTER( resultNumVertices );
+    CHECK_QUERY_POINTER( result_status ); 
+
+    API_TRACE;
+    try
+      {
+	std::stringstream  queryCommand;
+	const std::string* queryData;
+
+	// Build JSON command string
+	queryCommand << "{\n"
+		     << "  \"name\"       : \"" << "GetMeshVertices" << "\",\n"
+		     << "  \"modelID\"    : \"" << modelID                   << "\",\n"
+		     << "  \"meshID\"   : \"" << meshID                  << "\",\n"
+		     << "  \"analysisID\" : \"" << analysisID                << "\",\n";
+	queryCommand << "  \"stepValue\"   : "  << timeStep << ",\n";
+	// encode the vertexID list in a base64 string
+	// list vertexIDs is ends with a '0', so count items
+	size_t num_vertexIDs = 0;
+	if ( vertexIDs) {
+	  for ( ; vertexIDs[ num_vertexIDs] != 0; num_vertexIDs++) {
+	  }
+	}
+	// if no vertexIDs are provided, base64_encode return an empty string
+	queryCommand << "  \"vertexIDs\"  : \"" 
+		     << base64_encode( ( const char *)vertexIDs, num_vertexIDs * sizeof( int64_t))
+		     << "\"\n";
+	queryCommand << "}\n";
+
+	// Send command string and get back result data
+	VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+
+	// Give back pointers to actual binary data
+	if (result == VAL_SUCCESS)
+	  {
+	    size_t numVertices;
+	    
+	    std::istringstream in(*queryData);
+	    // this is a worng corrections:
+	    in.read((char*)&numVertices, 8);
+	    
+	    if ( numVertices > 0) {
+	      const size_t offsetVertexIDs = (size_t)in.tellg();
+	      const size_t offsetVertexCoordinates = offsetVertexIDs + numVertices * sizeof(int64_t);
+	      
+	      *resultVertexIDs   = (const int64_t*)(&((*queryData)[offsetVertexIDs]));
+	      *resultVertexCoordinates = (const double*) (&((*queryData)[offsetVertexCoordinates]));
+	      *resultNumVertices = numVertices;
+	    } else {
+	      *resultVertexIDs   = NULL;//nullptr;
+	      *resultVertexCoordinates      = NULL;//nullptr;
+	      *resultNumVertices = 0;
+	    }
+
+      *result_status = "Ok";
+
+	  }
+  else 
+  {
+	  *result_status = queryData->c_str();
+  }
+	
+	return result;
+      }
+    CATCH_ERROR;
+} // valGetMeshVertices
 
 #ifdef __cplusplus
 }
