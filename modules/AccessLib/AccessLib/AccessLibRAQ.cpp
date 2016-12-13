@@ -920,7 +920,7 @@ extern "C" {
       
       // Build JSON command string
       queryCommand << "{\n"
-		   << "  \"name\"       : \"" << "DeleteSimplifiedMesh" << "\",\n"
+		   << "  \"name\"       : \"" << "DeleteSimplifiedMeshWithResult" << "\",\n"
 		   << "  \"modelID\"    : \"" << modelID                   << "\",\n"
 		   << "  \"meshID\"     : \"" << meshID                   << "\",\n"
 		   << "  \"analysisID\" : \"" << analysisID                << "\",\n"
