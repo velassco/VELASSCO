@@ -155,6 +155,7 @@ int doTestiCores( const VAL_SessionID sessionID) {
   
   const char *access = "";
   const char *return_modelID = NULL;
+  std::cout << "doTestiCores(): doing OpenModel" << std::endl;
   result = valOpenModel( sessionID, model_unique_name.c_str(), access, &status, &return_modelID);
   CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
@@ -300,6 +301,7 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   
   const char *access = "";
   const char *return_modelID = NULL;
+  std::cout << "doTestMorteza(): doing OpenModel" << std::endl;
   result = valOpenModel( sessionID, model_unique_name.c_str(), access, &status, &return_modelID);
   CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
@@ -540,7 +542,7 @@ int doTestIsoSurface( const VAL_SessionID sessionID)
   
   const char *access = "";
   const char *return_modelID = NULL;
-  std::cout << "doing OpenModel of " << unique_name << std::endl;
+  std::cout << "doTestIsoSurface(): doing OpenModel of " << unique_name << std::endl;
   result = valOpenModel(sessionID, unique_name.c_str(), access, &status, &return_modelID);
   CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
@@ -654,13 +656,15 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // const char *unique_name = "Test_VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/DEM_examples/Fluidized_Bed_Large/:FluidizedBed_large";
   // const char *unique_name = "VELaSSCo_Models:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasicTest_FEM/:VELaSSCo_HbaseBasicTest";
-  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasic_FEM:VELaSSCo_HbaseBasicTestGP-part_";
+  // const char *unique_name = "VELaSSCo_Models_V4CIMNE:/localfs/home/velassco/common/simulation_files/VELaSSCo_HbaseBasic_FEM:VELaSSCo_HbaseBasicTestGP-part_";
+  // EDDIE:
+  const char *unique_name = "VELaSSCo_Models_V4CIMNE:/exports/eddie3_apps_local/apps/community/VELaSSCo/simulation_files/VELaSSCo_HbaseBasicTest_FEM:VELaSSCo_HbaseBasicTest_part_";
 
   // // EDM models:
   // const char *unique_name = "VELaSSCo_HbaseBasicTest_part_1";
   const char *access = "";
   const char *return_modelID = NULL;
-  std::cout << "doing OpenModel of " << unique_name << std::endl;
+  std::cout << "doTestMiguel(): doing OpenModel of " << unique_name << std::endl;
   result = valOpenModel( sessionID, unique_name, access, &status, &return_modelID);
   CheckVALResult(result, getStringFromCharPointers( "valOpenModel ", status));
   std::cout << "OpenModel: " << std::endl;
@@ -902,7 +906,7 @@ int doTestMiguel( const VAL_SessionID sessionID) {
   // Test GetBoundaryOfAMesh()
   //
   
-  bool do_boundary = true;
+  bool do_boundary = false;
   if ( do_boundary) {
     const char *return_mesh = NULL;
     size_t return_mesh_size = 0;
@@ -923,6 +927,57 @@ int doTestMiguel( const VAL_SessionID sessionID) {
     } else {
       std::cout << "Error: " << return_error_str << std::endl;
     }
+  }
+
+  bool do_getMeshVertices = true;
+  if ( do_getMeshVertices) {
+
+    // list needs to end with '0'
+    const int64_t vertexIDs[] = { 1, 2, 3, 0 };
+
+    // HBasic_test should be:
+    // 1         1.0 0.9135809540748596 0.8480625748634338
+    // 2         1.0 1.0 0.8999999761581421
+    // 3         1.0 1.0 0.800000011920929
+    // 4         1.0 0.8999999761581421 1.0    
+
+    const int64_t* resultVertexIDs;
+    const double*  resultVertexCoordinates;
+    size_t         resultNumVertices;
+    const char*    status;
+
+    std::cout << "doing valGetMeshVertices for " << std::endl;
+    std::string my_analysisID = "";
+    double  my_step_value = 0.0;
+    std::string my_mesh_name = "Part";
+    std::cout << "\tanalysis = '" << my_analysisID << "', step = '" << my_step_value << "' and meshName = '" << my_mesh_name << "'." << std::endl;
+    
+    // This call does not comply with the VQuery form, but in the meantime ...
+    result = valGetMeshVertices(sessionID, opened_modelID.c_str(),
+				my_analysisID.c_str(),
+				my_step_value,
+				my_mesh_name.c_str(),
+				// NULL --> calls OP GetListOfVerticesFromMesh, vertexIDs --> calls OP GetListOfSelectedVerticesFromMesh
+				NULL, // vertexIDs,
+				&status,
+				&resultVertexIDs,
+				&resultVertexCoordinates,
+				&resultNumVertices);
+    CheckVALResult(result, "valGetMeshVertices");
+    
+    //
+    // Print received data
+    //
+    
+    for (size_t i=0; i<resultNumVertices; i++)
+      {
+	std::cout << "Vertex: " << i;
+	std::cout << "  ID: " << resultVertexIDs[i];
+	std::cout << "  Values: [";
+	for (int j=0; j< 3; j++)
+	  std::cout << " " << resultVertexCoordinates[3*i+j];
+	std::cout << " ]" << std::endl;
+      }
   }
 
   //
