@@ -253,13 +253,6 @@ public:
       return_error_str->append("calculateDiscrete2Continuum is not implemented");
    }
 
-   // not used anymore ...
-   // std::string MRgetListOfVerticesFromMesh(rvGetListOfVerticesFromMesh &_return,
-   //    const std::string &sessionID, const std::string &modelID,
-   //    const std::string &dataTableName,
-   //    const std::string &analysisID, const double stepValue,
-   //    const int32_t meshID)  { return ""; }
-
    void calculateBoundaryOfAMesh(const std::string &sessionID, //const std::string &DataLayer_sessionID,
       const std::string &modelID, //const std::string &dataTableName,
       const int meshID, const std::string &elementType,
