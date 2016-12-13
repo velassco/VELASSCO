@@ -80,6 +80,10 @@ public:
 				  const std::string &sessionID, const std::string &modelID, 
 				  const std::string &analysisID, const double stepValue, 
 				  const int32_t meshInfo);
+  void getListOfSelectedVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+					  const std::string &sessionID, const std::string &modelID, 
+					  const std::string &analysisID, const double stepValue, 
+					  const int32_t meshID, const std::vector<int64_t> &listOfVerticesID);
 
 //    void stopAll();
     void calculateBoundingBox( const std::string &sessionID, const std::string &modelID, const std::string &dataTableName,

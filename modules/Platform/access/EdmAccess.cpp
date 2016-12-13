@@ -309,6 +309,14 @@ void EdmAccess::getListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return,
 	return;
 }
 
+void EdmAccess::getListOfSelectedVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
+						   const std::string &sessionID, const std::string &modelID, 
+						   const std::string &analysisID, const double stepValue, 
+						   const int32_t meshID, const std::vector<int64_t> &listOfVerticesID) {
+    DEBUG( " Function EdmAccess::getListOfSelectedVerticesFromMesh not implemented (QueryManager/EdmAccess.cpp).");
+	return;
+}
+
 
 /*void EdmAccess::stopAll()
 {
