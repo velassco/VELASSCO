@@ -443,18 +443,6 @@ void DataLayerAccess::calculateDiscrete2Continuum(const std::string &sessionID, 
 							       integralDirection, returnQueryOutcome, return_error_str);	
 }
 
-// std::string DataLayerAccess::MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &return_data, 
-// 							  const std::string &sessionID, const std::string &modelID, 
-// 							  const std::string &dataTableName,
-// 							  const std::string &analysisID, const double stepValue, 
-// 							  const int32_t meshID) {
-//     return AnalyticsModule::getInstance()->MRgetListOfVerticesFromMesh(return_data,
-// 								       sessionID, modelID,
-// 								       dataTableName,
-// 								       analysisID, stepValue,
-// 								       meshID);
-// }
-
 // #include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
 void DataLayerAccess::calculateBoundaryOfAMesh( const std::string &sessionID,
 						const std::string &modelID,

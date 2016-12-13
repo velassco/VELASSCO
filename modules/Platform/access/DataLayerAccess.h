@@ -150,13 +150,6 @@ public:
 				    const bool processContacts, const bool doTemporalAVG, const std::string &temporalAVGoptions, 
 				    const double deltaT, const bool doSpatialIntegral, const std::string &integralDimension, const std::string &integralDirection,
 				    std::string *returnQueryOutcome, std::string *return_error_str);
-
-  // not used anymore ...
-  // std::string MRgetListOfVerticesFromMesh( rvGetListOfVerticesFromMesh &_return, 
-  // 					   const std::string &sessionID, const std::string &modelID, 
-  // 					   const std::string &dataTableName,
-  // 					   const std::string &analysisID, const double stepValue, 
-  // 					   const int32_t meshID);
   
   void calculateBoundaryOfAMesh( const std::string &sessionID,
 				 const std::string &modelID,
