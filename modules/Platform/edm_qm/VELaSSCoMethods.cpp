@@ -60,15 +60,24 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound, thelog);
             int QendTime = GetTickCount();
-            //printf("GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s, time=%d\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL", QendTime - QstartTime);
+#pragma omp critical
+            if (errorFound) {
+               char ebuf[1024];
+               sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %llu\n", e->error? e->error->rstat : -1);
+               thelog->logg(0, ebuf);
+            }
+#pragma omp critical
+            thelog->logg(4, "GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s, time=%d\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL", QendTime - QstartTime);
          } catch (CedmError *e) {
             delete e; nError++;
          }
       }
+      thelog->logg(0, "GetListOfAnalyses, parallel section finished\n");
       if (errorFound) {
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg);
          rv.__set_status("Error"); rv.__set_report(errorMsg);
+         thelog->logg(1, "GetListOfAnalyses, error - %s\n", errorMsg.data());
          return;
       }
       nodervGetListOfAnalyses *retValueWithError = NULL;
@@ -81,6 +90,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             EDMexecution *e = getNextJob(i, prev); prev = e;;
             //EDMexecution *e = subQueries->getElement(i);
          nodervGetListOfAnalyses *retVal = (nodervGetListOfAnalyses *)e->returnValues;
+         thelog->logg(1, "GetListOfAnalyses, retVal->status->value.stringVal = %s\n", retVal->status->value.stringVal);
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
@@ -92,6 +102,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             }
          }
       }
+      thelog->logg(0, "GetListOfAnalyses, finished 1");
       if (retValueWithError) {
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
@@ -104,6 +115,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       }
    }
    int endTime = GetTickCount();
+   thelog->logg(0, "GetListOfAnalyses, finished 2");
 }
 
 void VELaSSCoMethods::setResults(rvGetListOfTimeSteps& rv, Container<double> *allTimeSteps)
