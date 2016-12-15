@@ -682,11 +682,11 @@ void VELaSSCoHandler::getListOfVerticesFromMesh(rvGetListOfVerticesFromMesh& rv,
 void VELaSSCoHandler::getListOfSelectedVerticesFromMesh(rvGetListOfVerticesFromMesh& rv, const std::string& sessionID, const std::string& modelID, const std::string& analysisID, const double stepValue, const int32_t meshID, const std::vector<int64_t> &listOfVerticesID)
 {
    try {
-      _return = "getListOfSelectedVerticesFromMesh" + string(" is not implemented");
+      rv.status = "Error"; rv.report = "getListOfSelectedVerticesFromMesh" + string(" is not implemented");
    } catch (CedmError *e) {
       string errMsg;
       handleError(errMsg, e);
-      _return = errMsg;
+      rv.status = "Error"; rv.report = errMsg;
    }
 }
 
