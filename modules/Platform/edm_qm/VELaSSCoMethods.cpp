@@ -46,6 +46,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       EDMULONG nOfSubdomains = subQueries->size();
       int nError = 0;
       bool errorFound = false;
+      printJobQueues(thelog);
 
       EDMexecution *prev = NULL;
 
@@ -54,8 +55,8 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       for (int i = 0; i < nOfSubdomains; i++) {
          try {
             int QstartTime = GetTickCount();
-            EDMexecution *e = getNextJob(i, prev); prev = e;;
-            //EDMexecution *e = subQueries->getElement(i);
+            //EDMexecution *e = getNextJob(i, prev); prev = e;;
+            EDMexecution *e = subQueries->getElement(i);
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound, thelog);
@@ -63,7 +64,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
 #pragma omp critical
             if (errorFound) {
                char ebuf[1024];
-               sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %llu\n", e->error? e->error->rstat : -1);
+               sprintf(ebuf, "Error in VELaSSCoMethods::GetListOfAnalyses, rstat = %llu\n", e->error? e->error->rstat : -1);
                thelog->logg(0, ebuf);
             }
 #pragma omp critical
@@ -73,6 +74,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
          }
       }
       thelog->logg(0, "GetListOfAnalyses, parallel section finished\n");
+      printJobQueues(thelog);
       if (errorFound) {
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg);

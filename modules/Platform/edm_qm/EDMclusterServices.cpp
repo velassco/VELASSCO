@@ -254,10 +254,10 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
                methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
                (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL);
          }
-         if (rstat && rstat != edmiE_CLIENT_START_TIMEOUT) {
-            *errorFound = true; execParams->error = new CedmError(rstat, __FILE__, __LINE__);
-         }
-      } while (rstat == edmiE_CLIENT_START_TIMEOUT && ++nTimeouts < 50);
+      } while ((rstat == edmiE_CLIENT_START_TIMEOUT || rstat == edmiE_CLIENT_SEMAPHORE_TIME_OUT) && ++nTimeouts < 50);
+      if (rstat) {
+         *errorFound = true; execParams->error = new CedmError(rstat, __FILE__, __LINE__);
+      }
    } catch (CedmError *e) {
       execParams->error = e; *errorFound = true;
    }
@@ -434,6 +434,9 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                   // Add support for nested parallel execution
                   EDMServer *srv = theServer->getEDMServer(m);
                   EDMserverInfo *srvInf = theServer->findServerInfo(srv);
+                  if (! srvInf) {
+                     thelog->logg(1, "Unkown server reference in model %s\n", m->exists_name() ? m->get_name() : "");
+                  }
                   EDMexecutionQueue *jobsOnNode;
                   for (jobsOnNode = queryQueuesOnMachines->first(); jobsOnNode; jobsOnNode = queryQueuesOnMachines->next()) {
                      if (jobsOnNode->theEDMserver == srvInf) {
