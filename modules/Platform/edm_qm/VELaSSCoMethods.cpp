@@ -4,6 +4,7 @@
 #include "../edm_plugin/EDM_plugin_1.h"
 #include "VELaSSCo_utils.h"
 #include "../../AccessLib/AccessLib/BoundaryBinaryMesh.h"
+#include "WindowsFunctionsForLinux.h"
 #include <omp.h>
 #include <sys/timeb.h>
 
@@ -44,7 +45,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
    int startTime = GetTickCount();
    if (subQueries) {
       EDMULONG nOfSubdomains = subQueries->size();
-      int nError = 0;
+      int nError = 0, n = 0;
       bool errorFound = false;
       printJobQueues(thelog);
 
@@ -68,7 +69,12 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
                thelog->logg(0, ebuf);
             }
 #pragma omp critical
-            thelog->logg(4, "GetListOfAnalyses, nSubQuery=%llu, i=%d, e->modelName=%s, time=%d\n", nOfSubdomains, i, e ? e->modelName : "EDMexecution e is NULL", QendTime - QstartTime);
+            {
+               thelog->logg(5, "GetListOfAnalyses, n=%d, i=%d, time=%d, time=%d, e->modelName=%s\n", n++, i, startTime - QstartTime, QendTime - QstartTime, e ? e->modelName : "EDMexecution e is NULL");
+               //if ((n % 100) == 0) {
+               //   sleep(1000);
+               //}
+            }
          } catch (CedmError *e) {
             delete e; nError++;
          }
