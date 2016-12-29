@@ -5,9 +5,9 @@ class VELaSSCoMethods : public EDMclusterExecution
 {
    char                                         *getPluginPath();
    char                                         *getPluginName();
-   CLoggWriter                                  *thelog;
+ // CLoggWriter                                  *thelog;
 public:
-   VELaSSCoMethods(EDMclusterServices *cs, CLoggWriter *tl) : EDMclusterExecution(cs) { thelog = tl; }
+   VELaSSCoMethods(EDMclusterServices *cs, CLoggWriter *tl) : EDMclusterExecution(cs, tl) { }
    ~VELaSSCoMethods();
    void                 GetListOfAnalyses(rvGetListOfAnalyses& _return);
    void                 ListModels();

@@ -201,10 +201,10 @@ EDMexecutionQueue::EDMexecutionQueue(CMemoryAllocator *ma, EDMserverInfo *srv)
 }
 
 /*==============================================================================================================================*/
-EDMclusterExecution::EDMclusterExecution(EDMclusterServices *cs)
+EDMclusterExecution::EDMclusterExecution(EDMclusterServices *cs, CLoggWriter *_thelog)
 /*==============================================================================================================================*/
 {
-   theServer = cs; ma.init(0x10000); subQueries = NULL; nextQueueToVisit = NULL; omp_init_lock(&nextJobLock);
+   theServer = cs; ma.init(0x10000); subQueries = NULL; nextQueueToVisit = NULL; omp_init_lock(&nextJobLock); thelog = _thelog;
 }
 /*==============================================================================================================================*/
 EDMclusterExecution::~EDMclusterExecution()
@@ -231,7 +231,7 @@ void* ourMemoryAllocator(SdaiVoid _ma, EDMLONG size)
 }
 /*==============================================================================================================================*/
 void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiString methodName, CppParameterClass *inputParameters,
-   bool *errorFound, CLoggWriter *thelog)
+   bool *errorFound)
 /*==============================================================================================================================*/
 {
    EDMLONG rstat = OK;
@@ -402,7 +402,7 @@ void EDMclusterExecution::printJobQueues(CLoggWriter *thelog)
    }
 } 
 /*==============================================================================================================================*/
-bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo, CLoggWriter *thelog)
+bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID, char *ModelNameFormat, int FirstModelNo, int LastModelNo)
 /*
    modelID is object id of the ClusterModel object retrn by the open model method.
 ================================================================================================================================*/
@@ -427,6 +427,8 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
             int nextModelNo = FirstModelNo;
             char modelName[2048];
             int nOfJobs = 0;
+
+            thelog->logg(1, "nOfEDMmodels=%llu\n", nOfEDMmodels);
 
             for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
 
@@ -464,6 +466,8 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                      exp->myQueue = jobsOnNode;
                   }
                   if (exp) {
+                     thelog->logg(1, "cModelName=%s\n", cModelName);
+
                      ecl::EDMrepository *r = m->get_repository();
                      exp->repositoryName = r ? r->get_name() : (char*)"";
                      exp->ema = new CMemoryAllocator(0x1000);

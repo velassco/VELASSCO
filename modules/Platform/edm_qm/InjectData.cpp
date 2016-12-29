@@ -55,7 +55,7 @@ void VELaSSCoHandler::InjectData(char *commandFileName)
             modelID = getClusterModelID(ClusterRepository, ClusterModel, &rstat, &nOfFileNameMatches);
             if (nOfFileNameMatches == 1) {
                if (strEQL(Command, "InjectFileSequence")) {
-                  if (theQuery.OpenClusterModelAndPrepareExecution(modelID, EDMmodelNameFormat, FirstModelNo, LastModelNo, thelog)) {
+                  if (theQuery.OpenClusterModelAndPrepareExecution(modelID, EDMmodelNameFormat, FirstModelNo, LastModelNo)) {
                      //theQuery.printJobQueues(thelog);
                      theQuery.InjectFileSequence(&FileNameFormats, FirstModelNo, LastModelNo, EDMmodelNameFormat, &messages);
                      thelog->logg(0, "    Injection of data finished.\n");
@@ -117,7 +117,7 @@ void VELaSSCoMethods::CreateCubeFromFileSequence(Container<char*> *FileNameForma
 #pragma omp parallel for
       for (int i = 0; i < nOfSubdomains; i++) {
          e = subQueries->getElement(i);
-         ExecuteRemoteCppMethod(e, "AnalyzeFEMfiles", e->inParams, &errorFound, thelog);
+         ExecuteRemoteCppMethod(e, "AnalyzeFEMfiles", e->inParams, &errorFound);
       }
 
       nodeRvInjectFiles *retValueWithError = NULL;
