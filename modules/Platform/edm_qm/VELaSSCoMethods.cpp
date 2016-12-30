@@ -1228,10 +1228,17 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
       for (EDMexecution *e = subQueries->first(); e; e = subQueries->next()) {
          nodeInInjectFiles *inParams = new(&ma)nodeInInjectFiles(&ma, NULL);
          int i = 0, cModelno = FirstModelNo;
+         int nl = strlen(EDMmodelNameFormat);
          for (char *fnf = FileNameFormats->first(); fnf && i < MAX_INJECT_FILES && cModelno <= LastModelNo; fnf = FileNameFormats->next()) {
             char fnbuf[2048];
-            sprintf(fnbuf, fnf, e->modelNumber);
-            inParams->attrPointerArr[i++]->putString(ma.allocString(fnbuf));
+            int modelNr;
+            if (strnEQL(e->modelName, EDMmodelNameFormat, nl) && e->modelName[nl] == '_') {
+               modelNr = atol(e->modelName + nl + 1);
+               sprintf(fnbuf, fnf, modelNr);
+               inParams->attrPointerArr[i++]->putString(ma.allocString(fnbuf));
+            } else {
+               THROW("Illegal model name format.");
+            }
          }
          nodeRvInjectFiles *retVal = new(e->ema)nodeRvInjectFiles(e->ema, NULL);
          e->returnValues = retVal; e->inParams = inParams;
