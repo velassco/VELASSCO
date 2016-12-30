@@ -56,8 +56,8 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       for (int i = 0; i < nOfSubdomains; i++) {
          try {
             int QstartTime = GetTickCount();
-            //EDMexecution *e = getNextJob(i, prev); prev = e;;
-            EDMexecution *e = subQueries->getElement(i);
+            EDMexecution *e = getNextJob(i, prev); prev = e;;
+            //EDMexecution *e = subQueries->getElement(i);
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
@@ -94,12 +94,12 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       vector<string> names;
       string aName;
 
-      initQueues(); prev = NULL;
+      initQueues(); prev = NULL; n = 0;
       for (int i = 0; i < nOfSubdomains; i++) {
             EDMexecution *e = getNextJob(i, prev); prev = e;;
             //EDMexecution *e = subQueries->getElement(i);
          nodervGetListOfAnalyses *retVal = (nodervGetListOfAnalyses *)e->returnValues;
-         thelog->logg(1, "GetListOfAnalyses, retVal->status->value.stringVal = %s\n", retVal->status->value.stringVal);
+         thelog->logg(2, "n=%4d, GetListOfAnalyses, retVal->status->value.stringVal = %s\n", n++, retVal->status->value.stringVal);
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
