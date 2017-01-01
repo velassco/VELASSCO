@@ -241,16 +241,16 @@ void EDMclusterExecution::ExecuteRemoteCppMethod(EDMexecution *execParams, SdaiS
    try {
       *errorFound = false;
       int nTimeouts = 0; execParams->executionTime = -1;
-      theCtxt = execParams->theEDMserver->getSrvCtxt("superuser", "", "v", thelog);
+      //theCtxt = execParams->theEDMserver->getSrvCtxt("superuser", "", "v", thelog);
 //#pragma omp critical
 //      thelog->logg(3, "Execution of %s on %s.%s\n", methodName, execParams->repositoryName, execParams->modelName);
       do {
          if (inputParameters && inputParameters->nOfAttributes) {
-            rstat = edmiRemoteExecuteCppMethod(theCtxt->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+            rstat = edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
                methodName, 0, inputParameters->nOfAttributes, (RemoteParameter*)inputParameters->attrPointerArr, NULL, execParams->returnValues->nOfAttributes,
                (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL);
          } else {
-            rstat = edmiRemoteExecuteCppMethod(theCtxt->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
+            rstat = edmiRemoteExecuteCppMethod(execParams->serverCtxtRecord->srvCtxt, execParams->repositoryName, execParams->modelName, getPluginPath(), getPluginName(),
                methodName, 0, 0, NULL, NULL, execParams->returnValues->nOfAttributes,
                (RemoteParameter*)execParams->returnValues->attrPointerArr, &ourMemoryAllocator, (void*)execParams->ema, NULL);
          }
@@ -471,7 +471,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                      ecl::EDMrepository *r = m->get_repository();
                      exp->repositoryName = r ? r->get_name() : (char*)"";
                      exp->ema = new CMemoryAllocator(0x1000);
-                     exp->serverCtxtRecord = NULL;
+                     exp->serverCtxtRecord = srvInf->getSrvCtxt("superuser", "", "v", thelog);
                      exp->error = NULL;
                      exp->theEDMserver = srvInf;
                      nOfJobs++;
