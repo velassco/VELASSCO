@@ -394,12 +394,12 @@ void EDMclusterExecution::printJobQueues(CLoggWriter *thelog)
 ================================================================================================================================*/
 {
    for (EDMexecutionQueue *queue = queryQueuesOnMachines->first(); queue; queue = queryQueuesOnMachines->next()) {
-      thelog->logg(2, "Job queue for macine %s:%s\n", queue->theEDMserver->host, queue->theEDMserver->port);
-      thelog->logg(2, "Number of application servers %d, object ID=%llu\n", queue->theEDMserver->nAppservers, queue->theEDMserver->serverId);
+      thelog->trace(2, "Job queue for macine %s:%s\n", queue->theEDMserver->host, queue->theEDMserver->port);
+      thelog->trace(2, "Number of application servers %d, object ID=%llu\n", queue->theEDMserver->nAppservers, queue->theEDMserver->serverId);
       for (EDMexecution *e = queue->theJobs->firstp(); e; e = queue->theJobs->nextp()) {
-         thelog->logg(3, "Query on model number=%4d - %s.%s\n", e->modelNumber, e->repositoryName, e->modelName);
+         thelog->trace(3, "Query on model number=%4d - %s.%s\n", e->modelNumber, e->repositoryName, e->modelName);
       }
-      thelog->logg(0, "\n");
+      thelog->trace(0, "\n");
    }
 } 
 /*==============================================================================================================================*/

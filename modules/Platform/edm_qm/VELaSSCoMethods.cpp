@@ -67,11 +67,11 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
                char ebuf[1024];
                sprintf(ebuf, "Error in VELaSSCoMethods::GetListOfAnalyses, rstat = %llu, e->modelName=%s - %s:%s\n", e->error? e->error->rstat : -1, e->modelName,
                   e->theEDMserver->host, e->theEDMserver->port);
-               thelog->logg(0, ebuf);
+               thelog->trace(0, ebuf);
             }
 #pragma omp critical
             {
-               thelog->logg(5, "GetListOfAnalyses, n=%d, i=%d, time=%d, time=%d, e->modelName=%s\n", n++, i, QstartTime - startTime, QendTime - QstartTime, e ? e->modelName : "EDMexecution e is NULL");
+               thelog->trace(5, "GetListOfAnalyses, n=%d, i=%d, time=%d, time=%d, e->modelName=%s\n", n++, i, QstartTime - startTime, QendTime - QstartTime, e ? e->modelName : "EDMexecution e is NULL");
                //if ((n % 100) == 0) {
                //   sleep(1000);
                //}
@@ -80,13 +80,13 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             delete e; nError++;
          }
       }
-      thelog->logg(0, "GetListOfAnalyses, parallel section finished\n");
+      thelog->trace(0, "GetListOfAnalyses, parallel section finished\n");
       printJobQueues(thelog);
       if (errorFound) {
          string errorMsg;
          writeErrorMessageForSubQueries(errorMsg);
          rv.__set_status("Error"); rv.__set_report(errorMsg);
-         thelog->logg(1, "GetListOfAnalyses, error - %s\n", errorMsg.data());
+         thelog->trace(1, "GetListOfAnalyses, error - %s\n", errorMsg.data());
          return;
       }
       nodervGetListOfAnalyses *retValueWithError = NULL;
@@ -99,7 +99,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             EDMexecution *e = getNextJob(i, prev); prev = e;;
             //EDMexecution *e = subQueries->getElement(i);
          nodervGetListOfAnalyses *retVal = (nodervGetListOfAnalyses *)e->returnValues;
-         thelog->logg(2, "n=%4d, GetListOfAnalyses, retVal->status->value.stringVal = %s\n", n++, retVal->status->value.stringVal);
+         thelog->trace(2, "n=%4d, GetListOfAnalyses, retVal->status->value.stringVal = %s\n", n++, retVal->status->value.stringVal);
          if (strNEQ(retVal->status->value.stringVal, "OK")) {
             retValueWithError = retVal; break;
          }
@@ -111,7 +111,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             }
          }
       }
-      thelog->logg(0, "GetListOfAnalyses, finished 1");
+      thelog->trace(0, "GetListOfAnalyses, finished 1");
       if (retValueWithError) {
          rv.__set_status("Error");
          rv.__set_report(retValueWithError->report->value.stringVal);
@@ -124,7 +124,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       }
    }
    int endTime = GetTickCount();
-   thelog->logg(0, "GetListOfAnalyses, finished 2");
+   thelog->trace(0, "GetListOfAnalyses, finished 2");
 }
 
 void VELaSSCoMethods::setResults(rvGetListOfTimeSteps& rv, Container<double> *allTimeSteps)
@@ -1257,21 +1257,20 @@ void VELaSSCoMethods::InjectFileSequence(Container<char*> *FileNameFormats, int 
          int st1 = GetTickCount();
          bool errorFound = false;
 #pragma omp critical
-         thelog->logg(6, "Si%6d n%6d                                     Inject on %s.%s. %s:%s\n", i, my_n, e->repositoryName, e->modelName, e->theEDMserver->host, e->theEDMserver->port);
+         thelog->trace(6, "Si%6d n%6d                                     Inject on %s.%s. %s:%s\n", i, my_n, e->repositoryName, e->modelName, e->theEDMserver->host, e->theEDMserver->port);
          ExecuteRemoteCppMethod(e, "InjectFEMfiles", e->inParams, &errorFound);
          int st2 = GetTickCount();
 #pragma omp critical
          {
             if (my_n % 10 == 0)
-            thelog->logg(0, "       i       n     time     thread    Start      End     Exec\n");
-            thelog->logg(7, "Fi%6d n%6d %s %6d %8d %8d %8d\n", i, my_n, sprintfTime2(), omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
+            thelog->trace(0, "       i       n     time     thread    Start      End     Exec\n");
+            thelog->trace(7, "Fi%6d n%6d %s %6d %8d %8d %8d\n", i, my_n, sprintfTime2(), omp_get_thread_num(), st1-startTime, st2-startTime, st2-st1);
          }
 #pragma omp critical
          if (errorFound) {
             char ebuf[1024];
             sprintf(ebuf, "Error in VELaSSCoMethods::InjectFileSequence, rstat = %llu\n", e->error? e->error->rstat : -1);
-            thelog->logg(0, ebuf);
-            printf(ebuf);
+            thelog->trace(0, ebuf);
             msgs->add(ma.allocString(ebuf));
          }
          prev = e;
