@@ -56,8 +56,8 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
       for (int i = 0; i < nOfSubdomains; i++) {
          try {
             int QstartTime = GetTickCount();
-            EDMexecution *e = getNextJob(i, prev); prev = e;;
-            //EDMexecution *e = subQueries->getElement(i);
+            //EDMexecution *e = getNextJob(i, prev); prev = e;;
+            EDMexecution *e = subQueries->getElement(i);
             nodervGetListOfAnalyses *retVal = new(e->ema)nodervGetListOfAnalyses(e->ema, NULL);
             e->returnValues = retVal;
             ExecuteRemoteCppMethod(e, "GetListOfAnalyses", NULL, &errorFound);
@@ -71,7 +71,7 @@ void VELaSSCoMethods::GetListOfAnalyses(rvGetListOfAnalyses& rv)
             }
 #pragma omp critical
             {
-               thelog->logg(5, "GetListOfAnalyses, n=%d, i=%d, time=%d, time=%d, e->modelName=%s\n", n++, i, startTime - QstartTime, QendTime - QstartTime, e ? e->modelName : "EDMexecution e is NULL");
+               thelog->logg(5, "GetListOfAnalyses, n=%d, i=%d, time=%d, time=%d, e->modelName=%s\n", n++, i, QstartTime - startTime, QendTime - QstartTime, e ? e->modelName : "EDMexecution e is NULL");
                //if ((n % 100) == 0) {
                //   sleep(1000);
                //}

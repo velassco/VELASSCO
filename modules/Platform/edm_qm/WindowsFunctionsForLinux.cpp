@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 #include "WindowsFunctionsForLinux.h"
 
-unsigned int GetTickCount()
+unsigned long GetTickCount()
 {
    struct timeval tv;
    if (gettimeofday(&tv, 0) != 0)

@@ -19,7 +19,7 @@ EDMclusterServices::EDMclusterServices(Model *m)
 void EDMclusterServices::getUniqueServerContextID(char *idBuf)
 /*==============================================================================================================================*/
 {
-   #pragma omp critical
+   //#pragma omp critical
    {
       EDMULONG id = ++serverContextID;
       sprintf(idBuf, "sc%llu", id);
@@ -290,6 +290,7 @@ EDMexecution *EDMclusterExecution::getNextJob(EDMULONG i, EDMexecution *prevJob)
 /*==============================================================================================================================* /
 {
    return subQueries->getElement(i);
+
 }
 /*==============================================================================================================================*/
 EDMexecution *EDMclusterExecution::getNextJob(EDMULONG i, EDMexecution *prevJob)
@@ -521,20 +522,37 @@ EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *passw
    char                                serverContextName[2048];
    EDMserverContext                    *srvCtxt;
 
-   omp_set_lock(&srvCtxtLock);
-   for (srvCtxt = srvCtxts->firstp(); srvCtxt; srvCtxt = srvCtxts->nextp()) {
-      if (!srvCtxt->inUse) {
-         srvCtxt->inUse = true; omp_unset_lock(&srvCtxtLock);
-         return srvCtxt;
+//   omp_set_lock(&srvCtxtLock);
+//   for (srvCtxt = srvCtxts->firstp(); srvCtxt; srvCtxt = srvCtxts->nextp()) {
+//      if (!srvCtxt->inUse) {
+//         srvCtxt->inUse = true; omp_unset_lock(&srvCtxtLock);
+//         return srvCtxt;
+//      }
+//   }
+//#pragma omp critical
+//   srvCtxt = srvCtxts->createNext();
+//   srvCtxt->inUse = true; srvCtxt->theServer = this;
+//   theCluster->getUniqueServerContextID(serverContextName);
+//   CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &srvCtxt->srvCtxt));
+//   thelog->logg(4, "New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
+//   omp_unset_lock(&srvCtxtLock);
+//   return srvCtxt;
+
+#pragma omp critical
+   {
+      for (srvCtxt = srvCtxts->firstp(); srvCtxt; srvCtxt = srvCtxts->nextp()) {
+         if (!srvCtxt->inUse) {
+            srvCtxt->inUse = true; break;
+         }
+      }
+      if (srvCtxt == NULL) {
+         srvCtxt = srvCtxts->createNext();
+         srvCtxt->inUse = true; srvCtxt->theServer = this;
+         theCluster->getUniqueServerContextID(serverContextName);
+         CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &srvCtxt->srvCtxt));
+         thelog->logg(4, "New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
       }
    }
-#pragma omp critical
-   srvCtxt = srvCtxts->createNext();
-   srvCtxt->inUse = true; srvCtxt->theServer = this;
-   theCluster->getUniqueServerContextID(serverContextName);
-   CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &srvCtxt->srvCtxt));
-   thelog->logg(4, "New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
-   omp_unset_lock(&srvCtxtLock);
    return srvCtxt;
 }
 /*==============================================================================================================================*/
