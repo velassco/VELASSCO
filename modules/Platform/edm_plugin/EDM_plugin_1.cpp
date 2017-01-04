@@ -1407,11 +1407,11 @@ EDMLONG VELaSSCoEDMplugin::GetListOfMeshes(Model *theModel, ModelType mt, nodeIn
 
 double maxZ = 0.0, maxX = 0.0;
 
-void calculateTheBox(fem::Mesh*mesh, double *return_bbox, int nOfVertices, EDMLONG *vertices, char **errmsgp)
+void calculateTheBox(fem::Mesh*mesh, double *return_bbox, int nOfVertices, EDMLONG *vertices, char **errmsgp, Model *theModel)
 {
    if (mesh) {
       if (nOfVertices == 0) {
-         Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
+         Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes_aggrId(), theModel);
          for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
             double x = n->get_x(), y = n->get_y(), z = n->get_z();
             if (x > return_bbox[max_X]) return_bbox[max_X] = x;
@@ -1474,14 +1474,8 @@ EDMLONG VELaSSCoEDMplugin::CalculateBoundingBox(Model *theModel, ModelType mt,
       } else {
          if (analysisID == NULL || *analysisID == 0) {
             Iterator<fem::Mesh*, fem::entityType> meshIter(theModel->getObjectSet(fem::et_Mesh), theModel);
-            if (meshIter.size() > 1) {
-               emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: More than one mesh in the specified model.";
-            } if (meshIter.size() == 0) {
-               emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: No mesh in the specified model.";
-            } else {
-               for (fem::Mesh *mesh = meshIter.first(); mesh; mesh = meshIter.next()) {
-                  calculateTheBox(mesh, return_bbox, nOfVertices, vertices, &emsg);
-               }
+            for (fem::Mesh *mesh = meshIter.first(); mesh; mesh = meshIter.next()) {
+               calculateTheBox(mesh, return_bbox, nOfVertices, vertices, &emsg, theModel);
             }
          } else {
             emsg = "Analysis with specified name not found.";
@@ -1496,25 +1490,7 @@ EDMLONG VELaSSCoEDMplugin::CalculateBoundingBox(Model *theModel, ModelType mt,
                   if (i < nOfTimeSteps) {
                      timeStepFound = true;
 
-                     calculateTheBox(ts->get_mesh(), return_bbox, nOfVertices, vertices, &emsg);
-                     //if (mesh) {
-                     //   if (nOfVertices == 0) {
-                     //      Iterator<fem::Node*, fem::entityType> nodeIter(mesh->get_nodes());
-                     //      for (fem::Node *n = nodeIter.first(); n; n = nodeIter.next()) {
-                     //         double x = n->get_x(), y = n->get_y(), z = n->get_z();
-                     //         if (x > return_bbox[max_X]) return_bbox[max_X] = x;
-                     //         if (x < return_bbox[min_X]) return_bbox[min_X] = x;
-                     //         if (y > return_bbox[max_Y]) return_bbox[max_Y] = y;
-                     //         if (y < return_bbox[min_Y]) return_bbox[min_Y] = y;
-                     //         if (z > return_bbox[max_Z]) return_bbox[max_Z] = z;
-                     //         if (z < return_bbox[min_Z]) return_bbox[min_Z] = z;
-                     //      }
-                     //   }
-                     //   retVal->return_bbox->putRealAggr(return_bbox, 6);
-                     //   emsg = NULL;
-                     //} else {
-                     //   emsg = "VELaSSCoEDMplugin::CalculateBoundingBox error: Mesh not found.";
-                     //}
+                     calculateTheBox(ts->get_mesh(), return_bbox, nOfVertices, vertices, &emsg, theModel);
                   }
                }
             }
