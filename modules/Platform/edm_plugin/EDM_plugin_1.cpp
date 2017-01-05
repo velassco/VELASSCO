@@ -382,6 +382,7 @@ EDMLONG VELaSSCoEDMplugin::GetResultAtPoints(Model *theModel, ModelType mt, node
          _return.__set_elements(boxSearch ? returnedElements_1 : returnedElements_2);
 
 
+
       } else {
          _return.__set_status("Error"); _return.__set_report("Model does not exist.");
       }
@@ -1660,7 +1661,7 @@ START_TRACE (fp, "plugin - 1, %s.%s - %s\n", repositoryName, modelName, methodNa
                char *file_name = inParams->attrPointerArr[i]->value.stringVal;tr;
                femInjector.injectorFileName = file_name;tr;
                if (strEQL(file_name, "SpeedTest")) {
-                  Sleep(10);
+                  sleep(10);
                } else {
                   femInjector.fp = fopen(file_name, "r"); femInjector.cLineno = 0;tr;
                   if (femInjector.fp) {
