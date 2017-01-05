@@ -1118,7 +1118,7 @@ START_TRACE printf("omp_get_max_threads()=%4d, omp_get_num_procs()=%4d\n", omp_g
 void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& analysisID, const double timeStep)
 /*=============================================================================================================================*/
 {
-   int startTime, endTime;
+   int startTime = GetTickCount(), endTime, t1, t2, t3;
    if (subQueries) {
       EDMULONG nOfSubdomains = subQueries->size();
       nodeInGetListOfMeshes *inParams = new(&ma)nodeInGetListOfMeshes(&ma, NULL);
@@ -1144,6 +1144,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          writeErrorMessageForSubQueries(errorMsg); rv.__set_status("Error"); rv.__set_report(errorMsg);
          return;
       }
+      t1 = GetTickCount();
       nodeRvGetListOfMeshes *retValueWithError = NULL;
       int tot_n_triangles = 0;
 
@@ -1163,6 +1164,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          vector<VELaSSCoSM::MeshInfo> meshInfos;
          Container<EDMVD::MeshInfoEDM> *aggregated_mesh_info = new(&ma)Container<EDMVD::MeshInfoEDM>(&ma);
 
+         t2 = GetTickCount();
          initQueues(); prev = NULL;
          for (int i = 0; i < nOfSubdomains; i++) {
             int meshNumber = 1;
@@ -1194,6 +1196,7 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
                aggrmi->nVertices += mi->nVertices;
             }
          }
+         t3 = GetTickCount();
          int meshNumber = 1;
          for (EDMVD::MeshInfoEDM *mi = aggregated_mesh_info->firstp(); mi; mi = aggregated_mesh_info->nextp()) {
             VELaSSCoSM::MeshInfo meshInfo;
@@ -1212,6 +1215,8 @@ void VELaSSCoMethods::GetListOfMeshes(rvGetListOfMeshes& rv, const std::string& 
          rv.__set_status("OK");
          rv.__set_meshInfos(meshInfos);
       }
+      endTime = GetTickCount();
+      thelog->logg(4, "VELaSSCoMethods::GetListOfMeshes - t1=%d, t2=%d, t3=%d, execution time=%d\n", t1 - startTime, t2 - startTime, t3 - startTime, endTime - startTime);
    }
 }
 /*=============================================================================================================================*/

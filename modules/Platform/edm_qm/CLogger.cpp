@@ -100,7 +100,7 @@ void CLogger::logg(EDMLONG nParams, const char *format, ...)
 void CLogger::trace(EDMLONG nParams, const char *format, ...)
 /*================================================================================================*/
 {
-   if (traceToLogg) {
+   /*if (traceToLogg) {
       char              *params[10];
       va_list           pList;
 
@@ -109,7 +109,7 @@ void CLogger::trace(EDMLONG nParams, const char *format, ...)
       for (int i = 0; i < nParams; i++) params[i] = va_arg(pList, char *);
       va_end(pList);
       logg(nParams, format, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9]);
-   }
+   }*/
 }
 /*================================================================================================*/
 void CLogger::fatalError(EDMLONG nParams, const char *format, ...)

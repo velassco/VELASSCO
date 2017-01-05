@@ -24,7 +24,7 @@ public:
    FILE                    *fp;
    CLogger(FILE *_fp, bool _logToStdout, bool _alwaysFlush, bool _traceToLogg = false) {
       fp = _fp; logToStdout = _logToStdout; alwaysFlush = _alwaysFlush; leftCol = "   ";
-      nErrors = 0; nWarnings = 0; traceToLogg = _traceToLogg;
+      nErrors = 0; nWarnings = 0; traceToLogg = false;
    }
    ~CLogger() { if (fp) fclose(fp); }
    void                   trace(EDMLONG nParams, const char *format, ...);

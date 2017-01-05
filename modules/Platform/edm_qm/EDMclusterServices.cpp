@@ -429,7 +429,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
             char modelName[2048];
             int nOfJobs = 0;
 
-            thelog->logg(1, "nOfEDMmodels=%llu\n", nOfEDMmodels);
+            thelog->trace(1, "nOfEDMmodels=%llu\n", nOfEDMmodels);
 
             for (EDMLONG i = 0; i < nOfEDMmodels; i++) {
 
@@ -438,7 +438,7 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                   EDMServer *srv = theServer->getEDMServer(m);
                   EDMserverInfo *srvInf = theServer->findServerInfo(srv);
                   if (! srvInf) {
-                     thelog->logg(1, "Unkown server reference in model %s\n", m->exists_name() ? m->get_name() : "");
+                     thelog->trace(1, "Unkown server reference in model %s\n", m->exists_name() ? m->get_name() : "");
                   }
                   EDMexecutionQueue *jobsOnNode;
                   for (jobsOnNode = queryQueuesOnMachines->first(); jobsOnNode; jobsOnNode = queryQueuesOnMachines->next()) {
@@ -454,20 +454,20 @@ bool EDMclusterExecution::OpenClusterModelAndPrepareExecution(SdaiModel modelID,
                   char *cModelName = m->get_name();
                   if (ModelNameFormat) {
                      sprintf(modelName, ModelNameFormat, nextModelNo);
-                     thelog->logg(4, "ModelName: %s - %s, %llu, %d\n", cModelName, modelName, i, nextModelNo);
+                     thelog->trace(4, "ModelName: %s - %s, %llu, %d\n", cModelName, modelName, i, nextModelNo);
                      if (strEQL(modelName, cModelName)) {
                         exp = jobsOnNode->theJobs->createNext(); exp->modelName = cModelName;
                         exp->modelNumber = nextModelNo;  nextModelNo++;
                         exp->myQueue = jobsOnNode;
                      } else if (thelog) {
-                        thelog->logg(2, "Error in ModelNameFormat: %s - %s\n", modelName, cModelName);
+                        thelog->trace(2, "Error in ModelNameFormat: %s - %s\n", modelName, cModelName);
                      }
                   } else {
                      exp = jobsOnNode->theJobs->createNext(); exp->modelName = cModelName;
                      exp->myQueue = jobsOnNode;
                   }
                   if (exp) {
-                     thelog->logg(1, "cModelName=%s\n", cModelName);
+                     thelog->trace(1, "cModelName=%s\n", cModelName);
 
                      ecl::EDMrepository *r = m->get_repository();
                      exp->repositoryName = r ? r->get_name() : (char*)"";
@@ -550,7 +550,7 @@ EDMserverContext *EDMserverInfo::getSrvCtxt(char *user, char *group, char *passw
          srvCtxt->inUse = true; srvCtxt->theServer = this;
          theCluster->getUniqueServerContextID(serverContextName);
          CHECK(edmiDefineServerContext(serverContextName, user, group, password, "TCP", port, host, NULL, NULL, NULL, NULL, NULL, &srvCtxt->srvCtxt));
-         thelog->logg(4, "New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
+         thelog->trace(4, "New server context %s - %llu created for %s:%s\n", serverContextName, srvCtxt->srvCtxt, host, port);
       }
    }
    return srvCtxt;
