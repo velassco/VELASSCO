@@ -651,13 +651,31 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 							     const double stepValue,
 							     const std::string& analysisID,
 							     const double* bBox, // ix doubles: min(x,y,z)-max(x,y,z)
-							     const double tolerance, // Use ptr to allow NULL?
-							     const int numSteps, // Use ptr to allow NULL?
+							     double tolerance, // Use ptr to allow NULL?
+							     int numSteps, // Use ptr to allow NULL?
 							     /* out */
 							     std::string *return_binary_volume_lrspline,
 							     std::string *result_statistics, // JSON format?
 							     std::string *return_error_str)
 {
+  // We make sure that the number of iteration levels are within the valid range.
+  // The method in the analytics module will perform the same check, but since
+  // the metadata will be stored along with the result we do the checking here.
+  const int default_num_steps = 6;
+  const int max_num_steps = 8;
+  if (numSteps <= 0) {
+    numSteps = default_num_steps;
+  } else if (numSteps > max_num_steps) {
+    numSteps = max_num_steps;
+  }
+  // For negative and zero tolerance we store it as -1.0. All those values implies that the method
+  // chooses the tolerance, no need to store the results separately.
+  if ((tolerance < 0) && (tolerance != -1.0)) {
+    tolerance = -1.0;
+  }
+  if (tolerance == 0.0) {
+    tolerance = -1.0;
+  }
 
   _db->getStoredVolumeLRSpline( sessionID, modelID, meshID, resultID, stepValue,
 				analysisID, bBox, tolerance, numSteps,
@@ -668,7 +686,10 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
   if (return_error_str->length() != 0) {
     // This means that the result has not been computed before.
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": Failed to get stored volume lr spline: " << return_error_str);
+	  ": The volume lr spline is not already stored, must be compouted: " << return_error_str);
+  } else {
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": The volume lr spline was already stored, returning.");
   }
 
   if ( return_binary_volume_lrspline->length() == 0) { // nothing found
@@ -693,7 +714,7 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
 	    ": Did not enter the Analytics module!");
     }
 
-    bool store_in_hbase = false;
+    bool store_in_hbase = true;//false;
     if (store_in_hbase && (return_binary_volume_lrspline->length() != 0)) {
       DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	    ": We appear to have received a non-empty binary blob! Success for this function call at least!");

@@ -1215,7 +1215,7 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   }
 
   double tolerance = -1.0;//0.5;  // A negative value means that the method calculates a suitable tolerance.
-  int numSteps = 5; // 8 the default value. Valid range: {1, 2, ..., 8}. If above it is set to 8.
+  int numSteps = 2; // 8 the default value. Valid range: {1, 2, ..., 9}. If above it is set to 9.
                     // A negative value means that the method selects num_steps.
   // The result arguments.
   const char*    resultBinaryLRSpline = NULL;
@@ -1225,6 +1225,30 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   const char*    resultErrorStr = NULL;
   std::cout << "doTestSINTEF(): Calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
   const char* meshID = "Kratos Tetrahedra3D4 Mesh";
+
+  bool delete_results = false;
+  if (delete_results) {
+    std::vector<int> result_num_steps;
+    for (size_t ki = 0; ki < 9; ++ki) {
+      result_num_steps.push_back(ki);
+    }
+    for (size_t ki = 0; ki < result_num_steps.size(); ++ki) {
+      result = valDeleteVolumeLRSplineFromBoundingBox( sessionID,
+						       opened_modelID.c_str(), // The already opened model.
+						       meshID, // "Kratos Tetrahedra3D4 Mesh" for the Telescope example.
+						       resultID, // "VELOCITY" for the Telescope example.
+						       step_value, // Using the last timestep.
+						       analysisID.c_str(), // "Kratos" for the Telescope example.
+						       bBox, // Of the static mesh (possibly a subset).
+						       tolerance, // Positive value w/conv '< 0.0' => method chooses.
+						       result_num_steps[ki], // Legal values: {0,1,2, ...,8}
+						       &resultErrorStr);
+      std::cout << "doTestSINTEF(): Done calling valDeleteVolumeLRSplineFromBoundingBox()." << std::endl;
+      std::cout << "doTestSINTEF(): result: " << result << std::endl;
+      CheckVALResult(result, getStringFromCharPointers( "valDeleteVolumeLRSplineFromBoundingBox ", resultErrorStr));
+    }
+  }
+
   result = valGetVolumeLRSplineFromBoundingBox( sessionID,
 						opened_modelID.c_str(), // The already opened model.
 						meshID, // "Kratos Tetrahedra3D4 Mesh" for the Telescope example.
@@ -1233,7 +1257,7 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
 						analysisID.c_str(), // "Kratos" for the Telescope example.
 						bBox, // Of the static mesh (possibly a subset).
 						tolerance, // Positive value (< 0.0 => method chooses).
-						numSteps, // Legal values: {1, 2, ..., 8} (< 0 => method chooses).
+						numSteps, // Legal values: {1, 2, ..., 9} (< 0 => method chooses).
 						&resultBinaryLRSpline,
 						&resultBinaryLRSplineSize,
 						&resultStatistics,
@@ -1305,13 +1329,17 @@ int main(int argc, char* argv[])
 
   printf( "Connecting to '%s' ...\n", hostname_port);
 
+  //  std::cout << "Calling valUserLogin():" << std::endl;
   result = valUserLogin( hostname_port, "andreas", "1234", &sessionID);
   CheckVALResult(result, "valUserLogin");
+  //  std::cout << "Done calling valUserLogin():" << std::endl;
 
   //// Test StatusDB
 
+  //  std::cout << "Calling valGetStatusDB():" << std::endl;
   result = valGetStatusDB( sessionID, &status);
   CheckVALResult(result, getStringFromCharPointers( "valGetStatusDB ", status));
+  //  std::cout << "Done calling valGetStatusDB():" << std::endl;
   std::cout << "status = " << status << std::endl;
 
   //

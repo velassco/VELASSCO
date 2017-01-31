@@ -215,8 +215,8 @@ public:
 					      const double stepValue,
 					      const std::string& analysisID,
 					      const double* bBox, // ix doubles: min(x,y,z)-max(x,y,z)
-					      const double tolerance, // Use ptr to allow NULL?
-					      const int numSteps, // Use ptr to allow NULL?
+					      double tolerance, // Use ptr to allow NULL?
+					      int numSteps, // Use ptr to allow NULL?
 					   /* out */
 					      std::string *return_volume_lrspline,
 					      std::string *result_statistics, // JSON format?
