@@ -1,11 +1,11 @@
-# this makefile compiles:
+#this makefile compiles:
 # using cmake:
 #   AccessLib/AccessLib
 #   AccessLib/Test
 # using Makefile
 #   Platform
 
-MODULE_HOME = $(HOME)/velassco/svn-fraunhoffer/VELASSCO/trunk/modules
+MODULE_HOME = /local/FRAUNHOFER/svn-fraunhofer/VELASSCO/modules
 
 ACCESS_BUILD = $(MODULE_HOME)/AccessLib/build
 ACCESS_BUILD_OK = AccessLib/libAccessLib.a Test/Test_Client Test/Test_Server

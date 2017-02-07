@@ -133,6 +133,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageDeleteSimplifiedMeshWithResult( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetVolumeLRSplineFromBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageDeleteVolumeLRSplineFromBoundingBox( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageDoStreamlinesWithResult( Query_Result &_return, const SessionID sessionID, const std::string& query);
 
   void ManageDeleteAllCalculationsForThisModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
 

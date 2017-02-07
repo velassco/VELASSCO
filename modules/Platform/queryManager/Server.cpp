@@ -147,6 +147,8 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
     ManageGetVolumeLRSplineFromBoundingBox( _return, sessionID, query);
   } else if ( name == "DeleteVolumeLRSplineFromBoundingBox") {
     ManageDeleteVolumeLRSplineFromBoundingBox( _return, sessionID, query);
+  } else if ( name == "DoStreamlinesWithResults" ) {
+    ManageDoStreamlinesWithResult( _return, sessionID, query );
   } else {
     _return.__set_result( (Result::type)VAL_INVALID_QUERY );
     

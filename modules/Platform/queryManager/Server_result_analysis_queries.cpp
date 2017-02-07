@@ -27,6 +27,10 @@
 // AccessLib.h is only used for the return codes ( enum values)
 #include "../../AccessLib/AccessLib/AccessLib.h"
 #include "Helpers.h"
+#include "../analytics/streamlineUtils/VELaSSCo_Data.h"
+#include "../analytics/streamlineUtils/StreamTracer.h"
+#include "../analytics/streamlineUtils/Streamline.h"
+#include "../analytics/streamlineUtils/UnstructDataset.h"
 
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
@@ -1100,4 +1104,198 @@ void QueryManagerServer::ManageDeleteVolumeLRSplineFromBoundingBox( Query_Result
     LOGGER << "  error  : \n" << _return.data << std::endl;
   }
 
+}
+
+void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // double bbox[ 6] = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5};
+  // _return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+  // _return.__set_result( (Result::type)VAL_SUCCESS );
+
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  // get parameters:
+  std::string modelID               = pt.get<std::string>( "modelID");
+  std::string analysisID            = pt.get<std::string>( "analysisID");
+  double      timeStep              = pt.get<double>( "stepValue");
+  std::string resultID              = pt.get<std::string>( "resultID");
+  int64_t     numSeedingPoints      = pt.get<int64_t>( "numSeedingPoints");
+  std::string seedingPointsStr      = pt.get<std::string>( "seedingPoints");
+  std::string integrationMethod     = pt.get<std::string>( "integrationMethod");
+  double      maxStreamlinesLength  = pt.get<double>( "maxStreamLineLength");
+  std::string tracingDirection      = pt.get<std::string>( "tracingDirection");
+  std::string adaptiveStepping      = pt.get<std::string>( "adaptiveStepping");
+  
+  std::string dl_sessionID = GetDataLayerSessionID( sessionID);
+
+  std::string seedingPointsData = base64_decode( seedingPointsStr);
+  size_t seedingPointsCount = seedingPointsData.length() / sizeof( double);
+  double *lst_seedingPoints = ( double*)seedingPointsData.data();
+  //std::vector<glm:> listOfVertices( lst_vertexIDs, lst_vertexIDs + num_vertexIDs);
+  
+
+  std::cout << "S       " << sessionID        << std::endl;
+  std::cout << "dlS     " << dl_sessionID     << std::endl;
+  std::cout << "M      -" << modelID          << "-" << std::endl;
+  std::cout << "anlID  -" << analysisID       << "-" << std::endl;
+  std::cout << "stpVal -" << timeStep         << "-" << std::endl;
+  std::cout << "Rid    -" << resultID         << "-" << std::endl;
+  std::cout << "nSPs   -" << numSeedingPoints << "-" << std::endl;
+  std::cout << "intMet -" << integrationMethod << "-" << std::endl;
+  std::cout << "maxLen -" << maxStreamlinesLength << "-" << std::endl;
+  std::cout << "tDir   -" << tracingDirection       << "-" << std::endl;
+  std::cout << "adStp  -" << adaptiveStepping       << "-" << std::endl;
+
+  std::cout << "SPnts  -\n";
+  for(size_t i = 0; i < 10; i++){
+    std::cout << lst_seedingPoints[i] << " ";
+    if(i % 3 == 2) std::cout << std::endl;
+  }
+  std::cout << "\n\n";
+
+  std::string error_str;
+  //std::cout << "looking for the Mesh " << meshName << " in order to get it's id" << std::endl;
+	  rvGetListOfMeshes _return_;
+	  queryServer->getListOfMeshes( _return_, dl_sessionID, modelID, "", 0.0);
+	  MeshInfo meshInfo;
+	  meshInfo.meshNumber = -1;      //<<< To mark the meshInfo as non-initalized.
+	  std::string elementType = "";
+	  if ( _return_.meshInfos.size() == 0) {
+		_return.__set_result( (Result::type)VAL_NO_MESH_INFORMATION_FOUND);
+		error_str = "There is no mesh metadata.";
+	  } else {
+      std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+      meshInfo = *it;
+		  /*for ( std::vector< MeshInfo>::iterator it = _return_.meshInfos.begin();
+			  it != _return_.meshInfos.end(); it++) {
+		      if ( AreEqualNoCase( it->name, meshName)) {
+			      meshInfo = (*it);
+			      break;
+		      }
+		    }
+		  if ( meshInfo.meshNumber == -1 ) { // not found
+		    error_str = "Mesh name " + meshName + " not in metadata.";
+		    std::cout << error_str << std::endl;
+		  }*/
+  }
+  std::cout << meshInfo.name << " is picked.\n";
+
+
+  try {
+
+   // struct Vertex {
+   //   1: NodeID                              id
+   //   2: double                              x
+   //   3: double                              y
+   //   4: double                              z
+   // }
+
+   std::vector<VELASSCO::Coord>    coords;
+   std::vector<VELASSCO::Vector3D> results;
+   std::vector<VELASSCO::Cell>     cells;
+
+   // struct rvGetListOfVerticesFromMesh {
+   //   1: string            status
+   //   2: string            report
+   //   3: list<Vertex>      vertex_list
+   // }
+    rvGetListOfVerticesFromMesh return_vertices;
+		queryServer->getListOfVerticesFromMesh( return_vertices, dl_sessionID, modelID , "" , 0.0, meshInfo.meshNumber );
+
+    std::vector<int64_t> vertexIDs(return_vertices.vertex_list.size());
+    coords.resize(return_vertices.vertex_list.size());
+    for(int64_t i = 0; i < static_cast<int64_t>(return_vertices.vertex_list.size()); i++){
+      coords[i].idx = return_vertices.vertex_list[i].id;
+      coords[i].coord[0] = return_vertices.vertex_list[i].x;
+      coords[i].coord[1] = return_vertices.vertex_list[i].y;
+      coords[i].coord[2] = return_vertices.vertex_list[i].z;
+      vertexIDs[i] = return_vertices.vertex_list[i].id;
+    }
+
+    // struct rvGetCoordinatesAndElementsFromMesh {
+    //   1: string status
+    //   2: string report
+    //   3: list<Vertex>        vertex_list			// not used.
+    //   4: list<Element>       element_list
+    //   5: list<ElementAttrib> element_attrib_list
+    //   6: list<ElementGroup>  element_group_info_list
+    // }
+    rvGetCoordinatesAndElementsFromMesh _return_;
+		queryServer->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,"" , 0.0, meshInfo );
+    
+    // struct Element {
+    // 1: i64                                   id
+    // 2: list<NodeID>                          nodes_ids
+    cells.resize(_return_.element_list.size());
+    for(size_t cellID = 0; cellID <= _return_.element_list.size(); cellID++){
+      for(size_t n = 0; n < _return_.element_list[cellID].nodes_ids.size(); n++){
+        cells[cellID].cornerIndices.push_back(_return_.element_list[cellID].nodes_ids[n]);
+      }
+    }
+
+    // struct ResultOnVertex {
+    //   1: i64                                  id
+    //   2: list<double>                         value
+    //   3: binary                               bvalue
+    // }
+    std::string result_report;
+    //std::vector<ResultOnVertex> resultOnVertices;
+    rvGetResultFromVerticesID _return_results;
+    queryServer->getResultFromVerticesID(_return_results, dl_sessionID, modelID, analysisID, timeStep, resultID, vertexIDs);
+    results.resize(_return_results.result_list.size());
+    for(size_t r = 0; r < _return_results.result_list.size(); r++){
+      size_t c = 0;
+      results[r].idx = _return_results.result_list[r].id;
+      for(; c < _return_results.result_list[r].value.size(); c++){
+         results[r].vector[c] = _return_results.result_list[r].value[c];
+      }
+      for(; c < 3; c++){
+        results[r].vector[c] = 0.0;
+      }
+    }
+
+    std::vector<Streamline> streamlines;
+
+    //min[0] = 8299.381836; min[1] = 1820.557739; min[2] = 1515.308228;
+    //max[0] = 9510.443359; max[1] = 2990.546631; max[2] = 2700.0d;
+    streamlines.push_back(Streamline(glm::dvec3(8350.0, 2900.0, 2500.0)));
+
+    UnstructDataset dataset;
+
+    dataset.reset(coords, results, cells);
+
+    StreamTracer tracer;
+    tracer.traceStreamline(&dataset, streamlines, 0.001);
+
+    //AnalyticsModule::getInstance()->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+    //queryServer->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
+				       // analysisID, numSteps, lstSteps,
+		//		       "", 0, NULL,
+				       // numVertexIDs, lstVertexIDs,
+		//		       0, NULL,
+		//		       &bbox[ 0], &error_str);
+    // GraphicsModule *graphics = GraphicsModule::getInstance();
+    // just to link to the GraphicsModule;
+  } catch ( TException &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
+  } catch ( exception &e) {
+    std::cout << "EXCEPTION CATCH_ERROR 2: " << e.what() << std::endl;
+  }
+
+  
+  if ( error_str.length() == 0) {
+    //_return.__set_result( (Result::type)VAL_SUCCESS );
+    //_return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+  } else {
+    _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
+    _return.__set_data( error_str);
+  }
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  // LOGGER << "  data   : \n" << Hexdump(_return.data) << std::endl;
+  LOGGER << "  data   : \n" << Hexdump( _return.data, 128) << std::endl;
 }
