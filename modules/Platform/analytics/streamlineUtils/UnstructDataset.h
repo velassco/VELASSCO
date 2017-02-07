@@ -50,5 +50,4 @@ private:
   std::vector<glm::i64> m_cellPoints;
   std::vector<glm::i64> m_cellPointsBegIndices;
 };
-
 #endif

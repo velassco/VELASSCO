@@ -107,5 +107,4 @@ private:
 	double m_sum_lines_per_second;
 };
 
-
 #endif
