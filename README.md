@@ -2,7 +2,7 @@
 
 http://www.velassco.eu
 
-velassco EC funded platform implementation.
+VELaSSCo EC funded platform implementation.
 
 | Module | Owner | Proposed license |
 | ------ |:-----:|:----------------:|
