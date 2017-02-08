@@ -223,6 +223,9 @@ void UnstructDataset::computeAccel(AccelStructType accel_type)
   //  static_cast<KDTree*>(m_sceneAccel)->init(1, 1, 0.3f, 10);
   }
 
+  std::cout << "Number of Cells  = " << m_cellBoxes.size() << std::endl;
+  std::cout << "Number of Points = " << m_points.size()    << std::endl;
+
   m_sceneAccel->build(m_cellBoxes, m_cellPoints, m_cellPointsBegIndices);
   m_sceneAccel->showAccelInfo();
 
@@ -264,8 +267,8 @@ bool UnstructDataset::insideCell(glm::i64 cellIndex, const glm::dvec3& point) co
     barycoords[3] = 1.0f - barycoords[0] - barycoords[1] - barycoords[2];
 
     // if the point is in the tetrahedron
-    if (barycoords[0] < 0.0f || barycoords[1] < 0.0f || barycoords[2] < 0.0f || barycoords[3] < 0.0f)
-        return false;
+    //if (barycoords[0] < 0.0f || barycoords[1] < 0.0f || barycoords[2] < 0.0f || barycoords[3] < 0.0f)
+     //   return false;
 
 		return true;
 
@@ -344,6 +347,74 @@ void UnstructDataset::resetPerformanceStats() {
 
 void UnstructDataset::showPerformanceStats() {
   m_sceneAccel->showPerformanceStats();
+}
+
+bool UnstructDataset::loadBinary(std::string filename)
+{
+    std::ifstream in(filename.c_str(), std::ios_base::binary);
+
+    if (in)
+    {
+        std::cout << "loadBinary: loading " << filename << std::endl;
+
+        size_t cellBoxesNumber;
+        size_t pointsNumber;
+        size_t cellPointsNumber;
+        size_t cellPointsBegIndicesNumber;
+        size_t pointVectorsNumber;
+
+
+        in >> cellBoxesNumber >> std::ws;
+        in >> pointsNumber >> std::ws;
+        in >> cellPointsNumber >> std::ws;
+        in >> cellPointsBegIndicesNumber >> std::ws;
+        in >> pointVectorsNumber >> std::ws;
+
+        m_cellBoxes.resize(cellBoxesNumber);
+        m_points.resize(pointsNumber);
+        m_cellPoints.resize(cellPointsNumber);
+        m_cellPointsBegIndices.resize(cellPointsBegIndicesNumber);
+        m_pointVectors.resize(pointVectorsNumber);
+
+        in.read((char*)(&m_cellBoxes[0]), sizeof(AABB)*cellBoxesNumber);
+        in.read((char*)(&m_points[0]), sizeof(glm::vec3)*pointsNumber);
+        in.read((char*)(&m_cellPoints[0]), sizeof(glm::u32)*cellPointsNumber);
+        in.read((char*)(&m_cellPointsBegIndices[0]), sizeof(glm::u32)*cellPointsBegIndicesNumber);
+        in.read((char*)(&m_pointVectors[0]), sizeof(glm::vec3)*pointVectorsNumber);
+    }
+
+    return !!in;
+}
+
+bool UnstructDataset::saveBinary(std::string filename)
+{
+    std::ofstream out(filename.c_str(), std::ios_base::binary);
+
+    if (out)
+    {
+        std::cout << "saveBinary: saving " << filename << std::endl;
+
+        size_t cellBoxesNumber = m_cellBoxes.size();
+        size_t pointsNumber = m_points.size();
+        size_t cellPointsNumber = m_cellPoints.size();
+        size_t cellPointsBegIndicesNumber = m_cellPointsBegIndices.size();
+        size_t pointVectorsNumber = m_pointVectors.size();
+
+        out << cellBoxesNumber << std::endl;
+        out << pointsNumber << std::endl;
+        out << cellPointsNumber << std::endl;
+        out << cellPointsBegIndicesNumber << std::endl;
+        out << pointVectorsNumber << std::endl;
+
+
+        out.write((char*)(&m_cellBoxes[0]), sizeof(AABB)*cellBoxesNumber);
+        out.write((char*)(&m_points[0]), sizeof(glm::vec3)*pointsNumber);
+        out.write((char*)(&m_cellPoints[0]), sizeof(glm::u32)*cellPointsNumber);
+        out.write((char*)(&m_cellPointsBegIndices[0]), sizeof(glm::u32)*cellPointsBegIndicesNumber);
+        out.write((char*)(&m_pointVectors[0]), sizeof(glm::vec3)*pointVectorsNumber);
+    }
+
+    return !!out;
 }
 
 //bool UnstructDataset::seedIsValid(glm::dvec3 seed) {

@@ -16,6 +16,14 @@ public:
 
   glm::i64 getNumberOfIntegratedSteps() const;
 
+  const std::vector<glm::dvec3>& points() const {
+    return m_points;
+  }
+
+  const std::vector<glm::dvec3>& results() const {
+    return m_results;
+  }
+
 private:
   std::vector<glm::dvec3> m_points;
   std::vector<glm::dvec3> m_results;

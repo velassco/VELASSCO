@@ -1132,7 +1132,7 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
 
   std::string seedingPointsData = base64_decode( seedingPointsStr);
   size_t seedingPointsCount = seedingPointsData.length() / sizeof( double);
-  double *lst_seedingPoints = ( double*)seedingPointsData.data();
+  double *lstSeedingPoints = ( double*)seedingPointsData.data();
   //std::vector<glm:> listOfVertices( lst_vertexIDs, lst_vertexIDs + num_vertexIDs);
   
 
@@ -1150,7 +1150,7 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
 
   std::cout << "SPnts  -\n";
   for(size_t i = 0; i < 10; i++){
-    std::cout << lst_seedingPoints[i] << " ";
+    std::cout << lstSeedingPoints[i] << " ";
     if(i % 3 == 2) std::cout << std::endl;
   }
   std::cout << "\n\n";
@@ -1182,102 +1182,152 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
   }
   std::cout << meshInfo.name << " is picked.\n";
 
-
+  std::ostringstream oss;
   try {
 
-   // struct Vertex {
-   //   1: NodeID                              id
-   //   2: double                              x
-   //   3: double                              y
-   //   4: double                              z
-   // }
-
-   std::vector<VELASSCO::Coord>    coords;
-   std::vector<VELASSCO::Vector3D> results;
-   std::vector<VELASSCO::Cell>     cells;
-
-   // struct rvGetListOfVerticesFromMesh {
-   //   1: string            status
-   //   2: string            report
-   //   3: list<Vertex>      vertex_list
-   // }
-    rvGetListOfVerticesFromMesh return_vertices;
-		queryServer->getListOfVerticesFromMesh( return_vertices, dl_sessionID, modelID , "" , 0.0, meshInfo.meshNumber );
-
-    std::vector<int64_t> vertexIDs(return_vertices.vertex_list.size());
-    coords.resize(return_vertices.vertex_list.size());
-    for(int64_t i = 0; i < static_cast<int64_t>(return_vertices.vertex_list.size()); i++){
-      coords[i].idx = return_vertices.vertex_list[i].id;
-      coords[i].coord[0] = return_vertices.vertex_list[i].x;
-      coords[i].coord[1] = return_vertices.vertex_list[i].y;
-      coords[i].coord[2] = return_vertices.vertex_list[i].z;
-      vertexIDs[i] = return_vertices.vertex_list[i].id;
-    }
-
-    // struct rvGetCoordinatesAndElementsFromMesh {
-    //   1: string status
-    //   2: string report
-    //   3: list<Vertex>        vertex_list			// not used.
-    //   4: list<Element>       element_list
-    //   5: list<ElementAttrib> element_attrib_list
-    //   6: list<ElementGroup>  element_group_info_list
-    // }
-    rvGetCoordinatesAndElementsFromMesh _return_;
-		queryServer->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,"" , 0.0, meshInfo );
-    
-    // struct Element {
-    // 1: i64                                   id
-    // 2: list<NodeID>                          nodes_ids
-    cells.resize(_return_.element_list.size());
-    for(size_t cellID = 0; cellID <= _return_.element_list.size(); cellID++){
-      for(size_t n = 0; n < _return_.element_list[cellID].nodes_ids.size(); n++){
-        cells[cellID].cornerIndices.push_back(_return_.element_list[cellID].nodes_ids[n]);
-      }
-    }
-
-    // struct ResultOnVertex {
-    //   1: i64                                  id
-    //   2: list<double>                         value
-    //   3: binary                               bvalue
-    // }
-    std::string result_report;
-    //std::vector<ResultOnVertex> resultOnVertices;
-    rvGetResultFromVerticesID _return_results;
-    queryServer->getResultFromVerticesID(_return_results, dl_sessionID, modelID, analysisID, timeStep, resultID, vertexIDs);
-    results.resize(_return_results.result_list.size());
-    for(size_t r = 0; r < _return_results.result_list.size(); r++){
-      size_t c = 0;
-      results[r].idx = _return_results.result_list[r].id;
-      for(; c < _return_results.result_list[r].value.size(); c++){
-         results[r].vector[c] = _return_results.result_list[r].value[c];
-      }
-      for(; c < 3; c++){
-        results[r].vector[c] = 0.0;
-      }
-    }
-
+    UnstructDataset dataset;
     std::vector<Streamline> streamlines;
 
-    //min[0] = 8299.381836; min[1] = 1820.557739; min[2] = 1515.308228;
-    //max[0] = 9510.443359; max[1] = 2990.546631; max[2] = 2700.0d;
-    streamlines.push_back(Streamline(glm::dvec3(8350.0, 2900.0, 2500.0)));
+    if(!dataset.loadBinary("/local/FRAUNHOFER/"+meshInfo.name+".bin")){
+    // struct Vertex {
+    //   1: NodeID                              id
+    //   2: double                              x
+    //   3: double                              y
+    //   4: double                              z
+    // }
+  #if 1
+    std::vector<VELASSCO::Coord>    coords;
+    std::vector<VELASSCO::Vector3D> results;
+    std::vector<VELASSCO::Cell>     cells;
 
-    UnstructDataset dataset;
+    // struct rvGetListOfVerticesFromMesh {
+    //   1: string            status
+    //   2: string            report
+    //   3: list<Vertex>      vertex_list
+    // }
+      rvGetListOfVerticesFromMesh return_vertices;
+      queryServer->getListOfVerticesFromMesh( return_vertices, dl_sessionID, modelID , "" , 0.0, meshInfo.meshNumber );
 
-    dataset.reset(coords, results, cells);
+      std::vector<int64_t> vertexIDs(return_vertices.vertex_list.size());
+      coords.resize(return_vertices.vertex_list.size());
+      for(int64_t i = 0; i < static_cast<int64_t>(return_vertices.vertex_list.size()); i++){
+        coords[i].idx = return_vertices.vertex_list[i].id;
+        coords[i].coord[0] = return_vertices.vertex_list[i].x;
+        coords[i].coord[1] = return_vertices.vertex_list[i].y;
+        coords[i].coord[2] = return_vertices.vertex_list[i].z;
+        vertexIDs[i] = return_vertices.vertex_list[i].id;
+      }
 
+      // struct rvGetCoordinatesAndElementsFromMesh {
+      //   1: string status
+      //   2: string report
+      //   3: list<Vertex>        vertex_list			// not used.
+      //   4: list<Element>       element_list
+      //   5: list<ElementAttrib> element_attrib_list
+      //   6: list<ElementGroup>  element_group_info_list
+      // }
+      rvGetCoordinatesAndElementsFromMesh _return_;
+      queryServer->getCoordinatesAndElementsFromMesh( _return_, dl_sessionID, modelID ,"" , 0.0, meshInfo );
+      
+      // struct Element {
+      // 1: i64                                   id
+      // 2: list<NodeID>                          nodes_ids
+      cells.resize(_return_.element_list.size());
+      for(size_t cellID = 0; cellID <= _return_.element_list.size(); cellID++){
+        for(size_t n = 0; n < _return_.element_list[cellID].nodes_ids.size(); n++){
+          cells[cellID].cornerIndices.push_back(_return_.element_list[cellID].nodes_ids[n]);
+        }
+      }
+
+      // struct ResultOnVertex {
+      //   1: i64                                  id
+      //   2: list<double>                         value
+      //   3: binary                               bvalue
+      // }
+      std::string result_report;
+      //std::vector<ResultOnVertex> resultOnVertices;
+      rvGetResultFromVerticesID _return_results;
+      queryServer->getResultFromVerticesID(_return_results, dl_sessionID, modelID, analysisID, timeStep, resultID, vertexIDs);
+      results.resize(_return_results.result_list.size());
+      for(size_t r = 0; r < _return_results.result_list.size(); r++){
+        size_t c = 0;
+        results[r].idx = _return_results.result_list[r].id;
+        for(; c < _return_results.result_list[r].value.size(); c++){
+          results[r].vector[c] = _return_results.result_list[r].value[c];
+        }
+        for(; c < 3; c++){
+          results[r].vector[c] = 0.0;
+        }
+      }
+
+  #if 1
+      for(int64_t i = 0; i < numSeedingPoints; i++){
+        streamlines.push_back(Streamline(glm::dvec3(lstSeedingPoints[3 * i + 0], lstSeedingPoints[3 * i + 1], lstSeedingPoints[3 * i + 2])));
+      }
+  #else
+      //min[0] = 8299.381836; min[1] = 1820.557739; min[2] = 1515.308228;
+      //max[0] = 9510.443359; max[1] = 2990.546631; max[2] = 2700.0d;
+      streamlines.push_back(Streamline(glm::dvec3(8350.0, 2900.0, 2500.0)));
+  #endif
+
+      dataset.reset(coords, results, cells);
+
+      dataset.saveBinary("/local/FRAUNHOFER/"+meshInfo.name+".bin");
+    } else  {
+      dataset.computeAccel();
+    }
     StreamTracer tracer;
-    tracer.traceStreamline(&dataset, streamlines, 0.001);
+    SurfaceParameters params;
+    params.traceDirection         = TraceDirection::TD_BOTH;
+    params.traceIntegrationMethod = IntegrationMethod::IM_EULER;
+    params.traceStepSize          = 0.1;
+    params.traceMaxSteps          = 100;
+    params.doStepAdaptation       = false;
 
-    //AnalyticsModule::getInstance()->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
-    //queryServer->calculateBoundingBox( GetQueryManagerSessionID( sessionID), modelID,
-				       // analysisID, numSteps, lstSteps,
-		//		       "", 0, NULL,
-				       // numVertexIDs, lstVertexIDs,
-		//		       0, NULL,
-		//		       &bbox[ 0], &error_str);
-    // GraphicsModule *graphics = GraphicsModule::getInstance();
-    // just to link to the GraphicsModule;
+    tracer.setParameters(params);
+    tracer.traceStreamline(&dataset, streamlines, 0.1);
+
+    const std::vector<glm::dvec3>& retPoints  = streamlines[0].points();
+    const std::vector<glm::dvec3>& retResults = streamlines[0].results();
+    for(size_t i = 0; i < retPoints.size(); i++){
+      std::cout << retPoints[i].x << " " << retPoints[i].y << " " << retPoints[i].z << std::endl;
+      std::cout << retResults[i].x << " " << retResults[i].y << " " << retResults[i].z << std::endl;
+    }
+#else
+    for(int s = 0; s < 10; s++){
+      streamlines.push_back(Streamline(glm::dvec3(0.0)));
+      int randLen = rand() % 100000;
+      for(int i = 0; i < randLen; i++){
+        glm::dvec3 p, r;
+        p.x = (rand() % 1000) / 1000.0;
+        p.y = (rand() % 1000) / 1000.0;
+        p.z = (rand() % 1000) / 1000.0;
+
+        r.x = (rand() % 1000) / 1000.0;
+        r.y = (rand() % 1000) / 1000.0;
+        r.z = (rand() % 1000) / 1000.0;
+
+        streamlines[s].addFrontPoint(p, r);
+      }
+    }
+#endif
+    size_t nRetStreamlines = streamlines.size();
+    oss.write((char*)&nRetStreamlines, sizeof(size_t));
+    for(size_t i = 0; i < streamlines.size(); i++){
+       size_t streamlineLen = streamlines[i].points().size();
+       oss.write((char*)&streamlineLen, sizeof(size_t));
+    }
+
+    for(size_t i = 0; i < streamlines.size(); i++){
+      const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
+      oss.write((char*)retPoints.data(), retPoints.size() * sizeof(glm::dvec3));
+    }
+
+    for(size_t i = 0; i < streamlines.size(); i++){
+      const std::vector<glm::dvec3>& retResults  = streamlines[i].results();
+      oss.write((char*)retResults.data(), retResults.size() * sizeof(glm::dvec3));
+    }
+    
   } catch ( TException &e) {
     std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;
   } catch ( exception &e) {
@@ -1286,8 +1336,8 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
 
   
   if ( error_str.length() == 0) {
-    //_return.__set_result( (Result::type)VAL_SUCCESS );
-    //_return.__set_data( std::string( ( const char *)&bbox[ 0], 6 * sizeof( double)));
+    _return.__set_result( (Result::type)VAL_SUCCESS );
+    _return.__set_data( oss.str() );
   } else {
     _return.__set_result( (Result::type)VAL_UNKNOWN_ERROR);
     _return.__set_data( error_str);

@@ -20,7 +20,7 @@ void Grid::build( std::vector<AABB>& cellBoxes, std::vector<glm::i64>& cellPoint
   AABB accelBox = modelBox;
   accelBox.enlarge(EPSILON);
 
-  reset(accelBox, 100, 100, 100);
+  reset(accelBox, 40, 40, 40);
   insertPrimitiveList(cellBoxes);
 }
 

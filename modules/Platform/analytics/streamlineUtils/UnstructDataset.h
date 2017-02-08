@@ -27,10 +27,13 @@ public:
   bool insideCell(glm::i64 idx, const glm::dvec3& p) const;
   bool insideCellBoundingBox(glm::i64 cellIndex, const glm::dvec3& point) const;
 
-  void computeAccel(AccelStructType accel_type);
+  void computeAccel(AccelStructType accel_type = ACCEL_STRUCT_TYPE_GRID);
 
  /* virtual double chooseInitialStepSize(const glm::dvec3& p);
   virtual bool snapToMeshSurface(glm::dvec3& p);*/
+
+  bool loadBinary(std::string filename);
+  bool saveBinary(std::string filename);
 
   // Performance
   void resetPerformanceStats();
