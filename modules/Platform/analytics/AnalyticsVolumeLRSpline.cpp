@@ -36,7 +36,7 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
   }
 
   int num_ref_levels = numSteps*3; // Refinement levels is counted per direction.
-  const int max_num_ref_levels = 24;
+  const int max_num_ref_levels = 36;
   if (num_ref_levels > max_num_ref_levels) {
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	  ": Number of ref levels requested: " << num_ref_levels << ", setting it to the maximum value " <<
@@ -49,31 +49,32 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
   char model_ID_hex_string[ 1024];
   std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
 
-  std::string spark_output_folder = ToLower( "volume_lrspline_" + sessionID + "_" + cli_modelID);
+  // IMPORTANT! It appears that hdfs has a limit on the length of the full filename (including path).
+  // If "PythonRDD.compute()" should fail, try with a shorter filename!
+  std::string spark_output_folder = ToLower( "vol_lr_" + sessionID);// + "_" + cli_modelID);
   std::string local_tmp_folder = create_tmpdir();
   std::string local_output_folder = local_tmp_folder + "/" + spark_output_folder;
-  std::cout << "local_output_folder: " << local_output_folder << std::endl;
+  //std::cout << "SINTEF: local_output_folder: " << local_output_folder << std::endl;
   recursive_rmdir( spark_output_folder.c_str());
 
   system(("mkdir -p "+local_output_folder).c_str());
  
-  bool use_yarn = false;//true;
-
   std::string analysis_id_static_mesh("");
   double step_value_static_mesh = 0.0;
   // needs to get the vertices from the DataLayer ...
   rvGetListOfVerticesFromMesh return_data;
-#if 1
+  std::vector< Vertex> lst_vertices;
+#if 0
   // std::string analysis_id_static_mesh("");
   // double step_value_static_mesh = 0.0;
-  std::cout << "doing MapReduce::getListOfVerticesFromMesh" << std::endl;
+  //std::cout << "SINTEF: doing MapReduce::getListOfVerticesFromMesh" << std::endl;
   std::string error_str = MRgetListOfVerticesFromMesh( return_data,
 						       sessionID, modelID, 
 						       dataTableName,
 						       analysis_id_static_mesh, step_value_static_mesh, 
 						       meshID);
 
-  std::vector< Vertex> &lst_vertices = return_data.vertex_list;
+  lst_vertices = return_data.vertex_list;
   DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	": Map Reduce version, return_status: " << return_data.status << ", # vertices:" << lst_vertices.size());  
   //    ok = ( error_str.length() == 0);
@@ -121,19 +122,30 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
       result_list.insert(result_list.end(), local_result_list.begin(), local_result_list.end());
       DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	    ": Fetched result, iter: " << kj << ", return_status: " <<
-	    return_data_res.status << ", # vertices:" << result_list.size());  
+	    return_data_res.status << ", # vertices:" << result_list.size());
     } else {
-    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": ERROR: The list of vertices is empty.");  
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": ERROR: The list of vertices is empty.");  
     }
   }
+
+  if (result_list.size() == 0)
+    {
+      DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	    ": ERROR: The result list is empty for resultID " << resultID);
+      std::stringstream ss;
+      ss << "The result list is empty for analysisID " << analysisID;
+      *return_error_str = ss.str();
+      return;
+    }
 
   // We write the data to local file.
   int num_nodes = lst_vertices.size();
   // std::vector<double> nodes;
   // std::vector<double> results;
-  std::cout << "spark_output_folder: " << spark_output_folder << std::endl;
-  std::string local_nodes_filename = local_output_folder + "/lr_vol_appr_input.txt";
+  //std::cout << "SINTEF: spark_output_folder: " << spark_output_folder << std::endl;
+  std::string nodes_filename("lr_vol_appr_input.txt");
+  std::string local_nodes_filename = local_output_folder + "/" + nodes_filename;
   std::ofstream fileout(local_nodes_filename.c_str());
   fileout << num_nodes << std::endl;
   for (size_t ki = 0; ki < lst_vertices.size(); ++ki) {
@@ -150,6 +162,7 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
     }
     fileout << "\n";
   }
+  //std::cout << "SINTEF: Finished writing to the file: " << local_nodes_filename << std::endl;  
 
 #if 0
   if (lst_vertices.size() == 0) {
@@ -166,33 +179,81 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
   }
 #endif
 
-  bool use_precomputed_result = true;
-  if (!use_precomputed_result) {
-    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": UNDER CONSTRUCTION: Perform the actual Volume LRSpline Approximation!");
+  std::string precomputed_result_acuario("/localfs/home/velassco/SINTEF_test/telescope_speed_dump_31_acuario.bin");
+  std::ifstream is_acuario(precomputed_result_acuario);
+  bool acuario = is_acuario.good(); // We need gcc-4.8 (or higher) on acuario for the volume_lr_appr to run.
+  bool compute_result = (acuario) ? false : true; // I.e. we do not fetch pre-computed result.
+  if (compute_result) {
+    // DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+    // 	  ": UNDER CONSTRUCTION: Perform the actual Volume LRSpline Approximation!");
 
-    std::stringstream cmdline;
+    // When using yarn (as opposed to local client) we need to fetch the data from hdfs.
+    // We first create a dir for this sessionID.
+    std::stringstream cmd_hadoop_mkdir;
+    cmd_hadoop_mkdir << "hadoop fs -mkdir " << spark_output_folder;
+    int ret = system(cmd_hadoop_mkdir.str().c_str());
+    if (ret != 0)
+      {
+    	LOGGER << "'hadoop fs -mkdir " << spark_output_folder << "' return status is fail = " << ret << std::endl;
+    	std::stringstream ss;
+    	ss << "error executing hadoop fs -mkdir, ret = " << ret;
+    	*return_error_str = ss.str();
+    	return;
+      }
+
+    // We next upload the file with the data nodes.
+    std::stringstream cmd_hadoop_put;
+    // std::string localFileName("/tmp/");
+    // localFileName += outputHdfsFile;
+    cmd_hadoop_put << "hadoop fs -put " << local_nodes_filename << " " << spark_output_folder;
+    ret = system(cmd_hadoop_put.str().c_str());
+    if (ret != 0)
+      {
+    	LOGGER << "'hadoop fs -put " << local_nodes_filename << " " <<
+	  spark_output_folder << "' return status is fail = " << ret << std::endl;
+    	std::stringstream ss;
+    	ss << "error executing hadoop fs -put, ret = " << ret;
+    	*return_error_str = ss.str();
+    	return;
+      }
+
+    std::string spark_nodes_filename("/user/velassco/");
+    spark_nodes_filename += spark_output_folder + "/" + nodes_filename;
+
     std::string pathPython(getVELaSSCoBaseDir());
-    pathPython += "/AnalyticsSparkJobs/spark_volume_lr_spline.py";
+    pathPython += "/AnalyticsSparkJobs/VolumeLRSpline/spark_volume_lrspline_approx.py";
+    //std::cout << "SINTEF: pathPython: " << pathPython << std::endl;
 
-    std::string outputHdfsFile("Volume_LRSpline_");
-    outputHdfsFile += sessionID;
-    outputHdfsFile += ".bin";
+    std::string pathModule(getVELaSSCoBaseDir());
+    pathModule += "/AnalyticsSparkJobs/VolumeLRSpline/volume_lrspline_approx_ext.so";
+    //std::cout << "SINTEF: pathModule: " << pathModule << std::endl;
+
+    // std::string outputHdfsFile("Volume_LRSpline_");
+    // outputHdfsFile += sessionID;
+    // outputHdfsFile += ".bin";
+    std::string outputLocalFile("/tmp");//local_output_folder);
+    outputLocalFile += "/Volume_LRSpline_" + sessionID;
+    outputLocalFile += ".bin";
+    //std::cout << "SINTEF: outputLocalFile: " << outputLocalFile << std::endl;
 
     std::string logFile("/tmp/Output_Volume_LRSpline_");
     logFile += sessionID;
     logFile += ".log";
 
-    const int binary = 1;
-    const int field_comp_first = 4;
-    const int field_comp_last = (resultID.compare("VELOCITY") == 0) ? 6 : 4;
-    cmdline << "spark-submit --master yarn --driver-memory 3g --executor-memory 3g --num-executors 1 "
-	    << pathPython << " " << local_nodes_filename << " " << num_ref_levels << " " <<
-      field_comp_first << " " << field_comp_last << " " << binary << " " << outputHdfsFile << " > " << logFile;
+    const int binary = 1; // We always write to binary format.
+    // If not 3D "VELOCITY" then 1D "SPEED".
+    const int field_comp_first = (resultID.compare("VELOCITY") == 0) ? 1 : 1; // Otherwise PRSSURE with dim 1.
+    const int field_comp_last = (resultID.compare("VELOCITY") == 0) ? 3 : 1; // Otherwise PRSSURE with dim 1.
+    std::stringstream cmdline;
+    cmdline << "spark-submit --master yarn --py-files " << pathModule <<
+      " --driver-memory 1g --executor-memory 7g --num-executors 4 "
+	    << pathPython << " " << spark_nodes_filename << " " << num_ref_levels << " " <<
+      field_comp_first << " " << field_comp_last << " " << 
+      tolerance << " " << outputLocalFile << " > " << logFile;
     // ./app --infile ../data/telescope_lr_vol_appr_input.txt --max_levels 24 --tolerance 0.5 --field_components 4 4 --binary 1
     LOGGER << "[AnalyticsModule::createVolumeLRSplineFromBoundingBox] -- invoking spark job as:\n";
     LOGGER << cmdline.str() << std::endl;
-    int ret = system(cmdline.str().c_str());
+    ret = system(cmdline.str().c_str());
 
     if (ret != 0)
       {
@@ -204,28 +265,28 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
 	*return_error_str = ss.str();
 	return;
       }
-    std::stringstream cmd_dfs;
-    std::string localFileName("/tmp/");
-    localFileName += outputHdfsFile;
-    cmd_dfs << "hdfs dfs -copyToLocal " << outputHdfsFile << " " << localFileName;
-    ret = system(cmd_dfs.str().c_str());
-    if (ret != 0)
-      {
-	LOGGER << "hdfs dfs return status is fail = " << ret << std::endl;
-	std::stringstream ss;
-	ss << "error executing hdfs dfs -copyToLocal, ret = " << ret;
-	*return_error_str = ss.str();
-	return;
-      }
+    // std::stringstream cmd_dfs;
+    // std::string localFileName("/tmp/");
+    // localFileName += outputHdfsFile;
+    // cmd_dfs << "hdfs dfs -copyToLocal " << outputHdfsFile << " " << localFileName;
+    // ret = system(cmd_dfs.str().c_str());
+    // if (ret != 0)
+    //   {
+    // 	LOGGER << "hdfs dfs return status is fail = " << ret << std::endl;
+    // 	std::stringstream ss;
+    // 	ss << "error executing hdfs dfs -copyToLocal, ret = " << ret;
+    // 	*return_error_str = ss.str();
+    // 	return;
+    //   }
 
     return_error_str->clear();
     //return_binary_mesh->clear();
-    std::ifstream ifsLocal(localFileName, std::ios::binary);
+    std::ifstream ifsLocal(outputLocalFile, std::ios::binary);
     return_binary_volume_lrspline->assign(std::istreambuf_iterator<char>(ifsLocal),
 					  std::istreambuf_iterator<char>());
-    LOGGER << "return_binary_volume_lrspline.length() = " << return_binary_volume_lrspline->length() << std::endl;
-
-
+    LOGGER << "SINTEF: return_binary_volume_lrspline.length() = " <<
+      return_binary_volume_lrspline->length() << std::endl;
+    //std::cout << "SINTEF: Remember to remove local file!" << std::endl;
 
   } else {
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
@@ -237,9 +298,6 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
     std::ifstream is_eddie(precomputed_result_eddie);
     bool eddie = is_eddie.good();
     // We see if the we are on acuario.
-    std::string precomputed_result_acuario("/localfs/home/velassco/SINTEF_test/telescope_speed_dump_31_acuario.bin");
-    std::ifstream is_acuario(precomputed_result_acuario);
-    bool acuario = is_acuario.good();
     if (eddie && acuario) {
       DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	    ": Unable to decide if the platform is Acuario or Eddie, on both it seems ... Picking Eddie.");
@@ -265,7 +323,11 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
   //*return_error_str = __FUNCTION__ + std::string(": Missing the binary result.");
 
   DEBUG( "Deleting output files ...");
-  if ( use_yarn) {
+  bool use_yarn = true;
+  if ( compute_result && use_yarn ) {
+    //std::cout << "SINTEF: Not yet deleting the hadoop output folder ..." << std::endl;
+    DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
+	  ": Deleting the spark_output_folder: " << spark_output_folder);
     std::string cmd_line = HADOOP_HDFS + " dfs -rm -r " + spark_output_folder;
     DEBUG( cmd_line);
     int ret_cmd = system( cmd_line.c_str());
@@ -274,11 +336,9 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
 	    ": HADOOP_HDFS command failed!");
     }
     recursive_rmdir( local_tmp_folder.c_str());
+    //std::cout << "SINTEF: Remember to remove dir from hdfs!" << std::endl;
   }
-
-#if 0
   recursive_rmdir( spark_output_folder.c_str());
-#endif
 
   return;
 }

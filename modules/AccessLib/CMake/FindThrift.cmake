@@ -18,6 +18,7 @@ find_path(THRIFT_INCLUDE_DIR
     HINTS
         ${THRIFT_HOME}
         ENV THRIFT_HOME
+	/exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp/include/
         /usr/local
         /opt/local
     PATH_SUFFIXES
