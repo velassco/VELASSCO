@@ -1013,12 +1013,14 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   bool acuario = is_acuario.good();
   if (acuario) {
     std::cout << "We are on acuario!" << std::endl;
+  } else {
+    std::cout << "We are on eddie!" << std::endl;
   }
 
   // On Acuario the original table is corrupt, hence we need to use an alternative.
   const char* model_tablename = (acuario) ? "VELaSSCo_Models_V4CIMNE" : "VELaSSCo_Models";
   // The model_name should be renamed to include a description of the object (like Telescope) in the name ...
-  const char* model_name = (acuario) ? "fine_mesh-ascii_" : "fine_mesh";
+  const char* model_name = (acuario) ? "fine_mesh-ascii_" : "fine_mesh-ascii_";
 
   //
   // Test GetListOfModels()
@@ -1076,7 +1078,9 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   const char* model_fullpath = (full_path.size() > 0) ? full_path.c_str() :
     ( (acuario) ?
       "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii" :
-      "/localfs/home/velassco/common/simulation_files/Fem_small_examples/Telescope_128subdomains_ascii/" );
+      "/exports/eddie3_apps_local/apps/community/VELaSSCo/simulation_files/Telescope_128subdomains_ascii" );
+
+
   
   std::string model_unique_name = model_tablename;
   model_unique_name += ":";
@@ -1159,7 +1163,10 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
 			       step_value,
 			       &status,
 			       &return_list_results);
-  const char* resultID = "VELOCITY";//"PRESSURE";//"Speed"; // For the Telescope example.
+  std::string list_of_results(return_list_results);
+  std::cout << "SINTEF: list_of_results for analysisID: " << analysisID << ": " << list_of_results << std::endl;
+  const int field_dim = 1;
+  const char* resultID = (field_dim == 1) ? "PRESSURE" : "VELOCITY"; // For the Telescope example.
 
   // We fetch a list of all meshes for the model.
   const char *return_list_meshes = NULL;
@@ -1215,8 +1222,8 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   }
 
   double tolerance = -1.0;//0.5;  // A negative value means that the method calculates a suitable tolerance.
-  int numSteps = 2; // 8 the default value. Valid range: {1, 2, ..., 9}. If above it is set to 9.
-                    // A negative value means that the method selects num_steps.
+  int numSteps = 2; // 4 the default value. Valid range: {1, 2, ..., 9}. If above it is set to 9.
+                    // A negative value or 0 means that the method selects num_steps.
   // The result arguments.
   const char*    resultBinaryLRSpline = NULL;
   size_t resultBinaryLRSplineSize;
@@ -1229,7 +1236,9 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
   bool delete_results = false;
   if (delete_results) {
     std::vector<int> result_num_steps;
-    for (size_t ki = 0; ki < 9; ++ki) {
+    int delete_low = 1;//1; // 1 is the lowest.
+    int delete_high = 12;//1; // 9 is the higest.
+    for (size_t ki = delete_low; ki <= delete_high; ++ki) {
       result_num_steps.push_back(ki);
     }
     for (size_t ki = 0; ki < result_num_steps.size(); ++ki) {
@@ -1249,52 +1258,57 @@ int doTestSINTEF( const VAL_SessionID sessionID) {
     }
   }
 
-  result = valGetVolumeLRSplineFromBoundingBox( sessionID,
-						opened_modelID.c_str(), // The already opened model.
-						meshID, // "Kratos Tetrahedra3D4 Mesh" for the Telescope example.
-						resultID, // "VELOCITY" for the Telescope example.
-						step_value, // Using the last timestep.
-						analysisID.c_str(), // "Kratos" for the Telescope example.
-						bBox, // Of the static mesh (possibly a subset).
-						tolerance, // Positive value (< 0.0 => method chooses).
-						numSteps, // Legal values: {1, 2, ..., 9} (< 0 => method chooses).
-						&resultBinaryLRSpline,
-						&resultBinaryLRSplineSize,
-						&resultStatistics,
-						&resultStatisticsSize,
-						&resultErrorStr);
-  std::cout << "doTestSINTEF(): Done calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
-  std::cout << "doTestSINTEF(): result: " << result << std::endl;
-  CheckVALResult(result, getStringFromCharPointers( "valComputeVolumeLRSplineFromBoundingBox ", resultErrorStr));
-  ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
-  std::cout << "doTestSINTEF(): ComputeVolumeLRSplineFromBoundingBox: " << opened_modelID << 
-    ( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
-  if ( resultBinaryLRSpline) {
-    std::cout << "doTestSINTEF(): Result binary volume lrspline # bytes: " << resultBinaryLRSplineSize << std::endl;
-    // We write to a tmp directory.
-    // We first make sure that the tmp directory exists.
-    // std::string dir_path("tmp");
-    // boost::filesystem::path dir(dir_path.c_str());
-    // boost::filesystem::create_directory(dir);
+  int num_steps_min = 1;//numSteps;
+  int num_steps_max = 7;//numSteps;
+  for (int ki = num_steps_min; ki <= num_steps_max; ++ki)
+    {
+      numSteps = ki;
+      result = valGetVolumeLRSplineFromBoundingBox( sessionID,
+						    opened_modelID.c_str(), // The already opened model.
+						    meshID, // "Kratos Tetrahedra3D4 Mesh" for the Telescope example.
+						    resultID, // "VELOCITY" for the Telescope example.
+						    step_value, // Using the last timestep.
+						    analysisID.c_str(), // "Kratos" for the Telescope example.
+						    bBox, // Of the static mesh (possibly a subset).
+						    tolerance, // Positive value (< 0.0 => method chooses).
+						    numSteps, // Legal values: {1, 2, ..., 9} (< 0 => method chooses).
+						    &resultBinaryLRSpline,
+						    &resultBinaryLRSplineSize,
+						    &resultStatistics,
+						    &resultStatisticsSize,
+						    &resultErrorStr);
+      std::cout << "doTestSINTEF(): Done calling valComputeVolumeLRSplineFromBoundingBox()." << std::endl;
+      std::cout << "doTestSINTEF(): result: " << result << std::endl;
+      CheckVALResult(result, getStringFromCharPointers( "valComputeVolumeLRSplineFromBoundingBox ", resultErrorStr));
+      ModelID_DoHexStringConversionIfNecesary( opened_modelID, hex_string, 1024);
+      std::cout << "doTestSINTEF(): ComputeVolumeLRSplineFromBoundingBox: " << opened_modelID << 
+	( ModelID_IsBinary( opened_modelID) ? " ( binary)" : " ( ascii)") << std::endl;
+      if ( resultBinaryLRSpline) {
+	std::cout << "doTestSINTEF(): Result binary volume lrspline # bytes: " << resultBinaryLRSplineSize << std::endl;
+	// We write to a tmp directory.
+	// We first make sure that the tmp directory exists.
+	// std::string dir_path("tmp");
+	// boost::filesystem::path dir(dir_path.c_str());
+	// boost::filesystem::create_directory(dir);
 #ifndef _WIN32
-    system("mkdir -p \"tmp\"");
+	system("mkdir -p \"tmp\"");
 #endif // _WIN32
-    std::ofstream binary_blob("tmp/result_binary_lrspline.bin",
-			      std::ofstream::binary);
-    binary_blob.write(resultBinaryLRSpline, resultBinaryLRSplineSize);
-    // std::stringstream buffer;
-    // buffer << filename_binary_blob.rdbuf();
-    // *return_binary_volume_lrspline = buffer.str();
+	std::string result_name;
+	result_name = "lrspline_approx_" + std::string(resultID) + "_" + std::to_string(numSteps) + ".bin";
+	std::string result_name_fullpath;
+	result_name_fullpath = "tmp/" + result_name;
+	std::ofstream binary_blob(result_name_fullpath,
+				  std::ofstream::binary);
+	std::cout << "doTestSINTEF(): Writing result to " << result_name_fullpath << std::endl;
+	binary_blob.write(resultBinaryLRSpline, resultBinaryLRSplineSize);
+	// std::stringstream buffer;
+	// buffer << filename_binary_blob.rdbuf();
+	// *return_binary_volume_lrspline = buffer.str();
 
-  } else {
-    std::cout << "doTestSINTEF(): Error: " << resultErrorStr << std::endl;
-  }
-
-  bool delete_volume_lrspline = false;
-  if (delete_volume_lrspline) {
-    std::cout << "doTestSINTEF(): Deleting the volume lrspline from storage!" << std::endl;
-
-  }
+      } else {
+	std::cout << "doTestSINTEF(): Error: " << resultErrorStr << std::endl;
+      }
+    }
 
   return EXIT_SUCCESS;
 }
@@ -1373,9 +1387,9 @@ int main(int argc, char* argv[])
   //ret = doTestMorteza( sessionID);
   //ret = doTestMiguel( sessionID); 
   //ret= doTestDC (sessionID);
-  //ret = doTestSINTEF(sessionID);
+  ret = doTestSINTEF(sessionID);
 
-  ret = doTestIsoSurface(sessionID);
+  //ret = doTestIsoSurface(sessionID);
   
   // result = valStopVELaSSCo( sessionID, &status);
   // CheckVALResult(result);  

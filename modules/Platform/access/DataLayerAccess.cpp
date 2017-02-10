@@ -661,8 +661,8 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
   // We make sure that the number of iteration levels are within the valid range.
   // The method in the analytics module will perform the same check, but since
   // the metadata will be stored along with the result we do the checking here.
-  const int default_num_steps = 6;
-  const int max_num_steps = 8;
+  const int default_num_steps = 4;
+  const int max_num_steps = 9;
   if (numSteps <= 0) {
     numSteps = default_num_steps;
   } else if (numSteps > max_num_steps) {
@@ -686,7 +686,7 @@ void DataLayerAccess::calculateVolumeLRSplineFromBoundingBox(const std::string& 
   if (return_error_str->length() != 0) {
     // This means that the result has not been computed before.
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-	  ": The volume lr spline is not already stored, must be compouted: " << return_error_str);
+	  ": The volume lr spline is not already stored, must be computed: " << return_error_str);
   } else {
     DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
 	  ": The volume lr spline was already stored, returning.");
