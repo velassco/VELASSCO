@@ -183,6 +183,10 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
   std::ifstream is_acuario(precomputed_result_acuario);
   bool acuario = is_acuario.good(); // We need gcc-4.8 (or higher) on acuario for the volume_lr_appr to run.
   bool compute_result = (acuario) ? false : true; // I.e. we do not fetch pre-computed result.
+  std::string outputLocalFile("/tmp");//local_output_folder);
+  outputLocalFile += "/Volume_LRSpline_" + sessionID;
+  outputLocalFile += ".bin";
+  //std::cout << "SINTEF: outputLocalFile: " << outputLocalFile << std::endl;
   if (compute_result) {
     // DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
     // 	  ": UNDER CONSTRUCTION: Perform the actual Volume LRSpline Approximation!");
@@ -231,10 +235,6 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
     // std::string outputHdfsFile("Volume_LRSpline_");
     // outputHdfsFile += sessionID;
     // outputHdfsFile += ".bin";
-    std::string outputLocalFile("/tmp");//local_output_folder);
-    outputLocalFile += "/Volume_LRSpline_" + sessionID;
-    outputLocalFile += ".bin";
-    //std::cout << "SINTEF: outputLocalFile: " << outputLocalFile << std::endl;
 
     std::string logFile("/tmp/Output_Volume_LRSpline_");
     logFile += sessionID;
@@ -246,7 +246,7 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
     const int field_comp_last = (resultID.compare("VELOCITY") == 0) ? 3 : 1; // Otherwise PRSSURE with dim 1.
     std::stringstream cmdline;
     cmdline << "spark-submit --master yarn --py-files " << pathModule <<
-      " --driver-memory 1g --executor-memory 7g --num-executors 4 "
+      " --driver-memory 3g --executor-memory 7g --num-executors 2 "
 	    << pathPython << " " << spark_nodes_filename << " " << num_ref_levels << " " <<
       field_comp_first << " " << field_comp_last << " " << 
       tolerance << " " << outputLocalFile << " > " << logFile;
@@ -337,6 +337,13 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
     }
     recursive_rmdir( local_tmp_folder.c_str());
     //std::cout << "SINTEF: Remember to remove dir from hdfs!" << std::endl;
+
+    // For some reason the points are not removed, trying again.
+
+    // Remove the local input data points.
+    system(("rm -f "+local_nodes_filename).c_str());
+    // Remove the local binary result.
+    system(("rm -f "+outputLocalFile).c_str());
   }
   recursive_rmdir( spark_output_folder.c_str());
 
