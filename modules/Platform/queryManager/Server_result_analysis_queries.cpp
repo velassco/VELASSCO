@@ -1188,7 +1188,9 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
     UnstructDataset dataset;
     std::vector<Streamline> streamlines;
 
-    if(!dataset.loadBinary("/local/FRAUNHOFER/"+meshInfo.name+".bin")){
+    std::string localCachedFile = "/local/FRAUNHOFER/"+meshInfo.name+".bin";
+
+    if(!dataset.loadBinary(localCachedFile)){
     // struct Vertex {
     //   1: NodeID                              id
     //   2: double                              x
@@ -1260,39 +1262,70 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
         }
       }
 
-  #if 1
-      for(int64_t i = 0; i < numSeedingPoints; i++){
-        streamlines.push_back(Streamline(glm::dvec3(lstSeedingPoints[3 * i + 0], lstSeedingPoints[3 * i + 1], lstSeedingPoints[3 * i + 2])));
-      }
-  #else
-      //min[0] = 8299.381836; min[1] = 1820.557739; min[2] = 1515.308228;
-      //max[0] = 9510.443359; max[1] = 2990.546631; max[2] = 2700.0d;
-      streamlines.push_back(Streamline(glm::dvec3(8350.0, 2900.0, 2500.0)));
-  #endif
-
       dataset.reset(coords, results, cells);
-
-      dataset.saveBinary("/local/FRAUNHOFER/"+meshInfo.name+".bin");
-    } else  {
-      dataset.computeAccel();
+      dataset.saveBinary(localCachedFile);
     }
+
+#if 1
+    for(int64_t i = 0; i < numSeedingPoints; i++){
+      streamlines.push_back(Streamline(glm::dvec3(lstSeedingPoints[3 * i + 0], lstSeedingPoints[3 * i + 1], lstSeedingPoints[3 * i + 2])));
+    }
+ #else
+    streamlines.push_back(Streamline(glm::dvec3(9000.0, 2300.0, 2400.0)));
+#endif
+
+    
+
+    dataset.computeAccel();
+
+    std::cout << "1.\n";  
+
     StreamTracer tracer;
     SurfaceParameters params;
-    params.traceDirection         = TraceDirection::TD_BOTH;
-    params.traceIntegrationMethod = IntegrationMethod::IM_EULER;
-    params.traceStepSize          = 0.1;
-    params.traceMaxSteps          = 100;
-    params.doStepAdaptation       = false;
+
+    if(tracingDirection == "FORWARD") {
+      params.traceDirection         = TraceDirection::TD_FORWARD;
+      std::cout << "  tracing direction = FORWARD\n";
+    } else if (tracingDirection == "BACKWARD") {
+      params.traceDirection         = TraceDirection::TD_BACKWARD;  
+      std::cout << "  tracing direction = BACKWARD\n";
+    } else {
+      params.traceDirection         = TraceDirection::TD_BOTH;
+      std::cout << "  tracing direction = BOTH\n";
+    }
+
+    if(adaptiveStepping == "OFF"){
+      params.doStepAdaptation       = false;
+      std::cout << "  step adaptaton = OFF\n";
+    } else {
+      params.doStepAdaptation       = true;
+      std::cout << "  step adaptaton = ON\n";
+    }
+
+    if(integrationMethod == "EULER"){
+      params.traceIntegrationMethod = IntegrationMethod::IM_EULER;
+      std::cout << "  integration method = euler\n";
+    } else {
+      params.traceIntegrationMethod = IntegrationMethod::IM_CASHKARP;
+      std::cout << "  integration method = cash karp\n";
+    }
+
+   
+    params.traceStepSize          = 0.2;
+    params.traceMaxSteps          = 30000;
+    params.traceSpecialBackStepsLimit = 10;
+    //params.traceMaxLen            = maxStreamlinesLength;
 
     tracer.setParameters(params);
-    tracer.traceStreamline(&dataset, streamlines, 0.1);
+    tracer.traceStreamline(&dataset, streamlines, params.traceStepSize);
 
-    const std::vector<glm::dvec3>& retPoints  = streamlines[0].points();
-    const std::vector<glm::dvec3>& retResults = streamlines[0].results();
-    for(size_t i = 0; i < retPoints.size(); i++){
-      std::cout << retPoints[i].x << " " << retPoints[i].y << " " << retPoints[i].z << std::endl;
-      std::cout << retResults[i].x << " " << retResults[i].y << " " << retResults[i].z << std::endl;
-    }
+    //const std::vector<glm::dvec3>& retPoints  = streamlines[0].points();
+    //const std::vector<glm::dvec3>& retResults = streamlines[0].results();
+    //for(size_t i = 0; i < retPoints.size(); i++){
+    //  std::cout << retPoints[i].x << " " << retPoints[i].y << " " << retPoints[i].z << std::endl;
+    //  std::cout << retResults[i].x << " " << retResults[i].y << " " << retResults[i].z << std::endl;
+    //}
+  
 #else
     for(int s = 0; s < 10; s++){
       streamlines.push_back(Streamline(glm::dvec3(0.0)));
@@ -1312,21 +1345,29 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
     }
 #endif
     size_t nRetStreamlines = streamlines.size();
-    oss.write((char*)&nRetStreamlines, sizeof(size_t));
-    for(size_t i = 0; i < streamlines.size(); i++){
-       size_t streamlineLen = streamlines[i].points().size();
-       oss.write((char*)&streamlineLen, sizeof(size_t));
+
+    if(nRetStreamlines > 0){
+
+      oss.write((char*)&nRetStreamlines, sizeof(size_t));
+      for(size_t i = 0; i < streamlines.size(); i++){
+        size_t streamlineLen = streamlines[i].points().size();
+        oss.write((char*)&streamlineLen, sizeof(size_t));
+      }
+
+      for(size_t i = 0; i < streamlines.size(); i++){
+        const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
+        if(retPoints.size() > 0)
+          oss.write((char*)retPoints.data(), retPoints.size() * sizeof(glm::dvec3));
+      }
+
+      for(size_t i = 0; i < streamlines.size(); i++){
+        const std::vector<glm::dvec3>& retResults  = streamlines[i].results();
+        if(retResults.size() > 0)
+          oss.write((char*)retResults.data(), retResults.size() * sizeof(glm::dvec3));
+      }
     }
 
-    for(size_t i = 0; i < streamlines.size(); i++){
-      const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
-      oss.write((char*)retPoints.data(), retPoints.size() * sizeof(glm::dvec3));
-    }
-
-    for(size_t i = 0; i < streamlines.size(); i++){
-      const std::vector<glm::dvec3>& retResults  = streamlines[i].results();
-      oss.write((char*)retResults.data(), retResults.size() * sizeof(glm::dvec3));
-    }
+    std::cout << "7.\n";
     
   } catch ( TException &e) {
     std::cout << "EXCEPTION CATCH_ERROR 1: " << e.what() << std::endl;

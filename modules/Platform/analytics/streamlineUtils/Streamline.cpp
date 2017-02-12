@@ -28,5 +28,5 @@ glm::dvec3 Streamline::getFrontPoint() const
 
 glm::i64 Streamline::getNumberOfIntegratedSteps() const
 {
-  return static_cast<glm::i64>(m_points.size() - 1);
+  return static_cast<glm::i64>(m_points.size()) - 1;
 }

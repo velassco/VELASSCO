@@ -43,28 +43,34 @@ StreamTracer::~StreamTracer()
 #define RUNGE_KUTTA_INTEGERATION
 
 void StreamTracer::traceStreamline(UnstructDataset* dataset, std::vector<Streamline>& streamlines, double stepsize) {
+  
   for (size_t i = 0; i < streamlines.size(); i++) {
-
+    if(i % 100 == 0) std::cout << "Streamline " << i << " from " << streamlines.size() << std::endl;
     if (streamlines[i].getNumberOfIntegratedSteps() >= m_surface_parameters.traceMaxSteps) {
       continue;
     }
 
     glm::dvec3 seed = streamlines[i].getFrontPoint();
 
+    //std::cout << "seed = " << seed.x << " " << seed.y << " " << seed.z << std::endl;
+
     std::vector<glm::dvec3> vertices, results;
     std::vector<glm::i64>   streamlines_indices;
 
     traceStreamline(dataset, seed, stepsize, vertices, results, streamlines_indices);
 
+    //std::cout << "vertices size = " << vertices.size() << std::endl;
+    //std::cout << "results  size = " << results.size() << std::endl;
+
     for (size_t j = 0; j < vertices.size(); j++) {
       streamlines[i].addFrontPoint(vertices[j], results[j]);
+      //std::cout << vertices[j].x << " " << vertices[j].y << vertices[j].z << std::endl;
+      //std::cout << results[j].x << " " << results[j].y << results[j].z << std::endl;
     }
   }
 }
 
 void StreamTracer::traceStreamline(UnstructDataset* dataset, glm::dvec3 seed, double stepsize, std::vector<glm::dvec3>& vertices, std::vector<glm::dvec3>& derivs, std::vector< glm::i64 > &streamLine){
-  
-
 
   StreamerUtilVariables utilVars;
 
@@ -162,6 +168,8 @@ void StreamTracer::traceStreamline(UnstructDataset* dataset, glm::dvec3 seed, do
 
     utilVars.nextPoint = step(dataset, utilVars.currentPoint, utilVars.currentDerivate, utilVars.stepSize, utilVars.stepSizeAdapted);
 
+    //std::cout << utilVars.nextPoint.x << " " << utilVars.nextPoint.y << " " << utilVars.nextPoint.z << std::endl;
+
 #ifdef SPECIAL_BACK_STEPS
 	  // if the point was not changed.
     if (utilVars.nextPoint == utilVars.currentPoint){
@@ -200,13 +208,22 @@ void StreamTracer::traceStreamline(UnstructDataset* dataset, glm::dvec3 seed, do
     vertices.push_back(utilVars.currentPoint);
     derivs.push_back(utilVars.currentDerivate);
 
+    
+
     streamLine.push_back( static_cast<unsigned int>( vertices.size() - 1 ) );
+
+    //std::cout << vertices.size() << " " << utilVars.currentPoint.x << " " << utilVars.currentPoint.y << " " << utilVars.currentPoint.z << std::endl;
+    //if(vertices.size() > 1000) return;
 
     utilVars.previousPoint = utilVars.currentPoint;
     utilVars.currentPoint = utilVars.nextPoint;
 
     s++;
   } 
+
+  //std::cout << "Number of verts  = " << vertices.size() << std::endl;
+  //std::cout << "Number of derivs = " << derivs.size() << std::endl;
+
 }
 
 // butcher tableau for cash karp

@@ -55,7 +55,7 @@ void UnstructDataset::reset(const std::vector<VELASSCO::Coord>& coords, const st
     m_cellPointsBegIndices[c] = static_cast<glm::i64>(m_cellPoints.size());
     m_cellPoints.push_back(static_cast<glm::i64>(cells[c].cornerIndices.size()));
     for (size_t i = 0; i < cells[c].cornerIndices.size(); i++) {
-      m_cellPoints.push_back(cells[c].cornerIndices[i]);
+      m_cellPoints.push_back(vertexID_map[cells[c].cornerIndices[i]]);
     }
   }
 
@@ -68,7 +68,9 @@ void UnstructDataset::reset(const std::vector<VELASSCO::Coord>& coords, const st
     }
   }
 
-  computeAccel(ACCEL_STRUCT_TYPE_GRID);
+  // Removed by purpose.
+  // It does not make sense to mix these two functionalities.
+  //computeAccel(ACCEL_STRUCT_TYPE_GRID);
 }
 
 glm::dvec3 UnstructDataset::derivate(const glm::dvec3& p)
@@ -267,8 +269,8 @@ bool UnstructDataset::insideCell(glm::i64 cellIndex, const glm::dvec3& point) co
     barycoords[3] = 1.0f - barycoords[0] - barycoords[1] - barycoords[2];
 
     // if the point is in the tetrahedron
-    //if (barycoords[0] < 0.0f || barycoords[1] < 0.0f || barycoords[2] < 0.0f || barycoords[3] < 0.0f)
-     //   return false;
+    if (barycoords[0] < 0.0f || barycoords[1] < 0.0f || barycoords[2] < 0.0f || barycoords[3] < 0.0f)
+        return false;
 
 		return true;
 
@@ -370,6 +372,13 @@ bool UnstructDataset::loadBinary(std::string filename)
         in >> cellPointsBegIndicesNumber >> std::ws;
         in >> pointVectorsNumber >> std::ws;
 
+
+        std::cout << "  Number of cell boxes   = " << cellBoxesNumber << std::endl;
+        std::cout << "  Number of points       = " << pointsNumber << std::endl;
+        std::cout << "  Number of cell Points  = " << cellPointsNumber << std::endl;
+        std::cout << "  Number of cell beg pts = " << cellPointsBegIndicesNumber << std::endl;
+        std::cout << "  Number of point vecs   = " << pointVectorsNumber << std::endl;
+
         m_cellBoxes.resize(cellBoxesNumber);
         m_points.resize(pointsNumber);
         m_cellPoints.resize(cellPointsNumber);
@@ -377,10 +386,10 @@ bool UnstructDataset::loadBinary(std::string filename)
         m_pointVectors.resize(pointVectorsNumber);
 
         in.read((char*)(&m_cellBoxes[0]), sizeof(AABB)*cellBoxesNumber);
-        in.read((char*)(&m_points[0]), sizeof(glm::vec3)*pointsNumber);
-        in.read((char*)(&m_cellPoints[0]), sizeof(glm::u32)*cellPointsNumber);
-        in.read((char*)(&m_cellPointsBegIndices[0]), sizeof(glm::u32)*cellPointsBegIndicesNumber);
-        in.read((char*)(&m_pointVectors[0]), sizeof(glm::vec3)*pointVectorsNumber);
+        in.read((char*)(&m_points[0]), sizeof(glm::dvec3)*pointsNumber);
+        in.read((char*)(&m_cellPoints[0]), sizeof(glm::i64)*cellPointsNumber);
+        in.read((char*)(&m_cellPointsBegIndices[0]), sizeof(glm::i64)*cellPointsBegIndicesNumber);
+        in.read((char*)(&m_pointVectors[0]), sizeof(glm::dvec3)*pointVectorsNumber);
     }
 
     return !!in;
@@ -408,10 +417,10 @@ bool UnstructDataset::saveBinary(std::string filename)
 
 
         out.write((char*)(&m_cellBoxes[0]), sizeof(AABB)*cellBoxesNumber);
-        out.write((char*)(&m_points[0]), sizeof(glm::vec3)*pointsNumber);
-        out.write((char*)(&m_cellPoints[0]), sizeof(glm::u32)*cellPointsNumber);
-        out.write((char*)(&m_cellPointsBegIndices[0]), sizeof(glm::u32)*cellPointsBegIndicesNumber);
-        out.write((char*)(&m_pointVectors[0]), sizeof(glm::vec3)*pointVectorsNumber);
+        out.write((char*)(&m_points[0]), sizeof(glm::dvec3)*pointsNumber);
+        out.write((char*)(&m_cellPoints[0]), sizeof(glm::i64)*cellPointsNumber);
+        out.write((char*)(&m_cellPointsBegIndices[0]), sizeof(glm::i64)*cellPointsBegIndicesNumber);
+        out.write((char*)(&m_pointVectors[0]), sizeof(glm::dvec3)*pointVectorsNumber);
     }
 
     return !!out;

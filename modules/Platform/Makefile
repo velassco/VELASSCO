@@ -46,10 +46,10 @@ else
     THRIFT_BASE = $(HOME)
     BOOST_BASE = $(HOME)
   else
-    THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp
-    BOOST_BASE=/exports/applications/apps/community/VELaSSCo/build/boost
-    # THRIFT_BASE = /local/FRAUNHOFER/dependencies/thrift_0.9.3
-    # BOOST_BASE=/local/FRAUNHOFER/dependencies/boost_1_61_0
+    #THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp
+    #BOOST_BASE=/exports/applications/apps/community/VELaSSCo/build/boost
+    THRIFT_BASE = /local/FRAUNHOFER/dependencies/thrift_0.9.3
+    BOOST_BASE=/local/FRAUNHOFER/dependencies/boost_1_61_0
   endif
 endif
 

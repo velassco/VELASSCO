@@ -10,6 +10,7 @@ void Grid::compileShader(){
 /// builds the grid structure
 void Grid::build( std::vector<AABB>& cellBoxes, std::vector<glm::i64>& cellPoints, std::vector<glm::i64>& cellPointsBegIndices )
 {
+  std::cout << "Creating grid acceleration structure..." << std::endl;
   m_n_levels = 0;
 	AABB modelBox;
 	for (size_t i = 0; i<cellBoxes.size(); i++)
@@ -20,8 +21,10 @@ void Grid::build( std::vector<AABB>& cellBoxes, std::vector<glm::i64>& cellPoint
   AABB accelBox = modelBox;
   accelBox.enlarge(EPSILON);
 
-  reset(accelBox, 40, 40, 40);
+  reset(accelBox, 500, 500, 500);
   insertPrimitiveList(cellBoxes);
+
+  std::cout << "Creating grid acceleration structure...Done" << std::endl;
 }
 
 bool Grid::getBoundingPrimitiveIndex( const UnstructDataset* const datasetPtr, const double point[3], glm::i64& cell_index )

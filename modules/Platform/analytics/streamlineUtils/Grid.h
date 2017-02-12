@@ -159,7 +159,7 @@ GRID_INLINE void Grid::insertPrimitiveList( const std::vector<AABB> &primitiveBo
   m_max_cells_per_leaf  = 0;
 
 	for ( size_t i=0; i<primitiveBoxes.size(); i++ ){
-    if(i % 100000 == 0) std::cout << (double)i / (primitiveBoxes.size()) << std::endl;
+    //if(i % 100000 == 0) std::cout << (double)i / (primitiveBoxes.size()) << std::endl;
 		insertPrimitive( primitiveBoxes[i], (glm::i64)i );
   }
 
