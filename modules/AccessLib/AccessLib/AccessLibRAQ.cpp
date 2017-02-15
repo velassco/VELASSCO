@@ -1050,7 +1050,7 @@ extern "C" {
 	  *resultBinaryLRSpline = ( const char *) queryData->data();
 	  *resultBinaryLRSplineSize = queryData->length();
 	  DEBUG("SINTEF: " << __FILE__ << ", line: " << __LINE__ <<
-		": # bytes in the binary blob: ");
+		": # bytes in the binary blob: " << (*resultBinaryLRSplineSize));
 	  bool fetch_statistics = false;
 	  if (fetch_statistics) {
 	    *resultStatistics = ( const char *) (&(queryData->data()[sizeof(int64_t)]));

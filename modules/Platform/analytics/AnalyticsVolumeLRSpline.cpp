@@ -49,8 +49,6 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
   char model_ID_hex_string[ 1024];
   std::string cli_modelID = ModelID_DoHexStringConversionIfNecesary( modelID, model_ID_hex_string, 1024);
 
-  // IMPORTANT! It appears that hdfs has a limit on the length of the full filename (including path).
-  // If "PythonRDD.compute()" should fail, try with a shorter filename!
   std::string spark_output_folder = ToLower( "vol_lr_" + sessionID);// + "_" + cli_modelID);
   std::string local_tmp_folder = create_tmpdir();
   std::string local_output_folder = local_tmp_folder + "/" + spark_output_folder;
@@ -162,6 +160,7 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
     }
     fileout << "\n";
   }
+  fileout.close();
   //std::cout << "SINTEF: Finished writing to the file: " << local_nodes_filename << std::endl;  
 
 #if 0
@@ -242,8 +241,8 @@ void AnalyticsModule::createVolumeLRSplineFromBoundingBox(const std::string& ses
 
     const int binary = 1; // We always write to binary format.
     // If not 3D "VELOCITY" then 1D "SPEED".
-    const int field_comp_first = (resultID.compare("VELOCITY") == 0) ? 1 : 1; // Otherwise PRSSURE with dim 1.
-    const int field_comp_last = (resultID.compare("VELOCITY") == 0) ? 3 : 1; // Otherwise PRSSURE with dim 1.
+    const int field_comp_first = (resultID.compare("VELOCITY") == 0) ? 1 : 1; // Otherwise PRESSURE with dim 1.
+    const int field_comp_last = (resultID.compare("VELOCITY") == 0) ? 3 : 1; // Otherwise PRESSURE with dim 1.
     std::stringstream cmdline;
     cmdline << "spark-submit --master yarn --py-files " << pathModule <<
       " --driver-memory 3g --executor-memory 7g --num-executors 2 "
