@@ -217,7 +217,13 @@ int getVolumeLRApproximation(const VAL_SessionID sessionID,
       //size_t mid_step = (size_t)(return_num_steps/2);
       //      size_t last_step = (size_t)(return_num_steps/2);
       //      std::cout << "mid_step: " << mid_step << std::endl;
+#if 1
+      std::cout << "Picked the last time step!" << std::endl;
       step_value = return_list[return_num_steps-1];//mid_step];
+#else
+      std::cout << "Picked the first time step!" << std::endl;
+      step_value = return_list[0];//mid_step];
+#endif
       std::cout << "INFO: step_value: " << step_value << std::endl;
     } else {
       std::cout << "INFO: return_list is NULL. Error: " << return_error_str << std::endl;
