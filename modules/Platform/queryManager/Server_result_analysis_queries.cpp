@@ -1399,28 +1399,37 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
       // ============================================
       // == Approximate streamlines with B-Spline  ==
       // ============================================
-
-      std::cout << "Approximating Streamlines as B-Spline... "<< std::endl;
-      
+    
       size_t nRetStreamlines = streamlines.size();
 
       if(nRetStreamlines > 0){
 
         std::vector<std::vector<Eigen::Vector3d>> controlPoints(nRetStreamlines);
 
-        for(size_t i = 0; i < nRetStreamlines; i++){
+        std::cout << "Approximating Streamlines as B-Spline... "<< std::endl;
+#pragma omp parallel
+{
+		    int tid         = omp_get_thread_num();
+		    int numThreads  = omp_get_num_threads();
+		    int chunk_size  = static_cast<int>(std::floor((double)nRetStreamlines/(double)numThreads));
+		    int chunk_share = tid == numThreads - 1 ? nRetStreamlines - (numThreads - 1) * chunk_size : chunk_size;
+        for(int i = 0; i < chunk_share; i++){
+          size_t streamlineIdx = tid * chunk_size + i;
 
           std::vector<Eigen::Vector3d> streamlinePoints;
-          const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
+          const std::vector<glm::dvec3>& retPoints = streamlines[streamlineIdx].points();
           for(size_t p = 0; p < retPoints.size(); p++)
              streamlinePoints.push_back(Eigen::Vector3d(retPoints[p].x, retPoints[p].y, retPoints[p].z));
           BSplineApprox bsplineApproximator = BSplineApprox(streamlinePoints);
-          controlPoints[i].clear();
-          controlPoints[i] = bsplineApproximator.getBSplineControlPoints();
+          controlPoints[streamlineIdx].clear();
+          controlPoints[streamlineIdx] = bsplineApproximator.getBSplineControlPoints();
 
-          std::cout << "Number of streamline points are reduced from " << retPoints.size() << " to " << controlPoints[i].size() << std::endl;
+          //std::cout << "Number of streamline points are reduced from " << retPoints.size() << " to " << controlPoints[i].size() << std::endl;
 
         }
+}
+        std::cout << "Approximating Streamlines as B-Spline...Done."<< std::endl;
+
         oss.write((char*)&nRetStreamlines, sizeof(size_t));
         for(size_t i = 0; i < nRetStreamlines; i++){
           size_t streamlineLen = controlPoints[i].size();
@@ -1433,12 +1442,8 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
             oss.write((char*)retPoints.data(), retPoints.size() * sizeof(Eigen::Vector3d));
         }
 
-        for(size_t i = 0; i < nRetStreamlines; i++){
-          const std::vector<Eigen::Vector3d>& retPoints = controlPoints[i];
-          if(retPoints.size() > 0)
-            oss.write((char*)retPoints.data(), retPoints.size() * sizeof(Eigen::Vector3d));
-        }
-
+       
+#if 0
         // ===================================
         // == Sampling the results
         // ===================================
@@ -1481,12 +1486,13 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
         }
 
         std::cout << "Sampling the results on the streamline...Done." << std::endl;
-
-        /*for(size_t i = 0; i < nRetStreamlines; i++){
-          const std::vector<glm::dvec3>& retResults  = streamlines[i].results();
-          if(retResults.size() > 0)
-            oss.write((char*)retResults.data(), retResults.size() * sizeof(glm::dvec3));
-        }*/
+#else 
+        for(size_t i = 0; i < nRetStreamlines; i++){
+          const std::vector<Eigen::Vector3d>& retPoints = controlPoints[i];
+          if(retPoints.size() > 0)
+            oss.write((char*)retPoints.data(), retPoints.size() * sizeof(Eigen::Vector3d));
+        }
+#endif
       }
 
     }

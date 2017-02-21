@@ -40,7 +40,7 @@ public:
 		std::size_t numApproximations = 0;
 		auto evaluatedGene = IterativeApproximation::iterativeApproximation(currCurve, numControlPoints, &numApproximations, IterativeApproximation::ApproximationMode::UNIFORM);
 
-		std::cout << "Optimized approximations: " << numApproximations << std::endl;
+		//std::cout << "Optimized approximations: " << numApproximations << std::endl;
 		
 		return evaluatedGene->getUbs()->getControlPoints();
 		
