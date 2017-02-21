@@ -149,7 +149,7 @@ ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_H
 	-I$(STREAMLINE_UTILS_MODULE_DIR) -I$(GLM_INCLUDE_DIR) -I$(EIGEN_INCLUDE_DIR) \
 	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include 
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
-	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl -lcrypto
+	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl -lcrypto -fopenmp
 
 JAR_SRC_FOLDER = AnalyticsYarnJobs
 ifeq ($(HOSTNAME),pez001)
