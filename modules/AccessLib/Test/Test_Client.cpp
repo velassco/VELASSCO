@@ -361,7 +361,7 @@ int doTestMorteza( const VAL_SessionID sessionID) {
   valDoStreamlinesWithResults(
     sessionID, modelID.c_str(), analysisID, timeStep, resultID, 
     static_cast<int64_t>(seedingPoints.size() / 3), seedingPoints.data(),
-    "EULER", 5.0, "FORWARD", "ON", &status, &num_streamlines, &lengths, &vertices, &results);
+    "EULER", 1000, 0.1, 5.0, "FORWARD", "ON", "ON", "ON", &status, &num_streamlines, &lengths, &vertices, &results);
 
   std::cout << "Number of streamlines = " << num_streamlines << std::endl;
   

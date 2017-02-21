@@ -517,10 +517,14 @@ extern "C" {
             const char*    resultID,
             const int64_t  numSeedingPoints,
             const double*  seedingPoints,
-            const char*    integrationMethod,    // "EULER", "RUNGE-KUTTA4", or "CASH-KARP"
-            const double   maxStreamLineLength,
-            const char*    tracingDirection,     // "FORWARD", "BACKWARD", or "FORWARD-BACKWARD"
-            const char*    adaptiveStepping,     // "ON" or "OFF"
+            const char*    integrationMethod,			// "EULER" or "CASH-KARP"
+			const int64_t  maxIntegrationSteps,			// Maximum number of integration steps e.g. 10000
+			const double   stepSize,					// Step Size e.g. 0.1
+            const double   maxStreamLineLength,			// Maximum streamline length e.g. 100 units
+            const char*    tracingDirection,			// "FORWARD", "BACKWARD", or "FORWARD-BACKWARD"
+			const char*    interpolateInCells,			// "ON" or "OFF"
+            const char*    adaptiveStepping,			// "ON" or "OFF"
+			const char*    approxBSpline,				// "ON" or "OFF"
 
             /* out */
             const char                        **result_status,
@@ -535,6 +539,11 @@ extern "C" {
     CHECK_QUERY_POINTER(analysisID);
     CHECK_QUERY_POINTER(resultID);
     CHECK_QUERY_POINTER(seedingPoints);
+	CHECK_QUERY_POINTER(integrationMethod);
+	CHECK_QUERY_POINTER(tracingDirection);
+	CHECK_QUERY_POINTER(interpolateInCells);
+	CHECK_QUERY_POINTER(adaptiveStepping);
+	CHECK_QUERY_POINTER(approxBSpline);
     CHECK_QUERY_POINTER(result_status);
     CHECK_QUERY_POINTER(num_streamlines);
     CHECK_QUERY_POINTER(lengths);
@@ -561,10 +570,14 @@ extern "C" {
         << "  \"resultID\"            : \"" << resultID                                                                         << "\",\n"
         << "  \"numSeedingPoints\"    : \"" << numSeedingPoints                                                                 << "\",\n"
         << "  \"seedingPoints\"       : \"" << base64_encode((const char*)seedingPoints, 3 * numSeedingPoints * sizeof(double)) << "\",\n"
-        << "  \"integrationMethod\"   : \"" << integrationMethod                                                                << "\",\n"
+		<< "  \"integrationMethod\"   : \"" << integrationMethod																<< "\",\n"
+		<< "  \"maxIntegrationSteps\" : \"" << maxIntegrationSteps																<< "\",\n"
+		<< "  \"stepSize\"            : \"" << stepSize																			<< "\",\n"
         << "  \"maxStreamLineLength\" : \"" << maxStreamLineLength                                                              << "\",\n"
-        << "  \"tracingDirection\"    : \"" << tracingDirection                                                                 << "\",\n"
-        << "  \"adaptiveStepping\"    : \"" << adaptiveStepping                                                                 << "\"\n";
+		<< "  \"tracingDirection\"    : \"" << tracingDirection																	<< "\",\n"
+		<< "  \"interpolateInCells\"  : \"" << interpolateInCells																<< "\",\n"
+        << "  \"adaptiveStepping\"    : \"" << adaptiveStepping                                                                 << "\",\n"
+		<< "  \"approxBSpline\"       : \"" << approxBSpline																	<< "\"\n";
       queryCommand << "}\n";
 
       // Send command string and get back result data

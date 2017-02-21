@@ -296,17 +296,21 @@ extern "C" {
 					  const char     **resultErrorStr); // in case of error
 
   VAL_Result VAL_API valDoStreamlinesWithResults( /* in */
-            VAL_SessionID  sessionID,
-            const char*    modelID,
-            const char*    analysisID,
-            const double   stepValue,
-            const char*    resultID,
-            const int64_t  numSeedingPoints,
-            const double*  seedingPoints,
-            const char*    integrationMethod,    // "EULER", "RUNGE-KUTTA4", or "CASH-KARP"
-            const double   maxStreamLineLength,
-            const char*    tracingDirection,     // "FORWARD", "BACKWARD", or "FORWARD-BACKWARD"
-            const char*    adaptiveStepping,     // "ON" or "OFF"
+			VAL_SessionID  sessionID,
+			const char*    modelID,
+			const char*    analysisID,
+			const double   stepValue,
+			const char*    resultID,
+			const int64_t  numSeedingPoints,
+			const double*  seedingPoints,
+			const char*    integrationMethod,			// "EULER" or "CASH-KARP"
+			const int64_t  maxIntegrationSteps,			// Maximum number of integration steps e.g. 10000
+			const double   stepSize,					// Step Size e.g. 0.1
+			const double   maxStreamLineLength,			// Maximum streamline length e.g. 100 units
+			const char*    tracingDirection,			// "FORWARD", "BACKWARD", or "FORWARD-BACKWARD"
+			const char*    interpolateInCells,			// "ON" or "OFF"
+			const char*    adaptiveStepping,			// "ON" or "OFF"
+			const char*    approxBSpline,				// "ON" or "OFF"
 
             /* out */
             const char                        **result_status,
