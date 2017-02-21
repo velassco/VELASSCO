@@ -7,6 +7,8 @@
 
 // STD
 #include <vector>
+#include <map>
+
 #include "AABB.h"
 #include "AccelStruct.h"
 
@@ -35,6 +37,9 @@ public:
   bool loadBinary(std::string filename);
   bool saveBinary(std::string filename);
 
+  bool loadAccelBinary(std::string filename);
+  bool saveAccelBinary(std::string filename);
+
   // Performance
   void resetPerformanceStats();
   void showPerformanceStats();
@@ -45,6 +50,7 @@ private:
   AccelStruct* m_sceneAccel;
   AABB         m_modelBox;
 
+  std::map<glm::i64, glm::i64> m_vertexIDMap;
   std::vector<AABB>       m_cellBoxes;
 
   std::vector<glm::dvec3> m_points;

@@ -112,6 +112,7 @@ void StreamTracer::traceStreamline(UnstructDataset* dataset, glm::dvec3 seed, do
 #ifdef SPECIAL_BACK_STEPS
     // if the line has left the vector field
     if (!dataset->contains(utilVars.currentPoint)){
+      //std::cout << " Does not contain.\n";
       if(specialBackSteps > 0 && !streamLine.empty()){
         --specialBackSteps;
 

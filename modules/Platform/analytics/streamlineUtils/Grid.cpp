@@ -3,6 +3,11 @@
 
 #include "UnstructDataset.h"
 
+// STD
+#include <string>
+#include <iostream>
+#include <fstream>
+
 void Grid::compileShader(){
 
 }
@@ -67,4 +72,69 @@ bool Grid::getBoundingPrimitiveIndex( const UnstructDataset* const datasetPtr, c
 
   m_avg_check_per_traverse = (m_avg_check_per_traverse * (m_n_traverses - 1) + n_checks) / m_n_traverses;
 	return false; 
+}
+
+bool Grid::loadAccelStruct(std::string filename){
+  m_accelType = ACCEL_STRUCT_TYPE_GRID;
+
+  std::ifstream in(filename.c_str(), std::ios_base::binary);
+  if(in){
+
+    std::cout << "Loading acceleration structures..." << std::endl;    
+
+    in.read((char*)&m_bounds, sizeof(AABB));
+    in.read((char*)&m_xDim, sizeof(size_t));
+    in.read((char*)&m_yDim, sizeof(size_t));
+    in.read((char*)&m_zDim, sizeof(size_t));
+
+    std::cout << "Bounds = min: " << m_bounds.min[0] << " " << m_bounds.min[1] << " " << m_bounds.min[2] << std::endl
+              << "         max: " << m_bounds.max[0] << " " << m_bounds.max[1] << " " << m_bounds.max[2] << std::endl
+              << "         xDim = " << m_xDim << " , " << "yDim = " << m_yDim << " , zDim = " << m_zDim << std::endl;
+
+    resize(m_xDim, m_yDim, m_zDim);
+
+    for ( size_t i=0; i<m_xDim; i++ )
+		  for ( size_t j=0; j<m_yDim; j++ )
+			  for ( size_t k=0; k<m_zDim; k++ ){
+          std::vector<glm::i64>& primitives = getPrimitives( i, j, k );
+        
+          size_t nPrimitives = 0;
+          in.read((char*)&nPrimitives, sizeof(size_t));
+          primitives.resize(nPrimitives);
+
+          in.read((char*)primitives.data(), sizeof(glm::i64) * nPrimitives);
+      }
+
+      std::cout << "Loading acceleration structures...Done." << std::endl;
+      return true;
+  }
+
+  return false;
+}
+
+bool Grid::saveAccelStruct(std::string filename){
+  std::ofstream out(filename.c_str(), std::ios_base::binary);
+  if(out){
+    std::cout << "Writing acceleration structure..." << std::endl;
+    out.write((char*)&m_bounds, sizeof(AABB));
+    out.write((char*)&m_xDim, sizeof(size_t));
+    out.write((char*)&m_yDim, sizeof(size_t));
+    out.write((char*)&m_zDim, sizeof(size_t));
+
+    for ( size_t i=0; i<m_xDim; i++ )
+		  for ( size_t j=0; j<m_yDim; j++ )
+		  	for ( size_t k=0; k<m_zDim; k++ ){
+          std::vector<glm::i64>& primitives = getPrimitives( i, j, k );
+        
+          size_t nPrimitives = primitives.size();
+          out.write((char*)&nPrimitives, sizeof(size_t));
+
+          out.write((char*)primitives.data(), sizeof(glm::i64) * nPrimitives);
+      }
+
+    std::cout << "Writing acceleration structure...Done." << std::endl;
+    return true;
+  }
+
+  return false;
 }

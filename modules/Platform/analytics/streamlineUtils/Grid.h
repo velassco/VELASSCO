@@ -15,6 +15,7 @@
 #include <cassert>
 #include <limits>
 #include <vector>
+#include <string>
 
 // RPE
 #include "AccelStruct.h"
@@ -85,6 +86,13 @@ public:
 
   void showPerformanceStats() {
     std::cout << "Average Checks Per Traverse = " << m_avg_check_per_traverse << std::endl;
+  }
+
+  bool loadAccelStruct(std::string filename);
+  bool saveAccelStruct(std::string filename);
+
+  AABB getBounds() const {
+	  return m_bounds;
   }
 
 protected:

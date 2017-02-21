@@ -1,20 +1,20 @@
 // ==========================================================================
 //
-// Fraunhofer-Institut für Graphische Datenverarbeitung IGD
+// Fraunhofer-Institut fï¿½r Graphische Datenverarbeitung IGD
 // Fraunhoferstr. 5 | 64283 Darmstadt | Germany
 // Telefon +49 6151 155-663 | Fax +49 6151 155-139
 //
 // ==========================================================================
 
 #include <Eigen/Core>
-#include <unsupported/Eigen/Splines>
+#include "bSplineApproxUtils/eigen/unsupported/Eigen/Splines"
 
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 
-#include <BSplineApproxUtil/DiscreteCurve.h>
-#include <BSplineApproxUtil/IterativeApproximation.h>
+#include "bSplineApproxUtils/discretecurve.h"
+#include "bSplineApproxUtils/iterativeapproximation.h"
 
 
 #define DEBUG_SPLINE

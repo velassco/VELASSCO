@@ -28,9 +28,14 @@
 #include "../../AccessLib/AccessLib/AccessLib.h"
 #include "Helpers.h"
 #include "../analytics/streamlineUtils/VELaSSCo_Data.h"
+
+// Streamline tracing utilities
 #include "../analytics/streamlineUtils/StreamTracer.h"
 #include "../analytics/streamlineUtils/Streamline.h"
 #include "../analytics/streamlineUtils/UnstructDataset.h"
+
+// B-Spline Approximation utilities
+#include "../analytics/bsplineapprox.h"
 
 // Generated code
 #include "../../thrift/QueryManager/gen-cpp/QueryManager.h"
@@ -1124,9 +1129,13 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
   int64_t     numSeedingPoints      = pt.get<int64_t>( "numSeedingPoints");
   std::string seedingPointsStr      = pt.get<std::string>( "seedingPoints");
   std::string integrationMethod     = pt.get<std::string>( "integrationMethod");
+  int64_t     integrationSteps      = pt.get<int64_t>( "maxIntegrationSteps");
+  double      stepSize              = pt.get<double>( "stepSize" );
   double      maxStreamlinesLength  = pt.get<double>( "maxStreamLineLength");
   std::string tracingDirection      = pt.get<std::string>( "tracingDirection");
+  std::string interpolateInCellsStr = pt.get<std::string>( "interpolateInCells" );
   std::string adaptiveStepping      = pt.get<std::string>( "adaptiveStepping");
+  std::string bSplineApproxStr      = pt.get<std::string>( "approxBSpline" );
   
   std::string dl_sessionID = GetDataLayerSessionID( sessionID);
 
@@ -1136,17 +1145,21 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
   //std::vector<glm:> listOfVertices( lst_vertexIDs, lst_vertexIDs + num_vertexIDs);
   
 
-  std::cout << "S       " << sessionID        << std::endl;
-  std::cout << "dlS     " << dl_sessionID     << std::endl;
-  std::cout << "M      -" << modelID          << "-" << std::endl;
-  std::cout << "anlID  -" << analysisID       << "-" << std::endl;
-  std::cout << "stpVal -" << timeStep         << "-" << std::endl;
-  std::cout << "Rid    -" << resultID         << "-" << std::endl;
-  std::cout << "nSPs   -" << numSeedingPoints << "-" << std::endl;
-  std::cout << "intMet -" << integrationMethod << "-" << std::endl;
-  std::cout << "maxLen -" << maxStreamlinesLength << "-" << std::endl;
+  std::cout << "S       " << sessionID              << std::endl;
+  std::cout << "dlS     " << dl_sessionID           << std::endl;
+  std::cout << "M      -" << modelID                << "-" << std::endl;
+  std::cout << "anlID  -" << analysisID             << "-" << std::endl;
+  std::cout << "stpVal -" << timeStep               << "-" << std::endl;
+  std::cout << "Rid    -" << resultID               << "-" << std::endl;
+  std::cout << "nSPs   -" << numSeedingPoints       << "-" << std::endl;
+  std::cout << "intMet -" << integrationMethod      << "-" << std::endl;
+  std::cout << "intNStp-" << integrationSteps       << "-" << std::endl;
+  std::cout << "intStp -" << stepSize               << "-" << std::endl;
+  std::cout << "maxLen -" << maxStreamlinesLength   << "-" << std::endl;
   std::cout << "tDir   -" << tracingDirection       << "-" << std::endl;
+  std::cout << "intCl  -" << interpolateInCellsStr  << "-" << std::endl;
   std::cout << "adStp  -" << adaptiveStepping       << "-" << std::endl;
+  std::cout << "apSpl  -" << bSplineApproxStr       << "-" << std::endl;
 
   std::cout << "SPnts  -\n";
   for(size_t i = 0; i < 10; i++){
@@ -1188,7 +1201,8 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
     UnstructDataset dataset;
     std::vector<Streamline> streamlines;
 
-    std::string localCachedFile = "/local/FRAUNHOFER/"+meshInfo.name+".bin";
+    std::string localCachedFile = "/tmp/"+meshInfo.name+".bin";
+    std::string localCachedAccelFile = "/tmp/"+meshInfo.name+"_accel.bin";
 
     if(!dataset.loadBinary(localCachedFile)){
     // struct Vertex {
@@ -1274,9 +1288,12 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
     streamlines.push_back(Streamline(glm::dvec3(9000.0, 2300.0, 2400.0)));
 #endif
 
+    // Acceleration Structure Computation
+    if(!dataset.loadAccelBinary(localCachedAccelFile)){
+      dataset.computeAccel();
+      dataset.saveAccelBinary(localCachedAccelFile);
+    }
     
-
-    dataset.computeAccel();
 
     std::cout << "1.\n";  
 
@@ -1311,8 +1328,8 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
     }
 
    
-    params.traceStepSize          = 0.2;
-    params.traceMaxSteps          = 30000;
+    params.traceStepSize              = stepSize;
+    params.traceMaxSteps              = integrationSteps;
     params.traceSpecialBackStepsLimit = 10;
     //params.traceMaxLen            = maxStreamlinesLength;
 
@@ -1344,27 +1361,80 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
       }
     }
 #endif
-    size_t nRetStreamlines = streamlines.size();
 
-    if(nRetStreamlines > 0){
+    bool approximateStreamlinesWithBSplines = bSplineApproxStr == "ON" ? true : false;
 
-      oss.write((char*)&nRetStreamlines, sizeof(size_t));
-      for(size_t i = 0; i < streamlines.size(); i++){
-        size_t streamlineLen = streamlines[i].points().size();
-        oss.write((char*)&streamlineLen, sizeof(size_t));
+    if(!approximateStreamlinesWithBSplines){
+
+      // ==========================================
+      // == No approximation of streamlines case ==
+      // ==========================================
+
+      size_t nRetStreamlines = streamlines.size();
+
+      if(nRetStreamlines > 0){
+
+        oss.write((char*)&nRetStreamlines, sizeof(size_t));
+        for(size_t i = 0; i < streamlines.size(); i++){
+          size_t streamlineLen = streamlines[i].points().size();
+          oss.write((char*)&streamlineLen, sizeof(size_t));
+        }
+
+        for(size_t i = 0; i < streamlines.size(); i++){
+          const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
+          if(retPoints.size() > 0)
+            oss.write((char*)retPoints.data(), retPoints.size() * sizeof(glm::dvec3));
+        }
+
+        for(size_t i = 0; i < streamlines.size(); i++){
+          const std::vector<glm::dvec3>& retResults  = streamlines[i].results();
+          if(retResults.size() > 0)
+            oss.write((char*)retResults.data(), retResults.size() * sizeof(glm::dvec3));
+        }
+      }
+    } else {
+
+      // ============================================
+      // == Approximate streamlines with B-Spline  ==
+      // ============================================
+
+      std::cout << "Approximating Streamlines as B-Spline... "<< std::endl;
+      
+      size_t nRetStreamlines = streamlines.size();
+
+      if(nRetStreamlines > 0){
+
+        for(size_t i = 0; i < streamlines.size(); i++){
+
+          std::vector<Eigen::Vector3d> streamlinePoints;
+          const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
+          for(size_t p = 0; p < retPoints.size(); p++)
+             streamlinePoints.push_back(Eigen::Vector3d(retPoints[p].x, retPoints[p].y, retPoints[p].z));
+          BSplineApprox bsplineApproximator = BSplineApprox(streamlinePoints);
+          std::vector<Eigen::Vector3d> controlPoints = bsplineApproximator.getBSplineControlPoints();
+
+          std::cout << "Number of streamline points are reduced from " << retPoints.size() << " to " << controlPoints.size() << std::endl;
+
+        }
+        /*oss.write((char*)&nRetStreamlines, sizeof(size_t));
+        for(size_t i = 0; i < streamlines.size(); i++){
+          size_t streamlineLen = streamlines[i].points().size();
+          oss.write((char*)&streamlineLen, sizeof(size_t));
+        }
+
+        for(size_t i = 0; i < streamlines.size(); i++){
+          const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
+          if(retPoints.size() > 0)
+            oss.write((char*)retPoints.data(), retPoints.size() * sizeof(glm::dvec3));
+        }
+
+        for(size_t i = 0; i < streamlines.size(); i++){
+          const std::vector<glm::dvec3>& retResults  = streamlines[i].results();
+          if(retResults.size() > 0)
+            oss.write((char*)retResults.data(), retResults.size() * sizeof(glm::dvec3));
+        }*/
       }
 
-      for(size_t i = 0; i < streamlines.size(); i++){
-        const std::vector<glm::dvec3>& retPoints = streamlines[i].points();
-        if(retPoints.size() > 0)
-          oss.write((char*)retPoints.data(), retPoints.size() * sizeof(glm::dvec3));
-      }
-
-      for(size_t i = 0; i < streamlines.size(); i++){
-        const std::vector<glm::dvec3>& retResults  = streamlines[i].results();
-        if(retResults.size() > 0)
-          oss.write((char*)retResults.data(), retResults.size() * sizeof(glm::dvec3));
-      }
     }
 
     std::cout << "7.\n";

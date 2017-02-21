@@ -46,10 +46,10 @@ else
     THRIFT_BASE = $(HOME)
     BOOST_BASE = $(HOME)
   else
-    THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp
-    BOOST_BASE=/exports/applications/apps/community/VELaSSCo/build/boost
-    # THRIFT_BASE = /local/FRAUNHOFER/dependencies/thrift_0.9.3
-    # BOOST_BASE=/local/FRAUNHOFER/dependencies/boost_1_61_0
+    #THRIFT_BASE = /exports/applications/apps/community/VELaSSCo/lib/thrift/lib/cpp
+    #BOOST_BASE=/exports/applications/apps/community/VELaSSCo/build/boost
+    THRIFT_BASE = /local/FRAUNHOFER/dependencies/thrift_0.9.3
+    BOOST_BASE=/local/FRAUNHOFER/dependencies/boost_1_61_0
   endif
 endif
 
@@ -106,6 +106,9 @@ STREAMLINE_UTILS_MODULE_OBJS_TMP = ${STREAMLINE_UTILS_MODULE_FILES:.cpp=.o}
 STREAMLINE_UTILS_MODULE_OBJS = ${STREAMLINE_UTILS_MODULE_OBJS_TMP:%=$(OBJS_DIR)/%}
 STREAMLINE_UTILS_MODULE_DEPENDENCIES = $(wildcard $(STREAMLINE_UTILS_MODULE_DIR)/*.h)
 
+GLM_INCLUDE_DIR = $(STREAMLINE_UTILS_MODULE_DIR)/glm
+EIGEN_INCLUDE_DIR = ./analytics/bSplineApproxUtils/eigen
+
 ACCESS_DIR=./access
 ACCESS_FILES = DataLayerAccess.cpp
 ACCESS_OBJS_TMP = ${ACCESS_FILES:.cpp=.o}
@@ -143,7 +146,7 @@ ENGINE_INCLUDE_DEPENDENCIES =  $(wildcard ./*.h) \
 ENGINE_INCS = -I$(THRIFT_STORAGE_DIR) -I$(THRIFT_QUERY_MANAGER_DIR) -I$(THRIFT_HBASE_DIR)  \
 	-I$(GRAPHICS_MODULE_DIR) -I$(STORAGE_MODULE_DIR) -I$(ANALYTICS_MODULE_DIR)  \
 	-I$(ACCESS_DIR) -I$(QMM_DIR) -I$(COMMON_DIR) -I. \
-	-I$(STREAMLINE_UTILS_MODULE_DIR) -I$(STREAMLINE_UTILS_MODULE_DIR)/glm \
+	-I$(STREAMLINE_UTILS_MODULE_DIR) -I$(GLM_INCLUDE_DIR) -I$(EIGEN_INCLUDE_DIR) \
 	$(EXTRA_INC_DIRS) -I/usr/local/include -I/opt/local/include 
 ENGINE_LIBS = $(EXTRA_LIB_DIRS) -L/usr/local/lib -L/opt/local/lib -lthrift \
 	-lboost_date_time -lboost_thread -lboost_system -lz -lthrift  -lcurl -lcrypto

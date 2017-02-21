@@ -37,17 +37,17 @@ void UnstructDataset::reset(const std::vector<VELASSCO::Coord>& coords, const st
   m_pointVectors.clear();
   m_cellPoints.clear();
   m_cellPointsBegIndices.clear();
+  m_vertexIDMap.clear();
 
-  std::map<glm::i64, glm::i64> vertexID_map;
   for (size_t i = 0; i < coords.size(); i++) {
     m_points.push_back(glm::dvec3(coords[i].coord[0], coords[i].coord[1], coords[i].coord[2]));
-    vertexID_map[coords[i].idx] = static_cast<glm::i64>(i);
+    m_vertexIDMap[coords[i].idx] = static_cast<glm::i64>(i);
   }
 
   m_pointVectors.resize(results.size());
   for (size_t i = 0; i < results.size(); i++) {
     glm::dvec3 result = glm::dvec3(results[i].vector[0], results[i].vector[1], results[i].vector[2]);
-    m_pointVectors[vertexID_map[coords[i].idx]] = result;
+    m_pointVectors[m_vertexIDMap[coords[i].idx]] = result;
   }
 
   m_cellPointsBegIndices.resize(cells.size());
@@ -55,7 +55,7 @@ void UnstructDataset::reset(const std::vector<VELASSCO::Coord>& coords, const st
     m_cellPointsBegIndices[c] = static_cast<glm::i64>(m_cellPoints.size());
     m_cellPoints.push_back(static_cast<glm::i64>(cells[c].cornerIndices.size()));
     for (size_t i = 0; i < cells[c].cornerIndices.size(); i++) {
-      m_cellPoints.push_back(vertexID_map[cells[c].cornerIndices[i]]);
+      m_cellPoints.push_back(m_vertexIDMap[cells[c].cornerIndices[i]]);
     }
   }
 
@@ -424,6 +424,24 @@ bool UnstructDataset::saveBinary(std::string filename)
     }
 
     return !!out;
+}
+
+bool UnstructDataset::loadAccelBinary(std::string filename) {
+  m_sceneAccel = new Grid();
+  bool ret = ((Grid*)m_sceneAccel)->loadAccelStruct(filename);
+  m_modelBox = ((Grid*)m_sceneAccel)->getBounds();
+
+  return ret;
+}
+
+bool UnstructDataset::saveAccelBinary(std::string filename) {
+  if(Grid* grid = dynamic_cast<Grid*>(m_sceneAccel)){
+    return grid->saveAccelStruct(filename);
+  } else {
+    std::cout << "<<<<<<<<<<<<<< Not a Grid >>>>>>>>>>>>>>>>>>>>>\n";
+  }
+
+  return false;
 }
 
 //bool UnstructDataset::seedIsValid(glm::dvec3 seed) {

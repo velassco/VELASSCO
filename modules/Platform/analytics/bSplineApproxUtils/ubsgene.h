@@ -21,8 +21,8 @@
 
 #include <vector>
 
-#include "DiscreteCurve.h"
-#include "UBS.h"
+#include "discretecurve.h"
+#include "ubs.h"
 
 #include <Eigen/Cholesky>
 

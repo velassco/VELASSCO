@@ -2,7 +2,7 @@
 // Dipl.-Informatiker Matthias Borner
 // 'Interaktive Engineering Technologien'
 //
-// Fraunhofer-Institut für Graphische Datenverarbeitung IGD
+// Fraunhofer-Institut fï¿½r Graphische Datenverarbeitung IGD
 // Fraunhoferstr. 5 | 64283 Darmstadt | Germany
 // Telefon +49 6151 155-663 | Fax +49 6151 155-139
 // matthias.borner@igd.fraunhofer.de | http://www.igd.fraunhofer.de/iet
