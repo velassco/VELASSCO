@@ -43,29 +43,38 @@ StreamTracer::~StreamTracer()
 #define RUNGE_KUTTA_INTEGERATION
 
 void StreamTracer::traceStreamline(UnstructDataset* dataset, std::vector<Streamline>& streamlines, double stepsize) {
-  
-  for (size_t i = 0; i < streamlines.size(); i++) {
-    if(i % 100 == 0) std::cout << "Streamline " << i << " from " << streamlines.size() << std::endl;
-    if (streamlines[i].getNumberOfIntegratedSteps() >= m_surface_parameters.traceMaxSteps) {
-      continue;
-    }
 
-    glm::dvec3 seed = streamlines[i].getFrontPoint();
+  size_t nStreamlines = streamlines.size();
+#pragma omp parallel
+  {
+    int tid         = omp_get_thread_num();
+    int numThreads  = omp_get_num_threads();
+    int chunk_size  = static_cast<int>(std::floor((double)nStreamlines/(double)numThreads));
+    int chunk_share = tid == numThreads - 1 ? nStreamlines - (numThreads - 1) * chunk_size : chunk_size;
+    for(int i = 0; i < chunk_share; i++){
+      size_t streamlineIdx = tid * chunk_size + i;
+      //if(i % 100 == 0) std::cout << "Streamline " << i << " from " << streamlines.size() << std::endl;
+      if (streamlines[streamlineIdx].getNumberOfIntegratedSteps() >= m_surface_parameters.traceMaxSteps) {
+        continue;
+      }
 
-    //std::cout << "seed = " << seed.x << " " << seed.y << " " << seed.z << std::endl;
+      glm::dvec3 seed = streamlines[streamlineIdx].getFrontPoint();
 
-    std::vector<glm::dvec3> vertices, results;
-    std::vector<glm::i64>   streamlines_indices;
+      //std::cout << "seed = " << seed.x << " " << seed.y << " " << seed.z << std::endl;
 
-    traceStreamline(dataset, seed, stepsize, vertices, results, streamlines_indices);
+      std::vector<glm::dvec3> vertices, results;
+      std::vector<glm::i64>   streamlines_indices;
 
-    //std::cout << "vertices size = " << vertices.size() << std::endl;
-    //std::cout << "results  size = " << results.size() << std::endl;
+      traceStreamline(dataset, seed, stepsize, vertices, results, streamlines_indices);
 
-    for (size_t j = 0; j < vertices.size(); j++) {
-      streamlines[i].addFrontPoint(vertices[j], results[j]);
-      //std::cout << vertices[j].x << " " << vertices[j].y << vertices[j].z << std::endl;
-      //std::cout << results[j].x << " " << results[j].y << results[j].z << std::endl;
+      //std::cout << "vertices size = " << vertices.size() << std::endl;
+      //std::cout << "results  size = " << results.size() << std::endl;
+
+      for (size_t j = 0; j < vertices.size(); j++) {
+        streamlines[streamlineIdx].addFrontPoint(vertices[j], results[j]);
+        //std::cout << vertices[j].x << " " << vertices[j].y << vertices[j].z << std::endl;
+        //std::cout << results[j].x << " " << results[j].y << results[j].z << std::endl;
+      }
     }
   }
 }

@@ -1296,37 +1296,34 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
       dataset.saveAccelBinary(localCachedAccelFile);
     }
     
-
-    std::cout << "1.\n";  
-
     StreamTracer tracer;
     SurfaceParameters params;
 
     if(tracingDirection == "FORWARD") {
       params.traceDirection         = TraceDirection::TD_FORWARD;
-      std::cout << "  tracing direction = FORWARD\n";
+      //std::cout << "  tracing direction = FORWARD\n";
     } else if (tracingDirection == "BACKWARD") {
       params.traceDirection         = TraceDirection::TD_BACKWARD;  
-      std::cout << "  tracing direction = BACKWARD\n";
+      //std::cout << "  tracing direction = BACKWARD\n";
     } else {
       params.traceDirection         = TraceDirection::TD_BOTH;
-      std::cout << "  tracing direction = BOTH\n";
+      //std::cout << "  tracing direction = BOTH\n";
     }
 
     if(adaptiveStepping == "OFF"){
       params.doStepAdaptation       = false;
-      std::cout << "  step adaptaton = OFF\n";
+      //std::cout << "  step adaptaton = OFF\n";
     } else {
       params.doStepAdaptation       = true;
-      std::cout << "  step adaptaton = ON\n";
+      //std::cout << "  step adaptaton = ON\n";
     }
 
     if(integrationMethod == "EULER"){
       params.traceIntegrationMethod = IntegrationMethod::IM_EULER;
-      std::cout << "  integration method = euler\n";
+      //std::cout << "  integration method = euler\n";
     } else {
       params.traceIntegrationMethod = IntegrationMethod::IM_CASHKARP;
-      std::cout << "  integration method = cash karp\n";
+      //std::cout << "  integration method = cash karp\n";
     }
 
    
@@ -1336,7 +1333,13 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
     //params.traceMaxLen            = maxStreamlinesLength;
 
     tracer.setParameters(params);
+
+    // ==========================================
+    // ==       Tracing streamlines            ==
+    // ==========================================
+    std::cout << "Tracing streamlines..." << std::endl;
     tracer.traceStreamline(&dataset, streamlines, params.traceStepSize);
+    std::cout << "Tracing streamlines...Done." << std::endl;
 
     //const std::vector<glm::dvec3>& retPoints  = streamlines[0].points();
     //const std::vector<glm::dvec3>& retResults = streamlines[0].results();
@@ -1407,7 +1410,7 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
         std::vector<std::vector<Eigen::Vector3d>> controlPoints(nRetStreamlines);
 
         std::cout << "Approximating Streamlines as B-Spline... "<< std::endl;
-#pragma omp parallel
+//#pragma omp parallel
 {
 		    int tid         = omp_get_thread_num();
 		    int numThreads  = omp_get_num_threads();
@@ -1430,28 +1433,61 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
 }
         std::cout << "Approximating Streamlines as B-Spline...Done."<< std::endl;
 
-        oss.write((char*)&nRetStreamlines, sizeof(size_t));
+        // =====================================
+        // == Detecting Suspicous Streamlines
+        // =====================================
+        std::map<size_t, bool> suspicous;
+        size_t nStreamlines = 0;
+        for(size_t i = 0; i < nRetStreamlines; i++){
+          if(controlPoints[i].size() <= 3){
+            suspicous[i] = true;
+            continue;
+          }
+
+          double streamlineLength = 0.0;
+          for(size_t j = 1; j < controlPoints[i].size(); j++){
+            streamlineLength += (controlPoints[i][j - 1] - controlPoints[i][j]).norm();
+          }
+          if(streamlineLength > 10000){
+            suspicous[i] = true;
+            continue;
+          }
+
+          suspicous[i] = false;
+
+          // Counting the number of valid streamlines (B-Splines)
+          nStreamlines++;
+        }
+
+        //oss.write((char*)&nRetStreamlines, sizeof(size_t));
+        oss.write((char*)&nStreamlines, sizeof(size_t));
+        
         for(size_t i = 0; i < nRetStreamlines; i++){
           size_t streamlineLen = controlPoints[i].size();
+          // Ignoring invalid streamlines (B-Splines)
+          if(suspicous[i]) continue;
           oss.write((char*)&streamlineLen, sizeof(size_t));
         }
 
         for(size_t i = 0; i < nRetStreamlines; i++){
           const std::vector<Eigen::Vector3d>& retPoints = controlPoints[i];
-          if(retPoints.size() > 0)
-            oss.write((char*)retPoints.data(), retPoints.size() * sizeof(Eigen::Vector3d));
+          // Ignoring invalid streamlines (B-Splines)
+          if(suspicous[i]) continue;
+          oss.write((char*)retPoints.data(), retPoints.size() * sizeof(Eigen::Vector3d));
         }
 
        
-#if 0
+#if 1
         // ===================================
         // == Sampling the results
         // ===================================
-        std::cout << "Maximum number of threads  = " << omp_get_max_threads() << std::endl;
         std::cout << "Sampling the results on the streamline..." << std::endl;
         for(size_t i = 0; i < nRetStreamlines; i++){
           const std::vector<glm::dvec3>& retPoints  = streamlines[i].points();
           const std::vector<glm::dvec3>& retResults = streamlines[i].results();
+
+          // Ignoring invalid streamlines (B-Splines)
+          if(suspicous[i]) continue;
 
           const size_t nResultSamples = 1024;
           std::vector<glm::dvec3> sampledResults(nResultSamples, glm::dvec3(0.0));
@@ -1467,22 +1503,34 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
           sampledResults[nResultSamples - 1]  = retResults.back();
 
           size_t j = 0;
-          while(j < retResults.size()){
+          while(j < retResults.size() - 1){
+#if 0
             double currPointPercentage = static_cast<double>(j+0) / static_cast<double>(retResults.size());
             double nextPointPercentage = static_cast<double>(j+1) / static_cast<double>(retResults.size());
+#else
+            double currPointPercentage = currStreamlineLength / streamlineLength;
+            double nextPointPercentage = (currStreamlineLength + glm::length(retPoints[j+1] - retPoints[j])) / streamlineLength;
+#endif
             if(percentage >= currPointPercentage && percentage <= nextPointPercentage){
               double t = (percentage - currPointPercentage) / (nextPointPercentage - currPointPercentage);
 
               glm::dvec3 r = t * retResults[j+1] + (1 - t) * retResults[j];
-              sampledResults.push_back(r);
+              sampledResults[idx] = r;
               
+              //std::cout << percentage << std::endl;
+
               idx++;
-              double percentage = static_cast<double>(idx) / static_cast<double>(nResultSamples - 1);
+              percentage = static_cast<double>(idx) / static_cast<double>(nResultSamples - 1);
               if(idx >= nResultSamples - 1) break;
             } else {
               j++;
+              currStreamlineLength += glm::length(retPoints[j+1] - retPoints[j]);
             }
           }
+
+          if(sampledResults.size() > 0)
+            oss.write((char*)sampledResults.data(), sampledResults.size() * sizeof(glm::dvec3));
+
         }
 
         std::cout << "Sampling the results on the streamline...Done." << std::endl;
