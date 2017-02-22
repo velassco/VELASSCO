@@ -1410,7 +1410,7 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
         std::vector<std::vector<Eigen::Vector3d>> controlPoints(nRetStreamlines);
 
         std::cout << "Approximating Streamlines as B-Spline... "<< std::endl;
-//#pragma omp parallel
+#pragma omp parallel
 {
 		    int tid         = omp_get_thread_num();
 		    int numThreads  = omp_get_num_threads();
