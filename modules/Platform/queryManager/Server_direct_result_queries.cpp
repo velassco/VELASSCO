@@ -244,6 +244,7 @@ void QueryManagerServer::ManageGetEvolutionOfVertex( Query_Result &_return, cons
    
   size_t last = ( num_timeSteps < 100) ? num_timeSteps : 100;
   
+  std::ostringstream oss;
   for ( size_t idx = 0; idx < last; idx++) {
     oss << listOfTimeSteps[ idx] << ", ";
   }
@@ -270,10 +271,10 @@ void QueryManagerServer::ManageGetEvolutionOfVertex( Query_Result &_return, cons
       nResultComponentsFound = true;
     }
 
-    if(_return_.result_list.size() > 0 && _return_.result_list[0] == vertexID){
+    if(_return_.result_list.size() > 0 && _return_.result_list[0].id == vertexID){
       retTimeSteps.push_back(listOfTimeSteps[idx]);
       for(size_t j = 0; j < _return_.result_list[0].value.size(); j++)
-        resultValues.push_back(_return_.result_list[0].value[j]);
+        retValues.push_back(_return_.result_list[0].value[j]);
     }
   }
 
