@@ -97,7 +97,9 @@ void QueryManagerServer::Query(Query_Result& _return, const SessionID sessionID,
   if ( name == "GetResultFromVerticesID") {
     ManageGetResultFromVerticesID( _return, sessionID, query);
     /* Session Queries */
-  } else if ( name == "GetMeshDrawData") {
+  } else if( name == "GetEvolutionOfVertex") {
+    ManageGetEvolutionOfVertex( _return, sessionID, query);
+  }else if ( name == "GetMeshDrawData") {
     ManageGetMeshDrawData( _return, sessionID, query);
   }else if ( name == "GetListOfModels") {
     ManageGetListOfModels( _return, sessionID, query);
