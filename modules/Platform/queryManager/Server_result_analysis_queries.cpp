@@ -1338,7 +1338,16 @@ void QueryManagerServer::ManageDoStreamlinesWithResult( Query_Result &_return, c
     // ==       Tracing streamlines            ==
     // ==========================================
     std::cout << "Tracing streamlines..." << std::endl;
-    tracer.traceStreamline(&dataset, streamlines, params.traceStepSize);
+    if(params.traceDirection == TraceDirection::TD_FORWARD)
+      tracer.traceStreamline(&dataset, streamlines, params.traceStepSize);
+    else if(params.traceDirection == TraceDirection::TD_BACKWARD)
+      tracer.traceStreamline(&dataset, streamlines, -params.traceStepSize);
+    else if(params.traceDirection == TraceDirection::TD_BOTH){
+      std::vector<Streamline> backStreamlines = streamlines;
+      tracer.traceStreamline(&dataset, streamlines, params.traceStepSize);
+      tracer.traceStreamline(&dataset, backStreamlines, -params.traceStepSize);
+      streamlines.insert(streamlines.end(), backStreamlines.begin(), backStreamlines.end());
+    }
     std::cout << "Tracing streamlines...Done." << std::endl;
 
     //const std::vector<glm::dvec3>& retPoints  = streamlines[0].points();
