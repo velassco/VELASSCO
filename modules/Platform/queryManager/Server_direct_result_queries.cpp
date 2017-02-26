@@ -219,6 +219,98 @@ void QueryManagerServer::ManageGetResultFromVerticesID( Query_Result &_return, c
   LOGGER << "  data   : \n" << Hexdump(_return.data, 128) << std::endl;
 }
 
+void QueryManagerServer::ManageGetEvolutionOfVertex( Query_Result &_return, const SessionID sessionID, const std::string& query) {
+  // Parse query JSON
+  std::istringstream ss(query);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  std::string name       = pt.get<std::string>("name");
+  std::string modelID    = pt.get<std::string>("modelID");
+  std::string resultID   = pt.get<std::string>("resultID");
+  std::string analysisID = pt.get<std::string>("analysisID");
+  int64_t      vertexID   = pt.get<int64_t>("vertexID");
+  
+  std::string timeSteps  = pt.get<std::string>("timeSteps");
+  std::string raw_data = base64_decode( timeSteps);
+  size_t num_timeSteps = raw_data.length() / sizeof( double);
+  double *lst_timeSteps = ( double *)raw_data.data();
+  std::vector<double> listOfTimeSteps( lst_timeSteps, lst_timeSteps + num_timeSteps);
+
+  bool decoded = false;
+  if ( raw_data.length()) {
+    decoded = true;
+  }
+   
+  size_t last = ( num_timeSteps < 100) ? num_timeSteps : 100;
+  
+  for ( size_t idx = 0; idx < last; idx++) {
+    oss << listOfTimeSteps[ idx] << ", ";
+  }
+  LOGGER << oss.str() << " ." << std::endl;
+
+  std::stringstream sessionIDStr;
+  sessionIDStr << sessionID;
+  
+  rvGetResultFromVerticesID _return_;
+
+  std::vector<int64_t> listOfVertices(1);
+  listOfVertices[0] = vertexID;
+
+  size_t nComponents = 0;
+  bool nResultComponentsFound = false;
+  std::vector<double> retTimeSteps;
+  std::vector<double> retValues;
+
+  for ( size_t idx = 0; idx < listOfTimeSteps.size(); idx++) {  
+    queryServer->getResultFromVerticesID(_return_ ,sessionIDStr.str() ,modelID ,analysisID ,listOfTimeSteps[idx] ,resultID ,listOfVertices);
+
+    if(!nResultComponentsFound) {
+      nComponents = _return_.result_list[idx].value.size();
+      nResultComponentsFound = true;
+    }
+
+    if(_return_.result_list.size() > 0 && _return_.result_list[0] == vertexID){
+      retTimeSteps.push_back(listOfTimeSteps[idx]);
+      for(size_t j = 0; j < _return_.result_list[0].value.size(); j++)
+        resultValues.push_back(_return_.result_list[0].value[j]);
+    }
+  }
+
+  // Pack into string
+  if(_return_.result_list.size() > 0){
+    std::string result;
+    std::ostringstream oss;
+    size_t nTimeSteps = retTimeSteps.size();
+    LOGGER << "--> returned timeSteps = " << nTimeSteps << " ." << std::endl;
+    LOGGER << "--> returned numComponents = " << nComponents << " ." << std::endl;
+    oss.write((char*)&nTimeSteps, sizeof(int64_t));
+    oss.write((char*)&nComponents, sizeof(int64_t));
+    oss.write((char*)(&retTimeSteps[0]), sizeof(double)*retTimeSteps.size());
+    oss.write((char*)(&retValues[0]),    sizeof(double)*retValues.size());
+    LOGGER << "--> returned retTimeSteps.size() = " << retTimeSteps.size() << " ." << std::endl;
+    LOGGER << "--> returned retValues.size() = " << retValues.size() << " ." << std::endl;
+    result = oss.str();
+    _return.__set_data(result);  
+  } else {
+    LOGGER << "--> nothing returned ." << std::endl;
+    std::string result;
+    std::ostringstream oss;
+    int64_t zero = 0;
+    oss.write((char*)&zero, sizeof(size_t));
+    oss.write((char*)&zero, sizeof(size_t));
+    result = oss.str();
+    _return.__set_data(result); 
+  }
+		  	  
+  _return.__set_result( (Result::type)VAL_SUCCESS );
+		  
+  LOGGER                                             << std::endl;
+  LOGGER << "Output:"                                << std::endl;
+  LOGGER << "  result : "   << _return.result        << std::endl;
+  LOGGER << "  data   : \n" << Hexdump(_return.data, 128) << std::endl;
+}
+
 static bool isMeshTypeImplemented(MeshInfo& meshInfo) {
 	switch(meshInfo.elementType.shape){
 	case ElementShapeType::type::SphereElement:

@@ -113,6 +113,7 @@ class QueryManagerServer : virtual public QueryManagerIf {
   void ManageCloseModel( Query_Result &_return, const SessionID sessionID, const std::string& query);
   /* Direct Result Queries */
   void ManageGetResultFromVerticesID( Query_Result &_return, const SessionID sessionID, const std::string& query);
+  void ManageGetEvolutionOfVertex( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfMeshes( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfAnalyses( Query_Result &_return, const SessionID sessionID, const std::string& query);
   void ManageGetListOfTimeSteps( Query_Result &_return, const SessionID sessionID, const std::string& query);

@@ -228,6 +228,21 @@ extern "C" {
 						   const double*  *resultValues,
 						   size_t         *resultNumVertices );
   
+  VAL_Result VAL_API valGetEvolutionOfVertex( /* in */
+	  VAL_SessionID   sessionID,
+	  const char*     modelID,
+	  const char*     resultID,
+	  const char*     analysisID,
+	  const int64_t   vertexID,
+	  const size_t    numTimeSteps,
+	  const double*   timeSteps,
+
+	  /* out */
+	  const char*    *result_status,
+	  const double*  *timeStepValues,
+	  const double*  *resultValues,
+	  size_t         *numRetTimeSteps);
+
   VAL_Result VAL_API valGetBoundingBox( /* in */
 				       VAL_SessionID   sessionID,
 				       const char     *modelID,

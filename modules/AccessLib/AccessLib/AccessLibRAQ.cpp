@@ -132,6 +132,103 @@ extern "C" {
     CATCH_ERROR;
   } // valGetResultFromVerticesID
   
+VAL_Result VAL_API valGetEvolutionOfVertex( /* in */
+	VAL_SessionID   sessionID,
+	const char*     modelID,
+	const char*     resultID,
+	const char*     analysisID,
+	const int64_t   vertexID,
+	const size_t    numTimeSteps,
+	const double*   timeSteps,
+
+	/* out */
+	const char*    *result_status,
+	const double*  *timeStepValues,
+	const double*  *resultValues,
+	size_t         *numRetTimeSteps) {
+
+	CHECK_SESSION_ID(sessionID);
+	CHECK_QUERY_POINTER(modelID);
+	CHECK_QUERY_POINTER(resultID);
+	CHECK_QUERY_POINTER(analysisID);
+	CHECK_QUERY_POINTER(resultValues);
+	CHECK_QUERY_POINTER(numRetTimeSteps);
+	CHECK_QUERY_POINTER(result_status);
+
+	API_TRACE;
+	try
+	{
+		std::stringstream  queryCommand;
+		const std::string* queryData;
+
+		// Build JSON command string
+		queryCommand << "{\n"
+			<< "  \"name\"				: \"" << "GetEvolutionOfVertex" << "\",\n"
+			<< "  \"modelID\"			: \"" << modelID				<< "\",\n"
+			<< "  \"resultID\"			: \"" << resultID				<< "\",\n"
+			<< "  \"analysisID\"		: \"" << analysisID				<< "\",\n"
+			<< "  \"vertexID\"          : \"" << vertexID				<< "\",\n";
+		// encode the vertexID list in a base64 string
+		// queryCommand << "  \"vertexIDs\"  : [";
+		// const int64_t *ip = vertexIDs;
+		// while (*ip != 0) {
+		//   queryCommand << *ip++;
+		//   if (*ip != 0)
+		//     queryCommand << ",";
+		// }
+		// queryCommand << "],\n";
+		// list vertexIDs is ends with a '0', so count items
+		queryCommand << "  \"timeSteps\"  : \""
+			<< base64_encode((const char *)timeSteps, numTimeSteps * sizeof(double))
+			<< "\"\n";
+		queryCommand << "}\n";
+
+		// Send command string and get back result data
+		VAL_Result result = g_clients[sessionID]->Query(sessionID, queryCommand.str(), queryData);
+
+		// Give back pointers to actual binary data
+		if (result == VAL_SUCCESS)
+		{
+			int64_t _numRetTimeSteps;
+			int64_t _numElements;
+
+			// to debug and test:
+			// std::string file_name = std::string( "/tmp/valGetResultFromVerticesID_") + resultID + ".bin";
+			// dumpVQueryResult( file_name.c_str(), queryData->data(), queryData->length());
+
+			std::istringstream in(*queryData);
+			// this is a worng corrections:
+			in.read((char*)&_numRetTimeSteps, sizeof(int64_t));
+			in.read((char*)&_numElements,	  sizeof(int64_t));
+			//in >> numVertices >> numElements >> std::ws;
+
+			if (_numRetTimeSteps > 0 && _numElements > 0) {
+				const size_t offsetTimeSteps = (size_t)in.tellg();
+				const size_t offsetValues = offsetTimeSteps + _numRetTimeSteps * sizeof(double);
+
+				*timeStepValues = (const double*)(&((*queryData)[offsetTimeSteps]));
+				*resultValues = (const double*)(&((*queryData)[offsetValues]));
+				*numRetTimeSteps = _numRetTimeSteps;
+			}
+			else {
+				*timeStepValues = NULL;//nullptr;
+				*resultValues = NULL;//nullptr;
+				*numRetTimeSteps = 0;
+			}
+
+			*result_status = "Ok";
+
+		}
+		else
+		{
+			*result_status = queryData->c_str();
+		}
+
+		return result;
+	}
+	CATCH_ERROR;
+}
+
   VAL_Result VAL_API valGetBoundingBox( /* in */
 				       VAL_SessionID   sessionID,
 				       const char     *modelID,
