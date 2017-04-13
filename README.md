@@ -219,6 +219,8 @@ Here you have to uncomment and adjust the paths to your preference.
 export JAVA_HOME=/usr
 export HBASE_PID_DIR=/var/hadoop/pids
 export HBASE_MANAGES_ZK=true
+export HBASE_HEAPSIZE=4000
+export HBASE_OFFHEAPSIZE=8G
 ```
 Then you should create and own the directory **on every machine** for the pids with
 ```bash
@@ -249,6 +251,10 @@ Continue to edit the following files on your master.
     <name>hbase.cluster.distributed</name>
     <value>true</value>
 </property>
+<property>
+    <name>hbase.hregion.max.filesize</name>
+    <value>16777216</value>
+</property>
 ```
 ```bash
 # regionservers
@@ -271,6 +277,10 @@ Finally you have to transfer the hbase folder to your other machines and adjust 
 <property>
     <name>hbase.cluster.distributed</name>
     <value>true</value>
+</property>
+<property>
+    <name>hbase.hregion.max.filesize</name>
+    <value>16777216</value>
 </property>
 ```
 Then you have to run:
@@ -325,10 +335,38 @@ sudo /path/to/VELASSCO/ThriftInjector/build/Inject/gid_inject -i ./yourMeshFile_
 this should iterate over the directory and inject the data into HBase
 
 ## Building the Velassco Platform
-
-
+To build the Velassco Platform you have to simply run the following commands
+```bash
+cd path/to/VELASSCO/modules 
+make
+```
+Afterwards you need to create a link to the relevant lib folder with the following commands:
+```bash
+cd path/to/VELASSCO/modules/Platform/AnalyticsYarnJobs
+ln -s lib_eddie lib
+```
+You also have to copy and rename the necessary JAR Files in the AnalyticsYarnJobs directory so that they have your machines name extension (in our example master) as follows:
+```bash
+# for everyfile
+cp GetBoundaryOfAMesh_pez001.jar GetBoundaryOfAMesh_master.jar
+cp GetBoundingBoxOfAModel_pez001.jar GetBoundingBoxOfAModel_master.jar
+cp GetDiscrete2ContinuumOfAModel_pez001.jar GetDiscrete2ContinuumOfAModel_master.jar
+cp GetListOfVerticesFromMesh_pez001.jar GetListOfVerticesFromMesh_master.jar
+cp GetMissingIDsOfVerticesWithoutResults_pez001.jar GetMissingIDsOfVerticesWithoutResults_master.jar
+cp GetSimplifiedMesh_Average_pez001.jar GetSimplifiedMesh_Average_master.jar
+cp GetSimplifiedMeshWithResult_Average_pez001.jar GetSimplifiedMeshWithResult_Average_master.jar
+```
 ## Running
+To run the whole Platform you have to have:
+- Hadoop (`start-dfs.sh && start-yarn.sh`) and HBase (`start-hbase.sh`) running 
+- The Thrift server started (`hbase thrift start`) 
+- The Data should be injected
 
+Then you need to start the Query Manager as follows: 
+```bash
+cd path/to/VELASSCO/modules/Platform/
+./QueryManager.exe -port 26267
+```
 # License
 
 | Module | Owner | Proposed license |
