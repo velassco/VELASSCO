@@ -332,7 +332,10 @@ Then navigate to your directory which contains the data and run:
 ```bash
 sudo /path/to/VELASSCO/ThriftInjector/build/Inject/gid_inject -i ./yourMeshFile_0.post.msh
 ```
-this should iterate over the directory and inject the data into HBase
+this should iterate over the directory and inject the data into HBase. A test simulation data is provided in following path:
+```
+ThriftInjector/SampleData/HbaseBasicTest
+```
 
 ## Building the Velassco Platform
 To build the Velassco Platform you have to simply run the following commands
@@ -360,7 +363,7 @@ cp GetSimplifiedMeshWithResult_Average_pez001.jar GetSimplifiedMeshWithResult_Av
 To run the whole Platform you have to have:
 - Hadoop (`start-dfs.sh && start-yarn.sh`) and HBase (`start-hbase.sh`) running 
 - The Thrift server started (`hbase thrift start`) 
-- The Data should be injected
+- The Data should be injected (an example data is i
 
 Then you need to start the Query Manager as follows: 
 ```bash
