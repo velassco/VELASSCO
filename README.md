@@ -369,7 +369,7 @@ Values
 10 6.2
 End Values
 
-Result "VELOCITY" "test" 1 Scalar OnNodes
+Result "VELOCITY" "test" 1 Vector OnNodes
 ComponentNames  "X-VELOCITY", "Y-VELOCITY", "Z-VELOCITY"
 Values
 0 1 2 3 0
