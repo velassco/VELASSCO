@@ -328,6 +328,56 @@ First of all make sure Hadoop and HBase are running. Afterwards you should start
 hbase thrift start
 ```
 
+The files should be in the following format: 
+
+The *.post.msh file:
+```bash
+MESH "test" Dimension 3 ElemType Tetrahedra Nnode 4
+
+# Coordinates should match with the Dimension
+Coordinates
+1.0 2.0 3.0
+...
+4.0 5.0 6.0
+End Coordinates
+
+# Number of Elements should be Number of Nodes + 1
+Elements
+0 1 2 4 0
+...
+10 3 4 5 0
+End Elements
+```
+The *.post.res file:
+
+```bash
+GiD Post Results File 1.0
+
+Result "PARTITION_INDEX" "test" 1 Scalar OnNodes
+ComponentNames  "PARTITION_INDEX"
+Values
+0 1
+...
+10 10
+End Values
+
+Result "PRESSURE" "test" 1 Scalar OnNodes
+ComponentNames  "PRESSURE"
+Values
+0 1.5
+...
+10 6.2
+End Values
+
+Result "VELOCITY" "test" 1 Scalar OnNodes
+ComponentNames  "X-VELOCITY", "Y-VELOCITY", "Z-VELOCITY"
+Values
+0 1 2 3 0
+...
+10 10 12 24 0
+End Values
+```
+
 Then navigate to your directory which contains the data and run: 
 ```bash
 sudo /path/to/VELASSCO/ThriftInjector/build/Inject/gid_inject -i ./yourMeshFile_0.post.msh
