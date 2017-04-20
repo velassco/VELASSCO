@@ -336,6 +336,10 @@ this should iterate over the directory and inject the data into HBase. A test si
 ```
 ThriftInjector/SampleData/HbaseBasicTest
 ```
+So, the command to inject the test data will look like:
+```bash
+sudo /path/to/VELASSCO/ThriftInjector/build/Inject/gid_inject -i ../../../SampleData/HbaseBasicTest/VELaSSCo_HbaseBasicTest_part-1.post.msh
+```
 
 ## Building the Velassco Platform
 To build the Velassco Platform you have to simply run the following commands
