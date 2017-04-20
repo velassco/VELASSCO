@@ -374,6 +374,14 @@ Then you need to start the Query Manager as follows:
 cd path/to/VELASSCO/modules/Platform/
 ./QueryManager.exe -port 26267
 ```
+Now that the query manager is running, you are able to use CIMNE's GiD visualization client (http://www.gidhome.com/download/), and its VELaSSCo plugin, to test the query manager. You can find a document in the following link which describes how to connect to a query manager and use its functionalities:
+
+http://velassco.atosresearch.eu/sites/default/files/velassco/files/content-files/articles/VELaSCCo_UC1_FinalEE_GiD_0.pdf
+
+In addition, more infromation about using VELaSSCo platform, and webinar videos can be found here:
+
+http://velassco.atosresearch.eu/content/material-nov-2016-velassco-evaluation-event
+
 # License
 
 | Module | Owner | Proposed license |
