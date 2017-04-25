@@ -313,6 +313,25 @@ hbase(main):001:0> status
 1 active master, 0 backup masters, 4 servers, 0 dead, 0.7500 average load
 hbase(main):002:0>
 ```
+
+### HBase tweaks
+Some of the VELaSSCo Vqueries requires certain amount of data to be passed between the MapReduce nodes and between the VELaSSCo's Query Manager and the HBase thrift server. To avoid crashes of the HBase thrift daemon java VM memory limit shall be raised.
+To adjust this limit edit the file `hbase-env.sh` at `/usr/local/hbase/conf` and do the following changes:
+```bash
+# The maximum amount of heap to use, in MB. Default is 1000.
+# it was raised to 10000 ???
+# export HBASE_HEAPSIZE=10000
+ export HBASE_HEAPSIZE=4000
+
+# Uncomment below if you intend to use off heap cache. 
+# For example, to allocate 8G of # offheap, set the value to "8G".
+export HBASE_OFFHEAPSIZE=8G
+```
+and restart the HBase services again.
+
+Another interesting parameter to adjust for a correct distribution of the data among the different HBase region servers is the splitting size.
+To adjust this limit edit the file `hbase-size.xml` at `/usr/local/hbase/conf` and change the value of the property `hbase.hregion.max.filesize`.
+
 ## Building the ThriftInjector and injecting the data
 First of all clone the velassco repository into your preferred location and build it with the following steps
 ```bash
