@@ -255,6 +255,14 @@ Continue to edit the following files on your master.
     <name>hbase.hregion.max.filesize</name>
     <value>16777216</value>
 </property>
+<property>
+    <name>zookeeper.session.timeout</name>
+    <value>1200000</value>
+</property>
+<property>
+    <name>hbase.zookeeper.property.tickTime</name>
+    <value>6000</value>
+</property>
 ```
 ```bash
 # regionservers
@@ -281,6 +289,14 @@ Finally you have to transfer the hbase folder to your other machines and adjust 
 <property>
     <name>hbase.hregion.max.filesize</name>
     <value>16777216</value>
+</property>
+<property>
+    <name>zookeeper.session.timeout</name>
+    <value>1200000</value>
+</property>
+<property>
+    <name>hbase.zookeeper.property.tickTime</name>
+    <value>6000</value>
 </property>
 ```
 Then you have to run:
@@ -325,8 +341,9 @@ make -j 8
 ### Injecting the data
 First of all make sure Hadoop and HBase are running. Afterwards you should start a thrift server with
 ```bash
-hbase thrift start
+hbase thrift -t 9000000 start
 ```
+where `-t` is the paremeter for the thread timeout which handles the connections
 
 The files should be in the following format: 
 
