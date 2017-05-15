@@ -7,13 +7,15 @@ Building:
 
 To build the access library, you need the following:
 
- - Visual Studio 2012 Win 64 (no other platforms tested)
+ - Visual Studio 2012 or 2015 Win 64 (no other platforms tested)
  - CMake >= 2.8.11
+
+3rd parties:
+ - Required 3rd party libs for VS2015 can be downloaded from https://cloud.igd.fraunhofer.de/owncloud/s/4VyjDlxSUhlp7qC
 
 Build process:
 
- - Unzip "3rdParty.zip" in the current folder.
- - Open CMake.
+  - Open CMake.
  - As source path enter the current directory "<path>/modules/AccessLib".
  - As build path enter "<path>/modules/AccessLib/build".
  - Press "Configure" and select "Visual Studio 11 Win64".
