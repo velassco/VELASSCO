@@ -1,6 +1,7 @@
+![](http://velassco.atosresearch.eu/sites/all/themes/zen/velassco/logo.png)
 # VELASSCO
 
-![](http://velassco.atosresearch.eu/sites/all/themes/zen/velassco/logo.png)
+
 
 VELaSSCo (http://www.velassco.eu) EC funded project final platform code. The goal of the project was to combine big data tools and technologies with scientific visualization algorithms to provide new visual analysis methods for large-scale simulations. 
 
